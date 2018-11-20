@@ -1,2 +1,2 @@
 # OnJava8
-On Java 8中文翻译
+《On Java 8》中文翻译
