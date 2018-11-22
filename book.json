@@ -1,0 +1,76 @@
+{
+  "title": "《On Java 8》中文版翻译",
+  "author": "LingCoder",
+  "description": "这是大神 Bruce Eckel的新书，也被称之为《Think in Java》第五版。",
+  "language": "zh-hans", 
+  "gitbook": "3.2.3", 
+  "styles": {
+    "website": "styles/website.css",
+    "ebook": "styles/ebook.css",
+    "pdf": "styles/pdf.css",
+    "mobi": "styles/mobi.css",
+    "epub": "styles/epub.css"
+ },
+  "structure": {
+    "readme": "book/00-译者.md" 
+  },
+  "links": {
+    "sidebar": {
+      "博客园": "https://www.cnblogs.com/LingCoder/" 
+    }
+  },
+  "plugins": [ 
+    "-sharing",
+    "splitter",
+    "expandable-chapters-small",
+    "anchors",
+    "-search",
+	"search-pro",
+    "github",
+	"include-codeblock",
+    "github-buttons",
+    "sharing-plus",
+    "anchor-navigation-ex",
+    "favicon"
+  ],
+  "pluginsConfig": {
+    "github": {
+      "url": "https://github.com/LingCoder/"
+    },
+    "github-buttons": {
+      "buttons": [{
+        "user": "lingcoder",
+        "repo": "onjava8",
+        "type": "star",
+        "size": "small",
+        "count": true
+      }]
+    },
+    "sharing": {
+      "douban": true,
+      "facebook": false,
+      "google": true,
+      "hatenaBookmark": false,
+      "instapaper": false,
+      "line": false,
+      "linkedin": false,
+      "messenger": false,
+      "pocket": false,
+      "qq": true,
+      "qzone": true,
+      "stumbleupon": false,
+      "twitter": true,
+      "viber": false,
+      "vk": false,
+      "weibo": true,
+      "whatsapp": false,
+      "all": [
+        "google", "facebook", "weibo", "twitter",
+        "qq", "qzone", "linkedin", "pocket"
+      ]
+    },
+    "anchor-navigation-ex": {
+      "showLevel": false
+    }
+  }
+}
