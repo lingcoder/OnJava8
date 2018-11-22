@@ -32,9 +32,9 @@
 * ISBN: 9780981872520
 
 ## 贡献者
-总顾问+审校:  
-主译: LingCoder @lingcoder
-参译:  
+* 总顾问+审校:  
+* 主译: LingCoder @lingcoder
+* 参译:  
 
 ##  贡献力量
 如果你想对本书做出一些贡献的话
