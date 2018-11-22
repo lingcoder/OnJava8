@@ -25,8 +25,13 @@
   
 ## 原书作者
 <div align="left"> 
+    
 ![cover](cover_small.jpg)
  </div>
+
+![cover](cover_small.jpg)
+ </div>
+
 
 * 作者: Bruce Eckel 
 * ISBN: 9780981872520
