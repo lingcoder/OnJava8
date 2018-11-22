@@ -56,7 +56,7 @@
 本书基于GPL v3.0协议开源。
 
 ## 联系方式
-* E-mail：LingCoder@gmail.com
+*  E-mail: LingCoder@gmail.com
 * Github: [LingCoder](https://github.com/LingCoder)
 
 
