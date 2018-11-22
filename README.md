@@ -57,7 +57,7 @@
 
 ## 联系方式
 *  E-mail: LingCoder@gmail.com
-* Github: [LingCoder](https://github.com/LingCoder)
+* Github: [github.com/LingCoder](https://github.com/LingCoder)
 
 
 
