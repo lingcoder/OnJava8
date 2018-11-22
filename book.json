@@ -12,7 +12,7 @@
     "epub": "styles/epub.css"
  },
   "structure": {
-    "readme": "book/00-译者.md" 
+    "readme": "Introduction.md" 
   },
   "links": {
     "sidebar": {
