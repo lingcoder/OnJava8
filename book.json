@@ -62,8 +62,8 @@
                 "label": "Edit This Page"
             },
 	"donate": {
-        "wechat": "./images/weixin.png",
-        "alipay": "./images/alipay.png",
+        "wechat": "https://github.com/LingCoder/OnJava8/raw/master/images/wechat.PNG",
+        "alipay": "https://github.com/LingCoder/OnJava8/raw/master/images/alipay.PNG",
         "title": "",
         "button": "赏",
         "alipayText": "支付宝打赏",
@@ -80,7 +80,6 @@
       "messenger": false,
       "pocket": false,
       "qq": true,
-	  "wechat":true,
       "qzone": false,
       "stumbleupon": false,
       "twitter": true,
