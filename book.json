@@ -12,21 +12,28 @@
     "epub": "styles/epub.css"
  },
   "structure": {
-    "readme": "Introduction.md" 
+    "readme": "README.md" 
   },
   "links": {
     "sidebar": {
-      "博客园": "https://www.cnblogs.com/LingCoder/" 
+      "个人博客": "https://www.lingcoder.com" 
     }
   },
   "plugins": [ 
     "-sharing",
+	"-fontsettings",
     "splitter",
     "expandable-chapters-small",
     "anchors",
     "-search",
+	"edit-link",
 	"search-pro",
     "github",
+	"emphasize",
+	"katex",
+	"donate",
+	"mermaid-gb3",
+	"advanced-emoji",
 	"include-codeblock",
     "github-buttons",
     "sharing-plus",
@@ -40,16 +47,32 @@
     "github-buttons": {
       "buttons": [{
         "user": "lingcoder",
-        "repo": "onjava8",
-        "type": "star",
+        "repo": "OnJava8",
+        "types": [
+                "star",
+                "watch",
+                "fork"
+            ],
         "size": "small",
         "count": true
       }]
     },
+	"edit-link": {
+                "base": "https://github.com/lingcoder/OnJava8/edit/master",
+                "label": "Edit This Page"
+            },
+	"donate": {
+        "wechat": "./images/weixin.png",
+        "alipay": "./images/alipay.png",
+        "title": "",
+        "button": "赏",
+        "alipayText": "支付宝打赏",
+        "wechatText": "微信打赏"
+    },
     "sharing": {
-      "douban": true,
+      "douban": false,
       "facebook": false,
-      "google": true,
+      "google": false,
       "hatenaBookmark": false,
       "instapaper": false,
       "line": false,
@@ -57,7 +80,8 @@
       "messenger": false,
       "pocket": false,
       "qq": true,
-      "qzone": true,
+	  "wechat":true,
+      "qzone": false,
       "stumbleupon": false,
       "twitter": true,
       "viber": false,
