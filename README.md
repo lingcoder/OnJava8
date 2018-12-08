@@ -5,7 +5,9 @@
 ### 快速阅读传送门
 
 - Github快速阅读：[进入目录](https://github.com/lingcoder/OnJava8/SUMMARY.md)
+
 - Gitbook完整阅读：[进入Gitbook](https://github.com/LingCoder)
+
 
 ## 翻译进度
 - [ ] 序言
@@ -23,7 +25,7 @@
 ## 原书作者
 <div align="left">
 
-![cover](cover_small.jpg)
+![cover](imags/cover_small.jpg)
 
  </div>
 
@@ -50,11 +52,11 @@
 如有其它问题，欢迎发送issue，谢谢~
 
 ## 开源协议
-本书基于GPL v3.0协议开源。
+本项目基于GPL v3.0协议开源。
 
 ## 联系方式
 *  E-mail: LingCoder@gmail.com
-* Github: [LingCoder](https://github.com/LingCoder)
+* Github: [Github.com/LingCoder](https://github.com/LingCoder)
 
 
 
