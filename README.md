@@ -25,7 +25,7 @@
 ## 原书作者
 <div align="left">
 
-![cover](imags/cover_small.jpg)
+![cover](images/cover_small.jpg)
 
  </div>
 
