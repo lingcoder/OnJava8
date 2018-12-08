@@ -1,14 +1,11 @@
 ## On Java 8
 《On Java 8》中文翻译中……
 
-如果你是在GitHub上浏览，可以移步至[GitBook]()或[LingCoder.com](http://www.lingcoder.com)中获得更好的阅读体验。
 
 ### 快速阅读传送门
 
 - Github快速阅读：[进入目录](https://github.com/lingcoder/OnJava8/SUMMARY.md)
 - Gitbook完整阅读：[进入Gitbook](https://github.com/LingCoder)
-- 独立博客（实时同步）：[LingCoder](https://github.com/LingCoder)
-- 其他博客（不定期同步）：[博客园](https://github.com/LingCoder)
 
 ## 翻译进度
 - [ ] 序言
