@@ -24,7 +24,9 @@
   
 ## 原书作者
 
-![cover_small](https://raw.githubusercontent.com/LingCoder/OnJava8/master/cover_small.jpg)
+<div align="left">
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/cover_small.jpg"  alt="cover\_small" />
+ </div>
 
 * 作者: Bruce Eckel 
 * ISBN: 9780981872520
