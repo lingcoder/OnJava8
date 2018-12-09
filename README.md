@@ -49,7 +49,7 @@
 如有其它问题，欢迎发送issue，谢谢~
 
 ## 开源协议
-本项目基于GPL v3.0协议开源。
+本项目基于MIT协议开源。
 
 ## 联系方式
 *  E-mail:  <lingcoder@gmail.com>
