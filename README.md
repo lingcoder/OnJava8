@@ -23,11 +23,8 @@
   - 全书目录建立
   
 ## 原书作者
-<div align="left">
 
 ![cover_small](https://raw.githubusercontent.com/LingCoder/OnJava8/master/cover_small.jpg)
-
- </div>
 
 * 作者: Bruce Eckel 
 * ISBN: 9780981872520
