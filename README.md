@@ -25,7 +25,7 @@
 ## 原书作者
 <div align="left">
 
-![cover](./images/cover_small.jpg)
+![cover_small](https://raw.githubusercontent.com/LingCoder/OnJava8/master/cover_small.jpg)
 
  </div>
 
