@@ -3,6 +3,7 @@
 <div align="center">
     <img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/cover.jpg" alt="cover" width="100%"/>
 </div>
+
 **Bruce Eckel**
 
 **MindView LLC**
