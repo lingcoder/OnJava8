@@ -12,7 +12,6 @@
 
 *©MindView LLC All Rights Reserved*
 
-
 <div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/1544422037513.png" alt="star-logo" width="100%"/>
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/1544422037513.png" alt="star-logo />
 </div>
