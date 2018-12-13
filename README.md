@@ -12,7 +12,7 @@
 
 
 ## 翻译进度
-- [ ] 序言
+- [x] 序言
 - [ ] 介绍
 - [ ] 待续······
 
@@ -57,7 +57,7 @@
 
 ## 联系方式
 *  E-mail:  <lingcoder@gmail.com>
-* Github:  [Github.com/LingCoder](https://github.com/LingCoder)
+* GitHub:  [github.com/lingcoder](https://github.com/LingCoder)
 
 
 
