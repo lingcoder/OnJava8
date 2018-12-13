@@ -1,8 +1,8 @@
-## On Java 8
-《On Java 8》中文翻译中……
+# 《On Java 8》中文翻译
 
 
-### 快速阅读传送门
+
+## 快速阅读传送门
 
 - Github快速阅读：[进入目录](https://github.com/LingCoder/OnJava8/blob/master/SUMMARY.md)
 
@@ -19,10 +19,9 @@
 
 ## 更新记录
 ------
-- 0.0.1
-  - 增加了 "XX" 章节结构
-- 0.0.2
-  - 全书目录建立
+
+- 2018-11-20  初始化项目
+
   
 ## 原书作者
 
