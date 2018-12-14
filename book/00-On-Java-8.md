@@ -35,7 +35,7 @@
 
 [www.Will-Harris.com](www.Will-Harris.com)
 
-Java是Oracle，Inc的商标。Windows 95，Windows NT，Windows 2000，Windows XP，Windows 7，Windows 8和Windows 10是Microsoft Corporation的商标。
+Java是甲骨文公司（Oracle. Inc.）的商标。Windows 95，Windows NT，Windows 2000，Windows XP，Windows 7，Windows 8和Windows 10是微软公司（Microsoft Corporation）的商标。
 此处提及的所有其他产品名称和公司名称均为其各自所有者的财产。 
 作者和出版商在编写本书时已经仔细校对过，但不作任何明示或暗示的保证，对错误或遗漏不承担任何责任。
 对于因使用此处包含的信息或程序而产生的偶然或间接损失，我们不承担任何责任。
