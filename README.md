@@ -51,6 +51,16 @@
 如果不太明白md的排版，可以吧翻译好的内容发送给我，我代为排版并提交
 如有其它问题，欢迎发送issue，谢谢~
 
+## 捐赠鼓励
+
+**捐赠1毛,鼓励作者！**
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/wechat.PNG"  alt="微信捐赠" height="320"width="320" title="微信捐赠"/>
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/alipay.PNG"  alt="支付宝捐赠" title="支付宝捐赠"  height="320"width="320"/>
+ </div>
+
+
 ## 开源协议
 本项目基于MIT协议开源。
 
