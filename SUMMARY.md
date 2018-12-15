@@ -3,7 +3,7 @@
 * [Introduction](README.md)
 * [On Java 8](book/00-On-Java-8.md)
 * [前言](book/01-前言.md)
-    * [目标](book/01-前言.md#目标)
+    * [目标](book/01-前言.md#学习目标)
     * [语言设计错误](book/01-前言.md#语言设计错误)
     * [测试用例](book/01-前言.md#测试用例)
     * [名词](book/01-前言.md#名词)
