@@ -16,7 +16,7 @@
 <div STYLE="page-break-after: always;"></div>
 
 <div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="star-logo" />
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" />
 </div>
 
 ### On Java 8
@@ -43,4 +43,4 @@ Java是甲骨文公司（Oracle. Inc.）的商标。Windows 95，Windows NT，Wi
 故所有布局和格式设计旨在优化您在各种电子书阅读平台和系统上的观看体验。
 封面由Daniel Will-Harris设计，[www.Will-Harris.com](www.Will-Harris.com)
 
-<div STYLE="page-break-after: always;"></div>
+<div style="page-break-after: always;"></div>
