@@ -16,7 +16,7 @@
 <div STYLE="page-break-after: always;"></div>
 
 <div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/1544422037513.png" alt="star-logo" />
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="star-logo" />
 </div>
 
 ### On Java 8
