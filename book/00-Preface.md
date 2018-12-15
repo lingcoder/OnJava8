@@ -1,5 +1,5 @@
 <div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="star-logo" />
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" />
 </div>
 
 # 前言
@@ -10,7 +10,7 @@
 
 与几年前我们依赖印刷媒体相比，像YouTube，博客和StackOverflow这样的网站让寻找答案变得非常容易。请将这些与坚持不懈的努力相结合。你可以将本书作为你的编程入门书籍。同样她也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中,我都非常感谢《Thinking in Java》这本书给我带来的所有荣誉。事实证明，这些荣誉对我现在的[Reinventing Business](http://www.reinventing-business.com)项目中和加强外界与公司的联系是非常宝贵的。最后,写这本书的原因之一是支持我[Reinventing Business](http://www.reinventing-business.com)重塑，似乎下一个合乎逻辑的步骤是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望这本书可以成为该项目的一种众筹。
 
-![level_2_title.png](../images/level_2_title.png)
+![level_2_title](../images/level_2_title.png)
 
 ## 教学目标
 
