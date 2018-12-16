@@ -51,7 +51,7 @@
 **ISBN 978-0-9818725-2-0**
 
 
-**原书可在该网站购买  [www.OnJava8.com](www.OnJava8.com)** 
+**原书可在该网站购买  [www.OnJava8.com](http://www.OnJava8.com)** 
 
 
 </center>
@@ -64,6 +64,6 @@ Java是甲骨文公司（Oracle. Inc.）的商标。Windows 95，Windows NT，Wi
 
 这本书是作为平板电脑和计算机的电子书而创建的，而非传统纸质书籍。 
 故所有布局和格式设计旨在优化您在各种电子书阅读平台和系统上的观看体验。
-封面由Daniel Will-Harris设计，[www.Will-Harris.com](www.Will-Harris.com)
+封面由Daniel Will-Harris设计，[www.Will-Harris.com](http://www.Will-Harris.com)
 
 <div style="page-break-after: always;"></div>

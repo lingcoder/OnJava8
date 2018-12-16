@@ -85,7 +85,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 
 ## 关于Andriod程序员
 
-这本书基于 Java 8版本。如果你是Andriod程序员，请务必学习 Java 5。在《On Java 8》出版的时候，我的另一本基于 Java 5的著作 Thinking in Java 4th Edition（《Java编程思想》第四版）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于Andriod编程的资源。
+这本书基于 Java 8版本。如果你是vAndriodv程序员，请务必学习 Java 5。在《On Java 8》出版的时候，我的另一本基于 Java 5的著作 Thinking in Java 4th Edition（《Java编程思想》第四版）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于 Andriod 编程的资源。
 
 
 <div align="left" style="">
@@ -120,7 +120,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 
 ## 封面设计
 
-《On Java 8》的封面通过W.P.A.（Works Progress Administration 1935年至1943年美国大萧条期间的一个巨大项目，它使数百万失业人员重新就业）的马赛克创作的（WPA，这是）。它还让我想起了绿野仙踪（The Wizard of Oz）系列丛书中的插图。 我的好朋友、设计师丹尼尔威尔哈里斯（[www.will-harris.com](http://www.will-harris.com)）和我都喜欢这个形象。
+《On Java 8》的封面通过 W.P.A.（Works Progress Administration 1935年至1943年美国大萧条期间的一个巨大项目，它使数百万失业人员重新就业）的马赛克创作的（WPA，这是）。它还让我想起了绿野仙踪（The Wizard of Oz）系列丛书中的插图。 我的好朋友、设计师丹尼尔威尔哈里斯（[www.will-harris.com](http://www.will-harris.com)）和我都喜欢这个形象。
 
 
 <div align="left" style="">
