@@ -87,7 +87,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 
 ## 关于Andriod程序员
 
-这本书基于 Java 8版本。如果你是vAndriodv程序员，请务必学习 Java 5。在《On Java 8》出版的时候，我的另一本基于 Java 5的著作 Thinking in Java 4th Edition（《Java编程思想》第四版）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于 Andriod 编程的资源。
+这本书基于 Java 8版本。如果你是 Andriod 程序员，请务必学习 Java 5。在《On Java 8》出版的时候，我的另一本基于 Java 5的著作 Thinking in Java 4th Edition（《Java编程思想》第四版）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于 Andriod 编程的资源。
 
 
 <div align="left" style="">
