@@ -10,7 +10,7 @@
 	* [电子版权声明](book/00-Preface.md#电子版权声明) 
 	* [版本说明](book/00-Preface.md#版本说明) 
     * [封面设计](book/00-Preface.md#封面设计) 
-	* [鸣谢](book/00-Preface.md#鸣谢) 
+	* [感谢的人](book/00-Preface.md#感谢的人) 
 	* [其他](book/00-Preface.md#其他) 
 * [说明](book/00-Introduction.md) 
 	* [前提条件](book/00-Introduction.md#前提条件) 

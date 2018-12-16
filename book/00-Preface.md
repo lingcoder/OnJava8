@@ -5,11 +5,11 @@
 
 # 前言
 
-本书基于 Java 8版本来教授目前最惯用的Java编程形式。在此之前，我的另一本Java书籍《Thinking in Java》第4版（Java编程思想 Prentice Hall 2006）对于 Java 5的编程依然有指导意义。Java 5是用于Android编程的语言版本。
+本书基于 Java 8版本来教授目前最惯用的Java编程形式。在此之前，我的另一本Java书籍Thinking in Java 第4版（《Java编程思想》 Prentice Hall 2006）对于 Java 5的编程依然有指导意义。Java 5是用于Android编程的语言版本。
 
-随着Java 8的出现，这门语言在许多地方发生了翻天覆地的变化。新的Java代码在使用和实现上与以往不尽相同。这也是为什么时隔两年后我创作了这本新书。《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming)等网站上补充必要的前置知识。同时，[OnJava8.com](www.OnJava8.com)上也有免费的《Thinking in C》专题知识。
+随着Java 8的出现，这门语言在许多地方发生了翻天覆地的变化。新的Java代码在使用和实现上与以往不尽相同。这也是为什么时隔两年后我创作了这本新书。《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](http://Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming)等网站上补充必要的前置知识。同时，[OnJava8.com](http://www.OnJava8.com)上也有免费的 Thinking in C（《C编程思想》）专题知识。
 
-与几年前我们依赖印刷媒体相比，像 YouTube，博客和 StackOverflow 这样的网站让寻找答案变得非常容易。请将这些与坚持不懈的努力相结合。你可以将本书作为你的编程入门书籍。同样她也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中,我都非常感谢《Thinking in Java》这本书给我带来的所有荣誉。事实证明，这些荣誉对我现在的[Reinventing Business](http://www.reinventing-business.com)项目中和加强外界与公司的联系是非常宝贵的。最后,写这本书的原因之一是支持我[Reinventing Business](http://www.reinventing-business.com)重塑，似乎下一个合乎逻辑的步骤是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望这本书可以成为该项目的一种众筹。
+与几年前我们依赖印刷媒体相比，像 YouTube，博客和 StackOverflow 这样的网站让寻找答案变得非常容易。请将这些与坚持不懈的努力相结合。你可以将本书作为你的编程入门书籍。同样她也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中,我都非常感谢 Thinking in Java 这本书给我带来的所有荣誉。事实证明，这些荣誉对我现在的[Reinventing Business](http://www.reinventing-business.com)项目中和加强外界与公司的联系是非常宝贵的。最后,写这本书的原因之一是支持我[Reinventing Business](http://www.reinventing-business.com)重塑，似乎下一个合乎逻辑的步骤是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望这本书可以成为该项目的一种众筹。
 
 
 <div align="left">
@@ -85,7 +85,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 
 ## 关于Andriod程序员
 
-这本书基于 Java 8版本。如果你是Andriod程序员，请务必学习 Java 5。在《On Java 8》出版的时候，我的另一本基于 Java 5的著作《Java编程思想》第四版（Thinking in Java 4th Edition）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于Andriod编程的资源。
+这本书基于 Java 8版本。如果你是Andriod程序员，请务必学习 Java 5。在《On Java 8》出版的时候，我的另一本基于 Java 5的著作 Thinking in Java 4th Edition（《Java编程思想》第四版）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于Andriod编程的资源。
 
 
 <div align="left" style="">
@@ -120,22 +120,34 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 
 ## 封面设计
 
-《On Java 8》的封面通过W.P.A.（Works Progress Administration 1935年至1943年美国大萧条期间的一个巨大项目，它使数百万失业人员重新就业）的马赛克创作的（WPA，这是）。它还让我想起了绿野仙踪（The Wizard of Oz）系列丛书中的插图。 我的好朋友、设计师丹尼尔威尔哈里斯（[www.will-harris.com](htt://www.will-harris.com)）和我都喜欢这个形象。
+《On Java 8》的封面通过W.P.A.（Works Progress Administration 1935年至1943年美国大萧条期间的一个巨大项目，它使数百万失业人员重新就业）的马赛克创作的（WPA，这是）。它还让我想起了绿野仙踪（The Wizard of Oz）系列丛书中的插图。 我的好朋友、设计师丹尼尔威尔哈里斯（[www.will-harris.com](http://www.will-harris.com)）和我都喜欢这个形象。
 
 
 <div align="left" style="">
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
 </div>
 
-## 封面设计
+## 感谢的人
+
+感谢 Domain-Driven Design（《领域驱动设计》 ）的作者 Eric Evans 建议书名，以及其他新闻组校对帮助。
+
+感谢 James Ward 为我开始使用 Gradle 工具构建这本书，以及他多年来的帮助和友谊。
+
+感谢 Ben Muschko 构建文件的抛光工作，还有感谢 Hans Dockter 给 Ben 这个时间。
+
+感谢 Jeremy Cerise 和 Bill Frasure 来到开发商务虚会预订，并随后提供了宝贵的帮助。
+
+感谢所有花时间和精力来Crested Butte, Colorado（科罗拉多州克雷斯特德比特）镇参加我的研讨会，开发商务虚会和其他活动的人！你们的贡献可能没被轻易看到，但它非常重要！
 
 
 <div align="left" style="">
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
 </div>
 
-## 封面设计
+## 奉献
 
+> 谨以此书献给我敬爱的父亲 E. Wayne Eckel。
+> 1924年4月1日至2016年11月23日
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
