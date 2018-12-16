@@ -92,7 +92,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
 </div>
 
-## 电子版权申明
+## 电子版权声明
 
 《On Java 8》仅提供电子版，并且仅通过[www.OnJava8.com](http://www.OnJava8.com)提供。任何未经 <mindviewinc@gmail.com> 授权的其他来源或流传送机构都是非法的。本作品受版权保护！未经许可，请勿通过以任何方式分享或发布。您可以使用这些示例进行教学，只要不对本书非法重新出版。有关完整详细信息，请参阅示例分发中的Copyright.txt文件。对于视觉障碍者，电子版本有可搜索性，字体大小调整或文本到语音等诸多好处。
 
