@@ -78,21 +78,14 @@
 
 Java的普及性对于其受欢迎程度有重要意义。学习Java会让你更容易找到工作。相关的培训材料，课程和其他可用的学习资源也很多。对于企业来说，招聘Java程序员也相对容易。如果你不喜欢Java语言，那么最好不要拿他当作你谋生的工具，因为这种生活体验并不好。作为一家公司，在技术选型前一定不要单单只考虑Java程序员好招。每种语言都有其适用的范围，有可能你们的业务更适用于另一种编程语言来达到事半功倍的效果。如果你真的喜欢Java，那么欢迎你。希望这本书能丰富你的编程经验！
 
+
 <div align="left">
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
 </div>
 
 ## 关于Andriod程序员
 
-这本书基于Java 8版本。如果你是Andriod程序员，请务必学习Java 5。在《On Java 8》出版的时候，我的另一本基于Java 5的著作《Java编程思想》第四版（Thinking in Java 4th Edition）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了
-
-I’ve made this book as “Java 8 as possible,” so if you want to program
-for Android devices, you must study Java 5, which I cover in Thinking
-in Java, 4th edition. At the time of publishing of On Java 8, Thinking in Java,
-4th Edition has become a free download, available through
-www.OnJava8.com. Thinking in Java, 4th Edition is available in print from
-Prentice-Hall. In addition, there are many other resources that
-specialize in Android programmin
+这本书基于Java 8版本。如果你是Andriod程序员，请务必学习Java 5。在《On Java 8》出版的时候，我的另一本基于Java 5的著作《Java编程思想》第四版（Thinking in Java 4th Edition）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于Andriod编程的资源。
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
