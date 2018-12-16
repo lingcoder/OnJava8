@@ -5,7 +5,9 @@
 
 # 前言
 
-本书基于 Java 8版本来教授目前最惯用的Java编程形式。在此之前，我的另一本Java书籍Thinking in Java 第4版（《Java编程思想》 Prentice Hall 2006）对于 Java 5的编程依然有指导意义。Java 5是用于Android编程的语言版本。
+> 本书基于 Java 8版本来教授目前最惯用的Java编码形式。
+
+在此之前，我的另一本Java书籍Thinking in Java 第4版（《Java编程思想》 Prentice Hall 2006）对于 Java 5的编程依然有指导意义。Java 5是用于Android编程的语言版本。
 
 随着Java 8的出现，这门语言在许多地方发生了翻天覆地的变化。新的Java代码在使用和实现上与以往不尽相同。这也是为什么时隔两年后我创作了这本新书。《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](http://Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming)等网站上补充必要的前置知识。同时，[OnJava8.com](http://www.OnJava8.com)上也有免费的 Thinking in C（《C编程思想》）专题知识。
 
