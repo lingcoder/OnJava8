@@ -1,5 +1,6 @@
+
 <div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" />
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" style="float:left;padding: 0px 20px" />
 </div>
 
 # 前言
@@ -9,6 +10,7 @@
 随着Java 8的出现，这门语言在许多地方发生了翻天覆地的变化。新的Java代码在使用和实现上与以往不尽相同。这也是为什么时隔两年后我创作了这本新书。《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming)等网站上补充必要的前置知识。同时，[OnJava8.com](www.OnJava8.com)上也有免费的《Thinking in C》专题知识。
 
 与几年前我们依赖印刷媒体相比，像YouTube，博客和StackOverflow这样的网站让寻找答案变得非常容易。请将这些与坚持不懈的努力相结合。你可以将本书作为你的编程入门书籍。同样她也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中,我都非常感谢《Thinking in Java》这本书给我带来的所有荣誉。事实证明，这些荣誉对我现在的[Reinventing Business](http://www.reinventing-business.com)项目中和加强外界与公司的联系是非常宝贵的。最后,写这本书的原因之一是支持我[Reinventing Business](http://www.reinventing-business.com)重塑，似乎下一个合乎逻辑的步骤是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望这本书可以成为该项目的一种众筹。
+
 
 <div align="left">
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
@@ -29,6 +31,7 @@
 
 4. 希望本书能为你打下坚实的基础，方便你将来学习更难的课程和书籍。
 
+
 <div align="left">
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
 </div>
@@ -43,7 +46,7 @@
 
 1. 最初，会有许多错误“阵营”的人成为了牺牲品。最终，时隔多年，大家都意识到这是个设计上的错误，然后错误就这样成为了Java历史的一部分。
 
-2.更重要的是，新程序员并没有经历过“他们”为什么要采用这种实现方式的斗争过程。特别是那些隐隐约约感觉不对却依然说服自己“我必须要这么做”或者“我只是没学明白”从而继续错下去的人。更糟糕的是，教授这些编程知识的老师们没能深入的去研究这里是否有设计上的错误，而是继续错误的解读。通过了解语言设计上的错误，能让开发者们更好的理解和意识到错误的本质，从而更快地进步。
+2. 更重要的是，新程序员并没有经历过“他们”为什么要采用这种实现方式的斗争过程。特别是那些隐隐约约感觉不对却依然说服自己“我必须要这么做”或者“我只是没学明白”从而继续错下去的人。更糟糕的是，教授这些编程知识的老师们没能深入的去研究这里是否有设计上的错误，而是继续错误的解读。通过了解语言设计上的错误，能让开发者们更好的理解和意识到错误的本质，从而更快地进步。
 
 理解编程语言的设计错误至至关重要，甚至影响程序员的开发效率。一些公司在开发过程中会避免使用语言的某些功能特性。表面上看这些“功能特性”很高大上，但是弄不好却可能出现意料之外的错误，影响整个开发进程。
 
@@ -57,6 +60,7 @@
 
 最后，本书所著时似乎也很不错，因为Java 8引入的新功能已经强烈的影响了今后Java的编码方式。截止我在写这本书时，Java 9似乎更专注于对语言底层的基础结构功能的重要更新，但是这些并不会影响本书所关注的编码类型。话说回来，得益于电子书出版形式的便捷，如果我发现本书有需要更新或添加的内容，我可以很快将新版本推送给现有读者。
 
+
 <div align="left">
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
 </div>
@@ -64,6 +68,7 @@
 ## 测试用例
 
 本书中的测试用例基于Java 8和Grade编译构建，并且这些测试用例都保存在[这个自由访问的GitHub的仓库](https://github.com/BruceEckel/OnJava8-Examples) 中。我们需要内置的测试框架在每次构建系统时运行，否则你将无法保证自己代码的可靠性。为了在本书中实现这一点，我创建了一个测试系统来显示和验证大多数示例的输出结果。这个输结果我会附加在示例结尾的代码块中。有时仅显示必要的那几行或者首尾行。利用这种方式来改善读者的阅读和学习体验，同时也提供了一种验证示例正确性的方法。
+
 
 <div align="left">
 <img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
@@ -89,6 +94,7 @@ www.OnJava8.com. Thinking in Java, 4th Edition is available in print from
 Prentice-Hall. In addition, there are many other resources that
 specialize in Android programmin
 
-
+<!-- 分页 -->
+<div style="page-break-after: always;"></div>
 
 
