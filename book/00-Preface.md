@@ -114,6 +114,28 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 本书的提取，编译和测试代码示例的构建过程都是自动化的。所有自动化操作都是通过我在 Python 3中编写的程序来实现的。
 
 
+<div align="left" style="">
+<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
+</div>
+
+## 封面设计
+
+《On Java 8》的封面通过W.P.A.（Works Progress Administration 1935年至1943年美国大萧条期间的一个巨大项目，它使数百万失业人员重新就业）的马赛克创作的（WPA，这是）。它还让我想起了绿野仙踪（The Wizard of Oz）系列丛书中的插图。 我的好朋友、设计师丹尼尔威尔哈里斯（[www.will-harris.com](htt://www.will-harris.com)）和我都喜欢这个形象。
+
+
+<div align="left" style="">
+<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
+</div>
+
+## 封面设计
+
+
+<div align="left" style="">
+<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
+</div>
+
+## 封面设计
+
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>

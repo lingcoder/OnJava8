@@ -9,6 +9,7 @@
 	* [关于Andriod程序员](book/00-Preface.md#关于Andriod程序员) 
 	* [电子版权声明](book/00-Preface.md#电子版权声明) 
 	* [版本说明](book/00-Preface.md#版本说明) 
+    * [封面设计](book/00-Preface.md#封面设计) 
 	* [鸣谢](book/00-Preface.md#鸣谢) 
 	* [其他](book/00-Preface.md#其他) 
 * [说明](book/00-Introduction.md) 
