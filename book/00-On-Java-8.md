@@ -10,33 +10,49 @@
 <p style="font-size: 2em;font-weight: bold;text-align: center">Bruce Eckel</p>
 
 
+
 **MindView LLC**
+
 
 **2017**
 
+
 *©MindView LLC 版权所有*
+
 
 </center>
 
+
 <div style="page-break-after: always;"></div>
+
+
+
 
 <div align="left">
 <img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" style="float:left;padding: 0px 20px" />
 </div>
 
+
 # On Java 8
+
 
 <center>
 
+
 **版权©2017**
+
 
 **作者 Bruce Eckel, President, MindView LLC.**
 
+
 **版本号：7**
+
 
 **ISBN 978-0-9818725-2-0**
 
+
 **原书可在该网站购买  [www.OnJava8.com](www.OnJava8.com)** 
+
 
 </center>
 
