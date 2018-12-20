@@ -6,18 +6,20 @@
 
 <center style="165px 0px 0px">
 <p style="font-size: 6em;font-weight: bold;text-align: center"> On Java 8 </p>
+</center>
 
+<center style="165px 0px 0px">
 <p style="font-size: 2em;font-weight: bold;text-align: center">Bruce Eckel</p>
 
+</center>
+
+<center> MindView LLC </center>
 
 
-**MindView LLC**
+<center>2017</center>
 
 
-**2017**
-
-
-*©MindView LLC 版权所有*
+<center>©MindView LLC 版权所有*</center>
 
 
 
@@ -47,7 +49,6 @@
 **原书可在该网站购买  [www.OnJava8.com](http://www.OnJava8.com)** 
 
 
-</center>
 
 
 本书出版自美国，版权所有，翻版必究。未经授权不得非法存储在检索系统中，或以电子，机械，影印，录制任何形式传输等。制造商和销售商使用商标用来区分其产品标识。如果这些名称出现在这本书中，并且出版商知道商标要求，则这些名称已经用大写字母或所有大写字母打印。
