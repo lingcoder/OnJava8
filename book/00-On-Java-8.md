@@ -19,7 +19,7 @@
 <center>2017</center>
 
 
-<center>©MindView LLC 版权所有*</center>
+<center>©MindView LLC 版权所有</center>
 
 
 
