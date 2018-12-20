@@ -28,15 +28,8 @@
 
 
 
-<div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" style="float:left;padding: 0px 20px" />
-</div>
-
-
 # On Java 8
 
-
-<center>
 
 
 **版权©2017**

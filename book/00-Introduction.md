@@ -1,8 +1,5 @@
-<div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" style="float:left;padding: 0px 20px" />
-</div>
 
-# 说明
+# 简介
 
 > “我的语言极限，即是我的世界的极限。” ——路德维希·维特根斯坦
 
@@ -21,9 +18,7 @@
 虽然Visual BASIC（VB）绑定在BASIC上，但BASIC实际上并不是一种可扩展的语言。在VB上堆积的所有扩展造成大量无法维护的语法。Perl 向后兼容 awk，sed，grep 以及其它要替换的 Unix 工具，因此它经常被指责生成“只写代码”（也就是说，你看不懂自己的代码）。另一方面，C ++，VB，Perl 和其他语言（如 SmallTalk）的一些设计工作集中在复杂性问题上，因此在解决某些类型的问题方面非常成功。通信革命使我们所有人更容易地相互沟通：一对一，团体和行星。据说下一次革命会形成一种新全球性的思想，这种思想源于足量的人之间的相互联系。Java 可能会也可能不会成为这场革命的工具之一，但至少这种可能性让我觉得我现在正在做的传道授业是一件有意义的事情。
 
 
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
+
 
 ## 先决条件
 
@@ -32,13 +27,6 @@
 
 
 
-
-
-
-
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## JDK文档
 
@@ -50,10 +38,6 @@
 
 
 
-
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## C编程思想
 
@@ -68,10 +52,6 @@
 
 
 
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
-
 ## 源码下载
 
 
@@ -79,12 +59,6 @@
 
 
 
-
-
-
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## 编码规范
 
@@ -96,10 +70,6 @@
 
 
 
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
-
 ## BUG提交
 
 
@@ -108,11 +78,6 @@
 
 
 
-
-
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## 邮箱订阅
 
@@ -124,9 +89,6 @@
 
 
 
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## Java图形接口
 

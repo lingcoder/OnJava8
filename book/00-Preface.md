@@ -1,7 +1,4 @@
 
-<div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/level_1_title.png" alt="level_1_title" style="float:left;padding: 0px 20px" />
-</div>
 
 # 前言
 
@@ -13,10 +10,6 @@
 
 与几年前我们依赖印刷媒体相比，像 YouTube，博客和 StackOverflow 这样的网站让寻找答案变得非常容易。请将这些与坚持不懈的努力相结合。你可以将本书作为你的编程入门书籍。同样她也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中,我都非常感谢 Thinking in Java 这本书给我带来的所有荣誉。事实证明，这些荣誉对我现在的[Reinventing Business](http://www.reinventing-business.com)项目中和加强外界与公司的联系是非常宝贵的。最后,写这本书的原因之一是支持我[Reinventing Business](http://www.reinventing-business.com)重塑，似乎下一个合乎逻辑的步骤是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望这本书可以成为该项目的一种众筹。
 
-
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## 教学目标
 
@@ -34,9 +27,6 @@
 4. 希望本书能为你打下坚实的基础，方便你将来学习更难的课程和书籍。
 
 
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## 语言设计错误
 
@@ -63,36 +53,25 @@
 最后，本书所著时似乎也很不错，因为 Java 8引入的新功能已经强烈的影响了今后Java的编码方式。截止我在写这本书时，Java 9似乎更专注于对语言底层的基础结构功能的重要更新，但是这些并不会影响本书所关注的编码类型。话说回来，得益于电子书出版形式的便捷，如果我发现本书有需要更新或添加的内容，我可以很快将新版本推送给现有读者。
 
 
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## 测试用例
 
 本书中的测试用例基于 Java 8和Grade编译构建，并且这些测试用例都保存在[这个自由访问的GitHub的仓库](https://github.com/BruceEckel/OnJava8-Examples) 中。我们需要内置的测试框架在每次构建系统时运行，否则你将无法保证自己代码的可靠性。为了在本书中实现这一点，我创建了一个测试系统来显示和验证大多数示例的输出结果。这个输结果我会附加在示例结尾的代码块中。有时仅显示必要的那几行或者首尾行。利用这种方式来改善读者的阅读和学习体验，同时也提供了一种验证示例正确性的方法。
 
 
-<div align="left">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## 普及性
 
 Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你更容易找到工作。相关的培训材料，课程和其他可用的学习资源也很多。对于企业来说，招聘 Java 程序员也相对容易。如果你不喜欢 Java 语言，那么最好不要拿他当作你谋生的工具，因为这种生活体验并不好。作为一家公司，在技术选型前一定不要单单只考虑 Java 程序员好招。每种语言都有其适用的范围，有可能你们的业务更适用于另一种编程语言来达到事半功倍的效果。如果你真的喜欢Java，那么欢迎你。希望这本书能丰富你的编程经验！
 
 
-<div align="left" style="">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
 
 ## 关于Andriod程序员
 
 这本书基于 Java 8版本。如果你是 Andriod 程序员，请务必学习 Java 5。在《On Java 8》出版的时候，我的另一本基于 Java 5的著作 Thinking in Java 4th Edition（《Java编程思想》第四版）已经可以在[www.OnJava8.com](http://www.OnJava8.com)上免费下载了。此外，还有许多其他专用于 Andriod 编程的资源。
 
 
-<div align="left" style="">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
+
 
 ## 电子版权声明
 
@@ -103,9 +82,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 **注意**：在撰写本文时，通过 Google Play 图书网络浏览器应用阅读图书虽然可以忍受，但体验还是有点差强人意，我强烈推荐读者们使用平板电脑来阅读。
 
 
-<div align="left" style="">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
+
 
 ## 版本说明
 
@@ -116,18 +93,14 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 本书的提取，编译和测试代码示例的构建过程都是自动化的。所有自动化操作都是通过我在 Python 3中编写的程序来实现的。
 
 
-<div align="left" style="">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
+
 
 ## 封面设计
 
 《On Java 8》的封面通过 W.P.A.（Works Progress Administration 1935年至1943年美国大萧条期间的一个巨大项目，它使数百万失业人员重新就业）的马赛克创作的（WPA，这是）。它还让我想起了绿野仙踪（The Wizard of Oz）系列丛书中的插图。 我的好朋友、设计师丹尼尔威尔哈里斯（[www.will-harris.com](http://www.will-harris.com)）和我都喜欢这个形象。
 
 
-<div align="left" style="">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
+
 
 ## 感谢的人
 
@@ -142,9 +115,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 感谢所有花时间和精力来Crested Butte, Colorado（科罗拉多州克雷斯特德比特）镇参加我的研讨会，开发商务虚会和其他活动的人！你们的贡献可能没被轻易看到，但它非常重要！
 
 
-<div align="left" style="">
-<img src="../images/level_2_title.png" height="30px" style="padding: 0px 20px;float:left">
-</div>
+
 
 ## 奉献
 

@@ -13,7 +13,7 @@
     * [封面设计](book/00-Preface.md#封面设计)
     * [感谢的人](book/00-Preface.md#感谢的人)
     * [其他](book/00-Preface.md#其他)
-* [说明](book/00-Introduction.md)
+* [简介](book/00-Introduction.md)
     * [先决条件](book/00-Introduction.md#先决条件)
     * [JDK文档](book/00-Introduction.md#JDK文档)
     * [C编程思想](book/00-Introduction.md#C编程思想)
