@@ -74,22 +74,12 @@
 
 ## BUG提交
 
-
-
-
-
-
+本书经过多重校订，但还是难免有所遗漏被新读者发现。如果您在正文或示例中发现任何错误的内容，请在[此处](https://github.com/BruceEckel/OnJava8-examples/issues)提交错误以及建议更正，作者感激不尽。
 
 
 ## 邮箱订阅
 
-
-
-
-
-
-
-
+您可以在[www.OnJava8.com上](http://www.OnJava8.com)订阅邮件。邮件不含广告并尽量提供干货。
 
 
 ## Java图形接口
