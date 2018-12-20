@@ -20,7 +20,7 @@
 *©MindView LLC 版权所有*
 
 
-</center>
+
 
 
 <div style="page-break-after: always;"></div>
