@@ -21,5 +21,5 @@
     * [编码规范](book/00-Introduction.md#编码规范)
     * [BUG提交](book/00-Introduction.md#BUG提交)
     * [邮箱订阅](book/00-Introduction.md#邮箱订阅)
-    * [Java图形接口](book/00-Introduction.md#Java图形接口)
+    * [Java图形界面](book/00-Introduction.md#Java图形界面)
 
