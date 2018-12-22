@@ -1,9 +1,7 @@
-```
-## Term
-Definition for this term
+ ## 词汇表
 
-## Another term
-With it's definition, this can contain bold text
-and all other kinds of inline markup ...
-```
+
+### OOP (Object-oriented programming )
+
+    面向对象编程，一种编程思维模式和编程架构
 
