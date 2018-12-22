@@ -2,7 +2,7 @@
 
 ## 关于*Think in Java*和*On Java 8*
 
- * 前者就是被奉为JAVA界的圣经《Java 编程思想》（*Think in Java 4th,2006*），基于 **Java 5**版本；
+ * 前者被奉为JAVA界的圣经,中文译《Java 编程思想》（*Think in Java 4th,2006*），基于 **Java 5**版本；
 
 * 后者则是事实上的《Java 编程思想》第五版，原书出版于2016年，基于 **Java 8**版本。
 
