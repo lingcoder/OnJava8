@@ -1,4 +1,4 @@
-# 《On Java 8》中文翻译
+# 《On Java 8》中文版
 
 ## 关于*Think in Java*和*On Java 8*
 
