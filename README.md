@@ -2,9 +2,11 @@
 
 ## 关于*Think in Java*和*On Java 8*
 
- * 前者被奉为JAVA界的圣经,中文译《Java 编程思想》（*Think in Java 4th,2006*），基于 **Java 5**版本；
+ * 作者为同一人 [美] [Bruce Eckel](https://github.com/BruceEckel)
 
-* 后者则是事实上的《Java 编程思想》第五版，原书出版于2016年，基于 **Java 8**版本。
+ * `Think in Java`被奉为JAVA界的圣经,中文译《Java 编程思想》（*Think in Java 4th,2006*），基于 **Java 5**版本；
+
+* `On Java 8`则是事实上的《Java 编程思想》第五版（*On Java 8,2016*），基于 **Java 8**版本。
 
 
 ## 快速阅读传送门

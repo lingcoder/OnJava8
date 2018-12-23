@@ -27,7 +27,7 @@
     * [接口](book/01-What-is-an-Object.md#接口)
     * [服务](book/01-What-is-an-Object.md#服务)
     * [封装](book/01-What-is-an-Object.md#封装)
-    * [复用](book/01-What-is-an-Object.md#复用)
+    * [复用性](book/01-What-is-an-Object.md#复用性)
     * [继承](book/01-What-is-an-Object.md#继承)
     * [多态](book/01-What-is-an-Object.md#多态)
     * [单继承](book/01-What-is-an-Object.md#单继承)
