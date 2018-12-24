@@ -25,7 +25,7 @@
 * [第一章 对象的概念](book/01-What-is-an-Object.md)
     * [抽象](book/01-What-is-an-Object.md#抽象)
     * [接口](book/01-What-is-an-Object.md#接口)
-    * [服务](book/01-What-is-an-Object.md#服务)
+    * [服务提供](book/01-What-is-an-Object.md#服务提供)
     * [封装](book/01-What-is-an-Object.md#封装)
     * [复用性](book/01-What-is-an-Object.md#复用性)
     * [继承](book/01-What-is-an-Object.md#继承)
