@@ -221,11 +221,6 @@ void doSomething(Shape shape) {
 
 ## 单继承
 
- And since information about the type of an object is guaranteed
-to be in all objects, you’ll never end up with an object whose type you
-cannot determine. This is especially important with system-level
-operations, such as exception handling (a language mechanism for
-reporting errors), and to allow greater flexibility in programming.
 自从 C++ 引入以来，OOP 问题变得尤为突出。是否所有的类都应该默认从一个基类继承呢？这个答案在 Java 中是肯定的。（实际上，除 C++ 以外的其他虚拟机语言也是这样。）在 Java 中这个最终的基类的名字就是`Object`。
 
 单继承结构有很多好处。由于所有对象都有继承自一个公共接口，因此它们最终都属于同一个基本类型。另一种方案多继承（例如 C++）则是不保证所有的对象都属于一个相同的基类。这种方案的限制更少一点。从向后兼容的角度看，多继承的方案能与 C 的模型更好地配合。
