@@ -13,7 +13,7 @@
 
 - Github快速阅读：[进入目录](https://github.com/LingCoder/OnJava8/blob/master/SUMMARY.md)
 
-- Gitee快速阅读：[进入目录](https://gitee.com/lingcoder/OnJava8/blob/master/README.md)
+- Gitee快速阅读：[进入目录](https://gitee.com/lingcoder/OnJava8/blob/master/SUMMARY.md)
 
 - Gitbook完整阅读：[进入Gitbook](https://lingcoder.gitbook.io/onjava8)
 
