@@ -234,102 +234,29 @@ Java 的单继承结构有很多好处。由于所有对象都有继承自一个
 
 ## 集合
 
-In general, you don’t know how many objects you need to solve a
-particular problem, or how long they will last. You also don’t know
-how to store those objects. How can you know how much space to
-create if that information isn’t known until run time?
-The solution to most problems in object-oriented design seems
-flippant: You create another type of object. The new type of object that
-solves this particular problem holds references to other objects. You
-can also do the same thing with an array, available in most languages.
-But this new object, generally called a collection (also called a
-container, but the Java libraries use “collection” almost universally),
-will expand itself whenever necessary to accommodate everything you
-place inside it. You don’t need to know how many objects you’re going
-to hold in a collection—just create a collection object and let it take
-care of the details.
-Fortunately, a good OOP language comes with a set of collections as
-part of the package. In C++, it’s part of the Standard C++ Library and
-is often called the Standard Template Library (STL). SmallTalk has a
-very complete set of collections. Java also has numerous collections in
-its standard library. In some libraries, one or two generic collections is
-considered good enough for all needs, and in others (Java, for
-example) the library has different types of collections for different
-needs: several different kinds of List classes (to hold sequences),
-Maps (also known as associative arrays, to associate objects with
-other objects), Sets (to hold one of each type of object), and more
-components such as queues, trees, stacks, etc.
-From a design standpoint, all you really want is a collection you can
-manipulate to solve your problem. If a single type of collection
-satisfied all of your needs, we wouldn’t need different kinds. There are
-two reasons you need a choice of collections:
-1. Collections provide different types of interfaces and external
-behavior. Stacks and queues are different from sets and lists. One
-of these might provide a more flexible solution to your problem
-than another.
-2. Different implementations have different efficiencies for certain
-operations. For example, there are two basic types of List:
-ArrayList and LinkedList. Both are simple sequences that
-can have identical interfaces and external behaviors. But some
-operations have significantly different costs. Randomly accessing
-elements in an ArrayList is a constant-time operation; it takes
-the same amount of time regardless of the element you select.
-However, in a LinkedList it is expensive to move through the
-list to randomly select an element, and it takes longer to find an
-element that is farther down the list. On the other hand, to insert
-an element in the middle of a sequence, it’s cheaper in a
-LinkedList than in an ArrayList. These and other
-operations have different efficiencies depending on the underlying
-structure of the sequence. You might start building your program
-with a LinkedList and, when tuning for performance, change
-to an ArrayList. Because of the abstraction via the interface
-List, you can change from one to the other with minimal impact
-on your code.
-Parameterized Types
-(Generics)
-Before Java 5, collections held the one universal type in Java:
-Object. The singly rooted hierarchy means everything is an
-Object, so a collection that holds Objects can hold anything. 6 This made
-collections easy to reuse.
-To use such a collection, you add object references to it and later ask
-for them back. But, since the collection holds only Objects, when
-you add an object reference into the collection it is upcast to Object,
-thus losing its character. When fetching it back, you get an Object
-reference, and not a reference to the type you put in. How do you turn
-it back into something with the specific type of the object you put into
-the collection?
-Here, the cast is used again, but this time you’re not casting up the
-inheritance hierarchy to a more general type. Instead, you cast down
-the hierarchy to a more specific type, so this manner of casting is
-called downcasting. With upcasting, you know that a Circle is a
-type of Shape so it’s safe to upcast, but you don’t know that an
-Object is necessarily a Circle or a Shape so it’s not safe to
-downcast unless you determine extra type information about that
-object.
-It’s not completely dangerous because if you downcast to the wrong
-type you’ll get a runtime error called an exception, described shortly.
-When you fetch Object references from a collection, however, you
-need some way to remember exactly what they are in order to perform
-a proper downcast.
-Downcasting and the associated runtime checks require extra time for
-the running program and extra effort from the programmer. Wouldn’t
-it make sense to somehow create the collection so it knows the types it
-holds, eliminating the need for the downcast and a possible mistake?
-The solution is called a parameterized type mechanism. A
-parameterized type is a class that the compiler can automatically
-customize to work with particular types. For example, with a
-parameterized collection, the compiler can customize that collection so
-it accepts only Shapes and fetches only Shapes.
-Java 5 added parameterized types, called generics, which is a major
-feature. You’ll recognize generics by the angle brackets with types
-inside; for example, you can create an ArrayList to hold Shape
-like this:
-ArrayList<Shape> shapes = new ArrayList<>();
-There have also been changes to many of the standard library
-components to take advantage of generics. You will see that generics
-have an impact on much of the code in this book.
+通常，我们并不知道解决某个具体问题需要的对象数量,持续时间，以及对象的存储方式。那么我们如何知悉程序在创建时需要分配的内存空间呢？
 
-通常，您不知道需要多少对象来解决特定问题，或者它们将持续多长时间。您也不知道如何存储那些对象。如果直到运行时才知道要创建多少空间，您如何知道？在面向对象设计中，大多数问题的解决方案似乎都是轻率的：您创建了另一种类型的对象。解决此特定问题的新类型的对象包含对其他对象的引用。对于大多数语言中可用的数组，您也可以执行相同的操作。但是这个新的对象，通常称为一个集合（也称为容器），但是Java库使用的“集合”几乎是通用的，只要有必要，它就会扩展自己，以容纳你放置在它里面的所有东西。您不需要知道要在一个集合中保存多少对象——只需创建一个集合对象并让它处理细节即可。幸运的是，好的OOP语言带有一组集合作为包的一部分。在C++中，它是标准C++库的一部分，通常被称为标准模板库（STL）。SmallTalk有一套非常完整的集合。Java在标准库中也有大量的集合。在一些库中，一个或两个泛型集合被认为是对所有需求都足够好的，而在其他（Java）中，库对于不同的需求有不同类型的集合：几种不同类型的列表类（保存序列）、映射（也称为关联数组、关联对象与其他对象）、集合（保持）。每种类型的对象之一）以及更多组件，如队列、树、堆栈等。从设计的角度来看，您真正想要的是一个集合，您可以对其进行操作来解决问题。如果单一类型的集合满足您的所有需求，那么我们就不需要不同种类的集合。您需要选择集合有两个原因：1.集合提供不同类型的接口和外部行为。堆栈和队列与集合和列表不同。其中之一可以为您的问题提供更灵活的解决方案。2。对于某些操作，不同的实现具有不同的效率。例如，有两种基本的List类型：ArrayList和LinkedList。两者都是可以具有相同接口和外部行为的简单序列。但是一些运营的成本却大不相同。随机访问ArrayList中的元素是一个常量时间操作；无论选择哪个元素，它都花费相同的时间。然而，在LinkedList中，为了随机选择一个元素，在列表中移动是很昂贵的，并且需要更长的时间才能找到在列表下面更远的元素。另一方面，要在序列的中间插入元素，在LinkedList中要比在ArrayList中便宜。根据序列的底层结构，这些操作和其他操作具有不同的效率。您可能开始使用LinkedList构建程序，在优化性能时，更改为ArrayList。由于通过接口List进行抽象，因此可以在对代码影响最小的情况下从一个更改到另一个。Parameterized Types（泛型）在Java 5之前，在Java:Objor中集合了一个通用类型。单根层次结构意味着所有东西都是对象，所以保存对象的集合可以保存任何东西。这使集合易于重用。要使用这样的集合，需要向它添加对象引用，然后请求返回。但是，由于集合只保存Objects，所以在向集合中添加对象引用时，它将向上传送到Object，从而丢失其字符。当取回它时，您将获得一个对象引用，而不是对您输入的类型的引用。如何将其转换回具有放入集合中的对象的特定类型的内容？这里，再次使用强制转换，但是这次您没有将继承层次结构强制转换为更通用的类型。相反，您将层次结构向下转换为更具体的类型，因此这种转换方式称为向下转换。通过上传，您知道圆圈是一种形状，所以上传是安全的，但是您不知道对象必然是圆圈或形状，所以除非您确定关于该对象的额外类型信息，否则下传是不安全的。这并不是完全危险的，因为如果向下转换到错误的类型，您将得到一个运行时错误，称为异常，稍后将对此进行描述。但是，当您从集合中提取对象引用时，您需要一些方法来确切地记住它们是什么，以便执行适当的下调。向下转换和相关的运行时检查需要额外的时间来运行程序和程序员的额外努力。以某种方式创建集合，以便它知道它所包含的类型，从而消除对下调操作的需要和可能的错误难道不是有意义的吗？这种解决方案称为参数化类型机制。帕拉姆
+在面向对象的设计中，问题的解决方案有些千篇一律：创建一个新类型的对象来引用、容纳其他的对象。当然，我们也可以使用多数编程语言都支持的“数组”（**Array**）。在 Java 中“集合”（**Collection**）的使用率更高。（也可称之为“容器”，但“集合”这个称呼更通用。）
+
+“集合”这种类型的对象可以存储任意类型、数量的其他对象。它能根据需要自动扩容，我们不用关心过程是如何实现的。
+
+还好，一般优秀的 OOP 语言都会将“集合”作为其基础包。在 C++ 中，“集合”是其标准库的一部分。通常被称为 STL（标准模板库，*the Standard Template Library*）。SmallTalk 有一套非常完整的集合库。同样，Java 的标准库中也提供许多现成的集合类。在一些库中，一两个集合泛型就能满足我们所有的需求了。在 Java 中不同的需求对应不同种类的集合
+
+在一些库中，一个或两个泛型集合被认为是对所有需求都足够好的，而在其他（Java）中，不同类型的集合对应不同的需求：常见的有 List，常用于保存序列；Map，也称为关联数组，常用于将对象与其他对象关联）；Set，只能保存非重复的值；其他还包括如队列（*Queue*）、树（*Tree*）、堆（*Stack*）等等。从设计的角度来看，我们真正想要的是一个能够解决某个问题的集合。如果一种集合就满足所有需求，那么我们就不需要剩下的了。之所以选择集合有以下两个原因：
+
+1. 集合可以提供不同类型的接口和外部行为。堆栈、队列的应用场景和集合、列表不同，为我们解决问题提供了灵活的方案。
+
+2. 不同的集合种类对应着不同的用途。例如，List 的两种基本类型：ArrayList 和 LinkedList。虽然两者具有相同接口和外部行为，但是在某些操作中它们的效率差别很大。在 ArrayList 中随机查找元素是很高效的，而 LinkedList 随机查找效率低下。反之，在 LinkedList 中插入元素的效率要比在 ArrayList 中高。由于底层数据结构的不同，每种集合类型在执行相同的操作时会表现出效率上的差异。
+
+通过对 List 接口的抽象，我们可以很容易的将 LinkedList 改为 ArrayList。在 Java 5泛型出来之前，集合中保存的是通用类型`Object`。Java 单继承的结构意味着所有元素都基于`Object`类，所以在集合中可以保存任何类型的数据。这也使得集合易于重用。要使用这样的集合时，我们先要往集合添加元素。由于 Java 5版本前的集合只保存`Object`，当我们往集合中添加元素时，元素便向上转型成了`Object`，从而丢失自己原有的类型特性。这时我们再从对象中取出该元素时，元素的类型变成了`Object`。那么我们该怎么将其转回原先具体的类型的？这里，我们使用了强制类型转换将其转为更具体的类型。这个过程称之为对象的“向下转型”。通过“向上转型”，我们知道“圆形”也是一种“形状”，这个过程是安全的。可是我们不能从“Object”看出其就是“圆圈”或“形状”，所以除非我们能确定元素的具体类型信息，否则“向下转型”就是不安全的。也不能说这样的错误就时完全危险的，因为一旦我们转化了错误的类型，程序就会运行出错，抛出“运行时异常”（*RuntimeException*）。（后面的章节会提到） 无论如何，我们要寻找一种在取出集合元素时确定其具体类型的方法。另外，每次取出元素都要做额外的“向下转型”对程序和程序员都是一种开销。以某种方式创建集合，以确认保存元素的具体类型，减少集合元素“向下转型”中的开销和可能出现的错误难道不好吗？这种解决方案就是：参数化类型机制（*Parameterized Type Mechanism*）。
+
+参数化类型机制可以使得编译器能够自动识别某个`class`的具体类型并正确地执行. 举个例子，对集合的参数化类型机制可以让其仅接受“形状”这种类型的元素，并以“形状”类型取出元素。Java 5版本支持了参数化类型机制，称之为“泛型”（*Generic*）。泛型是 Java 5的主要特性之一。举个例子，你可以按以下方式向 ArrayList 种添加 Shape（形状）：
+
+```java
+    ArrayList<Shape> shapes = new ArrayList<>();
+```
+
+泛型的应用，让 Java 的许多标准库和组件都发生了改变。在本书的代码示例中，你也会经常看到泛型的身影。
 
 
 ## 生命周期
