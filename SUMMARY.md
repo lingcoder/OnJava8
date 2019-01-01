@@ -1,7 +1,8 @@
 # Summary
 
-* [Introduction](README.md)
-* [On Java 8](book/00-On-Java-8.md)
+
+* [译者的话](Introduction.md)
+* [封面](book/00-On-Java-8.md)
 * [前言](book/00-Preface.md)
     * [教学目标](book/00-Preface.md#教学目标)
     * [语言设计错误](book/00-Preface.md#语言设计错误)
