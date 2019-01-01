@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/lingcoder/OnJava8.svg?style=social&label=Star&)](https://github.com/lingcoder/OnJava8/stargazers)[![GitHub forks](https://img.shields.io/github/forks/lingcoder/OnJava8.svg?style=social&label=Fork&)](https://github.com/lingcoder/OnJava8/fork)
 
-本书中文版为GITHUB开源项目，网址：[https://github.com/LingCoder/OnJava8](https://github.com/LingCoder/OnJava8)
+本书在GITHUB上的开源地址：[https://github.com/LingCoder/OnJava8](https://github.com/LingCoder/OnJava8)
 
 如果您在阅读本书的过程中有发现不明白或者错误的地方，请随时到项目地址发布issue或者fork项目后发布pr帮助译者改善！不胜感激！
 
