@@ -15,43 +15,18 @@
     "readme": "Introduction.md" 
   },
   "plugins": [ 
-    "-sharing",
-	"-fontsettings",
     "splitter",
-    "expandable-chapters-small",
-    "anchors",
-    "-search",
 	"edit-link",
 	"search-pro",
-    "github",
 	"emphasize",
+	"toggle-chapters",
 	"katex",
 	"donate",
 	"mermaid-gb3",
 	"advanced-emoji",
-	"include-codeblock",
-    "github-buttons",
-    "sharing-plus",
-    "anchor-navigation-ex",
-    "favicon"
+	"include-codeblock"
   ],
   "pluginsConfig": {
-    "github": {
-      "url": "https://github.com/LingCoder/"
-    },
-    "github-buttons": {
-      "buttons": [{
-        "user": "lingcoder",
-        "repo": "OnJava8",
-        "types": [
-                "star",
-                "watch",
-                "fork"
-            ],
-        "size": "small",
-        "count": true
-      }]
-    },
 	"edit-link": {
                 "base": "https://github.com/lingcoder/OnJava8/edit/master",
                 "label": "Edit This Page"
@@ -63,32 +38,6 @@
         "button": "赏",
         "alipayText": "支付宝打赏",
         "wechatText": "微信打赏"
-    },
-    "sharing": {
-      "douban": false,
-      "facebook": false,
-      "google": false,
-      "hatenaBookmark": false,
-      "instapaper": false,
-      "line": false,
-      "linkedin": false,
-      "messenger": false,
-      "pocket": false,
-      "qq": true,
-      "qzone": false,
-      "stumbleupon": false,
-      "twitter": true,
-      "viber": false,
-      "vk": false,
-      "weibo": true,
-      "whatsapp": false,
-      "all": [
-        "google", "facebook", "weibo", "twitter",
-        "qq", "qzone", "linkedin", "pocket"
-      ]
-    },
-    "anchor-navigation-ex": {
-      "showLevel": false
     }
   }
 }
