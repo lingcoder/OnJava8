@@ -34,4 +34,10 @@
     * [集合](book/01-What-is-an-Object.md#集合)
     * [生命周期](book/01-What-is-an-Object.md#生命周期)
     * [异常处理](book/01-What-is-an-Object.md#异常处理)
+* [第二章 安装Java和本书用例](book/02-Installing-Java-and-the-Book-Examples.md)
+    * [编辑器安装](book/02-Installing-Java-and-the-Book-Examples.md#编辑器安装)
+    * [Shell安装](book/02-Installing-Java-and-the-Book-Examples.md#Shell安装)
+    * [Java安装](book/02-Installing-Java-and-the-Book-Examples.md#Java安装)
+    * [校验安装](book/02-Installing-Java-and-the-Book-Examples.md#校验安装)
+    * [安装和运行本书用例](book/02-Installing-Java-and-the-Book-Examples.md#安装和运行本书用例)
 
