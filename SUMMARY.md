@@ -1,6 +1,6 @@
 # Summary
 
-
+* [Introduction](README.md)
 * [译者的话](Introduction.md)
 * [封面](book/00-On-Java-8.md)
 * [前言](book/00-Preface.md)
@@ -41,4 +41,5 @@
     * [Java安装](book/02-Installing-Java-and-the-Book-Examples.md#Java安装)
     * [校验安装](book/02-Installing-Java-and-the-Book-Examples.md#校验安装)
     * [安装和运行本书用例](book/02-Installing-Java-and-the-Book-Examples.md#安装和运行本书用例)
+* [第三章 万物皆对象](book/03-Objects-Everywhere.md)
 
