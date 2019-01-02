@@ -1,17 +1,8 @@
 # 第二章 安装Java和本书用例
 
-In which we provision ourselves for the
-journey.
-Before you can begin learning the language, you must install Java and
-the book’s source-code examples. Because it is possible for a
-“dedicated beginner” to learn programming from this book, I explain
-the process in detail, assuming you haven’t previously used the
-computer’s command-line shell. If you have, you can skip forward to
-the installation instructions.
-If any terminology or processes described here are still not clear to
-you, you can usually find explanations or answers through Google. For more
-specific issues or problems, try StackOverflow. Sometimes you can find
-installation instructions on YouTube.
+现在，我们来为这次阅读之旅作些准备吧！
+
+在开始学习 Java 之前，你必须要先安装好 Java 和本书的源代码示例。因为考虑到可能有“专门的初学者”从本书开始学习编程，所以我会仔细解释计算机命令行 Shell 的这个过程。 如果你已经有此方面的经验了，可以跳过这段安装说明。如果你对此处描述的任何术语或过程仍不清楚，还可以通过 Google 搜索找到答案。具体的问题或困难请试着在 StackOverflow 上提问。或者去 YouTube 看有没有相关的安装说明。
 
 
 ## 编辑器
