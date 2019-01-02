@@ -9,9 +9,9 @@
 
 ## 书籍简介
 
-* 本书原作者为 \[美\] [Bruce Eckel](https://github.com/BruceEckel)，即（*Thinking in Java 4th,2006*）的作者。
-* 本书是事实上的 *Thinking in Java 5th*（*On Java 8,2017*）。
-* *Thinking in Java 4th*基于 **JAVA 5**版本；*On Java 8*基于**JAVA 8**版本。
+* 本书原作者为 \[美\] [Bruce Eckel](https://github.com/BruceEckel)，即（*Thinking in Java 4th Edition,2006*）的作者。
+* 本书是事实上的 *Thinking in Java 5th Edition*（*On Java 8,2017*）。
+* *Thinking in Java 4th Edition*基于 **JAVA 5**版本；*On Java 8*基于**JAVA 8**版本。
 
 
 ## 贡献者
