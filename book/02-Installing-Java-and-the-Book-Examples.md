@@ -7,9 +7,9 @@
 
 ## 编辑器
 
-首先你需要安装一个编辑器来创建和修改本书代码示例里的 Java 程序文件。有可能你还需要一个编辑器来更改系统配置文件。
+首先你需要安装一个编辑器来创建和修改本书用例里的 Java 代码。有可能你还需要一个编辑器来更改系统配置文件。
 
-相比一些重量级的IDE（Integrated Development Environments，开发集成环境）软件，如Eclipse、NetBeans和IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种基础的运行程序的文本编辑器。如果你已经有了一个 IDE 用着还顺手，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](http://atom.io) 网站下载。
+相比一些重量级的 IDE（Integrated Development Environments，开发集成环境）软件，如Eclipse、NetBeans和IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种基础的运行程序的文本编辑器。如果你已经有了一个 IDE 用着还顺手，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](http://atom.io) 网站下载。
  
  Atom 是一个免费开源、易于安装且跨平台（支持 Window、Mac和Linux）的文本编辑器。内置支持 Java 文件。相比 IDE 的厚重，她比较轻量级，是学习本书的理想工具。Atom 包含了许多方便的编辑功能,相信你一定会爱上她！更多关于 Atom 使用的细节问题可以到她们的网站上。
 
