@@ -7,27 +7,13 @@
 
 ## 编辑器
 
+首先你需要安装一个编辑器来创建和修改本书代码示例里的 Java 程序文件。有可能你还需要一个编辑器来更改系统配置文件。
 
-To create and modify Java program files—the code listings shown in
-this book—you need a program called an editor. You’ll also need an
-editor to make changes to your system configuration files, which is
-sometimes required during installation.
-Programming editors vary from heavyweight Integrated Development
-Environments (IDEs, like Eclipse, NetBeans and IntelliJ IDEA) to
-more basic text manipulation applications. If you already have an IDE
-and are comfortable with it, feel free to use that for this book, but in
-the interest of keeping things simple, I recommend the Atom editor.
-Find it at atom.io.
-Atom is free and open-source, is very simple to install, works on all
-platforms (Windows, Mac and Linux), and has a built-in Java mode
-that is automatically invoked when you open a Java file. It isn’t a
-heavy-duty IDE so it doesn’t get confusing, which is ideal for this book.
-On the other hand, it has some handy editing features that you’ll
-probably come to love. More details are on their site.
-There are many other editors; these are a subculture unto themselves
-and people even get into heated arguments about their merits. If you
-find one you like better, it’s not too hard to change. The important
-thing is to choose one and get comfortable with it.
+相比一些重量级的IDE（Integrated Development Environments，开发集成环境）软件，如Eclipse、NetBeans和IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种基础的运行程序的文本编辑器。如果你已经有了一个 IDE 用着还顺手，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](http://atom.io) 网站下载。
+ 
+ Atom 是一个免费开源、易于安装且跨平台（支持 Window、Mac和Linux）的文本编辑器。内置支持 Java 文件。相比 IDE 的厚重，她比较轻量级，是学习本书的理想工具。Atom 包含了许多方便的编辑功能,相信你一定会爱上她！更多关于 Atom 使用的细节问题可以到她们的网站上。
+
+还有很多其他的编辑器。有一种亚文化的群体，他们热衷于争论哪个更好用！如果你找到一个你更喜欢的编辑器，换一种使用也没什么难度。重要的是，你要找一个用着舒服的。
 
 ## Shell
 
