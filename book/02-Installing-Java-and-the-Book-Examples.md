@@ -15,46 +15,30 @@
 
 还有很多其他的编辑器。有一种亚文化的群体，他们热衷于争论哪个更好用！如果你找到一个你更喜欢的编辑器，换一种使用也没什么难度。重要的是，你要找一个用着舒服的。
 
+
 ## Shell
 
-If you haven’t programmed before, you might be unfamiliar with your
-operating system shell (also called the command prompt in Windows).
-The shell harkens back to the early days of computing when everything
-happened by typing commands and the computer responded by
-displaying responses; it was all text-based.
-Although it can seem primitive in the age of graphical user interfaces,
-a shell provides a surprising number of valuable features. We’ll use the
-shell regularly in this book, both as part of the installation process and
-to run Java programs.
-Starting a Shell
-Mac: Click on the Spotlight (the magnifying-glass icon in the upper-
-right corner of the screen) and type “terminal.” Click on the
-application that looks like a little TV screen (you might also be able to
-hit “Return”). This starts a shell in your home directory.
-Windows: First, start the Windows Explorer to navigate through
-your directories:
-Windows 7: click the “Start” button in the lower left corner of the
-screen. In the Start Menu search box area type “explorer” then
-press the “Enter” key.
-Windows 8: click Windows+Q, type “explorer” then press the
-“Enter” key.
-Windows 10: click Windows+E.
-Once the Windows Explorer is running, move through the folders on
-your computer by double-clicking on them with the mouse. Navigate
-to the desired folder. Now click the file tab at the top left of the
-Explorer window and select “Open command prompt.” This opens a
-shell in the destination directory.
-Linux: To open a shell in your home directory:
-Debian: Press Alt+F2. In the dialog that pops up, type ‘gnome-
-terminal’
-Ubuntu: Either right-click on the desktop and select ‘Open
-Terminal’, or press Ctrl+Alt+T
-Redhat: Right-click on the desktop and select ‘Open Terminal’
-Fedora: Press Alt+F2. In the dialog that pops up, type ‘gnome-
-terminal’
-Directories
-Directories are one of the fundamental elements of a shell. Directories
-hold files, as well as other directories. Think of a directory as a tree
+如果你之前没有接触过编程，那么有可能对 Shell（命令行窗口） 不太熟悉。shell 的历史可以追溯到早期的计算时代，当时在计算机上的操作是都通过输入命令进行的，计算机通过回显响应。所有的操作都是基于文本的。
+
+尽管和现在的图形用户界面相比，Shell 操作方式很原始。但是同时 shell 也为我们提供了许多有用的功特性。在学习本书的过程中，我们会经常使用到 Shell，包括现在这部分的安装，还有运行 Java 程序。
+
+Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“terminal”。单击看起来像小电视屏幕的应用程序（您也可以单击“return”）。这就启动了你的用户下的 shell窗口。
+
+windows：首先，通过目录打开 windows 资源管理器：
+Windows 7: 单击屏幕左下角的“开始”图标，输入“explorer”后按回车键。
+Windows 8: 按 Windows+Q, 输入 “explorer” 后按回车键。
+Windows 10: 按 Windows+E 。
+当资源管理器运行以后，导航到所需目录，用鼠标双击打开。现在单击“资源管理器”窗口左上角的“文件“选项卡，选择“打开 Window PowerShell”启动 Shell。
+
+Linux: 在 home 目录打开 Shell。
+Debian: 按 Alt+F2， 在弹出的对话框中输入“gnome-terminal”
+Ubuntu: 在屏幕中鼠标右击，选择 “打开终端”, 或者按住 Ctrl+Alt+T
+Redhat: 在屏幕中鼠标右击，选择 “打开终端”
+Fedora: 按 Alt+F2，在弹出的对话框中输入“gnome-terminal”
+
+目录是 Shell 的基础元素之一。目录用来保存文件和其目录。
+
+Think of a directory as a tree
 with branches. If books is a directory on your system and it has two
 other directories as branches, for example math and art, we say you
 have a directory books with two subdirectories math and art. We refer to
