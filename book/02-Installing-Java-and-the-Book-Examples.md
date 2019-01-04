@@ -27,7 +27,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“te
     windows：首先，通过目录打开 windows 资源管理器：
     Windows 7: 单击屏幕左下角的“开始”图标，输入“explorer”后按回车键。
     Windows 8: 按 Windows+Q, 输入 “explorer” 后按回车键。
-    Windows 10: 按 Windows+E 当资源管理器运行以后，导航到所需目录，用鼠标双击打开。现在单击“资源管理器”窗口左上角的“文件“选项卡，选择“打开 Window PowerShell”启动 Shell。
+    Windows 10: 按 Windows+E 打开资源管理器，导航到所需目录，单击窗口左上角的“文件“选项卡，选择“打开 Window PowerShell”启动 Shell。
     Linux: 在 home 目录打开 Shell。
     Debian: 按 Alt+F2， 在弹出的对话框中输入“gnome-terminal”
     Ubuntu: 在屏幕中鼠标右击，选择 “打开终端”, 或者按住 Ctrl+Alt+T
