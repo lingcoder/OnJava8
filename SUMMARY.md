@@ -1,6 +1,5 @@
 # Summary
 
-* [Introduction](README.md)
 * [译者的话](Introduction.md)
 * [封面](book/00-On-Java-8.md)
 * [前言](book/00-Preface.md)
