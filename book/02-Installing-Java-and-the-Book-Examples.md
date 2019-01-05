@@ -34,62 +34,53 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“te
     Redhat: 在屏幕中鼠标右击，选择 “打开终端”
     Fedora: 按 Alt+F2，在弹出的对话框中输入“gnome-terminal”
 
-目录是 Shell 的基础元素之一。目录用来保存文件和其目录。
+**目录**
+目录是 Shell 的基础元素之一。目录用来保存文件和其他目录。目录就好比树的分支。如果书籍是您系统上的一个目录，并且它有两个其他目录作为分支，例如数学和艺术，那么我们就可以说你有一个书籍目录里，它包含数学和艺术两个子目录。注意：Windows 使用“\”而不是“/”来分隔路径。
 
-Think of a directory as a tree
-with branches. If books is a directory on your system and it has two
-other directories as branches, for example math and art, we say you
-have a directory books with two subdirectories math and art. We refer to
-them as books/math and books/art since books is their
-parent directory. Note that Windows uses backslashes rather than
-forward slashes to separate the parts of a directory.
-Basic Shell Operations
-The shell operations I show here are approximately identical across
-operating systems. For the purposes of this book, here are the essential
-operations in a shell:
-Change directory: Use cd followed by the name of the
-directory where you want to move, or cd .. if you want to move
-up a directory. If you want to move to a different directory while
-remembering where you came from, use pushd followed by the
-different directory name. Then, to return to the previous
-directory, just say popd.
-Directory listing: ls (dir in Windows) displays all the files
-and subdirectory names in the current directory. Use the wildcard
-* (asterisk) to narrow your search. For example, if you want to list
-all the files ending in “.java,” you say ls *.java (Windows:
-dir *.java). If you want to list the files starting with “F” and
-ending in “.java,” you say ls F*.java (Windows: dir
-F*.java).
-Create a directory: use the mkdir (“make directory”)
-command (Windows: md), followed by the name of the directory
-you want to create. For example, mkdir books (Windows: md
-books).
-Remove a file: Use rm (“remove”) followed by the name of the
-file you wish to remove (Windows: del). For example, rm
-somefile.java (Windows: del somefile.java).
-Remove a directory: use the rm -r command to remove the
-files in the directory and the directory itself (Windows:
-deltree). For example, rm -r books (Windows: deltree
-books).
-Repeat a command: The “up arrow” on all three operating
-systems moves through previous commands so you can edit and
-repeat them. On Mac/Linux, !! repeats the last command and !n
-repeats the nth command.
-Command history: Use history in Mac/Linux or press the
-F7 key in Windows. This gives you a list of all the commands
-you’ve entered. Mac/Linux provides numbers to refer to when you
-want to repeat a command.
-Unpacking a zip archive: A file name ending with .zip is an
-archive containing other files in a compressed format. Both Linux
-and Mac have command-line unzip utilities, and you can install
-a command-line unzip for Windows via the Internet. However,
-in all three systems the graphical file browser (Windows Explorer,
-the Mac Finder, or Nautilus or equivalent on Linux) will browse to
-the directory containing your zip file. Then right-mouse-click on
-the file and select “Open” on the Mac, “Extract Here” on Linux, or
-“Extract all …” on Windows.
-To learn more about your shell, search Wikipedia for Windows Shell
-or, for Mac/Linux, Bash Shell.
+**Shell基本操作**
+我在这展示的 Shell 操作和系统中大体相同。出于本书的原因，下面列举一些在 Shell 中的基本操作：
+
+```shell
+更改目录： cd <路径> 
+          cd .. 移动到上级目录 
+          pushd <路径> 记住来源的同时移动到其他目录,popd 返回上一个目录
+
+目录列举： ls 列举出当前目录下所有的文件和子目录名（不包含隐藏文件），
+             可以选择使用通配符 * 来缩小搜索的范围。
+             示例(1)： 列举所有以“.java”结尾的文件，输入ls *.java
+             示例(2)： 列举所有以“F”开头，“.java”结尾的文件，输入ls F*.java
+
+增加目录： 
+    Mac/Linux 系统：mkdir  
+              示例：mkdir books 
+    Windows   系统：md 
+              示例：md books
+
+移除文件： 
+    Mac/Linux 系统：rm
+              示例：rm somefile.java
+    Windows   系统：del 
+              示例：del somefile.java
+
+移除目录： 
+    Mac/Linux 系统：rm -r
+              示例：rm -r somefile.java
+    Windows   系统：deltree 
+              示例：deltree somefile.java
+
+重复命令： !!  重复上条命令
+              示例：!n 重复倒数第n条命令
+
+命令历史：     
+    Mac/Linux 系统：history
+    Windows   系统：按 F7 键
+
+文件解压：
+    Linux/Mac 都有命令行解压程序，您可以通过互联网为Windows安装命令行解压程序。
+    图形界面下（Windows 资源管理器、Mac Finder ，Linux Nautilus 或其他等效软件）右键单击该文件，在 Mac 上选择“open”，在 Linux 上选择“extract here”，或在 Windows 上选择“extract all…”。要了解关于shell 的更多信息，请在维基百科中搜索 Windows shell，或者在 Mac/Linux 中搜索 bash shell。
+
+```
+
 
 ## Java安装
 
