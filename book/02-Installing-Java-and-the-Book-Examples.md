@@ -84,91 +84,114 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“te
 
 ## Java安装
 
-To compile and run the examples, you must first install the Java
-development kit. In this book we use JDK8 (Java 1.8).
-Windows
-1. Follow the instructions at this link to Install Chocolatey.
-2. At a shell prompt, type: choco install jdk8. This takes
-some time, but when it’s finished Java is installed and the
-necessary environment variables are set.
-Macintosh
-The Mac comes with a much older version of Java that won’t work for
-the examples in this book, so you must first update it to Java 8. You
-will need administration rights to perform these steps.
-1. Follow the instructions at this link to Install HomeBrew. Then at a shell
-prompt, execute brew update to make sure you have the
-latest changes.
-2. At a shell prompt, execute brew cask install java.
-Once HomeBrew and Java are installed, all other activities described
-in this book can be accomplished within a guest account, if that suits
-your needs.
-Linux
-Use the standard package installer with the following shell commands:
-Ubuntu/Debian:
-1. sudo apt-get update
-2. sudo apt-get install default-jdk
-Fedora/Redhat:
-1. su-c "yum install java-1.8.0-openjdk"
+为了安装了和运行代码示例，首先你必须安装 JDK 1.8。本书中采用的是 JDK 1.8版本。
 
+
+**Windows**
+
+1. 以下为 Chocolatey 的[安装说明](https://chocolatey.org/)。
+2. 在命令行提示符下输入下面的命令，等待片刻，结束后 Java 安装完成并自动完成环境变量设置。
+
+```shell
+
+ choco install jdk8`. 
+```
+
+**Macintosh**
+
+Mac 系统自带的 Java 版本太老，为了确保本书的代码示例能被正确执行，你必须先更新它到 Java 8。我们需要管理员权限来运行下面的步骤：
+1. 以下为 HomeBrew 的[安装说明](https://brew.sh/)。安装完成后执行命令 `brew update` 更新到最新版本
+2. 在命令行下执行下面的命令来安装 Java。
+
+```shell
+
+ brew cask install java
+```
+
+当以上安装都完成后，如果你有需要，可以使用游客账户来运行本书中的代码示例。
+
+**Linux**
+
+* **Ubuntu/Debian**：
+
+```shell
+
+     sudo apt-get update
+     sudo apt-get install default-jdk
+```
+* **Fedora/Redhat**：
+
+```shell
+
+    su-c "yum install java-1.8.0-openjdk"
+```
 
 
 ## 校验安装
 
-Open a new shell and type:
+打开新的命令行输入：
+
+```shell
+
 java -version
-You should see something like the following (Version numbers and
-actual text will vary):
+```
+
+正常情况下 你应该看到以下类似信息(版本号信息可能不一样）：
+
+```shell
+
 java version "1.8.0_112"
 Java(TM) SE Runtime Environment (build 1.8.0_112-b15)
 Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
-If you see a message that the command is not found or not recognized,
-review the installation instructions in this chapter. If you still can’t get
-it to work, check StackOverflow.
+```
+如果提示命令找不到或者无法被识别，请根据安装说明重试；如果还不行，尝试到 [StackOverflow](https://stackoverflow.com/search?q=installing+java) 寻找答案。
 
 
-## 安装和运行本书用例
+## 安装和运行代码示例
 
-Once you have Java installed, the process to install and run the book
-examples is the same for all platforms:
-1. Download the book examples from the GitHub Repository.
-2. unzip (as described in Basic Shell Operations) the downloaded file into the
-directory of your choice.
-3. Use the Windows Explorer, the Mac Finder, or Nautilus or
-equivalent on Linux to browse to the directory where you
-unzipped OnJava8-Examples, and open a shell there.
-4. If you’re in the right directory, you should see files named
-gradlew and gradlew.bat in that directory, along with
-numerous other files and directories. The directories correspond
-to the chapters in the book.
-5. At the shell prompt, type gradlew run (Windows) or
-./gradlew run (Mac/Linux).
-The first time you do this, Gradle will install itself and numerous other
-packages, so it will take some time. After everything is installed,
-subsequent builds and runs are faster.
-Note you must be connected to the Internet the first time you run
-gradlew so that Gradle can download the necessary packages.
-Basic Gradle Tasks
-There are a large number of Gradle tasks automatically available with
-this book’s build. Gradle uses an approach called convention over
-configuration which results in the availability of many tasks even if
-you’re only trying to accomplish something very basic. Some of the
-tasks that “came along for the ride” with this book are inappropriate or
-don’t successfully execute. Here is a list of the Gradle tasks you will
-typically use:
-gradlew compileJava: Compiles all the Java files in the
-book that can be compiled (some files don’t compile, to
-demonstrate incorrect language usage).
-gradlew run: First compiles, then executes all the Java files in
-the book that can be executed (some files are library
-components).
-gradlew test: Executes all the unit tests (you’ll learn about
-these in Validating Your Code).
-gradlew chapter: ExampleName: Compiles and runs a specific
-example program. For instance, gradlew
-objects:HelloDate.
+当 Java 安装完毕，下一步就是安装本书的代码示例了。安装步骤所有平台一致：
+
+1. 在 [GitHub 仓库](https://github.com/BruceEckel/OnJava8-Examples/archive/master.zip)中下载本书代码示例
+2. 解压到你所选目录里。
+3. 使用 Windows 资源管理器, Mac Finder, or Linux 的 Nautilus 或其他等效工具浏览，在该目录下打开 Shell 命令行。
+4. 如果你在正确的目录中，你应该看到该目录中名为 gradlew 和 gradlew.bat 的文件，以及许多其他文件和目录。目录与书中的章节相对应。
+5. 在命令行中输入下面的命令运行：
+
+```shell
+
+     Windows 系统：
+
+          gradlew run
+
+     Mac/Linux 系统：
+        
+        ./gradlew run
+```
+
+第一次安装时 Gradle 需要安装自身和其他的相关的包，请稍等片刻。安装完成后，后续的安装将会快很多。
+
+**注意**： 第一次运行 gradlew 命令时必须连接互联网。
 
 
+**Gradle基础任务**
 
+本书构建的大量 Gradle 任务都可以自动运行。Gradle 设置使用约定大于配置的方式，简单设置即可具备高可用性。本书中“一起去骑行”的某些任务不适用于此或无法执行成功。以下是你通常会使用上的分级任务列表：
+
+```java
+
+    编译本书中的所有 java 文件，除了部分错误示范的
+    gradlew compileJava
+
+    编译并执行 java 文件（某些文件是库组件）
+    gradlew run
+
+    执行所有的单元测试（在本书学习中校验自己的代码是由正确）
+    gradlew test
+
+    编译且运行一个特别的示例程序
+    gradlew <本书章节>:<示例名称>
+    示例：gradlew objects:HelloDate
+```
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
 

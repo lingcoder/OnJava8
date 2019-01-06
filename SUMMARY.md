@@ -39,7 +39,7 @@
     * [Shell](book/02-Installing-Java-and-the-Book-Examples.md#Shell)
     * [Java安装](book/02-Installing-Java-and-the-Book-Examples.md#Java安装)
     * [校验安装](book/02-Installing-Java-and-the-Book-Examples.md#校验安装)
-    * [安装和运行本书用例](book/02-Installing-Java-and-the-Book-Examples.md#安装和运行本书用例)
+    * [安装和运行代码示例](book/02-Installing-Java-and-the-Book-Examples.md#安装和运行代码示例)
 * [第三章 万物皆对象](book/03-Objects-Everywhere.md)
 * [第四章 运算符](book/04-Operators.md)
 * [词汇表](GLOSSARY.md)
