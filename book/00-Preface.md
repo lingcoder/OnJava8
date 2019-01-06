@@ -6,9 +6,9 @@
 
 在此之前，我的另一本 Java 书籍 Thinking in Java 第4版（《Java编程思想》 Prentice Hall 2006）对于 Java 5的编程依然有指导意义。Java 5是用于 Android 编程的语言版本。
 
-随着 Java 8的出现，这门语言在许多地方发生了翻天覆地的变化。新的 Java 代码在使用和实现上与以往不尽相同。这也是为什么时隔两年后我创作了这本新书。《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](http://Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming)等网站上补充必要的前置知识。同时，[OnJava8.com](http://www.OnJava8.com)上也有免费的 Thinking in C（《C编程思想》）专题知识。
+随着 Java 8的出现，这门语言在许多地方发生了翻天覆地的变化。新的 Java 代码在使用和实现上与以往不尽相同。这也是为什么时隔两年后我创作了这本新书。《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](http://Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming) 等网站上补充必要的前置知识。同时，[OnJava8.com](http://www.OnJava8.com) 上也有免费的 Thinking in C（《C编程思想》）专题知识。
 
-与几年前我们依赖印刷媒体相比，像 YouTube，博客和 StackOverflow 这样的网站让寻找答案变得非常容易。请将这些与坚持不懈的努力相结合。你可以将本书作为你的编程入门书籍。同样她也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中,我都非常感谢 Thinking in Java 这本书给我带来的所有荣誉。事实证明，这些荣誉对我现在的[Reinventing Business](http://www.reinventing-business.com)项目中和加强外界与公司的联系是非常宝贵的。最后,写这本书的原因之一是支持我[Reinventing Business](http://www.reinventing-business.com)重塑，似乎下一个合乎逻辑的步骤是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望这本书可以成为该项目的一种众筹。
+与几年前我们依赖印刷媒体相比，像 YouTube，博客和 StackOverflow 这样的网站让寻找答案变得非常容易。请将这些与坚持不懈的努力相结合。你可以将本书作为你的编程入门书籍。同样她也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中,我都非常感谢 Thinking in Java 这本书给我带来的所有荣誉。事实证明，这些荣誉对我现在的 [Reinventing Business](http://www.reinventing-business.com) 项目中和加强外界与公司的联系是非常宝贵的。最后,写这本书的原因之一是支持我 [Reinventing Business](http://www.reinventing-business.com) 重塑，似乎下一个合乎逻辑的步骤是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望这本书可以成为该项目的一种众筹。
 
 
 ## 教学目标
