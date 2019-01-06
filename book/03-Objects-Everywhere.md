@@ -1,26 +1,14 @@
 # 第三章 万物皆对象
 
-Objects Everywhere
-“If we spoke a different language, we
-would perceive a somewhat different
-world.”— Ludwig Wittgenstein (1889-
-1951)
-Although it is based on C++, Java is more of a “pure” object-oriented
-language. Both C++ and Java are hybrid languages, but in Java the
-designers felt that the hybridization was not as important as it was in
-C++. A hybrid language allows multiple programming styles; the
-reason C++ is hybrid is to support backward compatibility with the C
-language. Because C++ is a superset of the C language, it includes
-many of that language’s undesirable features, which can make some
-aspects of C++ overly complicated.
-The Java language assumes you’re only writing object-oriented
-programs. Before you can begin you must shift your mindset into an
-object-oriented world. In this chapter you’ll see the basic components
-of a Java program and learn that (almost) everything in Java is an
-object.
-You Manipulate
-Objects with
-References
+>如果我们说不同的语言，我们会感觉到一个不同的世界！— Ludwig Wittgenstein (1889-1951)
+
+尽管 Java 是基于 C++ 的，但 Java 更像是一种“纯粹的”面向对象语言。Java 和 C++ 都是混合语言。在 Java 中，语言设计者认为混合并不像 C++ 那样重要。混合语言允许多种编程风格；这也是 C++ 支持与 C 语言的向后兼容性原因。因为 C++ 是 C 语言的超集，所以它也包含了许多 C 语言的不良特性，这可能使得 C++ 在某些方面过于复杂。
+
+ Java 语言预设你已经编写过面对对象的程序。在此之前，你必须将自己的思维置于面对对象的世界。在本章中你将了解 Java 语言的基本组成，学习 Java （几乎）万物皆对象的思想。
+
+<!-- You Manipulate Objects with References -->
+## 对象操纵
+
 What’s in a name? That which we call a
 rose, by any other word would smell as
 sweet. (Shakespeare, Romeo & Juliet)
@@ -52,8 +40,10 @@ String s = "asdf";
 This uses a special Java feature: Strings can be initialized with quoted
 text. You must use a more general type of initialization for other types
 of objects.
-You Must Create All
-the Objects
+
+<!-- You Must Create All the Objects -->
+## 对象创建
+
 The point of a reference is to connect it to an object. You usually create
 objects with the new operator. The keyword new says, “Make one of
 these.” So in the preceding example, you can say:
@@ -238,7 +228,10 @@ You can also create an array of primitives. The compiler guarantees
 initialization by zeroing the memory for that array.
 Arrays are covered in detail later in the book, and specifically in the
 Arrays chapter.
-Comments
+
+<!-- Comments -->
+## 代码注释
+
 There are two types of comments in Java. The first are the traditional
 C-style comment which begin with a /* and continue, possibly across
 many lines, until a */. Note that many programmers begin each line
@@ -256,8 +249,10 @@ comment, which starts with a // and continues until the end of the
 line. This type of comment is convenient and commonly used because
 it’s easy. So you often see:
 // This is a one-line comment
-You Never Need to
-Destroy an Object
+
+<!-- You Never Need to Destroy an Object -->
+## 对象清理
+
 In some programming languages, managing storage lifetime requires
 significant effort. How long does a variable last? If you are supposed to
 destroy it, when should you? Confusion over storage lifetime can lead
@@ -410,6 +405,10 @@ assigning an appropriate value before you use x. If you forget, Java
 definitely improves on C++: You get a compile-time error telling you
 the variable might not be initialized. (C++ compilers often warn you
 about uninitialized variables, but in Java these are errors.)
+
+<!-- Methods, Arguments,and Return Values -->
+### 方法使用
+
 Methods, Arguments,
 and Return Values
 In many languages (like C and C++), the term function is used to
@@ -485,8 +484,10 @@ objects. That is indeed much of what goes on, but in the following
 Operators chapter you’ll learn how to do the detailed low-level work by
 making decisions within a method. For this chapter, sending messages
 will suffice.
-Writing a Java
-Program
+
+<!-- Writing a Java Program -->
+## 程序编写
+
 There are several other issues you must understand before seeing your
 first Java program.
 Name Visibility
@@ -643,8 +644,10 @@ object. When applied to a method, static allows you to call that
 method without creating an object. This is essential, as you will see, in
 defining the main() method that is the entry point for running an
 application.
-Your First Java
-Program
+
+<!-- Your First Java Program -->
+## 小试牛刀
+
 Finally, here’s the first complete program. It starts by displaying a
 String, followed by the date, using the Date class from the Java
 standard library.
@@ -790,7 +793,10 @@ contains the Gradle configuration for automatically building, testing,
 and running the files for the book. When you run the gradlew
 command for the first time, Gradle will automatically install itself
 (assuming you have Java installed).
-Coding Style
+
+<!-- Coding Style -->
+## 编码风格
+
 The style described in the document Code Conventions for the Java
 Programming Language 10 is to capitalize the first letter of a class name. If
 the class name consists of several words, they are run
@@ -811,7 +817,9 @@ void changeTheHueOfTheColor(int newHue) {
 The user must also type these long names, so be merciful.
 The Java code you find in the Oracle libraries also follows the
 placement of open-and-close curly braces in this book.
-Summary
+
+## 本章小结
+
 This chapter shows you just enough Java so you understand how to
 write a simple program. You’ve also seen an overview of the language
 and some of its basic ideas. However, the examples so far have all been
