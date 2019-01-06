@@ -9,37 +9,24 @@
 <!-- You Manipulate Objects with References -->
 ## 对象操纵
 
-What’s in a name? That which we call a
-rose, by any other word would smell as
-sweet. (Shakespeare, Romeo & Juliet)
-Every programming language manipulates elements in memory.
-Sometimes the programmer must be constantly aware of that
-manipulation. Do you manipulate the element directly, or use an
-indirect representation that requires special syntax (for example,
-pointers in C or C++)?
-Java simplifies the issue by considering everything an object, using a
-single consistent syntax. Although you treat everything as an object,
-the identifier you manipulate is actually a “reference” to an object.1
-You might imagine a television (the object) and a remote control (the
-reference). As long as you’re holding this reference, you have a
-connection to the television, but when someone says, “Change the
-channel” or “Lower the volume,” what you’re manipulating is the
-reference, which in turn modifies the object. To move around the room
-and still control the television, you take the remote/reference with
-you, not the television.
-Also, the remote control can stand on its own, with no television. That
-is, just because you have a reference doesn’t mean there’s necessarily
-an object connected to it. To hold a word or sentence, you create a
-String reference:
-String s;
-But here you’ve created only the reference, not an object. If you now
-decide to send a message to s, you get an error because s isn’t actually
-attached to anything (there’s no television). A safer practice is to
-always initialize a reference when you create it:
-String s = "asdf";
-This uses a special Java feature: Strings can be initialized with quoted
-text. You must use a more general type of initialization for other types
-of objects.
+名称意味着什么？例如：所有叫“玫瑰”的花闻起来都很甜蜜。（引用自 莎士比亚，《罗密欧与朱丽叶》）。
+
+所有的编程语言都会操纵内存中的元素。有时程序员必须要有意识地直接或间接地操纵它们。示例：在 C/C++ 语言中是通过指针来完成操作的。
+
+Java 通过万物皆对象的思想和独特的语法方式来简化问题。虽然你将所有事物都视为对象，但你操作的标识符实际上是只对象的“引用”。示例：你可以将其想象成电视（对象）和遥控器（引用）之间的关系。只要你有此“引用”你就可以连接到“对象”。当有人说“更改频道”或“降低音量”时，我们操纵的只是“遥控器”，但是它能修改“电视机”这个“对象”。如果我们想要在房子内控制电视机，只需要携带遥控器就可以了，而不是抱着电视机。此外，没有电视机，遥控器也可以单独存在。引申来说，仅仅因为你有一个“引用”并不意味着你必然有一个关联的“对象”。 示例：要保存单词或句子，我们可以创建一个 String 的引用：
+
+```java
+    String s;
+```
+
+在这里我们只是创建了一个 String 对象的引用，而不是对象。如果此时你向变量 s 发送信息则会出现错误：此时你并没有给变量 s 附加任何引用的对象。更安全的做法是，在申明变量引用的同时就初始化对象信息。代码示例：
+
+```java
+    String s = "asdf";
+```
+
+这里使用了 Java 的一个独特的功能： 可以使用带双引号的文本内容来初始化字符串。同样，你也必须对其他类型的对象使用相应的初始化类型。
+
 
 <!-- You Must Create All the Objects -->
 ## 对象创建
