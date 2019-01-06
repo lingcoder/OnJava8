@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/lingcoder/OnJava8.svg?style=social&label=Star&)](https://github.com/lingcoder/OnJava8/stargazers)[![GitHub forks](https://img.shields.io/github/forks/lingcoder/OnJava8.svg?style=social&label=Fork&)](https://github.com/lingcoder/OnJava8/fork)
 
-本翻译项目的 GitHub 开源地址：[https://github.com/LingCoder/OnJava8](https://github.com/LingCoder/OnJava8)
+本翻译项目的 Git 开源地址：[https://github.com/LingCoder/OnJava8](https://github.com/LingCoder/OnJava8)
 
 如果您在阅读本书的过程中有发现不明白或者错误的地方，请随时到项目地址发布issue或者fork项目后发布pr帮助译者改善！不胜感激！
 
@@ -32,7 +32,7 @@
 ## 如何参与
 
 
->如果你想对本书做出一些贡献的话
+如果你想对本书做出一些贡献的话
 可以在阅读本书过程中帮忙校对，找 bug 错别字等等
 可以提出专业方面的修改建议
 可以把一些不尽人意的语句翻译的更好更有趣
