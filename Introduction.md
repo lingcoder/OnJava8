@@ -2,7 +2,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/lingcoder/OnJava8.svg?style=social&label=Star&)](https://github.com/lingcoder/OnJava8/stargazers)[![GitHub forks](https://img.shields.io/github/forks/lingcoder/OnJava8.svg?style=social&label=Fork&)](https://github.com/lingcoder/OnJava8/fork)
 
-本翻译项目的GITHUB开源地址：[https://github.com/LingCoder/OnJava8](https://github.com/LingCoder/OnJava8)
+本翻译项目的 GitHub 开源地址：[https://github.com/LingCoder/OnJava8](https://github.com/LingCoder/OnJava8)
 
 如果您在阅读本书的过程中有发现不明白或者错误的地方，请随时到项目地址发布issue或者fork项目后发布pr帮助译者改善！不胜感激！
 
@@ -31,21 +31,22 @@
 
 ## 如何参与
 
-如果你想对本书做出一些贡献的话
-可以在阅读本书过程中帮忙校对，找bug错别字等等
+
+>如果你想对本书做出一些贡献的话
+可以在阅读本书过程中帮忙校对，找 bug 错别字等等
 可以提出专业方面的修改建议
 可以把一些不尽人意的语句翻译的更好更有趣
-对于以上各类建议，请以issue或pr的形式发送，我看到之后会尽快处理
-使用MarkDown编辑器，md语法格式进行文档翻译及排版工作
-完成之后Pull Request
+对于以上各类建议，请以 issue 或 pr 的形式发送，我看到之后会尽快处理
+使用 MarkDown 编辑器，md 语法格式进行文档翻译及排版工作
+完成之后 Pull Request
 如没问题的话，我会合并到主分支
-如果不太明白md的排版，可以吧翻译好的内容发送给我，我代为排版并提交
-如还有其它问题，欢迎发送issue，谢谢~
+如果不太明白 md 的排版，可以把翻译好的内容发送给我，我代为排版并提交
+如还有其它问题，欢迎发送 issue，谢谢~
 
 
 ## 开源协议
 
-本项目基于MIT协议开源。
+本项目基于 MIT 协议开源。
 
 
 ## 联系方式
