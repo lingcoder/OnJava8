@@ -79,7 +79,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“te
     Linux/Mac 都有命令行解压程序，您可以通过互联网为Windows安装命令行解压程序。
     图形界面下（Windows 资源管理器、Mac Finder ，Linux Nautilus 或其他等效软件）右键单击该文件，
     在 Mac 上选择“open”，在 Linux 上选择“extract here”，或在 Windows 上选择“extract all…”。
-    要了解关于shell 的更多信息，请在维基百科中搜索 Windows shell，或者在 Mac/Linux 中搜索 bash shell。
+    要了解关于shell 的更多信息，请在维基百科中搜索 Windows shell，Mac/Linux用户可搜索 bash shell。
 
 ```
 
