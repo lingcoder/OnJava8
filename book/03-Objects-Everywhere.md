@@ -2,7 +2,7 @@
 
 >如果我们说不同的语言，我们会感觉到一个不同的世界！— Ludwig Wittgenstein (1889-1951)
 
-尽管 Java 是基于 C++ 的，但 Java 更像是一种“纯粹的”面向对象语言。Java 和 C++ 都是混合语言。在 Java 中，语言设计者认为混合并不像 C++ 那样重要。混合语言允许多种编程风格；这也是 C++ 支持与 C 语言的向后兼容性原因。因为 C++ 是 C 语言的超集，所以它也包含了许多 C 语言的不良特性，这可能使得 C++ 在某些方面过于复杂。
+尽管 Java 是基于 C++ 的，但 Java 是一种更纯粹的面向对象程序设计语言。Java 和 C++ 都是混合语言。在 Java 中，语言设计者认为混合并不像 C++ 那样重要。混合语言允许多种编程风格；这也是 C++ 支持与 C 语言的向后兼容性原因。因为 C++ 是 C 语言的超集，所以它也包含了许多 C 语言的不良特性，这可能使得 C++ 在某些方面过于复杂。
 
  Java 语言预设你已经编写过面对对象的程序。在此之前，你必须将自己的思维置于面对对象的世界。在本章中你将了解 Java 语言的基本组成，学习 Java （几乎）万物皆对象的思想。
 
@@ -13,39 +13,37 @@
 
 所有的编程语言都会操纵内存中的元素。有时程序员必须要有意识地直接或间接地操纵它们。示例：在 C/C++ 语言中是通过指针来完成操作的。
 
-Java 通过万物皆对象的思想和独特的语法方式来简化问题。虽然你将所有事物都视为对象，但你操作的标识符实际上是只对象的“引用”。示例：你可以将其想象成电视（对象）和遥控器（引用）之间的关系。只要你有此“引用”你就可以连接到“对象”。当有人说“更改频道”或“降低音量”时，我们操纵的只是“遥控器”，但是它能修改“电视机”这个“对象”。如果我们想要在房子内控制电视机，只需要携带遥控器就可以了，而不是抱着电视机。此外，没有电视机，遥控器也可以单独存在。引申来说，仅仅因为你有一个“引用”并不意味着你必然有一个关联的“对象”。 示例：要保存单词或句子，我们可以创建一个 String 的引用：
+Java 使用万物皆对象的思想和特有的语法方式来简化问题。虽然万物皆可为对象，但你操纵的标识符实际上是只对象的“引用”。示例：我们可以将这种“引用”想象成电视（对象）和遥控器（引用）之间的关系。只要拥有对象的“引用”，就可以操纵该“对象”。我们无需直接接触电视，只要掌握遥控器就可以在房中自由地控制电视（对象）的频道和音量。此外，没有电视机，遥控器也可以单独存在。引申来说，仅仅因为你有一个“引用”并不意味着你必然有一个关联的“对象”。 
+
+下面来创建一个 String 的引用，用于保存单词语句。代码示例：
 
 ```java
     String s;
 ```
 
-在这里我们只是创建了一个 String 对象的引用，而不是对象。如果向变量 s 发送信息则会出现错误：因为此时你并没有给变量 s 附加任何引用的对象。更安全的做法是，在声明变量引用的同时就初始化对象信息。代码示例：
+这里我们仅仅只是创建了一个 String 对象的引用，而非对象。直接拿来使用会出现错误：因为此时你并没有给变量 s 赋值--附加任何引用的对象。通常更安全的做法是：在声明变量引用的同时初始化对象信息。代码示例：
 
 ```java
     String s = "asdf";
 ```
 
-这里使用了 Java 的一个独特的功能： 可以使用带双引号的文本内容来初始化字符串。同样，你也必须对其他类型的对象使用相应的初始化类型。
-
+Java 语法允许我们使用带双引号的文本内容来初始化字符串。同样，其他类型的对象也有相应的初始化方式。
 
 <!-- You Must Create All the Objects -->
 ## 对象创建
 
-The point of a reference is to connect it to an object. You usually create
-objects with the new operator. The keyword new says, “Make one of
-these.” So in the preceding example, you can say:
-String s = new String("asdf");
-Not only does this mean “Make a new String,” but it also gives
-information about how to make the String by supplying an initial
-group of characters.
-Java comes with a plethora of ready-made types in addition to
-String. On top of that, you can create your own types. In fact,
-creating new types is the fundamental activity in Java programming,
-and it’s what you’ll be learning about in the rest of this book.
-Where Storage Lives
-It’s useful to visualize the way things are laid out while the program is
-running—in particular, how memory is arranged. There are five
-different places to store data:
+“引用”用来连接“对象”。在 Java 中，通常我们使用`new`这个操作符来来创建一个新的对象。`new`关键字代表：创建一个新的对象实例。所以，前面的代码实例我们也可以这样来表示：
+
+```java
+    String s = new String("asdf");
+```
+以上的代码示例展示了字符串对象的创建过程，以及如何初始化生成字符串。Java 本身自带了许多现成的数据类型，在此基础之上我们还可以创建自己的数据类型。类型的创建是 Java 的基本操作。在本书后面的学习中将会接触到。
+
+<!-- Where Storage Lives -->
+### 对象存储
+
+那么, 程序在运行时是如何安排内存的呢？下面我们就来形象地描述下， Java 程序在内存中存储的5个不同的地方：
+
 1. Registers. This is the fastest storage because it exists in a place different
 from that of other storage: inside the central processing
 unit (CPU)2. However, the number of registers is severely limited, so
@@ -93,6 +91,22 @@ when necessary. Java provides support for lightweight
 persistence. Libraries such as JDBC and Hibernate provide more
 sophisticated support for storing and retrieving object
 information using databases.
+
+程序运行时，我们最好要对数据保存到何处做到心中有数。特别要注意的是。有六个地方都可
+以保存数据：
+
+(1) 寄存器。这是最快的保存区域，因为它位于和其他所有保存方式不同的地方：处理器内部。然而，寄存器的数量十分有限，所以寄存器是根据需要由编译器分配。我们对此没有直接的控制权，也不可能在自己的程序里找到寄存器存在的任何踪迹。
+
+(2) 堆栈。驻留于常规 RAM（随机访问存储器）区域，但可通过它的“堆栈指针”获得处理的直接支持。堆栈指针若向下移，会创建新的内存；若向上移，则会释放那些内存。这是一种特别快、特别有效的数据保存方式，仅次于寄存器。创建程序时，Java 编译器必须准确地知道堆栈内保存的所有数据的“长度”以及“存在时间”。这是由于它必须生成相应的代码，以便向上和向下移动指针。这一限制无疑影响了程序的灵活性，所以尽管有些Java 数据要保存在堆栈里——特别是对象句柄，但Java 对象并不放到其中。
+ 
+(3) 堆。一种常规用途的内存池（也在 RAM区域），其中保存了Java 对象。和堆栈不同，“内存堆”或“堆”（Heap）最吸引人的地方在于编译器不必知道要从堆里分配多少存储空间，也不必知道存储的数据要在堆里停留多长的时间。此，用堆保存数据时会得到更大的灵活性。要求创建一个对象时，只需用new命令编制相关的代码即可。执行这些代时，会在堆里自动进行数据的保存。当然，为达到这种灵活性，必然会付出一定的代价：在堆里分配存储空间时会花掉更长的时间！
+
+(4) 静态存储。这儿的“静态”（Static）是指“位于固定位置”（尽管也在 RAM里）。程序运行期间，静态存储的数据将随时等候调用。可用static 关键字指出一个对象的特定元素是静态的。但 Java 对象本身永远都不会置入静态存储空间。
+
+(5) 常数存储。常数值通常直接置于程序代码内部。这样做是安全的，因为它们永远都不会改变。有的常数需要严格地保护，所以可考虑将它们置入只读存储器（ROM）。
+
+(6) 非RAM 存储。若数据完全独立于一个程序之外，则程序不运行时仍可存在，并在程序的控制范围之外。其中两个最主要的例子便是“流式对象”和“固定对象”。对于流式对象，对象会变成字节流，通常会发给另一台机器。而对于固定对象，对象保存在磁盘中。即使程序中止运行，它们仍可保持自己的状态不变。对于这些类型的数据存储，一个特别有用的技巧就是它们能存在于其他媒体中。一旦需要，甚至能将它们恢复成普通的、基于RAM的对象。Java 1.1 提供了对Lightweight persistence 的支持。未来的版本甚至可能提供更完整的方案
+
 Special Case: Primitive Types
 One group of types that you’ll often use gets special treatment. You can
 think of these as “primitive” types. The reason for the special
