@@ -2,18 +2,18 @@
 
 >如果我们说不同的语言，我们会感觉到一个不同的世界！— Ludwig Wittgenstein (1889-1951)
 
-尽管 Java 是基于 C++ 的，但 Java 是一种更纯粹的面向对象程序设计语言。Java 和 C++ 都是混合语言。在 Java 中，语言设计者认为混合并不像 C++ 那样重要。混合语言允许多种编程风格；这也是 C++ 支持与 C 语言的向后兼容性原因。因为 C++ 是 C 语言的超集，所以它也包含了许多 C 语言的不良特性，这可能使得 C++ 在某些方面过于复杂。
+尽管 Java 基于 C++ ，但 Java 是一种更纯粹的面向对象程序设计语言。Java 和 C++ 都是混合语言。在 Java 中，语言设计者认为混合并不像 C++ 那样重要。混合语言允许多种编程风格；这也是 C++ 支持与 C 语言的向后兼容性原因。因为 C++ 是 C 语言的超集，所以它也包含了许多 C 语言的不良特性，这可能使得 C++ 在某些方面过于复杂。
 
  Java 语言预设你已经编写过面对对象的程序。在此之前，你必须将自己的思维置于面对对象的世界。在本章中你将了解 Java 语言的基本组成，学习 Java （几乎）万物皆对象的思想。
 
 <!-- You Manipulate Objects with References -->
 ## 对象操纵
 
-名称意味着什么？例如：所有叫“玫瑰”的花闻起来都很甜蜜。（引用自 莎士比亚，《罗密欧与朱丽叶》）。
+名字的意义在于，我们听到“玫瑰”，就会想到一种闻起来很甜蜜的的花。（引用自 莎士比亚，《罗密欧与朱丽叶》）。
 
 所有的编程语言都会操纵内存中的元素。有时程序员必须要有意识地直接或间接地操纵它们。示例：在 C/C++ 语言中是通过指针来完成操作的。
 
-Java 使用万物皆对象的思想和特有的语法方式来简化问题。虽然万物皆可为对象，但你操纵的标识符实际上是只对象的“引用”。示例：我们可以将这种“引用”想象成电视（对象）和遥控器（引用）之间的关系。只要拥有对象的“引用”，就可以操纵该“对象”。我们无需直接接触电视，只要掌握遥控器就可以在房中自由地控制电视（对象）的频道和音量。此外，没有电视机，遥控器也可以单独存在。引申来说，仅仅因为你有一个“引用”并不意味着你必然有一个关联的“对象”。 
+Java 使用万物皆对象的思想和特有的语法方式来简化问题。虽然万物皆可为对象，但你操纵的标识符实际上是只对象的“引用” [^1]。 示例：我们可以将这种“引用”想象成电视（对象）和遥控器（引用）之间的关系。只要拥有对象的“引用”，就可以操纵该“对象”。我们无需直接接触电视，只要掌握遥控器就可以在房中自由地控制电视（对象）的频道和音量。此外，没有电视机，遥控器也可以单独存在。引申来说，仅仅因为你有一个“引用”并不意味着你必然有一个关联的“对象”。 
 
 下面来创建一个 String 的引用，用于保存单词语句。代码示例：
 
@@ -40,74 +40,24 @@ Java 语法允许我们使用带双引号的文本内容来初始化字符串。
 以上的代码示例展示了字符串对象的创建过程，以及如何初始化生成字符串。Java 本身自带了许多现成的数据类型，在此基础之上我们还可以创建自己的数据类型。类型的创建是 Java 的基本操作。在本书后面的学习中将会接触到。
 
 <!-- Where Storage Lives -->
-### 对象存储
+### 数据存储
 
-那么, 程序在运行时是如何安排内存的呢？下面我们就来形象地描述下， Java 程序在内存中存储的5个不同的地方：
+那么, 程序在运行时是如何存储的呢？尤其是内存。下面我们就来形象地描述下， Java 中数据存储的5个不同的地方：
 
-1. Registers. This is the fastest storage because it exists in a place different
-from that of other storage: inside the central processing
-unit (CPU)2. However, the number of registers is severely limited, so
-registers are allocated as they are needed. You don’t have direct
-control over register allocation, nor do you see any evidence in
-your programs that registers even exist (C & C++, on the other
-hand, allow you to suggest register allocation to the compiler).
-2. The stack. This lives in the general random-access memory
-(RAM) area, but has direct support from the processor via its
-stack pointer. The stack pointer is moved down to create new
-memory and moved up to release that memory. This is an
-extremely fast and efficient way to allocate storage, second only to
-registers. The Java system must know, while it is creating the
-program, the exact lifetime of all the items stored on the stack.
-This constraint places limits on the flexibility of your programs, so
-while some Java storage exists on the stack—in particular, object
-references—Java objects themselves are not placed on the stack.
-3. The heap. This is a general-purpose pool of memory (also in the
-RAM area) where all Java objects live. Unlike the stack, the
-compiler doesn’t need to know how long objects must stay on the
-heap. Thus, there’s a great deal of flexibility when using heap
-storage. Whenever you need an object, you write the code to
-create it using new, and the storage is allocated on the heap when
-that code is executed. There’s a price for this flexibility: It can take
-more time to allocate and clean up heap storage than stack
-storage (if you even could create objects on the stack in Java, as
-you can in C++). Over time, however, Java’s heap allocation
-mechanism has become very fast, so this is not an issue for
-concern.
-4. Constant storage. Constant values are often placed directly in
-the program code, which is safe since they can never change.
-Sometimes constants are cordoned off by themselves so they can
-be optionally placed in read-only memory (ROM), in embedded
-systems. 3
-5. Non-RAM storage. If data lives completely outside a program,
-it can exist while the program is not running, outside the control
-of the program. The two primary examples of this are serialized
-objects, where objects are turned into streams of bytes, generally
-sent to another machine, and persistent objects, where the objects
-are placed on disk so they will hold their state even when the
-program is terminated. The trick with these types of storage is
-turning the objects into something that exist on the other
-medium, and yet be resurrected into a regular RAM-based object
-when necessary. Java provides support for lightweight
-persistence. Libraries such as JDBC and Hibernate provide more
-sophisticated support for storing and retrieving object
-information using databases.
+1. **寄存器** （*Registers*） 最快的保存区域，位于CPU内部 [^2]。然而，寄存器的数量十分有限，所以寄存器是根据需要由编译器分配。我们对其没有直接的控制权，也无法在自己的程序里找到寄存器存在的踪迹（另一方面，C/C++ 允许开发者向编译器建议寄存器的分配）。
 
-程序运行时，我们最好要对数据保存到何处做到心中有数。特别要注意的是。有六个地方都可
-以保存数据：
+2. **栈内存**（*Stack*） 存在于通用随机存取存储器（RAM）区域中，可通过栈指针获得处理器的直接支持。栈指针向下移动以创建新内存并向上移动以释放该内存，后进先出，速度仅次于寄存器。创建程序时，Java 编译器必须准确地知道栈内保存的所有数据的“长度”以及生命周期。这种约束限制了程序的灵活性。因此，虽然栈内存上存在一些 Java 数据，特别是对象引用，但 Java 对象本身却是保存在堆内存的。
 
-(1) 寄存器。这是最快的保存区域，因为它位于和其他所有保存方式不同的地方：处理器内部。然而，寄存器的数量十分有限，所以寄存器是根据需要由编译器分配。我们对此没有直接的控制权，也不可能在自己的程序里找到寄存器存在的任何踪迹。
+3. **堆内存**（*Heap*） 这是一个常规用途的内存池（也在 RAM区域），所有 Java 对象都存在于其中。与堆栈不同，编译器不需要知道对象必须在堆上停留多长时间。因此，用堆内存保存数据更具灵活性。创建一个对象时，只需用 new 命令实例化代码即可。执行这些代时，会在堆里自动进行数据的保存。这种灵活性是有代价的：分配和清理堆内存要比栈内存需要更多的时间（如果你甚至可以用 Java 在栈内存上创建对象，就像在C++ 中那样）。随着时间的推移，Java 的堆内存分配机制现已非常快了，因此这不是一个值得关心的问题了。
 
-(2) 堆栈。驻留于常规 RAM（随机访问存储器）区域，但可通过它的“堆栈指针”获得处理的直接支持。堆栈指针若向下移，会创建新的内存；若向上移，则会释放那些内存。这是一种特别快、特别有效的数据保存方式，仅次于寄存器。创建程序时，Java 编译器必须准确地知道堆栈内保存的所有数据的“长度”以及“存在时间”。这是由于它必须生成相应的代码，以便向上和向下移动指针。这一限制无疑影响了程序的灵活性，所以尽管有些Java 数据要保存在堆栈里——特别是对象句柄，但Java 对象并不放到其中。
- 
-(3) 堆。一种常规用途的内存池（也在 RAM区域），其中保存了Java 对象。和堆栈不同，“内存堆”或“堆”（Heap）最吸引人的地方在于编译器不必知道要从堆里分配多少存储空间，也不必知道存储的数据要在堆里停留多长的时间。此，用堆保存数据时会得到更大的灵活性。要求创建一个对象时，只需用new命令编制相关的代码即可。执行这些代时，会在堆里自动进行数据的保存。当然，为达到这种灵活性，必然会付出一定的代价：在堆里分配存储空间时会花掉更长的时间！
+4. **常量存储** （*Constant storage*） 常量值通常直接放在程序代码中，因为它们永远不会改变。如需严格保护，可考虑将它们置于只读存储器（ROM）中 [^3]。
 
-(4) 静态存储。这儿的“静态”（Static）是指“位于固定位置”（尽管也在 RAM里）。程序运行期间，静态存储的数据将随时等候调用。可用static 关键字指出一个对象的特定元素是静态的。但 Java 对象本身永远都不会置入静态存储空间。
+5. **非 RAM 存储** （*Non-RAM storage*） 数据完全存在于程序之外，在程序未运行以及脱离程序控制后依然存在。两个主要的例子：（1）序列化对象：对象被转换为字节流，通常被发送到另一台机器；（2）持久化对象：对象被放置在磁盘上，即使程序终止，数据依然存在。这些存储的方式都是将对象转存于另一个介质中，并在需要时恢复到常规内存中。Java 为轻量级持久性提供支持。诸如 JDBC 和 Hibernate 之类的库为使用数据库存储和检索对象信息提供了更复杂的支持。
 
-(5) 常数存储。常数值通常直接置于程序代码内部。这样做是安全的，因为它们永远都不会改变。有的常数需要严格地保护，所以可考虑将它们置入只读存储器（ROM）。
 
-(6) 非RAM 存储。若数据完全独立于一个程序之外，则程序不运行时仍可存在，并在程序的控制范围之外。其中两个最主要的例子便是“流式对象”和“固定对象”。对于流式对象，对象会变成字节流，通常会发给另一台机器。而对于固定对象，对象保存在磁盘中。即使程序中止运行，它们仍可保持自己的状态不变。对于这些类型的数据存储，一个特别有用的技巧就是它们能存在于其他媒体中。一旦需要，甚至能将它们恢复成普通的、基于RAM的对象。Java 1.1 提供了对Lightweight persistence 的支持。未来的版本甚至可能提供更完整的方案
+<!-- Special Case: Primitive Types -->
+### 基础类型的存储
 
-Special Case: Primitive Types
 One group of types that you’ll often use gets special treatment. You can
 think of these as “primitive” types. The reason for the special
 treatment is that creating an object with new—especially a small,
@@ -187,7 +137,11 @@ Character ch = 'x';
 and back:
 char c = ch;
 The reasons for wrapping primitives are shown in a later chapter.
-High-Precision Numbers
+
+<!-- High-Precision Numbers -->
+### 高精数值的存储
+
+
 Java includes two classes for performing high-precision arithmetic:
 BigInteger and BigDecimal. Although these fit approximately
 the same category as the “wrapper” classes, neither one has a
@@ -204,7 +158,10 @@ information during operations.
 BigDecimal is for arbitrary-precision fixed-point numbers; you can
 use these for accurate monetary calculations, for example.
 Consult the JDK documentation for details about these two classes.
-Arrays in Java
+
+<!-- Arrays in Java -->
+### 数组的存储
+
 Many programming languages support some kind of array. Using
 arrays in C and C++ is perilous because those arrays are only blocks of
 memory. If a program accesses the array outside of its memory block
@@ -229,6 +186,10 @@ You can also create an array of primitives. The compiler guarantees
 initialization by zeroing the memory for that array.
 Arrays are covered in detail later in the book, and specifically in the
 Arrays chapter.
+
+  [^1]: 脚注预留
+  [^2]: 脚注预留
+  [^3]: 脚注预留
 
 <!-- Comments -->
 ## 代码注释
