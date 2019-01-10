@@ -56,87 +56,42 @@ Java 语法允许我们使用带双引号的文本内容来初始化字符串。
 
 
 <!-- Special Case: Primitive Types -->
-### 基础类型的存储
+### 基本类型的存储
 
-One group of types that you’ll often use gets special treatment. You can
-think of these as “primitive” types. The reason for the special
-treatment is that creating an object with new—especially a small,
-simple variable—isn’t very efficient, because new places objects on the
-heap. For these types Java falls back on the approach taken by C and
-C++. That is, instead of creating the variable using new, an
-“automatic” variable is created that is not a reference. The variable
-holds the value directly, and it’s placed on the stack, so it’s much more
-efficient.
-Java specifies the size of each primitive type, and these sizes don’t
-change from one machine architecture to another as they do in some
-languages. This size invariance is one reason Java programs are more
-portable than programs in some other languages.
-Primitive Size
-Min
-Max
-Wrapper
-boolean
-Boolean
-Unicode
-16
-65,535
-char
-0
-bits
-\uffff
-Character
-\u0000
-byte
-8 bits
--128
-+127
-Byte
-16
-short
--215
-+215-1
-Short
-bits
-32
-int
--231
-+231-1
-Integer
-bits
-64
-long
--263
-+263-1
-Long
-bits
-32
-float
-IEEE754
-IEEE754
-Float
-bits
-64
-double
-IEEE754
-IEEE754
-Double
-bits
-void
-Void
-All numeric types are signed, so don’t look for unsigned types.
-The size of the boolean type is not explicitly specified; it is defined to
-take the literal values true or false.
-“Wrapper” classes for primitive data types create a non-primitive
-object on the heap to represent that primitive type. For example:
+有一组类型在 Java 中使用频率很高,这就是 Java 的基本类型。对于此类数据的存储我们需要特别对待。之所以说这么说，是因为它们的创建并不是通过 `new` 关键字来产生。通常 `new` 出来的对象都是保存在 **Heap** 内存中的，  用它来创建小、简单的基本类型的数据是不划算的。所以对于这些基本类型的创建方法， Java 使用了和 C/C++ 一样的策略。也就是说，不是使用 `new` 创建变量，而是使用一个“自动”变量。 这个变量容纳了具体的值，并置于栈内存中，能够更高效地存取。
+
+Java 预设了每种基本类型的初始内存占用大小。 这些大小标准不会随着机器环境的变化而变化。这种不变性也是Java 的跨平台的一个原因。
+
+| 基本类型  |    大小 |  最小值  | 最大值  | 包装类型 |
+| :------: | :------: | :------: | :------: | :------: |
+| boolean | —  | — | — | Boolean |
+| char | 16 bits | Unicode 0  | Unicode $2^{16}-1$  | Character |
+| byte | 8 bits | $-128$ | $+127$ | Byte |
+| short | 16 bits | $-2^{15}$ | $+2^{15}-1$ | Short |
+| int | 32 bits | $-2^{31}$ | $-2^{31}-1$ | Integer |
+| long | 64 bits | $-2^{63}$ | $-2^{63}-1$ | Long |
+| float | 32 bits | IEEE754 | IEEE754 | Float |
+| double | 64 bits |IEEE754 | IEEE754 | Double |
+| void | — | — | — | Void |
+
+所有的数值类型都是有正/负符号的。布尔（boolean）类型的大小没有明确的规定，通常定义为采用文字 “true” 和 “false”。基本类型有自己对应的包装类型，如果你希望在堆内存里表示基本类型的数据，就需要用到它们的包装类。代码示例：
+
+```java
 char c = 'x';
 Character ch = new Character(c);
-Or you can also use:
+```
+或者你也可以使用下面的形式 基本类型自动转换成包装类型（自动装箱）：
+
+```java
 Character ch = new Character('x');
-Autoboxing automatically converts a primitive to a wrapped object:
-Character ch = 'x';
-and back:
+```
+相对的，包装类型转化为基本类型（自动拆箱）：
+
+```java
 char c = ch;
-The reasons for wrapping primitives are shown in a later chapter.
+```
+
+个中原因将在以后的章节里解释。
 
 <!-- High-Precision Numbers -->
 ### 高精数值的存储
