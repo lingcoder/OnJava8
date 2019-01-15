@@ -96,23 +96,13 @@ char c = ch;
 <!-- High-Precision Numbers -->
 ### 高精数值的存储
 
+在 Java 中有两种类型的数据可用于高精度的计算。它们是 `BigInteger` 和 `BigDecimal`。尽管它们大致可以划归为“包装类型”，但是它们并没有相应的基本类型形式。
 
-Java includes two classes for performing high-precision arithmetic:
-BigInteger and BigDecimal. Although these fit approximately
-the same category as the “wrapper” classes, neither one has a
-corresponding primitive.
-Both classes have methods that provide analogues for the operations
-you perform on primitive types. That is, you can do anything with a
-BigInteger or BigDecimal you can with an int or float, it’s
-just that you must use method calls instead of operators. Also, since
-there are more calculations involved, the operations are slower. You’re
-exchanging speed for accuracy.
-BigInteger supports arbitrary-precision integers. This means you
-can accurately represent integral values of any size without losing any
-information during operations.
-BigDecimal is for arbitrary-precision fixed-point numbers; you can
-use these for accurate monetary calculations, for example.
-Consult the JDK documentation for details about these two classes.
+这两个类都有自己特殊的“方法”，对应于我们针对基本类型数值执行的操作。也就是说，能对 int 或 float 做的运算，在 BigInteger 和 BigDecimal 这里也同样可以做一样可以，只不过必须要通过调用它们的方法来实现而非运算符。此外，由于涉及到的计算量更多，所以运算速度会慢一些。诚然，我们牺牲了速度，但换来了精度。
+
+BigInteger 支持任意精度的整数。可用于精确表示任意大小的整数值，同时在运算过程中不会丢失精度。
+BigDecimal 支持任意精度的定点数字。例如，可用它进行精确的币值计算。至于具体使用什么方法，跟多详情，请参考 JDK 官方文档。
+
 
 <!-- Arrays in Java -->
 ### 数组的存储
