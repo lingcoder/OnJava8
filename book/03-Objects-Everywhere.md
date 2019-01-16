@@ -107,30 +107,14 @@ BigDecimal 支持任意精度的定点数字。例如，可用它进行精确的
 <!-- Arrays in Java -->
 ### 数组的存储
 
-Many programming languages support some kind of array. Using
-arrays in C and C++ is perilous because those arrays are only blocks of
-memory. If a program accesses the array outside of its memory block
-or uses the memory before initialization (common programming
-errors), the results are unpredictable.
-One of the primary goals of Java is safety, so many of the problems
-that plague programmers in C and C++ are not repeated in Java. A
-Java array is guaranteed to be initialized and cannot be accessed
-outside of its range. This range checking comes at the price of having a
-small amount of memory overhead for each array as well as extra time
-to verify the index at run time, but the assumption is that the safety
-and increased productivity are worth the expense (and Java can often
-optimize these operations).
-When you create an array of objects, you are really creating an array of
-references, and each of those references is automatically initialized to
-a special value with its own keyword: null. When Java sees null, it
-recognizes that the reference in question isn’t pointing to an object.
-You must assign an object to each reference before you use it, and if
-you try to use a reference that’s still null, the problem is reported at
-run time. Thus, typical array errors are prevented in Java.
-You can also create an array of primitives. The compiler guarantees
-initialization by zeroing the memory for that array.
-Arrays are covered in detail later in the book, and specifically in the
-Arrays chapter.
+
+许多编程语言都支持数组类型。在 C 和 C++ 中使用数组是危险的，因为那些数组只是内存块。如果程序访问了其内存块之外的数组或在初始化之前使用该段内存（常见编程错误），则结果是不可预测的。
+
+Java 的设计主要目标之一是安全性，因此许多困扰 C 和 C++ 程序员的问题不会在 Java 中再现。在 Java 中，数组使用前需要被初始化，并且不能访问数组长度以外数据。这种长度检查的代价是每个阵列都有少量的内存开销以及在运行时验证索引的额外时间，但是这种安全性的前提对于提高的生产率是值得的。（并且 Java 经常可以优化这些操作）。
+
+当我们创建一个数组对象时，实际上是创建了一个数组的引用，并且每个引用都会自动初始化为一个特殊值：null。当程序运行时识别到 null 时，会报告该问题。所以，在最终真正使用数组之前，我们必须为每个引用分配一个数组的对象。至此，在 Java 中就防止了数组操作的典型错误。
+
+我们还可以创建数值的基本类型元素的数组。这样编译器会在初始化时，自动将其赋值为0。本书稍后将详细介绍数组，特别是在数组章节中。
 
   [^1]: 脚注预留
   [^2]: 脚注预留
