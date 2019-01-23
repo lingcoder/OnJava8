@@ -149,73 +149,63 @@ continues across lines */
 <!-- You Never Need to Destroy an Object -->
 ## 对象清理
 
-In some programming languages, managing storage lifetime requires
-significant effort. How long does a variable last? If you are supposed to
-destroy it, when should you? Confusion over storage lifetime can lead
-to many bugs, and this section shows how Java simplifies the issue by
-releasing storage for you.
-Scoping
-Most procedural languages have the concept of scope. This determines
-both the visibility and lifetime of the names defined within that scope.
-In C, C++, and Java, scope is determined by the placement of curly
-braces {}. Here is a fragment of Java code demonstrating scope:
+在一些编程语言中，管理存储的生命周期需要大量的工作。一个变量需要存续多久？如果我们想销毁它，应该什么时候去做呢？存储生命周期的混乱会导致许多错误，本小结将会向你介绍 Java 是如何通过释放存储来简化这个问题的。
+
+<!-- Scoping -->
+### 作用域
+
+大多数程序语言都有作用域的概念。这将确定在该范围内定义的名称的可见性和生存周期。在 C、C++ 和 Java 中，作用域是由大括号 `{}` 的位置决定的。下面是 Java 代码作用域的一个示例：
+
+```JAVA
 {
-int x = 12;
-// Only x available
+    int x = 12;
+// 仅 x 变量可用
 {
-int q = 96;
-// Both x & q available
+    int q = 96;
+// x 和 q 变量皆可用
 }
-// Only x available
-// q is "out of scope"
+// 仅 x 变量可用
+// 变量 q 不在作用域内
 }
-A variable defined within a scope is available only until the end of that
-scope.
-Indentation makes Java code easier to read. Since Java is a free-form
-language, the extra spaces, tabs, and carriage returns do not affect the
-resulting program.
-You cannot do the following, even though it is legal in C and C++:
+```
+
+Java 的变量只有在其作用域内才可用。缩进使得 Java 代码更易于阅读。由于 Java 是一种自由形式的语言，额外的空格、制表符和回车并不会影响程序的生成结果。在 Java 中，你不能执行以下操作，即使这在 C 和 C++ 中是合法的：
+
+```JAVA
 {
-int x = 12;
+    int x = 12;
 {
-int x = 96; // Illegal
+    int x = 96; // Illegal
 }
 }
-The Java compiler will announce that the variable x has already been
-defined. Thus the C and C++ ability to “hide” a variable in a larger
-scope is not allowed, because the Java designers thought it led to
-confusing programs.
-Scope of Objects
-Java objects do not have the same lifetimes as primitives. When you
-create a Java object using new, it persists past the end of the scope.
-Thus, if you say:
+```
+
+在上例中， Java 便编译器会在提示变量 x 已经被定义过了。因此，在 C 和 C++ 中可以于更大作用域中“隐藏”变量的能力在 Java 中是不被允许的。 因为 Java 的设计者认为这样的定义会混淆编程。
+
+<!-- Scope of Objects -->
+### 对象作用域
+
+Java 对象与基本类型具有不同的生命周期。当我们使用 `new` 关键字来创建 Java 对象时，它的存续将会超出作用域的末尾。因此，下面这段代码示例
+
+```JAVA
 {
-String s = new String("a string");
-} // End of scope
-the reference s vanishes at the end of the scope. However, the
-String object that s points to is still occupying memory. In this bit
-of code, there is no way to access the object after the end of the scope,
-because the only reference to it is out of scope. In later chapters you’ll
-see how the reference to the object can be passed around and
-duplicated during the course of a program.
-Because objects created with new exist as long as you need them, a
-whole slew of C++ programming problems vanish in Java. In C++ you
-must not only make sure that the objects stay around as long as
-necessary, you must also destroy the objects when you’re done with
-them.
-This brings up a question. If Java leaves the objects lying around, what
-keeps them from filling up memory and halting your program, which
-is exactly the kind of problem that occurs in C++? In Java, a bit of
-magic happens: the garbage collector looks at all the objects created
-with new and finds those that are no longer referenced. It then
-releases the memory for those objects, so the memory can be used for
-new objects. This means you don’t worry about reclaiming memory
-yourself. You simply create objects, and when you no longer need
-them, they go away by themselves. This prevents an important class of
-programming problem: the so-called “memory leak,” when a
-programmer forgets to release memory.
-Creating New Data
-Types: class
+    String s = new String("a string");
+} 
+// 作用域结束
+```
+上例中，变量 s 的范围在标注的地方结束了。但是，引用的字符串对象依然还在占用内存。在这段代码中，变量 s 的唯一引用超出了作用域，因此它无法在作用域外被访问。在后面的章节中，你将学习到如何在编程过程中传递和复制对象的引用。
+
+只要你还需要它们，这些用 `new` 关键字创建出来的对象就不会消失。因此，这个在 C++ 编程中大量存在的问题在 Java 中消失了。在 C++ 中你不仅要确保对象在你操作的范围内存在，而且还必须在完成后销毁对象。
+
+随之而来的问题：如果 Java 并没有清理周围的这些对象，那么它是如何避免 C++ 中出现的内存泄漏和程序终止的问题呢？答案是：Java 的垃圾收集器会查找所有 `new` 出来的对象并判断哪些不再可达。然后释放那些对象所占用的内存。这意味着我们不必再需要自己操作回收内存了。我们只需要简单的创建对象，当这些对象不再被需要时，它们能自行被垃圾收集器释放。
+。这意味着您不必担心回收内存你自己。您只需创建对象，当您不再需要时他们，他们自己消失。这可以防止重要的一类编程问题：所谓的“内存泄漏”时程序员忘记释放内存。
+
+这就有效地防止了一类重要的编程问题：因程序员忘记释放内存而造成的“内存泄漏”。
+
+<!-- Creating New Data Types: class -->
+## 创建新类
+
+
 If everything is an object, what determines how a particular class of
 object looks and behaves? Put another way, what establishes the type
 of an object? You might expect a keyword called “type,” and that would

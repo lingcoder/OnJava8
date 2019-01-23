@@ -46,6 +46,7 @@
     * [对象创建](book/03-Objects-Everywhere.md#对象创建)
     * [代码注释](book/03-Objects-Everywhere.md#代码注释)
     * [对象清理](book/03-Objects-Everywhere.md#对象清理)
+    * [创建新类](book/03-Objects-Everywhere.md#创建新类)
     * [程序编写](book/03-Objects-Everywhere.md#程序编写)
     * [小试牛刀](book/03-Objects-Everywhere.md#小试牛刀)
     * [编码风格](book/03-Objects-Everywhere.md#编码风格)
