@@ -203,7 +203,7 @@ Java 对象与基本类型具有不同的生命周期。当我们使用 `new` �
 这就有效地防止了一类重要的编程问题：因程序员忘记释放内存而造成的“内存泄漏”。
 
 <!-- Creating New Data Types: class -->
-## 创建新类
+## 类的创建
 
 
 If everything is an object, what determines how a particular class of
