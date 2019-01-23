@@ -123,23 +123,28 @@ Java 的设计主要目标之一是安全性，因此许多困扰 C 和 C++ 程�
 <!-- Comments -->
 ## 代码注释
 
-There are two types of comments in Java. The first are the traditional
-C-style comment which begin with a /* and continue, possibly across
-many lines, until a */. Note that many programmers begin each line
-of a multiline comment with a *, so you’ll often see:
+
+Java 中有两种类型的注释。第一种是传统的 C 风格的注释，以 `/*` 开头，可以跨越多行，到 `*/ ` 结束。**注意**，许多程序员在多行注释的每一行开头添加 `*`，所以你经常会看到：
+
+```java
 /* This is a comment
 * that continues
 * across lines
 */
-Remember, however, that everything inside the /* and */ is ignored,
-so there’s no difference if you say instead:
+```
+
+但请记住， `/*` 和 `*/` 之间的内容都是被忽略的。所以你将其改为下面的风格也是没有区别的。
+
+```JAVA
 /* This is a comment that
 continues across lines */
-The second form of comment comes from C++. It is the single-line
-comment, which starts with a // and continues until the end of the
-line. This type of comment is convenient and commonly used because
-it’s easy. So you often see:
-// This is a one-line comment
+```
+
+第二种注释形式来自 C++ 。它是单行注释，以 `//` 开头并一直持续到行结束。这种注释方便且常用，因为它很直观和简单。所以你经常看到：
+
+```JAVA
+// 这是单行注释
+```
 
 <!-- You Never Need to Destroy an Object -->
 ## 对象清理
