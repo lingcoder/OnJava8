@@ -277,7 +277,7 @@ class DataOnly {
 
 这些默认值仅在 Java 初始化类的时候才会被赋予。这种方式确保了基本类型的属性始终能被初始化（在C++ 中不会），从而减少了 bug 的来源。但是，这些初始值对于程序来说并不一定是合法或者正确的。 所以,为了安全，我们最好始终显式地初始化变量。
 
-这种默认值的赋予并不适用于局部变量 ---- 那些不是的属性的变量。 因此，若在方法中定义的基本类型数据，如下：
+这种默认值的赋予并不适用于局部变量 ---- 那些不属于类的属性的变量。 因此，若在方法中定义的基本类型数据，如下：
 
 ```JAVA
     int x;
@@ -289,81 +289,77 @@ class DataOnly {
 <!-- Methods, Arguments,and Return Values -->
 ### 方法使用
 
-Methods, Arguments,
-and Return Values
-In many languages (like C and C++), the term function is used to
-describe a named subroutine. In Java, we use the term method, as in
-“a way to do something.”
-Methods in Java determine the messages an object can receive. The
-fundamental parts of a method are the name, the arguments, the
-return type, and the body. Here is the basic form:
-ReturnType methodName( /* Argument list */ ) {
-// Method body
-}
-ReturnType indicates the type of value produced by the method
-when you call it. The argument list gives the types and names for the
-information you pass into the method. The method name and
-argument list are collectively called the signature of the method. The
-signature uniquely identifies that method.
-Methods in Java can only be created as part of a class. A method can
-be called only for an object4, and that object must be able to perform that
-method call. If you try to call the wrong method for an object,
-you’ll get an error message at compile time.
-You call a method for an object by giving the object reference followed
-by a period (dot), followed by the name of the method and its
-argument list, like this:
-objectReference.methodName(arg1, arg2, arg3);
-Consider a method f() that takes no arguments and returns a value
-of type int. For a reference a that accepts calls to f(), you can say this:
+在许多语言（如 C 和 C++）中，术语函数（**function**）用于描述命名子程序。在 Java 中，我们使用术语方法（**method**）来表示“做某事的方式”。
+
+在 JAVA 中，方法决定着对象对象能接收哪些信息。方法的基础部分包含，名称、参数、返回类型、方法体。格式如：
+
+```java
+ [返回类型][方法名](/*参数列表*/){
+      // 方法体
+ }
+```
+
+方法的返回类型表明了当你调用它时会返回的结果类型。参数列表则显示了可被传递到方法内部的参数类型及名称。方法的名称和参数列表被统称为**方法签名**（**signature of the method**）。签名作为方法的唯一性标识。
+
+Java 中的方法只能作为类的一部分创建。它只能被对象所调用，并且该对象必须有权限来执行调用。若对象调用错误的方法，则程序将在编译时报错。
+
+我们可以通过在对象名的后面跟上 `.` 符号+方法名及其参数来调用一个方法。代码示例：
+
+```JAVA
+[对象引用].[方法名](参数1, 参数2, 参数3);
+```
+
+若方法不带参数，例如一个对象 a 的方法 f 不带参数并返回 int 型结果，我们可以如下表示。代码示例：
+
+```JAVA
 int x = a.f();
-The type of the return value must be compatible with the type of x.
-This act of calling a method is sometimes termed sending a message
-to an object. In the preceding example, the message is f() and the
-object is a. Object-oriented programming can be summarized as
-“sending messages to objects.”
-The Argument List
-The method argument list specifies the information you pass into the
-method. As you might guess, this information—like everything else in
-Java—takes the form of objects. The argument list must specify the
-object types and the name of each object. As always, where you seem
-to be handing objects around, you are actually passing references.5
-The type of the reference must be correct, however. If a String
-argument is expected, you must pass in a String or the compiler will
-give an error.
-Here is the definition for a method that takes a String as its
-argument. It must be placed within a class for it to compile:
+```
+
+上例中方法 f 的返回值必须兼容接收的变量 x 。这种调用方法的行为有时被称为向对象传递信息。面向对象编程可以被总结为：向对象传递信息。
+
+<!-- The Argument List -->
+**参数列表**
+
+方法参数列表指定传递给方法的信息。正如你可能猜到的，这些信息 - 就像 Java 中的其他所有信息 - 采用对象的形式。参数列表必须指定对象类型和每个对象的名称。同样，我们并没有直接处理对象，而是在传递对象引用。但是引用的类型必须是正确的。如果方法需要 String 参数，则必须传入 String，否则编译器将报错。
+
+```JAVA
 int storage(String s) {
-return s.length() * 2;
+
+    return s.length() * 2;
 }
-This method calculates and delivers the number of bytes required to
-hold the information in a particular String. The argument s is of
-type String. Once s is passed into storage(), you can treat it like
-any other object—you can send it messages. Here, we call length(),
-which is a String method that returns the number of characters in a
-String. The size of each char in a String is 16 bits, or two bytes.
-You can also see the return keyword, which does two things. First, it
-means “Leave the method, I’m done.” Second, if the method produces
-a value, that value is placed right after the return statement. Here,
-the return value is produced by evaluating the expression
-s.length() * 2.
-You can return any type you want, but if you don’t return anything at
-all, you do so by indicating that the method produces void (nothing).
-Here are some examples:
-boolean flag() { return true; }
-double naturalLogBase() { return 2.718; }
-void nothing() { return; }
-void nothing2() {}
-When the return type is void, the return keyword is used only to
-exit the method, and is therefore unnecessary if called at the end of the
-method. You can return from a method at any point, but if you’ve
-given a non-void return type, the compiler will force you to return
-the appropriate type of value regardless of where you return.
-It might look like a program is just a bunch of objects with methods
-that take other objects as arguments and send messages to those other
-objects. That is indeed much of what goes on, but in the following
-Operators chapter you’ll learn how to do the detailed low-level work by
-making decisions within a method. For this chapter, sending messages
-will suffice.
+```
+
+此方法计算并返回某个字符串的长度。参数 s 的类型为 String 。将 字符串变量 s 传递给 storage() 后，我们可以将其视为任何其他对象一样 ---- 我们可以想起传递信息。在这里，我们调用 length() 方法，它是一个 String 方法，返回字符串长度。字符串中每个字符的大小为16位或两个字节。您还可以看到 **return** 关键字，它执行两项操作。首先，它意味着“方法执行结束”。其次，如果方法有返回值，那么该值就位于 **return** 语句之后。这里，返回值是通过计算
+
+```JAVA
+s.length() * 2
+```
+产生的。在方法中，我们可以返回任意的数据。如果我们不想方法返回什么数据，则可以通过给方法标识 `void` 来表明这是一个无需返回值的方法。
+
+代码示例：
+
+```JAVA
+boolean flag() { 
+    return true; 
+    }
+
+double naturalLogBase() { 
+    return 2.718; 
+    }
+
+void nothing() {
+     return;
+      }
+
+void nothing2() {
+
+}
+```
+
+当返回类型为 **void** 时， **return** 关键字仅用于退出方法，因此在方法结束处的 **return** 可被省略。我们可以随时从方法中返回。若方法返回类型为非 `void`，则编译器会强制返回相应类型的值。
+
+上面的描述可能会让你感觉程序只不过是一堆包含各种方法的对象，将对象作为方法参数来传递信息给其他的对象。从表面上来看的确如此。但在下一章的运算符中我们将会学习如何在方法中做出决策来完成更底层、详细的工作。对于本章，知道如何传递信息就够了。
+
 
 <!-- Writing a Java Program -->
 ## 程序编写
