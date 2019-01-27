@@ -174,9 +174,9 @@ Java 的变量只有在其作用域内才可用。缩进使得 Java 代码更易
 ```JAVA
 {
     int x = 12;
-{
-    int x = 96; // Illegal
-}
+    {
+        int x = 96; // Illegal
+    }
 }
 ```
 
@@ -205,92 +205,86 @@ Java 对象与基本类型具有不同的生命周期。当我们使用 `new` �
 <!-- Creating New Data Types: class -->
 ## 类的创建
 
+### 类型
 
-If everything is an object, what determines how a particular class of
-object looks and behaves? Put another way, what establishes the type
-of an object? You might expect a keyword called “type,” and that would
-certainly make sense. Historically, however, most object-oriented
-languages use the keyword class to describe a new kind of object.
-The class keyword (so common it will often not be bold-faced
-throughout this book) is followed by the name of the new type. For
-example:
-class ATypeName {
-// Class body goes here
+如果一切都是对象，那么我们用什么来表示对象类的具体展现和行为呢？顾名思义，你可能很自然地想到 `type` 关键字。但是，事实上大多数面向对象的语言都使用 `class` 关键字类来描述一种新的对象。 通常在 `class` 关键字的后面的紧跟类的的名称。如下代码示例：
+
+```java
+ class ATypeName {
+ // 这里是类的内部
 }
-This introduces a new type, although here the class body consists only
-of a comment, so there is not too much you can do with it. However,
-you can create an object of ATypeName using new:
+```
+
+在上例中，我们介绍了如何创建一个新的类型，尽管这个类里只有一行注释。但是我们一样可以通过 `new` 关键字来创建一个对象。如下：
+
+```JAVA
 ATypeName a = new ATypeName();
-You can’t tell it to do much of anything—that is, you cannot send it any
-interesting messages—until you define some methods for it.
-Fields
-When you define a class, you can put two types of elements in your
-class: fields (sometimes called data members), and methods
-(sometimes called member functions). A field is an object of any type you
-can talk to via its reference. A field can also be a primitive type. If
-it is a reference to an object, you must initialize that reference to
-connect it to an actual object (using new, as seen earlier).
-Each object keeps its own storage for its fields. Ordinarily, fields are
-not shared among objects. Here is an example of a class with some
-fields:
+```
+
+到现在为止，我们还不能用这个对象来做什么事，比如发送一些有趣的信息啊。除非我们在这个类里定义一些方法。
+
+<!-- Fields -->
+### 属性
+
+当我们创建好了一个类之后，我们可以往类里存放两种类型的元素。方法（**method**）和属性（**field**）。类的属性可以是基本类型。如果类的属性是对象的话，那么必须要初始化该引用将其关联到一个实际的对象上（通过之前介绍的创建对象的方法）。每个对象都都会为其属性保留独立的存储空间。通常，属性不再对象之间做共享。下面是一个包含部分属性的类的代码示例：
+
+```JAVA
 class DataOnly {
-int i;
-double d;
-boolean b;
+    int i;
+    double d;
+    boolean b;
 }
-This class doesn’t do anything except hold data. As before, you create
-an object like this:
-DataOnly data = new DataOnly();
-You can assign values to the fields by referring to object members. To
-do this, you state the name of the object reference, followed by a
-period (dot), followed by the name of the member inside the object:
-objectReference.member
-For example:
-data.i = 47;
-data.d = 1.1;
-data.b = false;
-What if your object contains other objects that contain data you want
-to modify? You just keep “connecting the dots.” For example:
-myPlane.leftTank.capacity = 100;
-You can nest many objects this way (although such a design might
-become confusing).
-Default Values for Primitive Members
-When a primitive data type is a field in a class, it is guaranteed to get a
-default value if you do not initialize it:
-Primitive
-Default
-boolean
-false
-\u0000
-char
-(null)
-byte
-(byte)0
-short
-(short)0
-int
-0
-long
-0L
-float
-0.0f
-double
-0.0d
-The default values are only what Java guarantees when the variable is
-used as a member of a class. This ensures that primitive fields will
-always be initialized (something C++ doesn’t do), reducing a source of
-bugs. However, this initial value might not be correct or even legal for
-the program you are writing. It’s best to always explicitly initialize
-your variables.
-This guarantee doesn’t apply to local variables—those that are not
-fields of a class. Thus, if within a method definition you have:
-int x;
-Then x will get some arbitrary value (as it does in C and C++); it will
-not automatically be initialized to zero. You are responsible for
-assigning an appropriate value before you use x. If you forget, Java
-definitely improves on C++: You get a compile-time error telling you
-the variable might not be initialized. (C++ compilers often warn you
-about uninitialized variables, but in Java these are errors.)
+```
+
+除非持有数据，不然这个类不能做任何是。在此之前，我们可以通过下面的代码示例来创建它的对象：
+
+```JAVA
+    DataOnly data = new DataOnly();
+```
+
+我们必须通过这个对象的引用来指定属性值。格式：对象名称.方法名称或成员名称。代码示例：
+
+```JAVA
+    data.i = 47;
+    data.d = 1.1;
+    data.b = false;
+```
+
+如果你想修改对象内部包含的另一个对象的数据，可以通过这样的格式修改。代码示例：
+
+```JAVA
+    myPlane.leftTank.capacity = 100;
+```
+
+你可以用这种方式嵌套许多对象（尽管这样的设计会带来混淆）。
+
+
+<!-- Default Values for Primitive Members -->
+### 基本类型默认值
+
+如果类的成员变量（属性）是基本类型，那么在类初始化时，这些类型将会被赋予一个初始值。
+
+| 基本类型 | 初始值 |
+| :-----: |:-----: |
+| boolean | false |
+| char | \u0000 |
+| byte | 0 |
+| short |0 |
+| int | 0 |
+| long | 0L |
+| float | 0.0f |
+| double | 0.0d |
+
+这些默认值仅在 Java 初始化类的时候才会被赋予。这种方式确保了基本类型的属性始终能被初始化（在C++ 中不会），从而减少了 bug 的来源。但是，这些初始值对于程序来说并不一定是合法或者正确的。 所以,为了安全，我们最好始终显式地初始化变量。
+
+这种默认值的赋予并不适用于局部变量 ---- 那些不是的属性的变量。 因此，若在方法中定义的基本类型数据，如下：
+
+```JAVA
+    int x;
+```
+
+这里的变量 x 不会自动初始化为0，因而在使用变量 x 之前，程序员有责任主动地为其赋值（和 C 、C++ 一致）。如果我们忘记了这一步，在 JAVA 中将会提示我们“编译时错误，该变量尚未被初始化”。 这一点做的比 C++ 要更好，在后者中，编译器只是提示警告，而在 JAVA 中则直接报错。
+
 
 <!-- Methods, Arguments,and Return Values -->
 ### 方法使用
