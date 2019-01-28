@@ -299,6 +299,8 @@ class DataOnly {
  }
 ```
 
+#### 返回类型
+
 方法的返回类型表明了当你调用它时会返回的结果类型。参数列表则显示了可被传递到方法内部的参数类型及名称。方法的名称和参数列表被统称为**方法签名**（**signature of the method**）。签名作为方法的唯一性标识。
 
 Java 中的方法只能作为类的一部分创建。它只能被对象所调用，并且该对象必须有权限来执行调用。若对象调用错误的方法，则程序将在编译时报错。
@@ -318,7 +320,7 @@ int x = a.f();
 上例中方法 f 的返回值必须兼容接收的变量 x 。这种调用方法的行为有时被称为向对象传递信息。面向对象编程可以被总结为：向对象传递信息。
 
 <!-- The Argument List -->
-**参数列表**
+#### 参数列表
 
 方法参数列表指定传递给方法的信息。正如你可能猜到的，这些信息 - 就像 Java 中的其他所有信息 - 采用对象的形式。参数列表必须指定对象类型和每个对象的名称。同样，我们并没有直接处理对象，而是在传递对象引用。但是引用的类型必须是正确的。如果方法需要 String 参数，则必须传入 String，否则编译器将报错。
 
@@ -364,162 +366,109 @@ void nothing2() {
 <!-- Writing a Java Program -->
 ## 程序编写
 
-There are several other issues you must understand before seeing your
-first Java program.
-Name Visibility
-A problem in any programming language is the control of names. If
-you use a name in one module of the program, and another
-programmer uses the same name in another module, how do you
-distinguish one name from another and prevent the two names from
-“clashing?” In C this is especially challenging because a program is
-often an unmanageable sea of names. C++ classes (on which Java
-classes are modeled) nest functions within classes so they cannot clash
-with function names nested within other classes. However, C++
-continues to allow global data and global functions, so clashing is still
-possible. To solve this problem, C++ introduced namespaces using
-additional keywords.
-Java avoided all these problems by taking a fresh approach. To
-produce an unambiguous name for a library, the Java creators want
-you to use your Internet domain name in reverse, because domain
-names are guaranteed to be unique. Since my domain name is
-MindviewInc.com, my foibles utility library is named
-com.mindviewinc.utility.foibles. Following your
-reversed domain name, the dots are intended to represent
-subdirectories.
-In Java 1.0 and Java 1.1 the domain extensions com, edu, org, net, etc., were
-capitalized by convention, so the library would appear:
-Com.mindviewinc.utility.foibles. Partway through the
-development of Java 2, however, they discovered this caused
-problems, so now the entire package name is lowercase.
-This mechanism means all your files automatically live in their own
-namespaces, and each class within a file has a unique identifier. This
-way, the language prevents name clashes.
-Using reversed URLs was a new approach to namespaces, never before
-tried in another language. Java has a number of these “inventive”
-approaches to problems. As you might imagine, adding a feature
-without experimenting with it first risks discovering problems with
-that feature in the future, after the feature is used in production code,
-typically when it’s too late to do anything about it (some mistakes were
-bad enough to actually remove things from the language).
-The problem with associating namespaces with file paths using
-reversed URLs is by no means one that causes bugs, but it does make
-it challenging to manage source code. By using
-com.mindviewinc.utility.foibles, I create a directory
-hierarchy with “empty” directories com and mindviewinc whose
-only job is to reflect the reversed URL. This approach seemed to open
-the door to what you will encounter in production Java programs:
-deep directory hierarchies filled with empty directories, not just for the
-reversed URLs but also to capture other information. These long paths
-are basically being used to store data about what is in the directory. If
-you expect to use directories in the way they were originally designed,
-this approach lands anywhere from “frustrating” to “maddening,” and
-for production Java code you are essentially forced to use one of the
-IDEs specifically designed to manage code that is laid out in this
-fashion, such as NetBeans, Eclipse, or IntelliJ IDEA. Indeed, those
-IDEs both manage and create the deep empty directory hierarchies for
-you.
-For this book’s examples, I didn’t want to burden you with the extra
-annoyance of the deep hierarchies, which would have effectively
-required you to learn one of the big IDEs before getting started. The
-examples for each chapter are in a shallow subdirectory with a name
-reflecting the chapter title. This caused me occasional struggles with
-tools that follow the deep-hierarchy approach.
-Using Other Components
-Whenever you use a predefined class in your program, the compiler
-must locate that class. In the simplest case, the class already exists in
-the source-code file it’s being called from. In that case, you simply use
-the class—even if the class doesn’t get defined until later in the file
-(Java eliminates the so-called “forward referencing” problem).
-What about a class that exists in some other file? You might think the
-compiler should be smart enough to go and find it, but there is a
-problem. Imagine you use a class with a particular name, but more
-than one definition for that class exists (presumably these are different
-definitions). Or worse, imagine that you’re writing a program, and as
-you’re building it you add a new class to your library that conflicts with
-the name of an existing class.
-To solve this problem, you must eliminate all potential ambiguities by
-telling the Java compiler exactly what classes you want using the
-import keyword. import tells the compiler to bring in a package,
-which is a library of classes. (In other languages, a library could
-consist of functions and data as well as classes, but remember that all
-activities in Java take place within classes.)
-Much of the time you’ll use components from the standard Java
-libraries that come with your compiler. With these, you don’t worry
-about long, reversed domain names; you just say, for example:
+在看到第一个 Java 程序之前，我们还必须了解其他几个问题。
+
+#### 命名可见性
+
+命名控制在任何一门编程语言中都是一个问题。如果程序员在两个模块中使用相同的命名，那么如何区分这两个名称，并防止两个名称发生“冲突”呢？在 C 语言编程中这是很具有挑战性的，因为程序通常是一个无法管理的名称海洋。C++ 将函数嵌套在类中，它们不能与嵌套在其他类中的函数名冲突。然而，C++ 继续允许全局数据和全局函数，因此仍有可能发生冲突。为了解决这个问题，C++ 使用附加的关键字引入命名空间。
+
+Java 采取了一种新的方法避免了以上这些问题：为一个库生成一个明确的名称，Java 创建者希望我们反向使用自己的网络域名，因为域名通常是唯一的。自从我的域名为 MindviewInc.com 开始，我就将我的 foibles 工具库命名为 com.mindviewinc.utility.foibles。根据你的域名的反向信息，`.`代表着一个子目录。
+
+在 Java 1.0和 Java 1.1中，域扩展 com，edu，org，net 等按惯例大写，因此类库中会出现这样类似的名称：Com.mindviewinc.utility.foibles。然而，在 Java 2 的开发过程中，他们发现这会导致问题，所以现在整个包名都是小写的。此机制意味着所有文件都自动存在于自己的命名空间中，文件中的每个类都具有唯一标识符。这样，该语言可以防止名称冲突。
+
+使用反向 URL 是一种新的命名空间方法，在此之前尚未有其他语言这么做过。Java 中有许多这些“创造性”地解决问题的方法。正如你想象，如果我们未经测试就添加一个功能并用于生产，那么在将来发现该功能的问题再想纠正，通常为时已晚。（有些问题错误得足以从语言中删除。）
+
+使用反向 URL 将命名空间与文件路径相关联不会导致BUG，但它却给源代码管理带来麻烦。例如在 com.mindviewinc.utility.foiles 这样的目录结构中，我们创建了com、mindviewinc 空目录。它们存在的唯一目的就是用来表示这个反向的 URL。
+
+这种方式似乎为我们在编写 Java 程序中的某个问题打开了大门。空目录填充了深层次结构，它们不仅用于表示反向 URL，还用于捕获其他信息。这些长路径基本上用于存储有关目录中的内容的数据。如果你希望以最初设计的方式使用目录，这种方法可以从“令人沮丧”到“令人抓狂”，对于产生的 Java 代码，你基本上不得不使用专门为此设计的 IDE 来管理代码。例如 NetBeans，Eclipse 或 IntelliJ IDEA。实际上，这些 IDE 都为我们管理和创建深度空目录层次结构。
+
+对于这本书中的例子，我不想让深层次的层次结构给你的学习带来额外的麻烦，这实际上需要你在开始之前学习熟悉一种重量级的 IDE。所有，我们的每个章节的示例都位于一个浅的子目录中，其名称反映了章节标题。这导致我偶尔会与遵循深度层次方法的工具发生冲突。
+
+<!-- Using Other Components -->
+#### 使用其他组件
+
+
+无论何时在程序中使用预定义的类，编译器都必须找到该类。在一般情况下，该类已存在于被调用的源代码文件中。此时我们使用该类 - 即使该类未在文件中稍后定义（Java 消除了所谓的“前向引用”问题）。而那些存在于其他文件中的类怎么样？你可能认为编译器应该足够智能去找到它，但这样是有问题的。想象一下，假如你要使用某个类，但目录中存在多个同名的类（可能用途不同）。或者更糟糕的是，假设你正在编写程序，并且在构建它时，你将向库中添加一个与现有类名称冲突的新类。
+
+要解决此问题，你必须通过使用 `import` 关键字来告诉 Java 编译器具体要使用的类。import 表示编译器引入一个包，它是一个类库。（在其他语言中，库可以包含函数和数据以及类，但请记住，Java 中的所有活动都在类中进行。）大多数时候，我们都在使用 JAVA 标准库中的组件。有了这些，你不用担心长的反向域名;你只用说，例如：
+
+```JAVA
 import java.util.ArrayList;
-This tells the compiler to use Java’s ArrayList class, located in its
-util library.
-However, util contains a number of classes, and you might want to
-use several of them without declaring them all explicitly. This is easily
-accomplished by using * to indicate a wild card:
+```
+
+上例可以告诉编译器使用位于标准库 util 下的 ArrayList 类。在 util 包含许多类，我们可以使用通配符 `*` 来导入其中部分类，无需显式导入。代码示例：
+
+```JAVA
 import java.util.*;
-The examples in this book are small and for simplicity’s sake we’ll
-usually use the * form. However, many style guides specify that each
-class should be individually imported.
-The static Keyword
-Creating a class describes the look of its objects and the way they
-behave. You don’t actually get an object until you create one using
-new, at which point storage is allocated and methods become
-available.
-This approach is insufficient in two cases. Sometimes you want only a
-single, shared piece of storage for a particular field, regardless of how
-many objects of that class are created, or even if no objects are created.
-The second case is if you need a method that isn’t associated with any
-particular object of this class. That is, you need a method you can call
-even if no objects are created.
-The static keyword (adopted from C++) produces both these
-effects. When you say something is static, it means the field or
-method is not tied to any particular object instance. Even if you’ve
-never created an object of that class, you can call a static method or
-access a static field. With ordinary, non-static fields and
-methods, you must create an object and use that object to access the
-field or method, because non-static fields and methods must target
-a particular object.6
-Some object-oriented languages use the terms class data and class
-methods, meaning that the data and methods exist only for the class as
-a whole, and not for any particular objects of the class. Sometimes
-Java literature uses these terms too.
-To make a field or method static, you place the keyword before the
-definition. The following produces and initializes a static field:
+```
+
+本书中的示例很小，为简单起见，我们通常会使用 `.*` 形式略过导入。然而，许多教程书籍都会要求程序员单独导入每个类。 
+
+
+<!-- The static Keyword -->
+#### static关键字
+
+类是对象的外观及行为方式的描述。通常只有在使用 `new` 关键字之后程序才能被分配存储空间以及使用其方法。
+
+这种方式在两种情况下是不足的。1. 有时你只需要为特定字段分配一个共享存储空间，无论该类创建了多少个对象，或者即使没有创建任何对象；第二种情况是，创建一个与此类本身任何对象无关的方法。也就是说，即使没有创建对象，也能调用该方法。
+
+**static** 关键字（从 C++ 采用）就符合我们的要求。当我们说某些东西是静态的时，它意味着该字段或方法不依赖于任何特定的对象实例。即使我们从未创建过该类的对象，也可以调用其静态方法或访问静态字段。相反，对于普通的非静态字段和方法，我们必须要先创建一个对象并使用该对象来访问该字段或方法，因为非静态字段和方法必须与替对象关联.
+
+一些面向对象的语言使用类数据（**class data**）和类方法（**class method**）这样的术语来表述静态。静态的数据意味着该数据和方法仅存在于类中，而非类的任何实例对象中。有时 Java 文献也使用这些术语。我们可以通过在类的属性或方法前添加 `static` 修饰来表示这是一个静态属性或静态方法。
+
+代码示例：
+
+```JAVA
 class StaticTest {
 static int i = 47;
 }
-Now even if you make two StaticTest objects, there is still only
-one piece of storage for StaticTest.i. Both objects share the same
-i. For example:
+```
+
+现在，即使你创建了两个 StaticTest 对象，但是静态变量 i 仍只占一份存储空间。两个对象都会共享相同的变量 i。
+代码示例：
+
+```JAVA
 StaticTest st1 = new StaticTest();
 StaticTest st2 = new StaticTest();
-Both st1.i and st2.i have the same value of 47 since they are the
-same piece of memory.
-There are two ways to refer to a static variable. As in the preceding
-example, you can name it via an object; for example, st2.i. You can
-also refer to it directly through its class name, something you cannot
-do with a non-static member:
-StaticTest.i++;
-The ++ operator adds one to the variable. Now both st1.i and
-st2.i have the value 48.
-Using the class name is the preferred way to refer to a static
-variable because it emphasizes the variable’s static nature7.
-Similar logic applies to static methods. You can refer to a static
-method either through an object as you can with any method, or with
-the special additional syntax ClassName.method(). You define a
-static method like this:
+```
+
+st1.i和st2.i的值都是47，因为它们属于同一段内存。引用静态变量有两种方法。在前面的示例中，我们可以通过一个对象来命名它；例如，st2.i。同时，你也可以通过它的类名直接调用它（这是非静态成员不能执行的操作）：
+
+```JAVA
+StaticTest.i ++;
+```
+
+`++` 运算符将会使变量结果 + 1。此时 st1.i 和 st2.i 的值就变成了48了。
+
+使用类名直接引用静态变量的首选方法，因为它强调了变量的静态属性。类似的逻辑也适用于静态方法。我们可以通过对象引用静态方法，就像使用任何方法一样，也可以使用特殊的附加语法 classname.method（）来直接调用静态属性或方法。
+
+代码示例：
+
+```JAVA
 class Incrementable {
-static void increment() { StaticTest.i++; }
+static void increment() { 
+    StaticTest.i++; 
+    }
 }
-The Incrementable method increment() increments the
-static int i using the ++ operator. You can call increment()
-in the typical way, through an object:
+```
+上例中 incrementable 类调用静态方法 increment（）。后者再使用 `++` 运算符递增静态变量 int i。我们依然可以先实例化对象再调用该方法。
+
+代码示例：
+
+```JAVA
 Incrementable sf = new Incrementable();
 sf.increment();
-However, the preferred approach is to call it directly through its class:
-Incrementable.increment();
-static applied to a field definitely changes the way the data is
-created—one for each class versus the non-static one for each
-object. When applied to a method, static allows you to call that
-method without creating an object. This is essential, as you will see, in
-defining the main() method that is the entry point for running an
-application.
+```
+
+当然了，首选的方法是直接通过类来调用它。代码示例：
+
+```JAVA
+incrementable.increment（）；
+```
+
+相比非静态的对，`static` 属性改变了创建数据的方式。同样，当 `static` 关键字修饰方法时，它允许我们无需创建对象就可以直接通过类的引用来调用该方法。正如我们所知，`static` 关键字的这些特性对于应用程序入口点的 main() 方法尤为重要。
+应用于字段的static肯定会更改创建数据的方式—one（针对每个类）与非static（针对每个对象）。当应用于方法时，static允许您在不创建对象的情况下调用该方法。正如您将看到的，在定义作为运行应用程序入口点的main（）方法时，这是非常重要的。
+
 
 <!-- Your First Java Program -->
 ## 小试牛刀
