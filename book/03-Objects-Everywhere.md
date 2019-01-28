@@ -463,7 +463,7 @@ sf.increment();
 当然了，首选的方法是直接通过类来调用它。代码示例：
 
 ```JAVA
-incrementable.increment（）；
+Incrementable.increment（）；
 ```
 
 相比非静态的对，`static` 属性改变了创建数据的方式。同样，当 `static` 关键字修饰方法时，它允许我们无需创建对象就可以直接通过类的引用来调用该方法。正如我们所知，`static` 关键字的这些特性对于应用程序入口点的 main() 方法尤为重要。
