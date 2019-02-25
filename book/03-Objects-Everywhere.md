@@ -471,55 +471,45 @@ Incrementable.increment（）；
 <!-- Your First Java Program -->
 ## 小试牛刀
 
+最后，我们来开始编写第一个完整的程序。我们使用 Java 标准库来展示一个字符串和日期。
 Finally, here’s the first complete program. It starts by displaying a
 String, followed by the date, using the Date class from the Java
 standard library.
+
+```JAVA
+
 // objects/HelloDate.java
 import java.util.*;
-public class HelloDate {
-public static void main(String[] args) {
-System.out.println("Hello, it's: ");
-System.out.println(new Date());
+
+    public class HelloDate {
+    public static void main(String[] args) {
+    System.out.println("Hello, it's: ");
+    System.out.println(new Date());
+    }
 }
-}
-In this book I treat the first line specially; it’s always a comment line
-containing the the path information to the file (using the directory
-name objects for this chapter) followed by the file name. I have
-tools to automatically extract and test the book’s code based on this
-information, and you will easily find the code example in the
-repository by referring to the first line.
-At the beginning of each program file, you must place import
-statements to bring in any extra classes you need for the code in that
-file. I say “extra” because there’s a certain library of classes
-automatically included in every Java file: java.lang. Start up your
-Web browser and look at the documentation from Oracle. If you
-haven’t downloaded the JDK documentation from the Oracle Java site, do so
-now8, or find it on the Internet. If you look at the list of packages, you’ll see
-all the different class libraries that come with Java.
-Select java.lang. This will bring up a list of all the classes that are
-part of that library. Since java.lang is implicitly included in every
-Java code file, these classes are automatically available. There’s no
-Date class listed in java.lang, which means you must import
-another library to use that. If you don’t know the library where a
-particular class is, or if you want to see all classes, select “Tree” in the
-Java documentation. Now you can find every single class that comes
-with Java. Use the browser’s “find” function to find Date. You’ll see it
-listed as java.util.Date, which tells you it’s in the util library
-and you must import java.util.* in order to use Date.
-If inside the documentation you select java.lang, then System,
-you’ll see that the System class has several fields, and if you select
-out, you’ll discover it’s a static PrintStream object. Since it’s
-static, you don’t need to use new—the out object is always there,
-and you can just use it. What you can do with this out object is
-determined by its type: PrintStream. Conveniently,
-PrintStream is shown in the description as a hyperlink, so if you
-click on that, you’ll see a list of all the methods you can call for
-PrintStream. There are quite a few, and these are covered later in
-the book. For now all we’re interested in is println(), which in
-effect means “Print what I’m giving you out to the console and end
-with a newline.” Thus, in any Java program you can write something
-like this:
+
+```
+
+在这本书中，代码块的第一行，我将使用注释行，其中包含文件的路径信息（使用本章的目录名对象），后跟文件名。我的工具可以根据这些信息自动提取和测试书籍的代码，你也可以通过参考第一行注释信息轻松地在 Github 库中找到相应的代码示例。
+
+如果你想在代码中使用到一些额外的库，那么你需要在程序文件的开始处使用 **import** 关键字来导入它们。之所以说是额外的，因为有一些库已经默认自动包含到每个文件里了。例如：**java.lang** 包。
+
+现在打开你的浏览器在 [Oracle](https://www.oracle.com/) 上查看文档。如果你还没有在 [Oracle](https://www.oracle.com/) 网站上下载 JDK 文档，那就趁现在 ^[4] 。查看包列表，你会看到 Java 附带的所有不同的类库。
+
+[^4]: 脚注预留
+
+
+选择 **java.lang**。这里显示的是该库中所有类的列表。由于 **java.lang** 隐式包含在每个 Java代码文件中，因此这些类是自动可用的。**java.lang** 中没有列出 **Date** 类，所以我们必须将其导入库才能使用它。如果你不清楚某个类名或者想查看所有的类，可以在 Java 文档中选择“Tree”。
+
+现在，我们可以找到 Java 附带的每个类。使用浏览器的“查找”功能查找 “Date”。搜索结果中将会列出 java.util.Date，显而易见，它在 util 库中，所以我们必须导入 java.util.* 才能使用 Date。
+
+如果你在文档中选择java.lang，然后选择 System，你会看到 System 类中有几个字段，如果你选择 `out`，你会发现它是一个静态的 PrintStream 对象。 所以 即使我们没有使用 new 创建， `out` 对象就已经存在并可以使用。 使用此 `out` 对象可以执行的操作取决于 PrintStream 。方便的是，PrintStream 在描述中显示为超链接，因此如果单击该链接，我们将看到可以为 PrintStream 所用的所有方法的列表。更多详情，将在本书后面介绍。现在我们感兴趣的是 println（），这个方法的作用是“打印我给你的东西到控制台并以换行符结束。”因此，Java程序中我们写下如下代码示例：
+
+```JAVA
+
 System.out.println("A String of things");
+```
+
 whenever you want to display information to the console.
 One of the classes in the file must have the same name as the file. (The
 compiler complains if you don’t do this.) When you’re creating a
