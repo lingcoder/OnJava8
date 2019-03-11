@@ -29,7 +29,12 @@
 
 ## 一起交流
 
-交流群：721698221 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=4cb8bdc26879e544a0e1c2027305afef699029d5c0f314099a239b7c4f309c5f"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="OnJava8翻译交流" title="OnJava8翻译交流"></a>( 点击图标即可加入 )<br>
+交流群：721698221 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=4cb8bdc26879e544a0e1c2027305afef699029d5c0f314099a239b7c4f309c5f"><img border="0" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/qqgroup.png" alt="OnJava8翻译交流" title="OnJava8翻译交流"></a>( 点击图标即可加入 )<br>
+
+<div align="left">
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/QQGroupQRCode.png"  alt="QQGroupQRCode"/>
+ </div>
+
 
 ## 更新记录
 
