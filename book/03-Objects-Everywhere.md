@@ -580,24 +580,15 @@ java.io.tmpdir=C:\Users\Bruce\AppData\Local\Temp\
 <!-- Compiling and Running -->
 ### 编译和运行
 
+要编译和运行本书中的代码示例，首先必须具有Java编程环境。 第二章的示例中描述了安装过程。如果你遵循这些说明，那么你将会在不受 Oracle 的限制的条件下用到 Java 开发人员工具包（JDK）。如果你使用其他开发系统，请查看该系统的文档以确定如何编译和运行程序。 第二章还介绍了如何安装本书的示例。 
 
-To compile and run this program, and all the other programs in this
-book, you must first have a Java programming environment. The
-installation process was described in Installing Java and the Book
-Examples. If you followed these instructions, you are using the Java
-Developer’s Kit (JDK), free from Oracle. If you use another
-development system, look in the documentation for that system to
-determine how to compile and run programs.
-Installing Java and the Book Examples also describes how to install the
-examples for this book. Move to the subdirectory named
-objects and type:
+移动到 objects 子目录下并键入：
+
+``` bash
 javac HelloDate.java
-This command should produce no response. If you get any kind of an
-error message, it means you haven’t installed the JDK properly and
-you must investigate those problems.
-On the other hand, if you just get your command prompt back, you can
-type:
-java HelloDate
+```
+
+
 and you’ll get the message and the date as output.
 This is the process to compile and run each program (containing a
 main()) in this book9. However, the source code for this book also has a file
@@ -606,6 +597,15 @@ contains the Gradle configuration for automatically building, testing,
 and running the files for the book. When you run the gradlew
 command for the first time, Gradle will automatically install itself
 (assuming you have Java installed).
+
+此命令不应生成任何响应。如果我们收到任何类型的错误消息，则表示未正确安装 JDK，并且必须检查这些问题。
+
+此外，仅仅是执行的话，则可以键入：
+
+```JAVA
+java HelloDate
+```
+我们将会获得信息反馈，日期输出。这是我们编译和运行本书中每个程序（包含main（））的过程^[9]。但是，本书的源代码在根目录中也有一个名为 **build.gradle** 的文件，其中包含用于自动构建，测试和运行本书文件的 **Gradle** 配置。当您第一次运行 `gradlew` 命令时，**Gradle** 将自动安装（前提已安装Java）。
 
 <!-- Coding Style -->
 ## 编码风格
