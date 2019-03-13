@@ -600,26 +600,30 @@ java HelloDate
 <!-- Coding Style -->
 ## 编码风格
 
-The style described in the document Code Conventions for the Java
-Programming Language 10 is to capitalize the first letter of a class name. If
-the class name consists of several words, they are run
-together (that is, you don’t use underscores to separate the names),
-and the first letter of each embedded word is capitalized, such as:
-class AllTheColorsOfTheRainbow { // ...
-This is sometimes called “camel-casing.” For almost everything else—
-methods, fields (member variables), and object reference names—the
-accepted style is just as it is for classes except that the first letter of the
-identifier is lowercase. For example:
+
+Java 的代码约定规范（*Code Conventions for the Java Programming Language*）要求类名的首字母大写。 如果类名是由多个单词构成的，则每个单词的首字母都应大写（不采用下划线来分隔）例如：
+
+```JAVA
 class AllTheColorsOfTheRainbow {
-int anIntegerRepresentingColors;
-void changeTheHueOfTheColor(int newHue) {
-// ...
+    // ```
+```
+
+    
+这种风格也被称之为“驼峰式”。对于几乎所有其他方法，字段（成员变量）和对象引用名称 - 除了标识符的首字母是小写之外其他规范与类的命名一致。代码示例：
+
+```JAVA
+class AllTheColorsOfTheRainbow {
+    int anIntegerRepresentingColors;
+    void changeTheHueOfTheColor(int newHue) {
+        // ...
+        }
+    // ...
 }
-// ...
-}
-The user must also type these long names, so be merciful.
-The Java code you find in the Oracle libraries also follows the
-placement of open-and-close curly braces in this book.
+
+```
+
+在 Oracle 的库中，开放式花括号的位置同样遵循和本书中相同的规范。
+
 
 ## 本章小结
 
