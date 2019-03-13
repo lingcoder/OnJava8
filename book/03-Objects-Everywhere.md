@@ -588,16 +588,6 @@ java.io.tmpdir=C:\Users\Bruce\AppData\Local\Temp\
 javac HelloDate.java
 ```
 
-
-and you’ll get the message and the date as output.
-This is the process to compile and run each program (containing a
-main()) in this book9. However, the source code for this book also has a file
-called build.gradle in the root directory, and this
-contains the Gradle configuration for automatically building, testing,
-and running the files for the book. When you run the gradlew
-command for the first time, Gradle will automatically install itself
-(assuming you have Java installed).
-
 此命令不应生成任何响应。如果我们收到任何类型的错误消息，则表示未正确安装 JDK，并且必须检查这些问题。
 
 此外，仅仅是执行的话，则可以键入：
