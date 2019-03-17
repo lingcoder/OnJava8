@@ -7,3 +7,4 @@
 | **Aggregation**        | 聚合，关联关系的一种，是强的关联关系|
 | **Composition**       | 组合，关联关系的一种，是比聚合关系强的关系 |
 | **STL**（*the Standard Template Library*）| C++ 标准模板库|
+
