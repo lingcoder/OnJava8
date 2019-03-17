@@ -88,6 +88,11 @@
 如还有其它问题，欢迎发送 issue，谢谢~  
 
 
+## 友情链接
+
+[Effective.Java.3rd.Edition 中文版](https://sjsdfg.github.io/effctive-java-3rd-chinese/#/)
+
+
 ## 捐赠鼓励
 
 **捐赠1毛,鼓励作者！**
