@@ -93,14 +93,6 @@
 [Effective.Java.3rd.Edition 中文版](https://sjsdfg.github.io/effctive-java-3rd-chinese/#/)
 
 
-## 捐赠鼓励
-
-**捐赠1毛,鼓励作者！**
-
-<div align="center">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/wechat.PNG"  alt="微信捐赠" height="320"width="320" title="微信捐赠"/>
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/alipay.PNG"  alt="支付宝捐赠" title="支付宝捐赠"  height="320"width="320"/>
- </div>
 
 ## 开源协议
 
