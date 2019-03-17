@@ -52,5 +52,6 @@
     * [编码风格](book/03-Objects-Everywhere.md#编码风格)
     * [本章小结](book/03-Objects-Everywhere.md#本章小结)
 * [第四章 运算符](book/04-Operators.md)
+* [第五章 控制流](book/05-Control-Flow.md)
 * [词汇表](GLOSSARY.md)
 
