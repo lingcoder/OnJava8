@@ -116,9 +116,7 @@ Java 的设计主要目标之一是安全性，因此许多困扰 C 和 C++ 程�
 
 我们还可创建基本类型的数组。编译器通过将该数组的内存归零来保证初始化。本书稍后将详细介绍数组，特别是在数组章节中。
 
-  [^1]: 脚注预留
-  [^2]: 脚注预留
-  [^3]: 脚注预留
+
 
 <!-- Comments -->
 ## 代码注释
@@ -300,7 +298,7 @@ class DataOnly {
 
 方法的返回类型表明了当你调用它时会返回的结果类型。参数列表则显示了可被传递到方法内部的参数类型及名称。方法的名称和参数列表被统称为**方法签名**（**signature of the method**）。签名作为方法的唯一性标识。
 
-Java 中的方法只能作为类的一部分创建。它只能被对象所调用，并且该对象必须有权限来执行调用。若对象调用错误的方法，则程序将在编译时报错。
+Java 中的方法只能作为类的一部分创建。它只能被对象所调用 [^4]，并且该对象必须有权限来执行调用。若对象调用错误的方法，则程序将在编译时报错。
 
 我们可以通过在对象名的后面跟上 `.` 符号+方法名及其参数来调用一个方法。代码示例：
 
@@ -319,7 +317,7 @@ int x = a.f();
 <!-- The Argument List -->
 #### 参数列表
 
-方法参数列表指定传递给方法的信息。正如你可能猜到的，这些信息 —— 就像 Java 中的其他所有信息 —— 采用对象的形式。参数列表必须指定对象类型和每个对象的名称。同样，我们并没有直接处理对象，而是在传递对象引用。但是引用的类型必须是正确的。如果方法需要 String 参数，则必须传入 String，否则编译器将报错。
+方法参数列表指定传递给方法的信息。正如你可能猜到的，这些信息 —— 就像 Java 中的其他所有信息 —— 采用对象的形式。参数列表必须指定对象类型和每个对象的名称。同样，我们并没有直接处理对象，而是在传递对象引用 [^5] 。但是引用的类型必须是正确的。如果方法需要 String 参数，则必须传入 String，否则编译器将报错。
 
 ```JAVA
 int storage(String s) {
@@ -405,11 +403,13 @@ import java.util.*;
 <!-- The static Keyword -->
 #### static关键字
 
-类是对象的外观及行为方式的描述。通常只有在使用 `new` 关键字之后程序才能被分配存储空间以及使用其方法。
+类是对象的外观及行为方式的描述。通常只有在使用 `new` 关键字之后程序才能被分配存储空间以及使用其方法。这种方式在两种情况下是不足的。
 
-这种方式在两种情况下是不足的。1. 有时你只需要为特定字段分配一个共享存储空间，无论该类创建了多少个对象，或者即使没有创建任何对象；第二种情况是，创建一个与此类本身任何对象无关的方法。也就是说，即使没有创建对象，也能调用该方法。
+1. 有时你只需要为特定字段分配一个共享存储空间，无论该类创建了多少个对象，或者即使没有创建任何对象；
 
-**static** 关键字（从 C++ 采用）就符合我们的要求。当我们说某些东西是静态的时，它意味着该字段或方法不依赖于任何特定的对象实例。即使我们从未创建过该类的对象，也可以调用其静态方法或访问静态字段。相反，对于普通的非静态字段和方法，我们必须要先创建一个对象并使用该对象来访问该字段或方法，因为非静态字段和方法必须与替对象关联.
+2. 创建一个与此类本身任何对象无关的方法。也就是说，即使没有创建对象，也能调用该方法。
+
+**static** 关键字（从 C++ 采用）就符合我们的要求。当我们说某些东西是静态的时，它意味着该字段或方法不依赖于任何特定的对象实例 。 即使我们从未创建过该类的对象，也可以调用其静态方法或访问静态字段。相反，对于普通的非静态字段和方法，我们必须要先创建一个对象并使用该对象来访问该字段或方法，因为非静态字段和方法必须与替对象关联 [^6] 。
 
 一些面向对象的语言使用类数据（**class data**）和类方法（**class method**）这样的术语来表述静态。静态的数据意味着该数据和方法仅存在于类中，而非类的任何实例对象中。有时 Java 文献也使用这些术语。我们可以通过在类的属性或方法前添加 `static` 修饰来表示这是一个静态属性或静态方法。
 
@@ -429,7 +429,7 @@ StaticTest st1 = new StaticTest();
 StaticTest st2 = new StaticTest();
 ```
 
-st1.i和st2.i的值都是47，因为它们属于同一段内存。引用静态变量有两种方法。在前面的示例中，我们可以通过一个对象来命名它；例如，st2.i。同时，你也可以通过它的类名直接调用它（这是非静态成员不能执行的操作）：
+st1.i 和 st2.i 的值都是47，因为它们属于同一段内存。引用静态变量有两种方法。在前面的示例中，我们可以通过一个对象来命名它；例如，st2.i。同时，你也可以通过它的类名直接调用它（这是非静态成员不能执行的操作）：
 
 ```JAVA
 StaticTest.i ++;
@@ -437,7 +437,7 @@ StaticTest.i ++;
 
 `++` 运算符将会使变量结果 + 1。此时 st1.i 和 st2.i 的值就变成了48了。
 
-使用类名直接引用静态变量的首选方法，因为它强调了变量的静态属性。类似的逻辑也适用于静态方法。我们可以通过对象引用静态方法，就像使用任何方法一样，也可以使用特殊的附加语法 classname.method（）来直接调用静态属性或方法。
+使用类名直接引用静态变量的首选方法，因为它强调了变量的静态属性。类似的逻辑也适用于静态方法。我们可以通过对象引用静态方法，就像使用任何方法一样，也可以使用特殊的附加语法 classname.method（）来直接调用静态属性或方法 [^7]。
 
 代码示例：
 
@@ -448,6 +448,7 @@ class Incrementable {
     }
 }
 ```
+
 上例中 Incrementable 类调用静态方法 increment（）。后者再使用 `++` 运算符递增静态变量 int i。我们依然可以先实例化对象再调用该方法。
 
 代码示例：
@@ -471,9 +472,6 @@ Incrementable.increment（）；
 ## 小试牛刀
 
 最后，我们来开始编写第一个完整的程序。我们使用 Java 标准库来展示一个字符串和日期。
-Finally, here’s the first complete program. It starts by displaying a
-String, followed by the date, using the Date class from the Java
-standard library.
 
 ```JAVA
 
@@ -493,9 +491,9 @@ import java.util.*;
 
 如果你想在代码中使用到一些额外的库，那么你需要在程序文件的开始处使用 **import** 关键字来导入它们。之所以说是额外的，因为有一些库已经默认自动包含到每个文件里了。例如：**java.lang** 包。
 
-现在打开你的浏览器在 [Oracle](https://www.oracle.com/) 上查看文档。如果你还没有在 [Oracle](https://www.oracle.com/) 网站上下载 JDK 文档，那就趁现在 ^[4] 。查看包列表，你会看到 Java 附带的所有不同的类库。
+现在打开你的浏览器在 [Oracle](https://www.oracle.com/) 上查看文档。如果你还没有在 [Oracle](https://www.oracle.com/) 网站上下载 JDK 文档，那就趁现在 [^8] 。查看包列表，你会看到 Java 附带的所有不同的类库。
 
-[^4]: 脚注预留
+
 
 
 选择 **java.lang**。这里显示的是该库中所有类的列表。由于 **java.lang** 隐式包含在每个 Java代码文件中，因此这些类是自动可用的。**java.lang** 中没有列出 **Date** 类，所以我们必须将其导入库才能使用它。如果你不清楚某个类名或者想查看所有的类，可以在 Java 文档中选择“Tree”。
@@ -579,7 +577,7 @@ java.io.tmpdir=C:\Users\Bruce\AppData\Local\Temp\
 <!-- Compiling and Running -->
 ### 编译和运行
 
-要编译和运行本书中的代码示例，首先必须具有Java编程环境。 第二章的示例中描述了安装过程。如果你遵循这些说明，那么你将会在不受 Oracle 的限制的条件下用到 Java 开发人员工具包（JDK）。如果你使用其他开发系统，请查看该系统的文档以确定如何编译和运行程序。 第二章还介绍了如何安装本书的示例。 
+要编译和运行本书中的代码示例，首先必须具有 Java 编程环境。 第二章的示例中描述了安装过程。如果你遵循这些说明，那么你将会在不受 Oracle 的限制的条件下用到 Java 开发人员工具包（JDK）。如果你使用其他开发系统，请查看该系统的文档以确定如何编译和运行程序。 第二章还介绍了如何安装本书的示例。 
 
 移动到 objects 子目录下并键入：
 
@@ -594,13 +592,13 @@ javac HelloDate.java
 ```JAVA
 java HelloDate
 ```
-我们将会获得信息反馈，日期输出。这是我们编译和运行本书中每个程序（包含main（））的过程^[9]。但是，本书的源代码在根目录中也有一个名为 **build.gradle** 的文件，其中包含用于自动构建，测试和运行本书文件的 **Gradle** 配置。当您第一次运行 `gradlew` 命令时，**Gradle** 将自动安装（前提已安装Java）。
+我们将会获得信息反馈，日期输出。这是我们编译和运行本书中每个程序（包含main（））的过程 [^9]。但是，本书的源代码在根目录中也有一个名为 **build.gradle** 的文件，其中包含用于自动构建，测试和运行本书文件的 **Gradle** 配置。当您第一次运行 `gradlew` 命令时，**Gradle** 将自动安装（前提已安装Java）。
 
 <!-- Coding Style -->
 ## 编码风格
 
 
-Java 的代码约定规范（*Code Conventions for the Java Programming Language*）要求类名的首字母大写。 如果类名是由多个单词构成的，则每个单词的首字母都应大写（不采用下划线来分隔）例如：
+Java 的代码约定规范（*Code Conventions for the Java Programming Language*）[^10] 要求类名的首字母大写。 如果类名是由多个单词构成的，则每个单词的首字母都应大写（不采用下划线来分隔）例如：
 
 ```JAVA
 class AllTheColorsOfTheRainbow {
@@ -626,61 +624,28 @@ class AllTheColorsOfTheRainbow {
 
 ## 本章小结
 
-This chapter shows you just enough Java so you understand how to
-write a simple program. You’ve also seen an overview of the language
-and some of its basic ideas. However, the examples so far have all been
-of the form “Do this, then do that, then do something else.” The next
-two chapters will introduce the basic operators used in Java
-programming, and show you how to control the flow of your program.
-1. This can be a flashpoint. There are those who say, “Clearly, it’s a
-pointer,” but this presumes an underlying implementation. Also,
-the syntax of Java references is much more akin to C++ references
-than to pointers. In the 1st edition of Thinking in Java, I chose to
-invent a new term, “handle,” because C++ references and Java
-references have some important differences. I was coming out of
-C++ and did not want to confuse the C++ programmers whom I
-assumed would be the largest audience for Java. In the 2nd
-edition of Thinking in Java, I decided that “reference” was the
-more commonly used term, and that anyone changing from C++
-would have a lot more to cope with than the terminology of
-references, so they might as well jump in with both feet. However,
-there are people who disagree even with the term “reference.” In
-one book I read that it was “completely wrong to say that Java
-supports pass by reference,” because Java object identifiers
-(according to that author) are actually “object references.” And
-(he goes on) everything is actually pass by value. So you’re not
-passing by reference, you’re “passing an object reference by
-value.” One could argue for the precision of such convoluted
-explanations, but I think my approach simplifies the
-understanding of the concept without hurting anything (well,
-language lawyers may claim I’m lying to you, but I’ll say that I’m
-providing an appropriate abstraction).↩
-2. Most microprocessor chips do have additional cache memory but
-this is organized as traditional memory and not as registers↩
-3. An example of this is the String pool. All literal Strings and
-String-valued constant expressions are interned automatically
-and put into special static storage. ↩
-4. static methods, which you’ll learn about soon, can be called for
-the class, without an object.↩
-5. With the usual exception of the aforementioned “special” data
-types boolean, char, byte, short, int, long, float, and double. In general,
-though, you pass objects, which really means
-you pass references to objects. ↩
-6. static methods don’t require objects to be created before they
-are used, so they cannot directly access non-static members or
-methods by calling those other members without referring to a
-named object (since non-static members and methods must be
-tied to a particular object).↩
-7. In some cases it also gives the compiler better opportunities for
-optimization↩
-8. Note this documentation doesn’t come packed with the JDK; you
-must do a separate download to get it. ↩
-9. For every program in this book to compile and run through the
-command line, you might also need to set your CLASSPATH. ↩
-10. (Search the Internet; also look for “Google Java Style”). To keep
-code listings narrow for this book, not all these guidelines could
-be followed, but you’ll see that the style I use here matches the
-Java standard as much as possible.↩
-<!-- 分页 -->
-<div style="page-break-after: always;"></div>
 
+本章向您展示了简单的 Java 程序编写以及该语言相关的基本概念。到目前为止，我们的示例都只是些简单的顺序执行。在接下来的两章里，我们将会接触到 Java 的一些基本操作符，以及如何去控制程序执行的流程。
+
+
+  [^1]: 这里可能有争议。有人说这是一个指针，但这假定了一个潜在的实现。此外，Java 引用的语法更类似于 C++ 引用而非指针。在 *Thinking in Java* 的第 1 版中，我发明了一个新术语叫“句柄”（*handle*），因为 C++ 引用和Java 引用有一些重要的区别。作为一个从 C++ 的过来人，我不想混淆 Java 可能的最大受众 —— C++ 程序员。在*Thinking in Java* 的第 2 版中，我认为“引用”（*reference*）是更常用的术语，从 C++ 转过来的人除了引用的术语之外，还有很多东西需要处理，所以他们不妨双脚都跳进去。但是，也有些人甚至不同意“引用”。在某书中我读到一个观点：Java 支持引用传递的说法是完全错误的，因为 Java 对象标识符（根据该作者）实际上是“对象引用”（*object references*），并且一切都是值传递。所以你不是通过引用传递，而是“通过值传递对象引用。人们可以质疑我的这种解释的准确性，但我认为我的方法简化了对概念的理解而又没对语言造成伤害（嗯，语言专家可能会说我骗你，但我会说我只是对此进行了适当的抽象。）
+
+  [^2]: 大多数微处理器芯片都有额外的高速缓冲存储器，但这是按照传统存储器而不是寄存器。
+
+  [^3]: 一个例子是字符串常量池。所有文字字符串和字符串值常量表达式都会自动放入特殊的静态存储中。
+
+  [^4]: 静态方法，我们很快就能接触到，它可以在没有对象的情况下直接被类调用。
+
+  [^5]: 通常除了前面提到的“特殊”数据类型 boolean，char，byte，short，int，long，float 和 double。通常来说，传递对象就意味者传递对象的引用。
+
+  [^6]: 静态方法在使用之前不需要创建对象，因此它们不能直接调用非静态的成员或方法（因为非静态成员和方法必须要先实例化为对象才可以被使用）。
+
+  [^7]: 在某些情况下，它还为编译器提供了更好的优化可能。
+
+  [^8]: 请注意，此文档未包含在 JDK 中;你必须单独下载才能获得它。
+
+  [^9]: 对于本书中编译和运行命令行的每个程序，你可能还需要设置 CLASSPATH 。
+
+  [^10]: 为了保持本书的代码排版紧凑，我并没完全遵守规范，但我尽量会做到符合 Java 标准。
+  <!-- 分页 -->
+<div style="page-break-after: always;"></div>
