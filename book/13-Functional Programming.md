@@ -1,5 +1,9 @@
 # 第十三章-函数式编程
 
+[TOC]
+
+
+
 函数式编程语言操纵代码片段就像操作数据一样容易。 虽然 Java 不是函数式语言，但 Java 8 Lambda 表达式和方法引用 (Method References) 允许您以函数式编程。在计算机时代的早期，内存是稀缺和珍贵的。几乎每个人都用汇编语言编程。 人们对编译器有所了解，但仅仅想到编译生成的代码肯定会比手工编码多了很多字节。
 
 通常，只是为了使程序适合有限的内存，程序员通过修改内存中的代码来保存代码空间，以便在程序执行时执行不同的操作。这种技术被称为自修改代码 （self-modifying code,），只要程序足够小，少数人可以维护所有棘手和神秘的汇编代码，你就可以让它运行起来。
@@ -188,7 +192,7 @@ from moreLines()
 
 Lambda 表达式通常比**匿名内部类**产生更易读的代码，因此我们将在本书中尽可能使用它们。
 
-## 递归
+### 递归
 
 递归函数是一个自我调用的函数。 可以编写递归的 lambda 表达式，但需要注意：递归方法必须是实例变量或静态变量，否则会出现编译时错误。 我们将为每个案例创建一个示例。
 
@@ -272,7 +276,7 @@ public class RecursiveFibonacci {
 
 ## 方法引用
 
-Java 8 方法引用指的是没有以前版本的Java所需的额外包袱的方法。 方法引用是类名或对象名，后跟:: [^4]，然后是方法的名称。
+Java 8 方法引用指的是没有以前版本的 Java 所需的额外包袱的方法。 方法引用是类名或对象名，后面跟 :: [^4]，然后是方法的名称。
 
 ```java
 // functional/MethodReferences.java
@@ -350,7 +354,7 @@ Help!
 
 这不是一个详尽的例子; 我们很快就会看到方法参考的所有变化。
 
-## Runnable
+### Runnable
 
 **Runnable** 接口自 1.0 版以来一直在 Java 中，因此不需要导入。 它也符合特殊的单方法接口格式：它的方法run（）不带参数，也没有返回值。 因此，我们可以使用 lambda 表达式和方法引用作为 **Runnable**：
 
@@ -392,7 +396,7 @@ Go::go()
 
 <!-- Unbound Method References -->
 
-## 未绑定的方法引用
+### 未绑定的方法引用
 
 未绑定的方法引用是指没有关联对象的普通（非静态）方法。 要使用未绑定的引用，您必须提供以下对象：
 
@@ -473,7 +477,7 @@ public class MultiUnbound {
 
 为了说明这一点，我将类命名为 **This** ，函数方法的第一个参数则是 **athis**，但是您应该选择其他名称以防止生产代码混淆。
 
-## 构造函数引用
+### 构造函数引用
 
 您还可以捕获构造函数的引用，然后通过引用调用该构造函数。
 
@@ -793,7 +797,7 @@ public class ClassFunctionals {
 
 <!-- Functional Interfaces with More Arguments -->
 
-## 有着更多参数的函数接口
+### 有着更多参数的函数接口
 
 **java.util.functional** 中的接口是有限的。 比如有了 **BiFunction**，但它不能变化。 如果需要三参数函数的接口怎么办？ 其实这些接口非常简单，很容易查看 Java 库源代码并自行创建：
 
@@ -823,7 +827,7 @@ public class TriFunctionTest {
 
 这里我们测试方法引用和 lambda 表达式。
 
-## 缺少原始类型的函数
+### 缺少原始类型的函数
 
 让我们重温一下 **BiConsumer**，看看我们如何创建缺少 **int，long** 和 **double **的各种排列：
 
@@ -1207,7 +1211,7 @@ public class Closure9 {
 
 <!-- Inner Classes as Closures -->
 
-## 作为闭包的内部类
+### 作为闭包的内部类
 
 我们可以复制我们的例子使用匿名内部类:
 
@@ -1304,7 +1308,9 @@ foobaz
 
 你可以从输出中看到 **p4** 是如何工作的：任何带有 “foo ”的东西都会存活，即使它的长度大于5。 “fongopuckey” 太长了，没有 “bar” 来保存它。
 
-## Currying和Partial Evaluation
+<!-- Currying and  Partial Evaluation -->
+
+## Currying 和 Partial Evaluation
 
 *Currying* 以 Haskell Curry 命名，Haskell Curry 是其发明者之一，可能是唯一一个以他的名字命名的重要事物的计算机领域的人物（另一个是 Haskell 编程语言）。 Currying 意味着从一个函数开始，该函数接受多个参数，并将其转换为一系列函数，每个函数只接受一个参数。
 
