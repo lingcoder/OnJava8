@@ -23,6 +23,7 @@
 - [x] 第二章 安装Java和本书用例
 - [x] 第三章 万物皆对象
 - [ ] 第四章 运算符
+- [x] 第五章 控制流
 - [ ] 待续······
 
 - 最近公司项目赶着上线,等忙完继续!
@@ -48,6 +49,8 @@
 
 - 2019-03-14 第三章 万物皆对象翻译完成
 
+- 2019-03-17 第五章 控制流翻译完成
+
 ## 原书作者
 
 <div align="left">
@@ -60,7 +63,7 @@
 ## 贡献者
 
 * 主译: LingCoder
-* 参译: 
+* 参译: LortSir
 * 校对：nickChenyx
 
 
@@ -87,14 +90,11 @@
 如还有其它问题，欢迎发送 issue，谢谢~  
 
 
-## 捐赠鼓励
+## 友情链接
 
-**捐赠1毛,鼓励作者！**
+[Effective.Java.3rd.Edition 中文版](https://sjsdfg.github.io/effective-java-3rd-chinese/#/)
 
-<div align="center">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/wechat.PNG"  alt="微信捐赠" height="320"width="320" title="微信捐赠"/>
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/alipay.PNG"  alt="支付宝捐赠" title="支付宝捐赠"  height="320"width="320"/>
- </div>
+
 
 ## 开源协议
 
