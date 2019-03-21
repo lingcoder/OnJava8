@@ -92,7 +92,7 @@
 
 ## 友情链接
 
-[Effective.Java.3rd.Edition 中文版](https://sjsdfg.github.io/effctive-java-3rd-chinese/#/)
+[Effective.Java.3rd.Edition 中文版](https://sjsdfg.github.io/effective-java-3rd-chinese/#/)
 
 
 
