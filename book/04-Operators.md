@@ -1,35 +1,77 @@
-# 第四章 运算符
-
 [TOC]
 
-## [待初始化](#Using-Java-Operators)
+<!-- Operators -->
+# 第四章 运算符
 
-## [待初始化](#Precedence)
 
-## [待初始化](#Assignment)
 
-## [待初始化](#Mathematical-Operators)
+<!-- Using-Java-Operators -->
+## 使用说明
 
-## [待初始化](#Auto-Increment-and-Decrement)
 
-## [待初始化](#Relational-Operators)
+<!-- Precedence -->
+## 优先级
 
-## [待初始化](#Logical-Operators)
 
-## [待初始化](#Literals)
+<!-- Assignment -->
+## 赋值
 
-## [待初始化](#Bitwise-Operators)
 
-## [待初始化](#Ternary-if-else-Operator)
+<!-- Mathematical Operators -->
+## 算术运算符
 
-## [待初始化](#String-Operator-+-and-+=)
 
-## [待初始化](#Common-Pitfalls-When-Using-Operators)
+<!-- Auto-Increment-and-Decrement -->
+## 自动递增和递减
 
-## [待初始化](#Casting-Operators)
 
-## [待初始化](#Java-Has-No-sizeof)
+<!-- Relational-Operators -->
+## 关系运算符
 
-## [待初始化](#A-Compendium-of-Operators)
 
-## [待初始化](#Summary)
+<!-- Logical-Operators -->
+## 逻辑运算符
+
+
+<!-- Literals -->
+## 字面值
+
+
+<!-- Bitwise-Operators -->
+## 按位运算符
+
+
+<!-- Shift Operators -->
+## 移位运算符
+
+
+<!-- Ternary-if-else-Operator -->
+## 三元运算符
+
+
+<!-- String-Operator-+-and-+= -->
+## 字符串运算符
+
+
+<!-- Common-Pitfalls-When-Using-Operators -->
+## 常见陷阱
+
+
+<!-- Casting-Operators -->
+## 类型转换
+
+
+<!-- Java-Has-No-sizeof -->
+## Java没有sizeof
+
+
+<!-- A-Compendium-of-Operators -->
+## 运算符总结
+
+
+<!-- Summary -->
+## 本章小结
+
+
+<!-- 分页 -->
+<div style="page-break-after: always;"></div>

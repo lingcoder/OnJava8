@@ -1,6 +1,6 @@
-# 第十三章-函数式编程
-
 [TOC]
+
+# 第十三章-函数式编程
 
 
 
@@ -1433,3 +1433,9 @@ Lambda 表达式和方法引用并没有将 Java 转换成函数式语言，而�
 7. 接口能够支持方法的原因是它们是 Java 8 默认方法，您将在下一章中了解到。
 8. 一些语言，例如 Python，允许像调用其他函数一样调用组合函数。但这是 Java，所以我们取我们能得到的。
 9. 见,例如，不可变和可变性检测器。( Immutables and Mutability Detector)
+
+
+
+<!-- 分页 -->
+
+<div style="page-break-after: always;"></div>
