@@ -331,9 +331,9 @@
 ### 附录
 
 * [附录:补充](book/Appendix-Supplements.md)
-    * [](book/Appendix-Supplements.md#)
-    * [](book/Appendix-Supplements.md#)
-    * [](book/Appendix-Supplements.md#)
+    * [可下载的补充](book/Appendix-Supplements.md#可下载的补充)
+    * [通过Thinking-in-C来巩固Java基础](book/Appendix-Supplements.md#通过Thinking-in-C来巩固Java基础)
+    * [动手实践](book/Appendix-Supplements.md#动手实践)
 * [附录:编程指南](book/Appendix-Programming-Guidelines.md)
     * [](book/Appendix-Programming-Guidelines.md#)
     * [](book/Appendix-Programming-Guidelines.md#)
