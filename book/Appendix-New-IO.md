@@ -1,4 +1,7 @@
+[TOC]
+
 # 附录:新IO
+
 
 Java “新” I/O 库，是在Java 1.4引入到 **Java .nio.* package** 中。它有一个目标 : 速度。
 
@@ -984,3 +987,7 @@ Released: 0 to 50331647
 <!-- 脚注 -->
 
 1. 您可以在附录:低级并发中找到关于线程的更多细节。
+=======
+<!-- 分页 -->
+
+<div style="page-break-after: always;"></div>

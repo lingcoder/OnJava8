@@ -1,3 +1,5 @@
+[TOC]
+
 # 第三章 万物皆对象
 
 >如果我们说不同的语言，我们会感觉到一个不同的世界！— Ludwig Wittgenstein (1889-1951)
@@ -469,10 +471,10 @@ Incrementable.increment（）；
 // objects/HelloDate.java
 import java.util.*;
 
-    public class HelloDate {
+public class HelloDate {
     public static void main(String[] args) {
-    System.out.println("Hello, it's: ");
-    System.out.println(new Date());
+        System.out.println("Hello, it's: ");
+        System.out.println(new Date());
     }
 }
 
@@ -488,14 +490,14 @@ import java.util.*;
 
 现在，我们可以找到 Java 附带的每个类。使用浏览器的“查找”功能查找 “Date”。搜索结果中将会列出 java.util.Date，显而易见，它在 util 库中，所以我们必须导入 java.util.* 才能使用 Date。
 
-如果你在文档中选择 java.lang，然后选择 System，你会看到 System 类中有几个字段，如果你选择 `out`，你会发现它是一个静态的 PrintStream 对象。 所以，即使我们没有使用 new 创建， `out` 对象就已经存在并可以使用。 `out` 对象可以执行的操作取决于 PrintStream 。 其在文档中的描述中显示为超链接，如果单击该链接，我们将可以看到 PrintStream 所对应的方法列表。（更多详情，将在本书后面介绍。） 现在我们重点说的是 println（）这个方法。 它的作用是“j将信息输出到控制台，并以换行符结束。”  既然如此，我们可以这样编码来输出信息到控制带。 代码示例：
+如果你在文档中选择 java.lang，然后选择 System，你会看到 System 类中有几个字段，如果你选择 `out`，你会发现它是一个静态的 PrintStream 对象。 所以，即使我们没有使用 new 创建， `out` 对象就已经存在并可以使用。 `out` 对象可以执行的操作取决于 PrintStream 。 其在文档中的描述中显示为超链接，如果单击该链接，我们将可以看到 PrintStream 所对应的方法列表。（更多详情，将在本书后面介绍。） 现在我们重点说的是 println() 这个方法。 它的作用是 “将信息输出到控制台，并以换行符结束。”  既然如此，我们可以这样编码来输出信息到控制台。 代码示例：
 
 ```JAVA
 
 System.out.println("A String of things");
 ```
 
-每个 java 源文件中允许有多个类。与此同时，源文件的名称必须要和其中一个类名相同，否则编译器将会报错。每个独立的程序应该包含一个 mian 方法作为程序运行的入口。其方法签名和返回类型如下。代码示例：
+每个 java 源文件中允许有多个类。与此同时，源文件的名称必须要和其中一个类名相同，否则编译器将会报错。每个独立的程序应该包含一个 main 方法作为程序运行的入口。其方法签名和返回类型如下。代码示例：
 
 ```JAVA
 public static void main(String[] args) {
@@ -503,7 +505,7 @@ public static void main(String[] args) {
 }
 ```
 
-关键字 `public` 表示方法可以被外界锁访问到。（ 更多详情将在 **隐藏实现** 章节讲到）
+关键字 `public` 表示方法可以被外界访问到。（ 更多详情将在 **隐藏实现** 章节讲到）
 main() 方法的参数是一个 字符串（String） 数组。 参数 `args` 并没有在当前的程序中使用到，但是 Java 虚拟机强制要求必须要有。 这是因为它们被用于保存命令行中的参数。
 
 下面我们来看一段有趣的代码：
@@ -520,12 +522,11 @@ System.out.println(new Date());
 
 // objects/ShowProperties.java
 public class ShowProperties {
-public static void main(String[] args) {
-System.getProperties().list(System.out);
-System.out.println(System.getProperty("user.name"));
-System.out.println(
-System.getProperty("java.library.path"));
-}
+    public static void main(String[] args) {
+        System.getProperties().list(System.out);
+        System.out.println(System.getProperty("user.name"));
+        System.out.println(System.getProperty("java.library.path"));
+    }
 }
 
 /* Output：(前20行)
@@ -597,7 +598,7 @@ class AllTheColorsOfTheRainbow {
     int anIntegerRepresentingColors;
     void changeTheHueOfTheColor(int newHue) {
         // ...
-        }
+    }
     // ...
 }
 
