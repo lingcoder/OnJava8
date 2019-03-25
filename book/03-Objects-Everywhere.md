@@ -528,9 +528,11 @@ public class ShowProperties {
         System.out.println(System.getProperty("java.library.path"));
     }
 }
+```
 
-/* Output：(前20行)
--- listing properties --
+输出结果(前20行):
+
+```text
 java.runtime.name=Java(TM) SE Runtime Environment
 sun.boot.library.path=C:\Program
 Files\Java\jdk1.8.0_112\jr...
@@ -553,8 +555,6 @@ java.endorsed.dirs=C:\Program
 Files\Java\jdk1.8.0_112\jr...
 os.arch=amd64
 java.io.tmpdir=C:\Users\Bruce\AppData\Local\Temp\
-...
-*/
 ```
 
 上例主方法中的第一行，会输出所有的系统属性，也就是环境信息。 **list()** 方法将结果发送给它的参数 **System.out**  在本书的后面，我们还会接触到将结果输出到其他地方，如文件中。另外，我们还可以请求特定的属性。该例中我们使用到了 **user.name** 和 **java.library.path**。 末尾的 “/* Output：”标记表示此文件生成的输出的开头。本书中产生输出的大多数示例将会以包含此注释形式的输出，因此我们可以看到输出并知道它是正确的。带有这个标签允许在使用编译器检查并执行后将输出自动更新到本书的文本中。
