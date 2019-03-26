@@ -56,6 +56,55 @@ public class Precedence {
 ## 赋值
 
 
+运算符的赋值是由符号 `=` 完成的。它代表着获取 `=` 右边的值并赋给左边的变量。右边可以是任何常量、变量或者是可产生一个返回值的表达式。但左边必须是一个明确的、已命名的变量。也就是说，必须要有一个物理的空间来存放右边的值。举个例子来说，可将一个常数赋给一个变量（ A = 4 ），但不可将任何东西赋给一个常数（比如不能 4 = A）。
+
+基本类型的赋值都是直接的，而不像对象，赋予的只是其内存的引用。举个例子，a = b ，如果 b 是基本类型，那么 赋值操作会将 b 的值复制一根给变量 a， 此后若 a 的值发生改变是不会影响到 b 的。作为一名程序员，着应该成为我们的常识。
+
+如果是为对象赋值，那么结果就不一样了。对一个对象进行操作时，我们实际上操作的是它的引用。所以我们将右边的对象赋予给左边时，赋予的只是该对象的引用。此时，两者指向的堆中的对象还是同一个。代码示例：
+
+```JAVA 
+// operators/Assignment.java
+// Assignment with objects is a bit tricky
+class Tank {
+int level;
+}-
+public class Assignment {
+public static void main(String[] args) {
+    Tank t1 = new Tank();
+    Tank t2 = new Tank();
+    t1.level = 9;
+    t2.level = 47;
+    System.out.println("1: t1.level: " + t1.level +
+        ", t2.level: " + t2.level);
+    t1 = t2;
+    System.out.println("2: t1.level: " + t1.level +
+        ", t2.level: " + t2.level);
+    t1.level = 27;
+    System.out.println("3: t1.level: " + t1.level +
+        ", t2.level: " + t2.level);
+    }
+}
+```
+
+输出结果：
+
+```
+1: t1.level: 9, t2.level: 47
+2: t1.level: 47, t2.level: 47
+3: t1.level: 27, t2.level: 27
+```
+
+这是个简单的 `Tank` 类，通过 main 方法 `new` 出了 2 个实例对象。 两个对象的 `level` 属性分别被赋予了不同的值。 然后，t2 的值被赋予给 t1。在许多编程语言里，预期的结果是 t1 和 t2 的值会一直相对独立。但是，在 Java 中，由于赋予的只是对象的引用，改变 t1 也就改变了 t2。 这是因为 t1 和 t2 此时指向的是堆中同一个对象。（t1 原始对象的引用在 t2 赋值给其时被丢失，它就将会在垃圾回收时被清理）。
+
+这种现象通常称为别名（*aliasing*），这是 Java 处理对象的一种基本方式。但是假若你不想这里出现这样的混淆的话，你可以这么做。代码示例：
+
+```JAVA
+t1.level = t2.level;
+```
+
+较之前的做法，这样做保留了两个单独的对象，而不是丢弃一个并将 t1 和 t2 绑定到同一个对象。但是这样的操作有点违背 JAVA 的设计原则。对象的赋值是个需要重视的环节，否则你可能收获意外的“惊喜”。
+
+
 <!-- Mathematical Operators -->
 ## 算术运算符
 
