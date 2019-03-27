@@ -66,22 +66,24 @@ public class Precedence {
 // operators/Assignment.java
 // Assignment with objects is a bit tricky
 class Tank {
-int level;
-}-
+    int level;
+}
+
 public class Assignment {
-public static void main(String[] args) {
-    Tank t1 = new Tank();
-    Tank t2 = new Tank();
-    t1.level = 9;
-    t2.level = 47;
-    System.out.println("1: t1.level: " + t1.level +
-        ", t2.level: " + t2.level);
-    t1 = t2;
-    System.out.println("2: t1.level: " + t1.level +
-        ", t2.level: " + t2.level);
-    t1.level = 27;
-    System.out.println("3: t1.level: " + t1.level +
-        ", t2.level: " + t2.level);
+
+    public static void main(String[] args) {
+        Tank t1 = new Tank();
+        Tank t2 = new Tank();
+        t1.level = 9;
+        t2.level = 47;
+        System.out.println("1: t1.level: " + t1.level +
+            ", t2.level: " + t2.level);
+        t1 = t2;
+        System.out.println("2: t1.level: " + t1.level +
+            ", t2.level: " + t2.level);
+        t1.level = 27;
+        System.out.println("3: t1.level: " + t1.level +
+            ", t2.level: " + t2.level);
     }
 }
 ```
@@ -121,13 +123,13 @@ public class PassObject {
     y.c = 'z';
  }
 
-public static void main(String[] args) {
-    Letter x = new Letter();
-    x.c = 'a';
-    System.out.println("1: x.c: " + x.c);
-    f(x);
-    System.out.println("2: x.c: " + x.c);
-    }
+    public static void main(String[] args) {
+        Letter x = new Letter();
+         x.c = 'a';
+        System.out.println("1: x.c: " + x.c);
+        f(x);
+        System.out.println("2: x.c: " + x.c);
+     }
 }
 ```
 
@@ -156,50 +158,50 @@ import java.util.*;
 
 public class MathOps {
     public static void main(String[] args) {
-    // Create a seeded random number generator:
-    Random rand = new Random(47);
-    int i, j, k;
-    // Choose value from 1 to 100:
-    j = rand.nextInt(100) + 1;
-    System.out.println("j : " + j);
-    k = rand.nextInt(100) + 1;
-    System.out.println("k : " + k);
-    i = j + k;
-    System.out.println("j + k : " + i);
-    i = j - k;
-    System.out.println("j - k : " + i);
-    i = k / j;
-    System.out.println("k / j : " + i);
-    i = k * j;
-    System.out.println("k * j : " + i);
-    i = k % j;
-    System.out.println("k % j : " + i);
-    j %= k;
-    System.out.println("j %= k : " + j);
-    // 浮点运算测试
-    float u, v, w; // Applies to doubles, too
-    v = rand.nextFloat();
-    System.out.println("v : " + v);
-    w = rand.nextFloat();
-    System.out.println("w : " + w);
-    u = v + w;
-    System.out.println("v + w : " + u);
-    u = v - w;
-    System.out.println("v - w : " + u);
-    u = v * w;
-    System.out.println("v * w : " + u);
-    u = v / w;
-    System.out.println("v / w : " + u);
-    // 下面的操作同样适用于 char, 
-    // byte, short, int, long, and double:
-    u += v;
-    System.out.println("u += v : " + u);
-    u -= v;
-    System.out.println("u -= v : " + u);
-    u *= v;
-    System.out.println("u *= v : " + u);
-    u /= v;
-    System.out.println("u /= v : " + u);    
+        // Create a seeded random number generator:
+        Random rand = new Random(47);
+        int i, j, k;
+        // Choose value from 1 to 100:
+        j = rand.nextInt(100) + 1;
+        System.out.println("j : " + j);
+        k = rand.nextInt(100) + 1;
+        System.out.println("k : " + k);
+        i = j + k;
+        System.out.println("j + k : " + i);
+        i = j - k;
+        System.out.println("j - k : " + i);
+        i = k / j;
+        System.out.println("k / j : " + i);
+        i = k * j;
+        System.out.println("k * j : " + i);
+        i = k % j;
+        System.out.println("k % j : " + i);
+        j %= k;
+        System.out.println("j %= k : " + j);
+        // 浮点运算测试
+        float u, v, w; // Applies to doubles, too
+        v = rand.nextFloat();
+        System.out.println("v : " + v);
+        w = rand.nextFloat();
+        System.out.println("w : " + w);
+        u = v + w;
+        System.out.println("v + w : " + u);
+        u = v - w;
+        System.out.println("v - w : " + u);
+        u = v * w;
+        System.out.println("v * w : " + u);
+        u = v / w;
+        System.out.println("v / w : " + u);
+        // 下面的操作同样适用于 char, 
+        // byte, short, int, long, and double:
+        u += v;
+        System.out.println("u += v : " + u);
+        u -= v;
+        System.out.println("u -= v : " + u);
+        u *= v;
+        System.out.println("u *= v : " + u);
+        u /= v;
+        System.out.println("u /= v : " + u);    
     }
 }
 
@@ -267,15 +269,15 @@ x = a * (-b);
 // operators/AutoInc.java
 // 演示 ++ 和 -- 运算符
 public class AutoInc {
-public static void main(String[] args) {
-    int i = 1;
-    System.out.println("i: " + i);
-    System.out.println("++i: " + ++i); // 前递增
-    System.out.println("i++: " + i++); // 后递增
-    System.out.println("i: " + i);
-    System.out.println("--i: " + --i); // 前递减
-    System.out.println("i--: " + i--); // 后递减
-    System.out.println("i: " + i);
+    public static void main(String[] args) {
+        int i = 1;
+        System.out.println("i: " + i);
+        System.out.println("++i: " + ++i); // 前递增
+        System.out.println("i++: " + i++); // 后递增
+        System.out.println("i: " + i);
+        System.out.println("--i: " + --i); // 前递减
+        System.out.println("i--: " + i--); // 后递减
+        System.out.println("i: " + i);
     }
 }
 ```
