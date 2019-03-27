@@ -303,6 +303,61 @@ C++ 名称来自于递增运算符，同时也代表着“比 C 更进一步”�
 ## 关系运算符
 
 
+关系运算符会产生一个布尔（**boolean**）结果，指示操作数值之间的关系。如果关系为真，则关系表达式生成 **true**，如果关系非真，则生成 **false**。关系运算符包括小于 `<`，大于 `>`，小于或等于 `<=`，大于或等于 `>=`，等价 `==` 和不等价 `！=`。`==` 和 `!=` 可与所有基本类型搭配使用。但其他类型的比较就不太适合了，因为布尔值只能是 **true** 或 **false**，所以比较他们之间的“大于”或“小于”没有意义。
+
+<!-- Testing Object Equivalence -->
+### 测试对象等价
+
+关系运算符 `==` 和 `=` 也适用于所有对象，但它们的含义常常会混淆初次使用 Java 的程序员。代码示例：
+
+```JAVA
+// operators/Equivalence.java
+public class Equivalence {
+    public static void main(String[] args) {
+        Integer n1 = 47;
+        Integer n2 = 47;
+        System.out.println(n1 == n2);
+        System.out.println(n1 != n2);
+    }
+}
+```
+
+输出结果：
+
+```
+true
+false
+```
+
+看起来结果是我们所期望的。但其实事情不是那么简单。下面我们来创建自己的类：
+
+```JAVA
+// operators/EqualsMethod2.java
+// 默认的 equals() 方法没有比较内容
+class Value {
+int i;
+}
+
+public class EqualsMethod2 {
+    public static void main(String[] args) {
+        Value v1 = new Value();
+        Value v2 = new Value();
+        v1.i = v2.i = 100;
+        System.out.println(v1.equals(v2));
+    }
+}
+```
+
+输出结果:
+
+```
+false
+```
+
+现在事情再次令人困惑：结果是错误的。这是因为 **equals()** 的默认行为是比较对象的引用。因此，除非你在新类中重写 **equals()** 方法，否则我们将获取不到想要的结果。不幸的是，在学习 [复用](./08-Reuse.md)（**Reuse**） 章节后我们才能接触到“覆盖”（**override**），并且直到 [附录:集合主题](./Appendix-Collection-Topics.md)，才能知道定义 **equals()** 方法的正确方式,但是现在明白 **equals()** 行为方式也可能为你节省一些时间。
+
+大多数 Java 库类通过覆写 **equals()** 方法比较对象的内容而不是其引用。
+
 <!-- Logical-Operators -->
 ## 逻辑运算符
 
