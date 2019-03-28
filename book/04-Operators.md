@@ -303,12 +303,12 @@ C++ 名称来自于递增运算符，同时也代表着“比 C 更进一步”�
 ## 关系运算符
 
 
-关系运算符会产生一个布尔（**boolean**）结果，指示操作数值之间的关系。如果关系为真，则关系表达式生成 **true**，如果关系非真，则生成 **false**。关系运算符包括小于 `<`，大于 `>`，小于或等于 `<=`，大于或等于 `>=`，等价 `==` 和不等价 `！=`。`==` 和 `!=` 可与所有基本类型搭配使用。但其他类型的比较就不太适合了，因为布尔值只能是 **true** 或 **false**，所以比较他们之间的“大于”或“小于”没有意义。
+关系运算符会通过产生一个布尔（**boolean**）结果来表示被操作的数值之间的关系。如果关系为真，则结果为 **true**，如果关系非真，则结果为 **false**。关系运算符包括小于 `<`，大于 `>`，小于或等于 `<=`，大于或等于 `>=`，等价 `==` 和不等价 `！=`。`==` 和 `!=` 可与所有基本类型搭配使用。但与其他类型的比较就不太适合了，因为布尔值只能表示 **true** 或 **false**，所以比较它们之间的“大于”或“小于”没有意义。
 
 <!-- Testing Object Equivalence -->
 ### 测试对象等价
 
-关系运算符 `==` 和 `=` 也适用于所有对象，但它们的含义常常会混淆初次使用 Java 的程序员。代码示例：
+关系运算符 `==` 和 `!=` 同样适用于所有对象之间的比较运算，但产生的结果却经常混淆 Java 的初学者。下面是代码示例：
 
 ```JAVA
 // operators/Equivalence.java
@@ -329,7 +329,7 @@ true
 false
 ```
 
-看起来结果是我们所期望的。但其实事情不是那么简单。下面我们来创建自己的类：
+上例的结果看起来是我们所期望的。但其实事情并非那么简单。下面我们来创建自己的类：
 
 ```JAVA
 // operators/EqualsMethod2.java
@@ -354,12 +354,120 @@ public class EqualsMethod2 {
 false
 ```
 
-现在事情再次令人困惑：结果是错误的。这是因为 **equals()** 的默认行为是比较对象的引用。因此，除非你在新类中重写 **equals()** 方法，否则我们将获取不到想要的结果。不幸的是，在学习 [复用](./08-Reuse.md)（**Reuse**） 章节后我们才能接触到“覆盖”（**override**），并且直到 [附录:集合主题](./Appendix-Collection-Topics.md)，才能知道定义 **equals()** 方法的正确方式,但是现在明白 **equals()** 行为方式也可能为你节省一些时间。
+上例的结果再次令人困惑：结果是错误的。原因： **equals()** 的默认行为是比较对象的引用而非具体内容。因此，除非你在新类中重写 **equals()** 方法，否则我们将获取不到想要的结果。不幸的是，在学习 [复用](./08-Reuse.md)（**Reuse**） 章节后我们才能接触到“覆盖”（**override**），并且直到 [附录:集合主题](./Appendix-Collection-Topics.md)，才能知道定义 **equals()** 方法的正确方式,但是现在明白 **equals()** 行为方式也可能为你节省一些时间。
 
 大多数 Java 库类通过覆写 **equals()** 方法比较对象的内容而不是其引用。
 
 <!-- Logical-Operators -->
 ## 逻辑运算符
+
+每个逻辑运算符 `&&` （**AND**）、`||`（**OR**）和 `!`（**非**）根据参数的逻辑关系生成布尔值 `true` 或 `false`。下面的代码示例使用了关系运算符和逻辑运算符：
+
+```JAVA
+// operators/Bool.java
+// 关系运算符和逻辑运算符
+import java.util.*;
+public class Bool {
+    public static void main(String[] args) {
+        Random rand = new Random(47);
+        int i = rand.nextInt(100);
+        int j = rand.nextInt(100);
+        System.out.println("i = " + i);
+        System.out.println("j = " + j);
+        System.out.println("i > j is " + (i > j));
+        System.out.println("i < j is " + (i < j));
+        System.out.println("i >= j is " + (i >= j));
+        System.out.println("i <= j is " + (i <= j));
+        System.out.println("i == j is " + (i == j));
+        System.out.println("i != j is " + (i != j));
+        // 将 int 作为布尔处理不是合法的 Java 写法
+        //- System.out.println("i && j is " + (i && j));
+        //- System.out.println("i || j is " + (i || j));
+        //- System.out.println("!i is " + !i);
+        System.out.println("(i < 10) && (j < 10) is "
+        + ((i < 10) && (j < 10)) );
+        System.out.println("(i < 10) || (j < 10) is "
+        + ((i < 10) || (j < 10)) );
+    }
+}
+```
+
+输出结果：
+
+```
+i = 58
+j = 55
+i > j is true
+i < j is false
+i >= j is true
+i <= j is false
+i == j is false
+i != j is true
+(i < 10) && (j < 10) is false
+(i < 10) || (j < 10) is false
+```
+
+在 JAVA 逻辑运算中，我们不能像 C/C++ 那样使用非布尔值， 而仅能使用 **AND**、**OR**、**NOT**。
+下面是一次错误的尝试： ~~a || -~~。 但是，后续表达式使用关系比较生成布尔值，然后对结果使用逻辑运算结果。请注意，如果在预期为 **String** 类型的位置使用 **boolean**类型的值，则结果会自动转为适当的文本格式。
+
+我们可以将前一个程序中 **int** 的定义替换为除 **boolean** 之外的任何其他基本数据类型。
+但请注意，**float** 类型的数值比较非常严格。只要最小位部分的数字不同则两个数值之间的比较仍然是“非等”的；只要数字最小位是大于 0 的，那么它就不等于 0。
+
+
+<!-- Short-Circuiting -->
+### 短路
+
+逻辑运算符支持一种称为“短路”（*short-circuiting*）的现象。整个表达式会在运算到可以明确结果时就停止并返回结果，这意味着该逻辑表达式的后半部分不会被执行到。代码示例：
+
+```JAVA
+// operators / ShortCircuit.java 
+// 逻辑运算符的短路行为
+public class ShortCircuit {
+
+    static boolean test1(int val) {
+        System.out.println("test1(" + val + ")");
+        System.out.println("result: " + (val < 1));
+        return val < 1;
+    }
+
+    static boolean test2(int val) {
+        System.out.println("test2(" + val + ")");
+        System.out.println("result: " + (val < 2));
+        return val < 2;
+    }
+
+    static boolean test3(int val) {
+        System.out.println("test3(" + val + ")");
+        System.out.println("result: " + (val < 3));
+        return val < 3;
+    }
+
+    public static void main(String[] args) {
+        boolean b = test1(0) && test2(2) && test3(2);
+        System.out.println("expression is " + b);
+    }
+}
+```
+
+输出结果：
+
+```
+test1(0)
+result: true
+test2(2)
+result: false
+expression is false
+```
+
+每个测试都对参数执行比较并返回 `true` 或 `false`。同时控制台也会在方法执行时打印他们的执行状态。 下面的表达式：
+
+```JAVA
+test1（0）&& test2（2）&& test3（2）
+```
+
+可能你的预期是程序会执行 3 个 **test** 方法并返回。我们来分析一下：第一个方法的结果返回 `true`,因此表达式会继续走下去。紧接着，第二个方法的返回结果是 `false`。这就代表这整个表达式的结果肯定为 `false`，所以就没有必要再判断剩下的表达式部分了。
+
+所以，运用“短路”可以节省部分不必要的运算，从而提高程序潜在的性能。
 
 
 <!-- Literals -->
