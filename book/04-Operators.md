@@ -258,7 +258,7 @@ x = a * (-b);
 
 
 <!-- Auto-Increment-and-Decrement -->
-## 自动递增和递减
+## 递增和递减
 
 
 和 C 语言类似，Java 提供了许多快捷运算方式。快捷运算可使代码可读性,可写性都更强。其中包括递增 `++` 和递减 `--`,意为“增加或减少一个单位”。举个例子来说，假设 a 是一个 **int** 类型的值，则表达式 `++a` 就等价于 `a = a + 1`。 递增和递减运算符不仅可以修改变量，还可以生成变量的值。
@@ -471,7 +471,174 @@ test1（0）&& test2（2）&& test3（2）
 
 
 <!-- Literals -->
-## 字面值
+## 字面值常量
+
+
+通常，当我们向程序中插入一个字面值常量（**Literal**）时，编译器会确切地识别它的类型。当类型不明确时，必须辅以字面值常量关联来帮助编译器识别。代码示例：
+
+```JAVA
+// operators/Literals.java
+public class Literals {
+    public static void main(String[] args) {
+        int i1 = 0x2f; // 16进制 (小写)
+        System.out.println(
+        "i1: " + Integer.toBinaryString(i1));
+        int i2 = 0X2F; // 16进制 (大写)
+        System.out.println(
+        "i2: " + Integer.toBinaryString(i2));
+        int i3 = 0177; // 8进制 (前导0)
+        System.out.println(
+        "i3: " + Integer.toBinaryString(i3));
+        char c = 0xffff; // 最大 char 型16进制值
+        System.out.println(
+        "c: " + Integer.toBinaryString(c));
+        byte b = 0x7f; // 最大 byte 型16进制值  10101111;
+        System.out.println(
+        "b: " + Integer.toBinaryString(b));
+        short s = 0x7fff; // 最大 short 型16进制值
+        System.out.println(
+        "s: " + Integer.toBinaryString(s));
+        long n1 = 200L; // long 型后缀
+        long n2 = 200l; // long 型后缀 (容易与数值1混淆)
+        long n3 = 200;
+    
+        // Java 7 二进制字面值常量:
+        byte blb = (byte)0b00110101;
+        System.out.println(
+        "blb: " + Integer.toBinaryString(blb));
+        short bls = (short)0B0010111110101111;
+        System.out.println(
+        "bls: " + Integer.toBinaryString(bls));
+        int bli = 0b00101111101011111010111110101111;
+        System.out.println(
+        "bli: " + Integer.toBinaryString(bli));
+        long bll = 0b00101111101011111010111110101111;
+        System.out.println(
+        "bll: " + Long.toBinaryString(bll));
+        float f1 = 1;
+        float f2 = 1F; // float 型后缀
+        float f3 = 1f; // float 型后缀
+        double d1 = 1d; // double 型后缀
+        double d2 = 1D; // double 型后缀
+        // (long 型的字面值同样适用于十六进制和8进制 )
+    }
+}
+```
+
+输出结果:
+
+```
+i1: 101111
+i2: 101111
+i3: 1111111
+c: 1111111111111111
+b: 1111111
+s: 111111111111111
+blb: 110101
+bls: 10111110101111
+bli: 101111101011111010111110101111
+bll: 101111101011111010111110101111
+```
+
+在文本值的后面添加字面值常量可以让编译器识别该文本值的类型。对于 **Long** 型数值，结尾使用大写 `L` 或小写 `l` 皆可（不推荐使用 `l`，因为容易与阿拉伯数值 1 混淆）。大写 `F` 或小写 `f` 表示 **float** 浮点数。大写 `D` 或小写 `d` 表示 **double** 双精度。
+
+
+十六进制（以 16 为基数），适用于所有整型数据类型，由前导 `0x` 或 `0x` 表示，后跟 0-9 或 a-f （大写或小写）。如果我们在初始化某个类型的数值时，赋值超出其范围，那么编译器会报错（不管值的数字形式如何）。在上例的代码中，**char**、**byte** 和 **short** 的值已经是最大了。如果超过这些值，编译器将自动转型为 **int**，并且我们需要声明强制转换（强制转换将在本章后面定义）。这告诉我们已越过该类型的范围界限。
+
+八进制（以 8 为基数）由 0~7 之间的数字和前导零 `0` 表示。
+
+Java 7 引入了二进制的字面值常量，由前导 `0B` 或 `0B` 表示，它可以初始化所有的整数类型。
+
+使用整型数值类型时，显示其二进制形式会很有用。在 Long 型和 Integer 型中这很容易实现，调用其静态的 **toBinaryString()** 方法即可。 但是请注意，若将较小的类型传递给 **Integer.tobinarystring()** 时，类型将自动转换为 **int**。
+
+<!-- Underscores in Literals -->
+### 下划线
+
+
+Java 7 中有一个深思熟虑的补充：我们可以在数字文字中包含下划线 `_`，以使结果更清晰。这对于大数值的分组数字特别有用。代码示例：
+
+
+```JAVA
+// operators/Underscores.java
+public class Underscores {
+    public static void main(String[] args) {
+        double d = 341_435_936.445_667;
+        System.out.println(d);
+        int bin = 0b0010_1111_1010_1111_1010_1111_1010_1111;
+        System.out.println(Integer.toBinaryString(bin));
+        System.out.printf("%x%n", bin); // [1]
+        long hex = 0x7f_e9_b7_aa;
+        System.out.printf("%x%n", hex);
+    }
+}
+```
+
+输出结果:
+
+```
+3.41435936445667E8
+101111101011111010111110101111
+2fafafaf
+7fe9b7aa
+```
+
+
+下面是合理使用的规则：
+
+1. 仅限单 `_`，不能多条相连。
+2. 数值开头和结尾不允许出现 `_`。
+3. `F`、`D` 和 `L`的前后禁止出现 `_`。
+4. 二进制前导 `b` 和 十六进制 `x` 前后禁止出现 `_`。
+
+
+[1] 注意 `％n`的使用。熟悉 C 风格的程序员可能习惯于看到 `\n` 来表示换行符。问题在于它给你的是一个“Unix风格”的换行符。此外，如果我们使用的是 Windows，则必须指定 `\r\n`。这种差异的包袱应该由编程语言来解决。这就是Java用 `％n` 实现的，忽略平台间差异生成适当的换行符。但当你使用 `System.out.printf()` 或 `System.out.format()` 时。对于 `System.out.println()`，我们仍然必须使用 `\n`;如果你使用 `％n`，`println()` 只会输出 `％n` 而不是换行符。
+
+
+<!-- Exponential Notation -->
+### 指数计数法
+
+ 指数总是采用一种我认为很不直观的记号方法:
+
+```JAVA
+// operators/Exponents.java
+// "e" 表示 10 的几次幂
+public class Exponents {
+    public static void main(String[] args) {
+        // 大写 E 和小写 e 的效果相同:
+        float expFloat = 1.39e-43f;
+        expFloat = 1.39E-43f;
+        System.out.println(expFloat);
+        double expDouble = 47e47d; // 'd' 是可选的
+        double expDouble2 = 47e47; // 自动转换为 double
+        System.out.println(expDouble);
+    }
+}
+```
+
+输出结果:
+
+```
+1.39E-43
+4.7E48
+```
+
+在科学与工程学领域，“e”代表自然对数的基数，约等于 2.718 （Java 一种更精确的 **double** 值采用 **Math.E** 的形式）。它在类似 “1.39×e 的 -47 次方”这样的指数表达式中使用，意味着“1.39×2.718 的-47次方”。然而，自 FORTRAN 语言发明后，人们自然而然地觉得e 代表 “10几次幂”。这种做法显得颇为古怪，因为 FORTRAN 最初面向的是科学与工程设计领域。
+
+理所当然，它的设计者应对这样的混淆概念持谨慎态度 [^2]。但不管怎样，这种特别的表达方法在 C，C++ 以及现在的 Java 中顽固地保留下来了。所以倘若习惯 e 作为自然对数的基数使用，那么在 Java 中看到类似“1.39e-47f”这样的表达式时，请转换你的思维，从程序设计的角度思考它；它真正的含义是“1.39×10 的-47次方”。
+
+注意如果编译器能够正确地识别类型，就不必使用尾随字面值常量。对于下述语句：
+
+```JAVA
+long n3 = 200;
+```
+
+它并不存在含糊不清的地方，所以 200 后面的 L 大可省去。然而，对于下述语句：
+
+```
+float f4 = 1e-47f; //10 的幂数
+```
+
+编译器通常会将指数作为 **double** 类型来处理，所以假若没有这个尾随的 `f`，编辑器就会报错，提示我们应该将 **double** 型转换成 **float**型。
 
 
 <!-- Bitwise-Operators -->
