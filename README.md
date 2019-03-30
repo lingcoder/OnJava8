@@ -2,18 +2,19 @@
 
 ## 书籍简介
 
-* 本书原作者为 \[美\] [Bruce Eckel](https://github.com/BruceEckel)，即（*Thinking in Java 4th Edition,2006*）的作者。
+* 本书原作者为 \[美\] *Bruce Eckel*，即（*Thinking in Java 4th Edition,2006*）的作者。
 * 本书是事实上的 *Thinking in Java 5th Edition*（*On Java 8,2017*）。
-* *Thinking in Java 4th Edition*基于 **JAVA 5**版本；*On Java 8*基于**JAVA 8**版本。
+* *Thinking in Java 4th Edition* 基于 **JAVA 5** 版本；*On Java 8* 基于 **JAVA 8** 版本。
 
 
 ## 快速阅读传送门
 
-- GitHub 快速阅读：[进入目录](https://github.com/LingCoder/OnJava8/blob/master/SUMMARY.md)
+- 推荐阅读：[进入](https://lingcoder.github.io/OnJava8/)
+
+- GitHub 目录阅读：[进入目录](https://github.com/LingCoder/OnJava8/blob/master/SUMMARY.md)
 
 - Gitee 快速阅读：[进入目录](https://gitee.com/lingcoder/OnJava8/blob/master/SUMMARY.md)
 
-- GitBook 完整阅读：[进入Gitbook](https://lingcoder.gitbook.io/onjava8)
 
 
 ## 翻译进度
