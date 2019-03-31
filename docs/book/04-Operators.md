@@ -816,11 +816,55 @@ i >>> 5, int: 97591828, binary:
 ```
 
 
-结尾的两个方法 **printBinaryInt()** 和 **printBinaryLong()** 它们分别操作一个 **int** 和 **long** 值，并转换为二进制格式输出，同时附有简要的说明文字。除了演示 **int** 和 **long** 的所有位运算符的效果之外，本示例还显示 **int** 和 **long** 的最小值、最大值、+1 和 -1 值，以便我们了解它们的形式。注意高位代表符号：0 表示正，1 表示负。上面显示了 **int** 部分的输出。数字的二进制表示称为有符号的两个补数。
+结尾的两个方法 **printBinaryInt()** 和 **printBinaryLong()** 它们分别操作一个 **int** 和 **long** 值，并转换为二进制格式输出，同时附有简要的文字说明。除了演示 **int** 和 **long** 的所有位运算符的效果之外，本示例还显示 **int** 和 **long** 的最小值、最大值、+1 和 -1 值，以便我们了解它们的形式。注意高位代表符号：0 表示正，1 表示负。上面显示了 **int** 部分的输出。数字的二进制表示称为有符号的两个补数。
 
 
 <!-- Ternary-if-else-Operator -->
 ## 三元运算符
+
+三元运算符，也称为条件运算符。这种运算符比较罕见，因为它有三个运算对象。但它确实属于运算符的一种，因为它最终也会生成一个值。这与本章后一节要讲述的普通 **if-else** 语句是不同的。下面是它的表达式格式：
+
+**布尔表达式 ? 值1 : 值2**
+
+若表达式计算为 **true**，则返回结果 **值1** ；如果表达式的计算为 **false**，则返回结果 **值2**。
+
+当然，也可以换用普通的 **if-else** 语句（在后面介绍），但三元运算符更加简洁。作为三元运算符的创造者， C 自诩为一门简练的语言。三元运算符的引入多半就是为了高效编程，但假若我们打算频繁使用它的话，还是先多作一些思量： 它易于产生可读性差的代码。与 **if-else** 不同的是，三元运算符是有返回结果的。请看下面的代码示例：
+
+
+```java
+// operators/TernaryIfElse.java
+public class TernaryIfElse {
+    
+static int ternary(int i) {
+    return i < 10 ? i * 100 : i * 10;
+}
+
+static int standardIfElse(int i) {
+    if(i < 10)
+    return i * 100;
+    else
+    return i * 10;
+}
+
+    public static void main(String[] args) {
+        System.out.println(ternary(9));
+        System.out.println(ternary(10));
+        System.out.println(standardIfElse(9));
+        System.out.println(standardIfElse(10));
+    }
+}
+```
+
+输出结果：
+
+```
+900
+100
+900
+100
+```
+
+可以看出，**ternary()** 中的代码更简短。然而，**standardIfElse()** 中的代码更易理解且不要求更多的录入。所以我们在挑选三元运算符时，请务必权衡一下利弊。
 
 
 <!-- String-Operator-+-and-+= -->
