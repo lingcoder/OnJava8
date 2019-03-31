@@ -1,4 +1,4 @@
-<img width="180px" src="https://cyc-1256109796.cos.ap-guangzhou.myqcloud.com/LogoMakr_1J56bI.png">
+<img width="180px" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/assets/LogoMark.png">
 
 # On Java 8
 

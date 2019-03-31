@@ -587,7 +587,7 @@ Java 的代码约定规范（*Code Conventions for the Java Programming Language
 
 ```JAVA
 class AllTheColorsOfTheRainbow {
-    // ```
+    // ...
 ```
 
     
