@@ -660,6 +660,165 @@ float f4 = 1e-47f; //10 的幂数
 ## 移位运算符
 
 
+移位运算符面向的运算对象也是二进制的“位”。可单独用它们处理整数类型（基本类型的一种）。左移位运算符 `<<` 能将其左边的运算对象向左移动右侧指定的位数（在低位补 0）。右移位运算符 `>>` 则相反。位移运算符有“正”、“负”值”：若值为正，则在高位插入 0；若值为负，则在高位插入 1。Java 也添加了一种“不分正负”的右移位运算符（>>>），它使用了“零扩展”（**zero extension**）：无论正负，都在高位插入 0。这一运算符是 C/C++ 没有的。
+
+如果移动 **char**、**byte** 或 **short**，则会在移动发生之前将其提升为 **int**，结果为 **int**。仅使用右侧的 5 个低阶位。这可以防止我们移动超过 **int** 范围的位数。若对一个 **long** 值进行处理，最后得到的结果也是 **long**。
+
+
+移位可以与等号 `<<=` 或 `>>=` 或 `>>>=` 组合使用。左值被替换为其移位运算后的值。但是，问题来了，当无符号右移与赋值相结合时，若将其与 **byte** 或 **short** 一起使用的话，则结果错误。取而代之的是，它们被提升为 **int** 型并右移，但在重新赋值时被截断。在这种情况下，结果为 -1。下面是代码示例：
+
+```java
+// operators/URShift.java
+// 测试无符号右移
+public class URShift {
+    public static void main(String[] args) {
+        int i = -1;
+        System.out.println(Integer.toBinaryString(i));
+        i >>>= 10;
+        System.out.println(Integer.toBinaryString(i));
+        long l = -1;
+        System.out.println(Long.toBinaryString(l));
+        l >>>= 10;
+        System.out.println(Long.toBinaryString(l));
+        short s = -1;
+        System.out.println(Integer.toBinaryString(s));
+        s >>>= 10;
+        System.out.println(Integer.toBinaryString(s));
+        byte b = -1;
+        System.out.println(Integer.toBinaryString(b));
+        b >>>= 10;
+        System.out.println(Integer.toBinaryString(b));
+        b = -1;
+        System.out.println(Integer.toBinaryString(b));
+        System.out.println(Integer.toBinaryString(b>>>10));
+    }
+}
+```
+
+输出结果：
+
+```
+11111111111111111111111111111111
+1111111111111111111111
+1111111111111111111111111111111111111111111111111111111
+111111111
+111111111111111111111111111111111111111111111111111111
+11111111111111111111111111111111
+11111111111111111111111111111111
+11111111111111111111111111111111
+11111111111111111111111111111111
+11111111111111111111111111111111
+1111111111111111111111
+```
+
+
+在上例中，结果并未重新赋值给变量 **b** ，而是直接打印出来，因此一切正常。下面是一个涉及所有位运算符的代码示例：
+
+```java
+// operators/BitManipulation.java
+// 使用位运算符
+import java.util.*;
+public class BitManipulation {
+    public static void main(String[] args) {
+        Random rand = new Random(47);
+        int i = rand.nextInt();
+        int j = rand.nextInt();
+        printBinaryInt("-1", -1);
+        printBinaryInt("+1", +1);
+        int maxpos = 2147483647;
+        printBinaryInt("maxpos", maxpos);
+        int maxneg = -2147483648;
+        printBinaryInt("maxneg", maxneg);
+        printBinaryInt("i", i);
+        printBinaryInt("~i", ~i);
+        printBinaryInt("-i", -i);
+        printBinaryInt("j", j);
+        printBinaryInt("i & j", i & j);
+        printBinaryInt("i | j", i | j);
+        printBinaryInt("i ^ j", i ^ j);
+        printBinaryInt("i << 5", i << 5);
+        printBinaryInt("i >> 5", i >> 5);
+        printBinaryInt("(~i) >> 5", (~i) >> 5);
+        printBinaryInt("i >>> 5", i >>> 5);
+        printBinaryInt("(~i) >>> 5", (~i) >>> 5);
+        long l = rand.nextLong();
+        long m = rand.nextLong();
+        printBinaryLong("-1L", -1L);
+        printBinaryLong("+1L", +1L);
+        long ll = 9223372036854775807L;
+        printBinaryLong("maxpos", ll);
+        long lln = -9223372036854775808L;
+        printBinaryLong("maxneg", lln);
+        printBinaryLong("l", l);
+        printBinaryLong("~l", ~l);
+        printBinaryLong("-l", -l);
+        printBinaryLong("m", m);
+        printBinaryLong("l & m", l & m);
+        printBinaryLong("l | m", l | m);
+        printBinaryLong("l ^ m", l ^ m);
+        printBinaryLong("l << 5", l << 5);
+        printBinaryLong("l >> 5", l >> 5);
+        printBinaryLong("(~l) >> 5", (~l) >> 5);
+        printBinaryLong("l >>> 5", l >>> 5);
+        printBinaryLong("(~l) >>> 5", (~l) >>> 5);
+    }
+
+    static void printBinaryInt(String s, int i) {
+        System.out.println(
+        s + ", int: " + i + ", binary:\n " +
+        Integer.toBinaryString(i));
+    }
+
+    static void printBinaryLong(String s, long l) {
+        System.out.println(
+        s + ", long: " + l + ", binary:\n " +
+        Long.toBinaryString(l));
+    }
+}
+```
+
+输出结果（前 32 行）：
+
+```
+-1, int: -1, binary:
+11111111111111111111111111111111
++1, int: 1, binary:
+1
+maxpos, int: 2147483647, binary:
+1111111111111111111111111111111
+maxneg, int: -2147483648, binary:
+10000000000000000000000000000000
+i, int: -1172028779, binary:
+10111010001001000100001010010101
+~i, int: 1172028778, binary:
+ 1000101110110111011110101101010
+-i, int: 1172028779, binary:
+1000101110110111011110101101011
+j, int: 1717241110, binary:
+1100110010110110000010100010110
+i & j, int: 570425364, binary:
+100010000000000000000000010100
+i | j, int: -25213033, binary:
+11111110011111110100011110010111
+i ^ j, int: -595638397, binary:
+11011100011111110100011110000011
+i << 5, int: 1149784736, binary:
+1000100100010000101001010100000
+i >> 5, int: -36625900, binary:
+11111101110100010010001000010100
+(~i) >> 5, int: 36625899, binary:
+10001011101101110111101011
+i >>> 5, int: 97591828, binary:
+101110100010010001000010100
+(~i) >>> 5, int: 36625899, binary:
+10001011101101110111101011
+    ...
+```
+
+
+结尾的两个方法 **printBinaryInt()** 和 **printBinaryLong()** 它们分别操作一个 **int** 和 **long** 值，并转换为二进制格式输出，同时附有简要的说明文字。除了演示 **int** 和 **long** 的所有位运算符的效果之外，本示例还显示 **int** 和 **long** 的最小值、最大值、+1 和 -1 值，以便我们了解它们的形式。注意高位代表符号：0 表示正，1 表示负。上面显示了 **int** 部分的输出。数字的二进制表示称为有符号的两个补数。
+
+
 <!-- Ternary-if-else-Operator -->
 ## 三元运算符
 
