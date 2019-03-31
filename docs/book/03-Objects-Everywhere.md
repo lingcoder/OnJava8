@@ -1,7 +1,5 @@
 [TOC]
 
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
 # 第三章 万物皆对象
 
 >如果我们说不同的语言，我们会感觉到一个不同的世界！— Ludwig Wittgenstein (1889-1951)
