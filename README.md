@@ -60,7 +60,7 @@
 
 - 2019-03-24 附录:新IO翻译完成
 
-## 原书作者
+## 原书资料
 
 <div align="left">
 <img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/cover_small.jpg"  alt="cover_small"/>
@@ -68,12 +68,14 @@
 
 * 作者: Bruce Eckel 
 * ISBN: 9780981872520
+* 页数：2038
+* 发行：仅电子版
 
 ## 贡献者
 
-* 主译: LingCoder,LortSir
-* 参译: 
-* 校对：nickChenyx
+* 主译: [LingCoder](https://github.com/LingCoder)
+* 参译: [LortSir](https://github.com/LortSir)
+* 校对：[nickChenyx](https://github.com/nickChenyx)
 
 
 ## 翻译说明
