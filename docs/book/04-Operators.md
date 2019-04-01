@@ -660,7 +660,7 @@ float f4 = 1e-47f; //10 的幂数
 ## 移位运算符
 
 
-移位运算符面向的运算对象也是二进制的“位”。可单独用它们处理整数类型（基本类型的一种）。左移位运算符 `<<` 能将其左边的运算对象向左移动右侧指定的位数（在低位补 0）。右移位运算符 `>>` 则相反。位移运算符有“正”、“负”值”：若值为正，则在高位插入 0；若值为负，则在高位插入 1。Java 也添加了一种“不分正负”的右移位运算符（>>>），它使用了“零扩展”（**zero extension**）：无论正负，都在高位插入 0。这一运算符是 C/C++ 没有的。
+移位运算符面向的运算对象也是二进制的“位”。可单独用它们处理整数类型（基本类型的一种）。左移位运算符 `<<` 能将其左边的运算对象向左移动右侧指定的位数（在低位补 0）。右移位运算符 `>>` 则相反。位移运算符有“正”、“负”值”：若值为正，则在高位插入 0；若值为负，则在高位插入 1。Java 也添加了一种“不分正负”的右移位运算符（>>>），它使用了“零扩展”（*zero extension*）：无论正负，都在高位插入 0。这一运算符是 C/C++ 没有的。
 
 如果移动 **char**、**byte** 或 **short**，则会在移动发生之前将其提升为 **int**，结果为 **int**。仅使用右侧的 5 个低阶位。这可以防止我们移动超过 **int** 范围的位数。若对一个 **long** 值进行处理，最后得到的结果也是 **long**。
 
@@ -870,25 +870,628 @@ static int standardIfElse(int i) {
 <!-- String-Operator-+-and-+= -->
 ## 字符串运算符
 
+这个运算符在 Java 里有一项特殊用途：连接字符串。这点已在前面展示过了。尽管与 `+` 的传统意义不符，但如此使用也还是比较自然的。这一功能看起来还不错，于是在 C++ 里引入了“运算符重载”机制，以便 C++ 程序员为几乎所有运算符增加特殊的含义。但遗憾得是，与 C++ 的一些限制结合以后，它变得复杂。这要求程序员在设计自己的类时必须对此有周全的考虑。虽然在 Java 中实现运算符重载机制并非难事（如 C# 所展示的，它具有简单的运算符重载），但因该特性过于复杂，因此 Java 并未实现它。
+
+我们注意到运用 `String +` 时有一些有趣的现象。若表达式以一个 **String** 类型开头（编译器会自动将双引号 `""` 标注的的字符序列转换为字符串），那么后续所有运算对象都必须是字符串。代码示例：
+
+```java
+// operators/StringOperators.java
+public class StringOperators {
+    public static void main(String[] args) {
+        int x = 0, y = 1, z = 2;
+        String s = "x, y, z ";
+        System.out.println(s + x + y + z);
+        // 将 x 转换为字符串
+        System.out.println(x + " " + s);
+        s += "(summed) = "; 
+        // 级联操作
+        System.out.println(s + (x + y + z));
+        // Integer.toString()方法的简写:
+        System.out.println("" + x);
+    }
+}
+```
+
+输出结果：
+
+```
+x, y, z 012
+0 x, y, z
+x, y, z (summed) = 3
+0
+```
+
+**注意**：上例中第 1 输出语句的执行结果是 `012` 而并非 `3`，这是因为编译器将其分别转换为其字符串形式然后与字符串变量 **s** 连接。在第 2 条输出语句中，编译器将开头的变量转换为了字符串，由此可以看出，这种转换与数据的位置无无关系，只要当中有一条数据是字符串类型，其他非字符串数据都将被转换为字符串形式并连接。最后一条输出语句，我们可以看出 `+=` 运算符可以拼接其右侧的字符串连接结果并重赋值给自身变量 `s`。括号 `()` 可以控制表达式的计算顺序，以便在显示 **int** 之前对其进行实际求和。
+
+请注意 **main()** 方法中的最后一个例子：我们经常会看到一个空字符串 `""` 跟着一个基本类型的数据。这样可以隐式地将其转换为字符串，以代替繁琐的显式调用方法（如这里可以使用 **Integer.toString()**）。
+
 
 <!-- Common-Pitfalls-When-Using-Operators -->
 ## 常见陷阱
 
 
+使用运算符时很容易犯的一个错误是，在还没搞清楚表达式的计算方式时就试图忽略括号 `()`。在 Java 中也一样。 在 C++ 中你甚至可能凡这样极端的错误.代码示例：
+
+```java
+while(x = y) {
+// ...
+}
+```
+
+显然，程序员原意是测试等价性 `==`，而非赋值 `=`。若变量 **y** 非 0 的话，在 C/C++ 中，这样的赋值操作总会返回 `true`。于是，上面的代码示例将会无线循环。而在 Java 中，这样的表达式结果并不会转化为一个布尔值。 而编译器会试图把这个 **int** 型数据转换为预期应接收的布尔类型。最后，我们将会在试图运行前收到编译期错误。因此，Java 天生避免了这种陷阱发生的可能。
+
+唯一有种情况例外：当变量 `x` 和 `y` 都是布尔值，例如  `x=y` 是一个逻辑表达式。除此之外，之前的那个例子，很大可能是错误。
+
+在 C/C++ 里，类似的一个问题还有使用按位“与” `&` 和“或” `|` 运算，而非逻辑“与” `&&` 和“或” `||`。就象 `=` 和 `==` 一样，键入一个字符当然要比键入两个简单。在 Java 中，编译器同样可防止这一点，因为它不允许我们强行使用另一种并不符的类型。
+
+
 <!-- Casting-Operators -->
 ## 类型转换
+
+“类型转换”（Casting）的作用是“与一个模型匹配”。在适当的时候，Java 会将一种数据类型自动转换成另一种。例如，假设我们为 **float** 变量赋值一个整数值，计算机会将 **int** 自动转换成 **float**。我们可以在程序未自动转换时显式、强制地使此类型发生转换。
+
+要执行强制转换，需要将所需的数据类型放在任何值左侧的括号内，如下所示：
+
+```java
+// operators/Casting.java
+public class Casting {
+    public static void main(String[] args) {
+        int i = 200;
+        long lng = (long)i;
+        lng = i; // 没有必要的类型提升
+        long lng2 = (long)200;
+        lng2 = 200;
+        // 类型收缩
+        i = (int)lng2; // Cast required
+    }
+}
+```
+
+诚然，你可以这样地去转换一个数值类型的变量。但是上例这种做法是多余的：因为编译器会在必要时自动提升 **int** 型数据为 **long** 型。
+
+当然，为了程序逻辑清晰或提醒自己留意，我们也可以显式地类型转换。在其他情况下，类型转换型只有在代码编译时才显出其重要性。在 C/C++ 中，类型转换有时会让人头痛。在 Java 里，类型转换则是一种比较安全的操作。但是，若将数据类型进行“向下转换”（**Narrowing Conversion**）的操作（将容量较大的数据类型转换成容量较小的类型），可能会发生信息丢失的危险。此时，编译器会强迫我们进行造型，好比在提醒我们：该操作可能危险，若您坚持让我这么做，那么对不起，请明确需要转换的类型。 对于“向上转换”（**Widening conversion**），则不必进行显式的类型转换，因为较大类型的数据肯定能容纳较小类型的数据，不会造成任何信息的丢失。
+
+除了布尔类型的数据， Java 允许任何基本类型的数据转换为另一种基本类型的数据。此外，类是不能进行类型转换的。为了将一个类转换为另一个类型，需要使用特殊的方法（后面将会学习到如何在父子类之间进行向上/向下转型，例如，“橡树”可以转换为“树”，反之亦然。而对于“岩石”是无法转换为“树”的）。
+
+<!-- Truncation and Rounding -->
+### 截断和舍入
+
+在执行“向下转换”时，必须注意数据的截断和舍入问题。若从浮点值转换为整型值，Java 会做什么呢？例如：浮点数 29.7 被转换为整型值，结果会是 29 还是 30 呢？下面是代码示例：
+
+```java
+// operators/CastingNumbers.java
+// 尝试转换 float 和 double 型数据为整型数据
+public class CastingNumbers {
+    public static void main(String[] args) {
+        double above = 0.7, below = 0.4;
+        float fabove = 0.7f, fbelow = 0.4f;
+        System.out.println("(int)above: " + (int)above);
+        System.out.println("(int)below: " + (int)below);
+        System.out.println("(int)fabove: " + (int)fabove);
+        System.out.println("(int)fbelow: " + (int)fbelow);
+    }
+}
+```
+
+输出结果：
+
+```
+(int)above: 0
+(int)below: 0
+(int)fabove: 0
+(int)fbelow: 0
+```
+
+因此，答案是，从 **float** 和 **double** 转换为整数值时，小数位将被截断。若你想对结果进行四舍五入，可以使用 `java.lang.Math` 的 ` round()` 方法：
+
+```java
+// operators/RoundingNumbers.java
+// float 和 double 类型数据的四舍五入
+public class RoundingNumbers {
+    public static void main(String[] args) {
+        double above = 0.7, below = 0.4;
+        float fabove = 0.7f, fbelow = 0.4f;
+        System.out.println(
+        "Math.round(above): " + Math.round(above));
+        System.out.println(
+        "Math.round(below): " + Math.round(below));
+        System.out.println(
+        "Math.round(fabove): " + Math.round(fabove));
+        System.out.println(
+        "Math.round(fbelow): " + Math.round(fbelow));
+    }
+}
+```
+
+输出结果：
+```
+Math.round(above): 1
+Math.round(below): 0
+Math.round(fabove): 1
+`Math.round(fbelow): 0
+```
+
+自从 `round()` 方法成为了 `java.lang` 的一部分，我们就无需通过 `import` 来使用了。
+
+<!-- Promotion -->
+### 类型提升
+
+
+你会发现，如果我们对小于 **int** 的基元数据类型（即 **char**、**byte** 或 **short**）执行任何算术或按位操作，这些值会在执行操作之前类型提升为 **int**，并且结果值的类型为 **int**。若想重新使用到较小的类型，必须使用强制转换（由于重新分配回一个较小的类型，结果可能会丢失精度）。通常，表达式中最大的数据类型是决定表达式结果的数据类型。**float** 型和 **double** 型相乘，结果是 **double** 型的；**int** 和 **long** 相加，结果是 **long** 型。
 
 
 <!-- Java-Has-No-sizeof -->
 ## Java没有sizeof
 
 
+在 C/C++ 中，经常 需要用到 `sizeof()` 方法来获取数据被分配的字符大小。在 C/C++ 中，`sizeof() `最常见的应用就是“移植”。不同数据在不同机器上可能有不同的大小，所以在进行大小敏感的运算时，程序员必须对这些类型有多大做到心中有数。例如，一台计算机可用 32 位来保存整数，而另一台只用 16 位保存。显然，在第一台机器中，程序可保存更大的值。所以，移植是令 C/C++ 程序员颇为头痛的一个问题。
+
+Java 不需要` sizeof()` 方法来满足这种需求，因为所有类型的默认大小在不同平台间是相同的。我们不必考虑这个层次的移植问题 —— Java 本身就是一种“与平台无关”的语言。
+
+
 <!-- A-Compendium-of-Operators -->
 ## 运算符总结
+
+上述示例分别向我们展示了哪些基本类型能被用于特定的运算符。基本上，下面的代码示例是对上述所有示例的重复，只不过概括了所有的基本类型。这个文件能被正确地编译，因为我已经把编译不通过的那部分用注释 `//` 过滤了。代码示例：
+
+```java
+// operators/AllOps.java
+// 测试所有基本类型的运算符操作
+// 看看哪些是能被 Java 编译器接受的
+public class AllOps {
+    // 布尔值的接收测试：
+    void f(boolean b) {}
+    void boolTest(boolean x, boolean y) {
+        // 算数运算符：
+        //- x = x * y;
+        //- x = x / y;
+        //- x = x % y;
+        //- x = x + y;
+        //- x = x - y;
+        //- x++;
+        //- x--;
+        //- x = +y;
+        //- x = -y;
+        // 关系运算符和逻辑运算符：
+        //- f(x > y);
+        //- f(x >= y);
+        //- f(x < y);
+        //- f(x <= y);
+        f(x == y);
+        f(x != y);
+        f(!y);
+        x = x && y;
+        x = x || y;
+        // 按位运算符：
+        //- x = ~y;
+        x = x & y;
+        x = x | y;
+        x = x ^ y;
+        //- x = x << 1;
+        //- x = x >> 1;
+        //- x = x >>> 1;
+        // 联合赋值：
+        //- x += y;
+        //- x -= y;
+        //- x *= y;
+        //- x /= y;
+        //- x %= y;
+        //- x <<= 1;
+        //- x >>= 1;
+        //- x >>>= 1;
+        x &= y;
+        x ^= y;
+        x |= y;
+        // 类型转换：
+        //- char c = (char)x;
+        //- byte b = (byte)x;
+        //- short s = (short)x;
+        //- int i = (int)x;
+        //- long l = (long)x;
+        //- float f = (float)x;
+        //- double d = (double)x;
+    }
+
+    void charTest(char x, char y) {
+        // 算数运算符：
+        x = (char)(x * y);
+        x = (char)(x / y);
+        x = (char)(x % y);
+        x = (char)(x + y);
+        x = (char)(x - y);
+        x++;
+        x--;
+        x = (char) + y;
+        x = (char) - y;
+        // 关系和逻辑运算符：
+        f(x > y);
+        f(x >= y);
+        f(x < y);
+        f(x <= y);
+        f(x == y);
+        f(x != y);
+        //- f(!x);
+        //- f(x && y);
+        //- f(x || y);
+        // 按位运算符：
+        x= (char)~y;
+        x = (char)(x & y);
+        x = (char)(x | y);
+        x = (char)(x ^ y);
+        x = (char)(x << 1);
+        x = (char)(x >> 1);
+        x = (char)(x >>> 1);
+        // 联合赋值：
+        x += y;
+        x -= y;
+        x *= y;
+        x /= y;
+        x %= y;
+        x <<= 1;
+        x >>= 1;
+        x >>>= 1;
+        x &= y;
+        x ^= y;
+        x |= y;
+        // 类型转换
+        //- boolean bl = (boolean)x;
+        byte b = (byte)x;
+        short s = (short)x;
+        int i = (int)x;
+        long l = (long)x;
+        float f = (float)x;
+        double d = (double)x;
+    }
+
+    void byteTest(byte x, byte y) {
+        // 算数运算符：
+        x = (byte)(x* y);
+        x = (byte)(x / y);
+        x = (byte)(x % y);
+        x = (byte)(x + y);
+        x = (byte)(x - y);
+        x++;
+        x--;
+        x = (byte) + y;
+        x = (byte) - y;
+        // 关系和逻辑运算符：
+        f(x > y);
+        f(x >= y);
+        f(x < y);
+        f(x <= y);
+        f(x == y);
+        f(x != y);
+        //- f(!x);
+        //- f(x && y);
+        //- f(x || y);
+        //按位运算符：
+        x = (byte)~y;
+        x = (byte)(x & y);
+        x = (byte)(x | y);
+        x = (byte)(x ^ y);
+        x = (byte)(x << 1);
+        x = (byte)(x >> 1);
+        x = (byte)(x >>> 1);
+        // 联合赋值：
+        x += y;
+        x -= y;
+        x *= y;
+        x /= y;
+        x %= y;
+        x <<= 1;
+        x >>= 1;
+        x >>>= 1;
+        x &= y;
+        x ^= y;
+        x |= y;
+        // 类型转换：
+        //- boolean bl = (boolean)x;
+        char c = (char)x;
+        short s = (short)x;
+        int i = (int)x;
+        long l = (long)x;
+        float f = (float)x;
+        double d = (double)x;
+    }
+
+    void shortTest(short x, short y) {
+        // 算术运算符：
+        x = (short)(x * y);
+        x = (short)(x / y);
+        x = (short)(x % y);
+        x = (short)(x + y);
+        x = (short)(x - y);
+        x++;
+        x--;
+        x = (short) + y;
+        x = (short) - y;
+        // 关系和逻辑运算符：
+        f(x > y);
+        f(x >= y);
+        f(x < y);
+        f(x <= y);
+        f(x == y);
+        f(x != y);
+        //- f(!x);
+        //- f(x && y);
+        //- f(x || y);
+        // 按位运算符：
+        x = (short) ~ y;
+        x = (short)(x & y);
+        x = (short)(x | y);
+        x = (short)(x ^ y);
+        x = (short)(x << 1);
+        x = (short)(x >> 1);
+        x = (short)(x >>> 1);
+        // Compound assignment:
+        x += y;
+        x -= y;
+        x *= y;
+        x /= y;
+        x %= y;
+        x <<= 1;
+        x >>= 1;
+        x >>>= 1;
+        x &= y;
+        x ^= y;
+        x |= y;
+        // 类型转换：
+        //- boolean bl = (boolean)x;
+        char c = (char)x;
+        byte b = (byte)x;
+        int i = (int)x;
+        long l = (long)x;
+        float f = (float)x;
+        double d = (double)x;
+    }
+
+    void intTest(int x, int y) {
+        // 算术运算符：
+        x = x * y;
+        x = x / y;
+        x = x % y;
+        x = x + y;
+        x = x - y;
+        x++;
+        x--;
+        x = +y;
+        x = -y;
+        // 关系和逻辑运算符：
+        f(x > y);
+        f(x >= y);
+        f(x < y);
+        f(x <= y);
+        f(x == y);
+        f(x != y);
+        //- f(!x);
+        //- f(x && y);
+        //- f(x || y);
+        // 按位运算符：
+        x = ~y;
+        x = x & y;
+        x = x | y;
+        x = x ^ y;
+        x = x << 1;
+        x = x >> 1;
+        x = x >>> 1;
+        // 联合赋值：
+        x += y;
+        x -= y;
+        x *= y;
+        x /= y;
+        x %= y;
+        x <<= 1;
+        x >>= 1;
+        x >>>= 1;
+        x &= y;
+        x ^= y;
+        x |= y;
+        // 类型转换：
+        //- boolean bl = (boolean)x;
+        char c = (char)x;
+        byte b = (byte)x;
+        short s = (short)x;
+        long l = (long)x;
+        float f = (float)x;
+        double d = (double)x;
+    }
+
+    void longTest(long x, long y) {
+        // 算数运算符：
+        x = x * y;
+        x = x / y;
+        x = x % y;
+        x = x + y;
+        x = x - y;
+        x++;
+        x--;
+        x = +y;
+        x = -y;
+        // 关系和逻辑运算符：
+        f(x > y);
+        f(x >= y);
+        f(x < y);
+        f(x <= y);
+        f(x == y);
+        f(x != y);
+        //- f(!x);
+        //- f(x && y);
+        //- f(x || y);
+        // 按位运算符：
+        x = ~y;
+        x = x & y;
+        x = x | y;
+        x = x ^ y;
+        x = x << 1;
+        x = x >> 1;
+        x = x >>> 1;
+        // 联合赋值：
+        x += y;
+        x -= y;
+        x *= y;
+        x /= y;
+        x %= y;
+        x <<= 1;
+        x >>= 1;
+        x >>>= 1;
+        x &= y;
+        x ^= y;
+        x |= y;
+        // 类型转换：
+        //- boolean bl = (boolean)x;
+        char c = (char)x;
+        byte b = (byte)x;
+        short s = (short)x;
+        int i = (int)x;
+        float f = (float)x;
+        double d = (double)x;
+    }
+
+    void floatTest(float x, float y) {
+        // 算数运算符：
+        x = x * y;
+        x = x / y;
+        x = x % y;
+        x = x + y;
+        x = x - y;
+        x++;
+        x--;
+        x = +y;
+        x = -y;
+        // 关系和逻辑运算符：
+        f(x > y);
+        f(x >= y);
+        f(x < y);
+        f(x <= y);
+        f(x == y);
+        f(x != y);
+        //- f(!x);
+        //- f(x && y);
+        //- f(x || y);
+        // 按位运算符：
+        //- x = ~y;
+        //- x = x & y;
+        //- x = x | y;
+        //- x = x ^ y;
+        //- x = x << 1;
+        //- x = x >> 1;
+        //- x = x >>> 1;
+        // 联合赋值：
+        x += y;
+        x -= y;
+        x *= y;
+        x /= y;
+        x %= y;
+        //- x <<= 1;
+        //- x >>= 1;
+        //- x >>>= 1;
+        //- x &= y;
+        //- x ^= y;
+        //- x |= y;
+        // 类型转换：
+        //- boolean bl = (boolean)x;
+        char c = (char)x;
+        byte b = (byte)x;
+        short s = (short)x;
+        int i = (int)x;
+        long l = (long)x;
+        double d = (double)x;
+    }
+
+    void doubleTest(double x, double y) {
+        // 算术运算符：
+        x = x * y;
+        x = x / y;
+        x = x % y;
+        x = x + y;
+        x = x - y;
+        x++;
+        x--;
+        x = +y;
+        x = -y;
+        // 关系和逻辑运算符：
+        f(x > y);
+        f(x >= y);
+        f(x < y);
+        f(x <= y);
+        f(x == y);
+        f(x != y);
+        //- f(!x);
+        //- f(x && y);
+        //- f(x || y);
+        // 按位运算符：
+        //- x = ~y;
+        //- x = x & y;
+        //- x = x | y;
+        //- x = x ^ y;
+        //- x = x << 1;
+        //- x = x >> 1;
+        //- x = x >>> 1;
+        // 联合赋值：
+        x += y;
+        x -= y;
+        x *= y;
+        x /= y;
+        x %= y;
+        //- x <<= 1;
+        //- x >>= 1;
+        //- x >>>= 1;
+        //- x &= y;
+        //- x ^= y;
+        //- x |= y;
+        // 类型转换：
+        //- boolean bl = (boolean)x;
+        char c = (char)x;
+        byte b = (byte)x;
+        short s = (short)x;
+        int i = (int)x;
+        long l = (long)x;
+        float f = (float)x;
+    }
+}
+```
+
+**注意** ：**boolean** 类型的的运算是受限的。你能为其赋值 `true` 或 `false`，也可测试它的值是否是 `true` 或 `false`。但你不能对其作加减等其他运算。
+
+在 **char** , **byte** 和 **short** 类型中，我们可以看到算术运算符的“类型转换”效果。我们必须要显式强制类型转换才能将结果重新赋值为原始类型。对于 **int** 类型的运算则不用转换，因为默认就是 **int** 型。虽然我们不用再停下来思考这一切是否安全，但是两个大的 int 型相乘时，结果有可能超出 **int** 型的范围，这种情况下结果会发生溢出。下面的代码示例：
+
+```java
+// operators/Overflow.java
+// 厉害了！内存溢出
+public class Overflow {
+    public static void main(String[] args) {
+        int big = Integer.MAX_VALUE;
+        System.out.println("big = " + big);
+        int bigger = big * 4;
+        System.out.println("bigger = " + bigger);
+    }
+}
+```
+
+输出结果：
+
+```java
+big = 2147483647
+bigger = -4
+```
+
+编译器没有报错或警告，运行时一切看起来都无异常。诚然，Java 是优秀的，但是还不足够优秀。
+
+对于 **char**，**byte** 或者 **short**，混合赋值并不需要类型转换。即使为它们执行转型操作，也会获得与直接算术运算相同的结果。另外，省略类型转换可以使代码显得更加简练。总之，除 **boolean** 以外，其他任何两种基本类型间都可进行类型转换。当我们进行向下转换类型时，需要注意结果的范围是否溢出，否则我们就很可能在不知不觉种丢失精度。
 
 
 <!-- Summary -->
 ## 本章小结
+
+如果你已接触过一门 C 语法风格编程语言，那么你在学习 Java 的运算符时实际上没有任何曲线。如果你觉得有难度，那么我推荐你要先去 www.OnJava8.com 观看 *Thinking in C* 的视频教程来补充一些前置知识储备。
+
+[^1]: 我在 *Pomona College* 大学读过两年本科，在那里 47 被称之为“魔法数字”（*magic number*），详见 [维基百科](https://en.wikipedia.org/wiki/47_(number)) 。
+
+
+
+[^2]: *John Kirkham* 说过, “自 1960 年我开始在 IBM 1620 上开始编程起，至 1970 年之间，FORTRAN 一直都是一种全大写的编程语言。这可能是因为许多早期的输入设备都是旧的电传打字机，使用了5 位波特码，没有小写字母的功能。
+
+指数符号中的 e 也总是大写的，并且从未与自然对数底数 e 混淆，自然对数底数 e 总是小写的。 e 简单地代表指数，通常 10 是基数。那时，八进制也被程序员广泛使用。虽然我从未见过它的用法，但如果我看到一个指数符号的八进制数，我会认为它是以 8 为基数的。我记得第一次看到指数使用小写字母 e 是在 20 世纪 70 年代末，我也发现它令人困惑。这个问题出现的时候，小写字母悄悄进入了 Fortran。如果你真的想使用自然对数底，我们实际上有一些函数要使用，但是它们都是大写的。
 
 
 <!-- 分页 -->
