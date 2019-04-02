@@ -70,8 +70,8 @@ Java 预设了每种基本类型的初始内存占用大小。 这些大小标�
 | char | 16 bits | Unicode 0  | Unicode 2<sup>16</sup> -1  | Character |
 | byte | 8 bits | -128 | +127 | Byte |
 | short | 16 bits | - 2<sup>15</sup> | + 2<sup>15</sup> -1 | Short |
-| int | 32 bits | - 2<sup>31</sup> | - 2<sup>31</sup> -1 | Integer |
-| long | 64 bits | - 2<sup>63</sup> | - 2<sup>63</sup> -1 | Long |
+| int | 32 bits | - 2<sup>31</sup> | + 2<sup>31</sup> -1 | Integer |
+| long | 64 bits | - 2<sup>63</sup> | + 2<sup>63</sup> -1 | Long |
 | float | 32 bits | IEEE754 | IEEE754 | Float |
 | double | 64 bits |IEEE754 | IEEE754 | Double |
 | void | — | — | — | Void |
