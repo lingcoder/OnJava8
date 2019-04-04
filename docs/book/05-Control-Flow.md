@@ -4,7 +4,7 @@
 
 > 程序必须在执行过程中控制它的世界并做出选择。 在 Java 中，你需要使用执行控制语句来做出选择。
 
-Java 使用了 C 的所有执行控制语句，因此对于熟悉 C/C++ 编程的人来说，这部分内容轻车熟路。 大多数面向过程编程语言都有共通的某种控制语句。在 Java 中，涉及的关键字包括 **if-else，while，do-while，for，return，break** 和选择语句 **switch**。 然而，Java 并不支持备受诟病的 **goto**（尽管它仍然是解决某些特殊问题最有效的方法）。 在 Java 中,我们依然可以进行类似的跳转,但较之典型的 **goto** 更受限制。
+Java 使用了 C 的所有执行控制语句，因此对于熟悉 C/C++ 编程的人来说，这部分内容轻车熟路。 大多数面向过程编程语言都有共通的某种控制语句。在 Java 中，涉及的关键字包括 **if-else，while，do-while，for，return，break** 和选择语句 **switch**。 Java 并不支持备受诟病的 **goto**（尽管它在某些特殊场景中依然是最行之有效的方法）。 尽管如此，在 Java 中我们仍旧可以进行类似的逻辑跳转,但较之典型的 **goto** 用法限制更多。
 
 
 ## true和flase
@@ -84,33 +84,30 @@ public class IfElse {
 0
 ```
 
-<sub>**注解**：`else if` 并非是新关键词，它仅是 `else` 后紧跟的一个新的 `if` 语句。</sub>
+<sub>**注解**：`else if` 并非新关键字，它仅是 `else` 后紧跟的一条新 `if` 语句。</sub>
 
-尽管 Java 如 C/C++ 都属“自由格式”的编程语言，但通常我们会在控制流程语句中采用首尾缩进的规范，以便代码具备更好的可读性。
+Java 和 C/C++ 同属“自由格式”的编程语言，但通常我们会在 Java 控制流程语句中采用首尾缩进的规范，以便代码更具可读性。
 
 <!--Iteration Statements-->
-
 ## 迭代语句
 
-循环由 **while**，**do-while** 和 **for** 控制，有时称为迭代语句。 语句会重复执行，直到起控制作用的 **布尔表达式** （Boolean expression）计算为“假”。 
+**while**，**do-while** 和 **for** 用来控制循环语句（有时也称迭代语句）。 只有控制循环的布尔表达式计算结果为 `false`，循环语句才会停止。 
 
 
 ### while
 
-while循环的形式是：
+**while** 循环的形式是：
 
 ```java
 while(Boolean-expression) 
   statement
 ```
 
-在循环开始时，会计算一次布尔表达式的值，而在语句的每次进一步迭代之前再次计算一次。
-
-下面这个简单的例子将可产生随机数，直到满足特定条件：
+执行语句会在每一次循环前，判断布尔表达式返回值是否为 `true`。下例可产生随机数，直到满足特定条件。代码示例：
 
 ```java
 // control/WhileTest.java
-
+// 演示 while 循环
 public class WhileTest {
   static boolean condition() {
     boolean result = Math.random() < 0.99;
@@ -123,7 +120,11 @@ public class WhileTest {
     System.out.println("Exited 'while'");
   }
 }
-/* Output: (First and Last 5 Lines)
+```
+
+输出结果：
+
+```
 true, Inside 'while'
 true, Inside 'while'
 true, Inside 'while'
@@ -135,10 +136,15 @@ true, Inside 'while'
 true, Inside 'while'
 true, Inside 'while'
 false, Exited 'while'
-*/
 ```
 
-**condition()** 方法用到了 **Math** 库里的 **static** (静态)方法 **random()**，该方法的作用是产生 0 和 1 之间 (包括 0，但不包括 1) 的一个**double**值。**result** 的值是通过比较操作符<而得到它的，这个操作符产生 **boolean** 类型的结果。在打印 **boolean** 类型的值时，将自动地得到适合的字符串 **true** 或 **false**。while 的条件表达式意思是说：“只要 **condition()**返回 **true**，就重复执行循环体中的语句”。
+
+`condition()` 方法使用到了 **Math** 库的**静态**方法 `random()`。该方法的作用是产生 0 和 1 之间 (包括 0，但不包括 1) 的一个 **double** 值。
+
+`result` 的值是通过判断
+
+**result** 的值是通过比较运算符 `<` 来产生的 **boolean** 类型的结果。当控制台输出 **boolean** 型值时，会自动将其转换未对应的文字形式 `true` 或 `false`。此处 `while` 条件表达式代表：“仅在 `condition()` 返回 `false` 时停止循环”。
+
 
 ### do-while
 
@@ -150,20 +156,21 @@ do
 while(Boolean-expression);
 ```
 
-**while** 和 **do-while** 之间的唯一区别是 **do-while** 的语句总是至少执行一次，即使表达式第一次计算为 false 也是如此。 在 **while** 循环结构中，如果条件第一次就为 **false**，那么其中的语句根本不会执行。在实际应用中，**while** 比 **do-while** 更常用一点。
+**while** 和 **do-while** 之间的唯一区别是：即使条件表达式返回结果为 `false`， **do-while** 语句也至少会执行一次。 在 **while** 循环体中，如布尔表达式首次返回的结果就为 `false`，那么循环体内的语句不会被执行。实际应用中，**while** 形式比 **do-while** 更为常用。
+
 
 ### for
 
-**for** 循环可能是最常用的迭代形式。 该循环在第一次迭代之前执行初始化。 随后，它会执行条件测试，并在每次迭代结束时，进行某种形式的“步进”。**for** 循环的形式是：
+**for** 循环可能是最常用的迭代形式。 该循环在第一次迭代之前执行初始化。随后，它会执行布尔表达式，并在每次迭代结束时，进行某种形式的步进。**for** 循环的形式是：
 
 ```java
 for(initialization; Boolean-expression; step)
   statement
 ```
 
-初始化 (initialization) 表达式、布尔表达式 (Boolean-expression) ，或者步进 (step) 运算，都可以为空。在每次迭代之前都会测试表达式，并且一旦计算结果为 false，就会在 for 语句后面的行继续执行。 在每个循环结束时，执行一次步进。
+初始化 (*initialization*) 表达式、布尔表达式 (*Boolean-expression*) ，或者步进 (*step*) 运算，都可以为空。每次迭代之前都会判断布尔表达式的结果是否成立。一旦计算结果为 `false`，则跳出 **for** 循环体并继续执行后面代码。 每次循环结束时，都会执行一次步进。
 
-**for**循环通常用于“计数”任务：
+**for** 循环通常用于“计数”任务。代码示例：
 
 ```java
 // control/ListCharacters.java
@@ -176,7 +183,11 @@ public class ListCharacters {
           " character: " + c);
   }
 }
-/* Output: (First 10 Lines)
+```
+
+输出结果（前 10 行）：
+
+```
 value: 97 character: a
 value: 98 character: b
 value: 99 character: c
@@ -187,18 +198,17 @@ value: 103 character: g
 value: 104 character: h
 value: 105 character: i
 value: 106 character: j
-...
-*/
+  ...
 ```
 
-请注意，变量 **c** 在程序用到它的地方被定义的，也就是在for循环的控制表达式内，而不是在 **main()** 的开头。**c** 的范围是由 **for** 控制的语句。
 
-像C这样的传统过程语言要求在块的开头定义所有变量。 当编译器创建块时，它可以为这些变量分配空间。 在Java和C ++中，您可以在整个块中传播变量声明，并在需要时定义它们。 这允许更自然的编码风格并使代码更容易理解。[1]
+**注意**：变量 **c** 是在 **for** 循环执行时才被定义的，并不是在 **main()** 的开头。**c** 的作用域范围仅在 **for** 循环体内。
 
-这个程序也使用了 **java.lang.Character** 包装器类，这个类不但能把 **char** 基本类型的值包装进对象，还提供了一些别的有用的方法。这里用到了 **static isLowerCase()** 方法来检查问题中的字符是否为小写字母。
+传统的面向过程语言如 C 需要先在代码块（*block*）前定义好所有变量才能够使用。这样编译器才能在创建块时，为这些变量分配内存空间。在 Java 和 C++ 中，我们可以在整个块使用变量声明，并且可以在需要时才定义变量。 这种自然的编码风格使我们的代码更容易被人理解。
+
+上例使用了 **java.lang.Character** 包装类，该类不仅包含了基本类型 `char` 的值，还封装了一些有用的方法。例如这里就用到了静态方法 `isLowerCase()` 来判断字符否为小写。
 
 <!--The Comma Operator-->
-
 #### 逗号操作符
 
 逗号运算符（不是逗号分隔符，逗号作为分隔符用于分隔定义和方法参数）在 Java 中只有一个用法：在**for** 循环的控制表达式中。 在控制表达式的初始化和步进控制中，您可以使用逗号分隔多个语句，并按顺序计算这些语句。使用逗号运算符，您可以在 **for** 语句中定义多个变量，但它们必须属于同一类型：
