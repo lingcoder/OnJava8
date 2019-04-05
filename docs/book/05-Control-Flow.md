@@ -313,7 +313,7 @@ for(int i = 0; i < 100; i++)
 
 正因如此，除非先创建一个 **int** 数组，否则我们无法使用 **for-in** 循环来操作。为简化测试过程，我已在 `onjava` 包中封装了 **Range** 类，利用其 `range()` 方法可自动生成恰当的数组。
 
-在 [封装](./07-Implementation-Hiding.md)（*Implementation Hiding*）这一章里我们介绍了静态导入（*static import*）。我们无需了解细节觉可以直接使用。 有关静态导入的语法，你可以在 **import** 语句中看到：
+在 [封装](./07-Implementation-Hiding.md)（*Implementation Hiding*）这一章里我们介绍了静态导入（*static import*），无需了解细节就可以直接使用。 有关静态导入的语法，可以在 **import** 语句中看到：
 
 ```java
 // control/ForInInt.java
@@ -357,9 +357,9 @@ public class ForInInt {
 
 ## return
 
-在Java中有几个关键字代表无条件分支，这意味着分支在没有任何测试的情况下发生。 这些包括**return**，**break**，**continue** 和跳转到带标签语句的方法，类似于其他语言中的 **goto**。
+在 Java 中有几个关键字代表无条件分支，这意味无需任何测试即可发生。这些关键字包括 **return**，**break**，**continue** 和跳转到带标签语句的方法，类似于其他语言中的 **goto**。
 
-**return**关键字有两方面的用途：一方面指定一个方法返回什么值(假设它没有 **void** 返回值)，另一方面它会导致当前的方法退出，并返回那个值。可据此改写上面的 **IfElse.java** 里的 **test()** 方法，使其利用这些特点：
+**return** 关键字有两方面的作用：1.指定一个方法返回值(在方法返回类型非 **void** 的情况下)；2.退出当前方法，并返回作用 1 中值。我们可以利用 `return` 的这些特点来改写上例 `IfElse.java` 文件朱姑中的 `test()` 方法。代码示例：
 
 ```java
 // control/TestWithReturn.java
@@ -372,78 +372,85 @@ public class TestWithReturn {
       return -1;
     return 0; // Match
   }
+
   public static void main(String[] args) {
     System.out.println(test(10, 5));
     System.out.println(test(5, 10));
     System.out.println(test(5, 5));
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 1
 -1
 0
-*/
 ```
 
-不需要 **else**，因为该方法在执行返回后不会继续执行。
+这里不需要 `else`，因为该方法执行到 `return` 就结束了。
 
-如果在返回 **void** 的方法中没有 **return** 语句，则在该方法结束时会有一个隐式的 **return**，因此一个方法中并不总是需要包含 **return** 语句。 但是，如果您的方法声明它将返回除 **void** 之外的任何返回类型，则必须确保每个代码路径都返回一个值。
+如果在方法签名中定义了返回值类型为 **void**，那么在代码执行结束时会有一个隐式的 **return**。 也就是说我们不用在总是在方法中显式地包含 **return** 语句。 **注意**：如果你的方法声明的返回值类型为非 **void** 类型，那么则必须确保每个代码路径都返回一个值。
 
 ## break和continue
 
-在任何迭代语句的主体部分，都可以使用 **break** 和 **continue** 来控制循环的流程。 其中，**break** 退出循环而不执行循环中的其余语句。 而 **continue** 停止执行当前的迭代，然后退回循环起始处，以开始下一次迭代。
+在任何迭代语句的主体内，都可以使用 **break** 和 **continue** 来控制循环的流程。 其中，**break** 表示跳出当前循环体。 而 **continue** 表示停止本次循环，开始下一次循环。
 
-下面这个程序向大家展示了 **break** 和 **continue** 在 **for** 和 **while** 循环中的例子：
+下例向大家展示 **break** 和 **continue** 在 **for**、**while** 循环中的使运用。代码示例：
 
 ```java
 // control/BreakAndContinue.java
-// Break and continue keywords
+// Break 和 continue 关键字
 
 import static onjava.Range.*;
 
 public class BreakAndContinue {
   public static void main(String[] args) {
     for(int i = 0; i < 100; i++) { // [1]
-      if(i == 74) break; // Out of for loop
-      if(i % 9 != 0) continue; // Next iteration
+      if(i == 74) break; // 跳出循环
+      if(i % 9 != 0) continue; // 下一次循环
       System.out.print(i + " ");
     }
     System.out.println();
-    // Using for-in:
+    // 使用 for-in 循环:
     for(int i : range(100)) { // [2]
-      if(i == 74) break; // Out of for loop
-      if(i % 9 != 0) continue; // Next iteration
+      if(i == 74) break; // 跳出循环
+      if(i % 9 != 0) continue; // 下一次循环
       System.out.print(i + " ");
     }
     System.out.println();
     int i = 0;
-    // An "infinite loop":
+    //  "无限循环":
     while(true) { // [3]
       i++;
       int j = i * 27;
-      if(j == 1269) break; // Out of loop
-      if(i % 10 != 0) continue; // Top of loop
+      if(j == 1269) break; // 跳出循环
+      if(i % 10 != 0) continue; // 循环顶部
       System.out.print(i + " ");
     }
   }
 }
-/* Output:
+```
+
+输出结果:
+
+```
 0 9 18 27 36 45 54 63 72
 0 9 18 27 36 45 54 63 72
 10 20 30 40
-*/
 ```
 
-**[1]** 在这个 **for** 循环中，**i** 的值永远不会达到 100；因为一旦 **i** 达到 74，**break** 语句就会中断循环。通常，只有在不知道中断条件何时满足时，才需要这样使用 **break**。因为**i** 不能被 9 整除，**continue** 语句就会使执行过程返回到循环的最开头(这使 **i** 递增)。如果能够整除，则将值显示出来。
+  <sub>**[1]** 在这个 **for** 循环中，`i` 的值永远不会达到 100，因为一旦 `i` 等于 74，**break** 语句就会中断循环。通常，只有在不知道中断条件何时满足时，才需要 **break**。因为 `i` 不能被 9 整除，**continue** 语句就会使循环从头开始。这使 **i** 递增)。如果能够整除，则将值显示出来。</sub>
 
-**[2]** 使用 for-in 语法将产生相同的结果。
+  <sub>**[2]** 使用 **for-in** 语法，结果相同。</sub>
 
-**[3]** 最后，可以看到一个“无穷 **while** 循环”的情况。然而，循环内部有一个 **break** 语句，可中止循环。请注意，**continue** 语句将控制权移回循环的顶部，而不会执行 **continue** 之后的任何操作。 因此，只有当 i 的值可被 10 整除时才会显示。在输出中，显示值 0，因为 0％9 产生0。
+  <sub>**[3]** 无限 **while** 循环。循环内的 **break** 语句可中止循环。**注意**，**continue** 语句可将控制权移回循环的顶部，而不会执行 **continue** 之后的任何操作。 因此，只有当 `i` 的值可被 10 整除时才会输出。在输出中，显示值 0，因为 `0％9` 产生 0。</sub>
 
-无限循环的另一种形式是 **for（;;）**。 编译器以同样的方式处理 **while（true）** 和 **for（;;）**，因此使用哪种取决于编程品味。
+
+无限循环还有另一种形式： `for(;;)`。 编译器将会以 `while(true)` 同样的方式处理它，因此使用哪种完全取决于你的编程品味。
 
 <!--The Infamous “Goto”-->
-
 ## 臭名昭著的goto
 
 goto 关键字很早就在程序设计语言中出现。事实上，goto 是汇编语言的程序控制结构的始祖：“若条件A，则跳到这里；否则跳到那里”。若阅读由几乎所有编译器生成的汇编代码，就会发现程序控制里包含了许多跳转。然而，goto是在源码的级别跳转的，所以招致了不好的声誉。若程序总是从一个地方跳到另一个地方，还有什么办法能识别代码的流程呢？随着 Edsger Dijkstra 著名的 “Goto 有害” 论的问世，goto 便从此失宠。
