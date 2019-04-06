@@ -133,7 +133,7 @@ public class ChannelCopy {
 
 ```
 
-**FileChannel** 用于读取；**FileChannel** 用于写入；**ByteBuffer** 分配好存储。当调用 **FileChannel** 的 `read()` 方法返回 **-1**（毫无疑问，这是来源于 Unix 和 C 语言）时，说明到达了输入流的末尾。在每次 = `read()` 将数据放入缓冲区之后，`flip()` 都会准备好缓冲区，以便 `write()` 提取它的信息。在 `write()` 之后，数据仍然在缓冲区中，我们需要 `clear()` 来重置所有内部指针，以便在下一次 `read()` 中接受数据。 
+**FileChannel** 用于读取；**FileChannel** 用于写入。当 **ByteBuffer** 分配好存储，调用 **FileChannel** 的 `read()` 方法返回 **-1**（毫无疑问，这是来源于 Unix 和 C 语言）时，说明输入流读取完了。在每次 `read()` 将数据放入缓冲区之后，`flip()` 都会准备好缓冲区，以便 `write()` 提取它的信息。在 `write()` 之后，数据仍然在缓冲区中，我们需要 `clear()` 来重置所有内部指针，以便在下一次 `read()` 中接受数据。 
 
 但是，上例并不是处理这种操作的理想方法。方法 `transferTo()` 和 `transferFrom()` 允许你直接连接此通道到彼通道：
 
@@ -172,19 +172,19 @@ public class TransferTo {
 
 
 <!-- Converting Data -->
-## 转换数据
+## 数据转换
 
 
-在 **GetChannel** 中打印文件中的信息。在 java 中，我们每次提取一个字节的数据，并将每个字节转换为 char。这看起来很简单——如果您查看**java.nio.CharBuffer** 类，您将看到它有一个toString()方法，该方法说，“返回一个包含这个缓冲区中的字符的字符串。”
+为了将 **GetChannel.java** 文件中的信息打印出来。在 Java 中，我们每次提取一个字节的数据并将其转换为字符。看起来很简单 —— 如果你有看过 `ava.nio.`**CharBuffer**  类，你会发现一个 `toString()` 方法。该方法的作用是“返回一个包含此缓冲区字符的字符串”。
 
-既然 **ByteBuffer** 可以用 **asCharBuffer()** 方法看作 **CharBuffer**，为什么不使用它呢? 从下面输出语句的第一行可以看出，这并不正确:
+既然 **ByteBuffer** 可以通过 **CharBuffer** 类的 `asCharBuffer()` 方法查看，那我们就来尝试一样。从下面输出语句的第一行可以看出，这并不正确：
 
 ```java
 // newio/BufferToText.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
-// Converting text to and from ByteBuffers
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多书本信息。
+// text 和 ByteBuffers 互转
 import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
@@ -193,6 +193,7 @@ import java.io.*;
 public class BufferToText {
   private static final int BSIZE = 1024;
   public static void main(String[] args) {
+
     try(
       FileChannel fc = new FileOutputStream(
         "data2.txt").getChannel()
@@ -201,7 +202,9 @@ public class BufferToText {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
+
     ByteBuffer buff = ByteBuffer.allocate(BSIZE);
+
     try(
       FileChannel fc = new FileInputStream(
         "data2.txt").getChannel()
@@ -210,17 +213,19 @@ public class BufferToText {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
+
     buff.flip();
-    // Doesn't work:
+    // 无法运行
     System.out.println(buff.asCharBuffer());
-    // Decode using this system's default Charset:
+    // 使用默认系统默认编码解码
     buff.rewind();
     String encoding =
       System.getProperty("file.encoding");
     System.out.println("Decoded using " +
       encoding + ": "
       + Charset.forName(encoding).decode(buff));
-    // Encode with something that prints:
+
+    // 编码和打印
     try(
       FileChannel fc = new FileOutputStream(
         "data2.txt").getChannel()
@@ -230,7 +235,8 @@ public class BufferToText {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
-    // Now try reading again:
+
+    // 尝试再次读取：
     buff.clear();
     try(
       FileChannel fc = new FileInputStream(
@@ -240,11 +246,13 @@ public class BufferToText {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
+
     buff.flip();
     System.out.println(buff.asCharBuffer());
-    // Use a CharBuffer to write through:
+    // 通过 CharBuffer 写入：
     buff = ByteBuffer.allocate(24);
     buff.asCharBuffer().put("Some text");
+
     try(
       FileChannel fc = new FileOutputStream(
         "data2.txt").getChannel()
@@ -253,8 +261,9 @@ public class BufferToText {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
-    // Read and display:
+    // 读取和显示：
     buff.clear();
+
     try(
       FileChannel fc = new FileInputStream(
         "data2.txt").getChannel()
@@ -263,41 +272,46 @@ public class BufferToText {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
+
     buff.flip();
     System.out.println(buff.asCharBuffer());
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 ????
 Decoded using windows-1252: Some text
 Some text
 Some textNULNULNUL
-*/
 ```
 
-缓冲区包含普通字节，为了将这些字节转换为字符，我们必须在输入时对它们进行编码(这样它们输出时就有意义了)，或者在输出时对它们进行解码。
-
-这可以使用 **java.nio.charset** 来完成。**Charset** 类，它提供工具来编码成许多不同类型的字符集:
+缓冲区包含普通字节，为了将这些字节转换为字符，我们必须在输入时对它们进行编码(这样它们输出时就有意义了)，或者在输出时对它们进行解码。我们可以使用 `java.nio.charset.`**Charset** 字符集工具类来完成。代码示例：
 
 ```java
 // newio/AvailableCharSets.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
-// Displays Charsets and aliases
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多书本信息。
+// 展示 Charsets 和 aliases
 import java.nio.charset.*;
 import java.util.*;
 
 public class AvailableCharSets {
+
   public static void main(String[] args) {
-    SortedMap<String,Charset> charSets =
+      SortedMap<String,Charset> charSets =
       Charset.availableCharsets();
+
     for(String csName : charSets.keySet()) {
       System.out.print(csName);
       Iterator aliases = charSets.get(csName)
         .aliases().iterator();
       if(aliases.hasNext())
         System.out.print(": ");
+        
       while(aliases.hasNext()) {
         System.out.print(aliases.next());
         if(aliases.hasNext())
@@ -307,7 +321,11 @@ public class AvailableCharSets {
     }
   }
 }
-/* Output: (First 7 Lines)
+```
+
+输出结果：
+
+```
 Big5: csBig5
 Big5-HKSCS: big5-hkscs, big5hk, Big5_HKSCS, big5hkscs
 CESU-8: CESU8, csCESU-8
@@ -322,71 +340,76 @@ GB2312: gb2312, euc-cn, x-EUC-CN, euccn, EUC_CN,
 gb2312-80,
 gb2312-1980
                   ...
-*/
 ```
 
-回到 **BufferToText** 。java 中，如果您 **rewind()** 缓冲区(回到数据的开头)，然后使用该平台的默认字符集 **decode()** 数据，生成的 **CharBuffer** 将在控制台上正常显示。要发现默认字符集，使用**System.getProperty(“file.encoding”)**，它生成命名字符集的字符串。
 
-另一种方法是使用字符集 **encode()**，该字符集在读取文件时生成可打印的内容，如您在**BufferToText.java** 的第三部分中所看到的。这里，**UTF-16BE** 用于将文本写入文件，当读取文本时，您所要做的就是将其转换为 **CharBuffer**，并生成预期的文本。最后，您将看到如果通过**CharBuffer** 写入 **ByteBuffer** 会发生什么(稍后您将对此有更多的了解)。注意，为 **ByteBuffer** 分配了24个字节。
 
-由于每个字符需要两个字节，这对于12个字符已经足够了，但是“some text”只有9个字节。其余的零字节仍然出现在由其toString()生成的CharBuffer的表示中，如输出所示。
+回到 **BufferToText.java** 中，如果你 `rewind()` 缓冲区（回到数据的开头），使用该平台的默认字符集 `decode()` 数据，那么生成的 **CharBuffer** 数据将在控制台上正常显示。可以通过 **System.getProperty(“file.encoding”)** 方法来查看平台默认字符集名称。传递该名称参数到 **Charset.forName()** 方法可以生成对应的 `Charset` 对象用于解码字符串。
+
+另一种方法是使用字符集 `encode()` 方法，该字符集在读取文件时生成可打印的内容，如你在 **BufferToText.java**  的第三部分中所看到的。上例中，**UTF-16BE** 被用于将文本写入文件，当文本被读取时，你所要做的就是将其转换为 **CharBuffer**，并生成预期的文本。
+
+最后，如果将 **CharBuffer** 写入 **ByteBuffer**，你会看到发生了什么(更多详情，稍后了解)。**注意**，为 **ByteBuffer** 分配了24个字节，按照每个字符占用 2 个自字节， 12 个字符的空间已经足够了。由于“some text”只有 9 个字符，受其 `toString()` 方法影响，剩下的 0 字节部分也出现在了 **CharBuffer** 的展示中，如输出所示。
 
 
 <!-- Fetching Primitives -->
-## 获取原始类型
+## 基本类型获取
 
 
-虽然 **ByteBuffer** 只包含字节，但它包含了一些方法，用于从它所包含的字节中生成每种不同类型的基元值。这个例子展示了使用以下方法插入和提取各种值:
+虽然 **ByteBuffer** 只包含字节，但它包含了一些方法，用于从其所包含的字节中生成各种不同的基本类型数据。代码示例：
 
 ```java
 // newio/GetData.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
-// Getting different representations from a ByteBuffer
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多书本信息。
+// 从 ByteBuffer 中获取不同的数据展示
 import java.nio.*;
 
 public class GetData {
   private static final int BSIZE = 1024;
   public static void main(String[] args) {
     ByteBuffer bb = ByteBuffer.allocate(BSIZE);
-    // Allocation automatically zeroes the ByteBuffer:
+    // 自动分配 0 到 ByteBuffer:
     int i = 0;
     while(i++ < bb.limit())
       if(bb.get() != 0)
         System.out.println("nonzero");
     System.out.println("i = " + i);
     bb.rewind();
-    // Store and read a char array:
+    // 保存和读取 char 数组:
     bb.asCharBuffer().put("Howdy!");
     char c;
     while((c = bb.getChar()) != 0)
       System.out.print(c + " ");
     System.out.println();
     bb.rewind();
-    // Store and read a short:
+    // 保存和读取 short:
     bb.asShortBuffer().put((short)471142);
     System.out.println(bb.getShort());
     bb.rewind();
-    // Store and read an int:
+    // 保存和读取 int:
     bb.asIntBuffer().put(99471142);
     System.out.println(bb.getInt());
     bb.rewind();
-    // Store and read a long:
+    // 保存和读取 long:
     bb.asLongBuffer().put(99471142);
     System.out.println(bb.getLong());
     bb.rewind();
-    // Store and read a float:
+    // 保存和读取 float:
     bb.asFloatBuffer().put(99471142);
     System.out.println(bb.getFloat());
     bb.rewind();
-    // Store and read a double:
+    // 保存和读取 double:
     bb.asDoubleBuffer().put(99471142);
     System.out.println(bb.getDouble());
     bb.rewind();
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 i = 1025
 H o w d y !
 12390
@@ -394,30 +417,29 @@ H o w d y !
 99471142
 9.9471144E7
 9.9471142E7
-*/
 ```
 
-在分配 **ByteBuffer** 之后，将检查它的值，以确定缓冲区分配是否会自动将内容归零——它确实会这样做。检查所有1,024个值(直到 position的值为 缓冲区的 **limit()** )，所有值都为零。
+在分配 **ByteBuffer** 之后，我们检查并确认它的 1,024 元素被初始化为 0。（截至到达 `limit()` 结果的位置）。
 
-将原始值插入ByteBuffer的最简单方法是使用 **asCharBuffer()** 、**asShortBuffer()** 等获取该缓冲区的适当“视图”，然后使用该视图的 **put()** 方法。
+将基本类型数据插入 **ByteBuffer** 的最简单方法就是使用 `asCharBuffer()`、`asShortBuffer()` 等方法获取该缓冲区适当的“视图”（*View*），然后调用该“视图”的 `put()` 方法。
 
+这是针对每种基本数据类型执行的。其中唯一有点奇怪的是 **ShortBuffer** 的 `put()`，它需要类型强制转换。其他视图缓冲区不需要在其 `put()` 方法中进行转换。
 
-这将对每个基本数据类型执行。其中唯一有点奇怪的是 **ShortBuffer** 的 **put()**，它需要强制转换 (强制转换并更改结果值)。所有其他视图缓冲区都不需要在它们的 **put()** 方法中强制转换。
 
 <!-- View Buffers -->
 ## 视图缓冲区
 
 
-“视图缓冲区”通过特定原始类型的窗口来查看底层 **ByteBuffer**。**ByteBuffer** 仍然是“支持”视图的实际存储，因此对视图所做的任何更改都反映在对 **ByteBuffer** 中的数据的修改中。
+“视图缓冲区”（*view buffer*）是通过特定的基本类型的窗口来查看底层 **ByteBuffer**。**ByteBuffer** 仍然是“支持”视图的实际存储，因此对视图所做的任何更改都反映在对 **ByteBuffer** 中的数据的修改中。
 
-如前面的示例所示，这方便地将基本类型插入 **ByteBuffer**。视图缓冲区还可以从 **ByteBuffer** 读取原始值，一次读取一个(ByteBuffer允许)，或者批量读取(数组)。下面是一个通过 **IntBuffer**在**ByteBuffer** 中操作 int 的例子:
+如前面的示例所示，这方便地将基本类型插入 **ByteBuffer**。视图缓冲区还可以从 **ByteBuffer** 读取基本类型数据，每次单个（**ByteBuffer** 规定），或者批量读取到数组。下面是一个通过 **IntBuffer** 在 **ByteBuffer** 中操作 **int** 的例子：
 
 ```java
 // newio/IntBufferDemo.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
-// Manipulating ints in a ByteBuffer with an IntBuffer
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多书本信息。
+// 利用 IntBuffer 保存 int 数据到 ByteBuffer
 import java.nio.*;
 
 public class IntBufferDemo {
@@ -425,12 +447,13 @@ public class IntBufferDemo {
   public static void main(String[] args) {
     ByteBuffer bb = ByteBuffer.allocate(BSIZE);
     IntBuffer ib = bb.asIntBuffer();
-    // Store an array of int:
+    // 保存 int 数组：
     ib.put(new int[]{ 11, 42, 47, 99, 143, 811, 1016 });
-    // Absolute location read and write:
+    //绝对位置读写：
     System.out.println(ib.get(3));
     ib.put(3, 1811);
-    // Setting a new limit before rewinding the buffer.
+    // 在重置缓冲区前设置新的限制
+    
     ib.flip();
     while(ib.hasRemaining()) {
       int i = ib.get();
@@ -438,7 +461,11 @@ public class IntBufferDemo {
     }
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 99
 11
 42
@@ -447,18 +474,17 @@ public class IntBufferDemo {
 143
 811
 1016
-*/
 ```
 
-重载的 **put()** 方法首先用于存储 **int** 数组。下面的 **get()** 和 **put()** 方法调用直接访问底层 **ByteBuffer** 中的 **int** 位置。请注意，通过直接操作 **ByteBuffer** ，这些绝对位置访问也可以用于基本类型。
+`put()` 方法重载，首先用于存储 **int** 数组。下面的 `get()` 和 `put()` 方法调用直接访问底层 **ByteBuffer** 中的 **int** 位置。**注意**，通过直接操作 **ByteBuffer** ，这些绝对位置访问也可以用于基本类型。
 
-一旦底层 **ByteBuffer** 通过视图缓冲区填充了 **int** 或其他基本类型，那么就可以直接将该 **ByteBuffer **写入通道。您可以轻松地从通道读取数据，并使用视图缓冲区将所有内容转换为特定类型的原语。下面是一个例子，通过在同一个 **ByteBuffer** 上生成不同的视图缓冲区，将相同的字节序列解释为 **short**、**int**、**float**、**long **和 **double**:
+一旦底层 **ByteBuffer** 通过视图缓冲区填充了 **int** 或其他基本类型，那么就可以直接将该 **ByteBuffer** 写入通道。你可以轻松地从通道读取数据，并使用视图缓冲区将所有内容转换为特定的基本类型。下面是一个例子，通过在同一个 **ByteBuffer** 上生成不同的视图缓冲区，将相同的字节序列解释为 **short**、**int**、**float**、**long** 和 **double**。代码示例：
 
 ```java
 // newio/ViewBuffers.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多书本信息。
 import java.nio.*;
 
 public class ViewBuffers {
@@ -514,7 +540,11 @@ public class ViewBuffers {
         db.position()+ " -> " + db.get() + ", ");
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Byte Buffer 0 -> 0, 1 -> 0, 2 -> 0, 3 -> 0, 4 -> 0, 5
 -> 0, 6 -> 0, 7 -> 97,
 Char Buffer 0 -> NUL, 1 -> NUL, 2 -> NUL, 3 -> a,
@@ -523,15 +553,14 @@ Int Buffer 0 -> 0, 1 -> 97,
 Long Buffer 0 -> 97,
 Short Buffer 0 -> 0, 1 -> 0, 2 -> 0, 3 -> 97,
 Double Buffer 0 -> 4.8E-322,
-*/
 ```
 
-**ByteBuffer** 通过“包装”一个8字节数组生成，然后通过所有不同基本类型的视图缓冲区显示该数组。下图显示了从不同类型的缓冲区读取数据时，数据显示的差异:
 
-![image-20190324153222402](/Users/langdon/Library/Application Support/typora-user-images/image-20190324153222402.png)
+**ByteBuffer** 通过“包装”一个 8 字节数组生成，然后通过所有不同基本类型的视图缓冲区显示该数组。下图显示了从不同类型的缓冲区读取数据时，数据显示的差异：
+
+![1554546258113](../images/1554546258113.png)
 
 <!-- Endians -->
-
 ### 端
 
 不同的机器可以使用不同的字节顺序方法来存储数据。“Big endian”将最重要的字节（the most significant byte）放在最低内存地址中，而“little endian”将最重要的字节放在最高内存地址中。
@@ -539,6 +568,8 @@ Double Buffer 0 -> 4.8E-322,
 当存储一个大于一个字节的量时，例如 **int**、**float** 等，您可能需要考虑字节排序。字节缓冲区以大端字节形式存储数据，通过网络发送的数据总是使用大端字节顺序。您可以使用 **order()** 和**ByteOrder** 参数来更改 **ByteBuffer** 端，可选参数只有2个：**ByteOrder.BIG_ENDIAN** 或 **ByteOrder.LITTLE_ENDIAN**。
 
 考虑一个包含以下两个字节的 **ByteBuffer** :将数据作为一个**short** (**ByteBuffer. asshortbuffer()**) 读取，生成数字 97 (00000000 01100001)。更改为 little endian 将生成数字 24832 (01100001 00000000)。
+
+![1554546378822](../images/1554546378822.png)
 
 这显示了字节顺序的变化取决于 endian 设置:
 
@@ -584,7 +615,7 @@ public class Endians {
 
 下图说明了 nio 类之间的关系，展示了如何移动和转换数据。例如，要将字节数组写入文件，使用ByteBuffer.wrap() 方法包装字节数组，使用 **getChannel()** 在 **FileOutputStream** 上打开通道，然后从 **ByteBuffer** 将数据写入 **FileChannel**。
 
-![image-20190324153202297](/Users/langdon/Library/Application Support/typora-user-images/image-20190324153202297.png)
+![1554546452861](../images/1554546452861.png)
 
 **ByteBuffer** 是将数据移入和移出通道的唯一方法，您只能创建一个独立的原始类型的缓冲区，或者使用“as”方法从ByteBuffer获得一个新缓冲区。也就是说，不能将基元类型的缓冲区转换为ByteBuffer。但您能够通过视图缓冲区将原始数据移动到 **ByteBuffer** 中或移出 **ByteBuffer**。
 
@@ -658,17 +689,33 @@ UsingBuffers
 
 下面是程序在 **symmetricgrab()** 方法入口时缓冲区的样子:
 
-![image-20190324155153600](/Users/langdon/Library/Application Support/typora-user-images/image-20190324155153600.png)
+![1554546627710](../images/1554546627710.png)
 
 position 指向缓冲区中的第一个元素，capacity 和 limie 紧接在最后一个元素之后。在**symmetricgrab()** 中，while循环迭代到 position 等于 limit。当在缓冲区上调用相对位置的 get() 或 put() 函数时，缓冲区的位置会发生变化。您还可以调用绝对位置的 get() 和 put() 方法，它们包含索引参数 : get()或put()发生的位置。这些方法不修改缓冲区 position 的值。
 
 当控件进入while循环时，使用 **mark()** 调用设置 mark 的值。缓冲区的状态为:
 
-两个相对 get() 调用将前两个字符的值保存在变量c1和c2中。在这两个调用之后，缓冲区看起来是这样的 : 为了执行交换，我们在位置0处编写c2，在位置1处编写c1。我们可以使用绝对put方法来实现这一点，或者用 reset() 方法，将 position 的值设置为 mark 。
+![1554546666685](../images/1554546666685.png)
 
-两个put()方法分别编写c2和c1 : 在循环的下一次迭代中，将mark设置为position的当前值 : 该过程将继续，直到遍历整个缓冲区为止。在while循环的末尾，position位于缓冲区的末尾。如果显示缓冲区，则只显示位置和限制之间的字符。因此，要显示缓冲区的全部内容，必须使用 rewind() 将位置设置为缓冲区的开始位置。这是 rewind() 调用后 buffer 的状态(mark的值变成undefined):
+两个相对 get() 调用将前两个字符的值保存在变量c1和c2中。在这两个调用之后，缓冲区看起来是这样的 : 
 
-![image-20190324155528149](/Users/langdon/Library/Application Support/typora-user-images/image-20190324155528149.png)
+![1554546693664](../images/1554546693664.png)
+
+为了执行交换，我们在位置0处编写c2，在位置1处编写c1。我们可以使用绝对put方法来实现这一点，或者用 reset() 方法，将 position 的值设置为 mark 。
+
+![1554546847181](../images/1554546847181.png)
+
+两个put()方法分别编写c2和c1 : 
+
+![1554546861836](../images/1554546861836.png)
+
+在循环的下一次迭代中，将mark设置为position的当前值 :
+
+![1554546881189](../images/1554546881189.png)
+
+ 该过程将继续，直到遍历整个缓冲区为止。在while循环的末尾，position位于缓冲区的末尾。如果显示缓冲区，则只显示位置和限制之间的字符。因此，要显示缓冲区的全部内容，必须使用 rewind() 将位置设置为缓冲区的开始位置。这是 rewind() 调用后 buffer 的状态(mark的值变成undefined):
+
+![1554546890132](../images/1554546890132.png)
 
 再次调用 **symmetricgrab()** 函数时，**CharBuffer** 将经历相同的过程并恢复到原始状态。
 
