@@ -4,31 +4,33 @@
 # 附录:新IO
 
 
-Java “新” I/O 库，是在Java 1.4引入到 **Java .nio.* package** 中。它有一个目标 : 速度。
+> Java 新I/O 库是在 1.4 版本引入到 `Java .nio.* package` 中的，旨在更快速。
 
-实际上，“旧的”I/O包是使用 **nio** 重新实现了，因此速度也得到提升，因此即使不显式地使用nio 编写代码，也可以提速。这种速度的提高既发生在文件 I/O 中(这里讨论)，也发生在网络I/O 中(例如用于Internet编程)。
+实际上，新 I/O 使用 **NIO**（同步非阻塞）的方式重写了老的 I/O 了，因此它获得了 **NIO** 的种种优点。即使我们不显式地使用 **NIO** 方式来编写代码，也能带来性能和速度的提高。这种提升不仅仅体现在文件读写（*File I/O*），同时也体现在网络读写（*Network I/O*）中。例如，网络编程。
 
-速度来自于使用更接近操作系统执行 I/O 方式的结构 : 通道和缓冲区。把它想象成一个煤矿;通道是包含煤层的矿井(数据)，缓冲区是您发送到矿井的小车。车里装满了煤，你从车上拿煤。也就是说，你不能直接和通道互动 ; 您与缓冲区交互并将缓冲区发送到通道中。通道要么从缓冲区中提取数据，要么将数据放入缓冲区。
+速度的提升来自于使用了更接近操作系统 I/O 执行方式的结构：**Channel**（通道） 和 **Buffer**（缓冲区）。我们可以想象一个煤矿：通道就是连接矿层（数据）的矿井，缓冲区是运送煤矿的小车。通过小车装煤，再从车里取矿。换句话说，我们不能直接和 **Channel** 交互; 我们需要与 **Buffer** 交互并将 **Buffer** 中的数据发送到**Channel** 中；**Channel** 需要从 **Buffer** 中提取或放入数据。
 
-本附录将深入探讨 nio 包。像I/O streams 这样的高级库使用 **nio**，但是大多数时候您不需要在这个级别使用 I/O 。在Java 7和Java 8，您(理想情况下)除了特殊情况外，甚至不需要使用I/O流。理想情况下，您将经常使用的所有内容都包含在文件一章中。只有在处理性能问题 (例如，可能需要内存映射文件)或创建自己的 I/O 库时，才需要理解 **nio**。
+本篇我们将深入探讨 `nio` 包。虽然 像 I/O 流这样的高级库使用了 **NIO**，但多数时候，我们考虑这个层次的问题。使用Java 7 和 8 版本，理想情况下我们甚至不必费心去处理 I/O 流。当然，一些特殊情况除外。在[文件](./17-Files.md)（*File*）一章中基本涵盖了我们日常使用的相关内容。只有在遇到性能瓶颈（例如内存映射文件）或创建自己的 I/O 库时，我们才需要去理解 **NIO**。
+
 
 <!-- ByteBufferS -->
 ## ByteBuffer
 
 
-直接与通道通信的缓冲区只有一个类型，就是 bytebuffer 。也就是说，一个保存原始字节的缓冲区。如果您查看 **java.nio.ByteBuffer** 的JDK文档，你会发现它很基本 : 您可以通过告诉它要分配多少存储空间来创建一个方法，并且可以使用一些方法来放置和获取数据，这些方法可以是原始字节形式的数据，也可以是原始数据类型的数据。但是没有办法放置或获取对象，甚至字符串。它是相当低层次的，因为这使得大多数操作系统的映射更加有效。
+有且仅有 **ByteBuffer**（字节缓冲区，保存原始字节的缓冲区）这一类型可直接与通道交互。查看 `java.nio.`**ByteBuffer** 的 JDK 文档，你会发现它是相当基础的：通过初始化某个大小的存储空间，再使用一些方法以原始字节形式或原始数据类型来放置和获取数据。但是我们无法直接存放对象，即使是最基本的 **String** 类型数据。这是一个相当底层的操作，也正因如此，使得它与大多数操作系统的映射更加高效。
 
-“旧的” I/O 中的三个类被修改，可以生成一个 **FileChannel** 分别是: **FileInputStream**、**FileOutputStream**，以及用于读写的 **RandomAccessFile**。
 
-注意，这些是字节操作流，符合 **nio** 的底层特性。 字符模式类的 **Reader** 和 **Writer** 不生成通道，但通道类具有从通道生成 **Reader** 和 **Writer** 的实用方法。
+旧式 I/O 中的三个类分别被更新成 **FileChannel**（文件通道），分别是：**FileInputStream**、**FileOutputStream**，以及用于读写的 **RandomAccessFile** 类。
 
-在这里，我们使用所有三种类型的流来生成可写、可读/可写和可读的通道:
+注意，这些都是符合底层 **NIO** 特性的字节操作流。 另外，还有 **Reader** 和 **Writer** 字符模式的类是不产生通道的。但 `java.nio.channels.`**Channels** 类具有从通道中生成 **Reader** 和 **Writer** 的实用方法。
+
+下面来练习上述三种类型的流生成可读、可写、可读/写的通道：
 
 ```java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
-// Getting channels from streams
+// 我们不保证这段代码用于其他用途时是否有效
+// 访问 http://OnJava8.com 了解更多信息
+// 从流中获取通道
 import java.nio.*;
 import java.nio.channels.*;
 import java.io.*;
@@ -37,7 +39,7 @@ public class GetChannel {
   private static String name = "data.txt";
   private static final int BSIZE = 1024;
   public static void main(String[] args) {
-    // Write a file:
+    // 写入一个文件:
     try(
       FileChannel fc = new FileOutputStream(name)
         .getChannel()
@@ -47,18 +49,18 @@ public class GetChannel {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
-    // Add to the end of the file:
+    // 在文件尾添加：
     try(
       FileChannel fc = new RandomAccessFile(
         name, "rw").getChannel()
     ) {
-      fc.position(fc.size()); // Move to the end
+      fc.position(fc.size()); // 移动到结尾
       fc.write(ByteBuffer
         .wrap("Some more".getBytes()));
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
-    // Read the file:
+    // 读取文件e:
     try(
       FileChannel fc = new FileInputStream(name)
         .getChannel()
@@ -74,27 +76,30 @@ public class GetChannel {
     System.out.flush();
   }
 }
-/* Output:
-Some text Some more
-*/
 ```
 
-对于这里显示的任何流类，**getChannel( )** 将生成一个 **FileChannel** 。通道是相当基本的:给它一个**ByteBuffer** 用于读写，并为独占访问锁定文件的区域(稍后将对此进行描述)。
+输出结果：
 
-将字节放入 **ByteBuffer** 的一种方法是直接使用 “put” 方法，将一个或多个字节填入 ByteBuffer，当然也可以是其它原始类型。但是，正如这里所看到的，您还可以使用 **wrap()** 方法在 **ByteBuffer**中“包装”现有字节数组。执行此操作时，不会复制底层数组，而是将其用作生成的 **ByteBuffer** 的存储。这样生产的 **ByteBuffer** 是由数组“支持”的。
+```
+Some text Some more
+```
 
-data.txt 文件使用RandomAccessFile重新打开。注意，您可以在文件中移动 **FileChanne** l; 在这里，它被移动到末尾，以便添加额外的写操作。
+我们这里所讲的任何流类，都可以通过调用 `getChannel( )` 方法生成一个 **FileChannel**（文件通道）。**FileChannel** 的操作相当基础：操作 **ByteBuffer**  来用于读写，并独占式访问和锁定文件区域(稍后将对此进行描述)。
 
-对于只读访问，必须使用 **static allocate()** 方法显式地分配 **ByteBuffer**。**nio** 的目标是快速移动大量数据，因此 **ByteBuffer** 的大小应该很重要——实际上，这里使用的1K可能比您通常使用的要小很多(您必须对工作应用程序进行试验，以找到最佳大小)。
+将字节放入 **ByteBuffer** 的一种方法是直接调用 `put()` 方法将一个或多个字节放入 **ByteBuffer**；当然也可以是其它基本类型的数据。此外，参考上例，我们还可以调用 `wrap()` 方法包装现有字节数组到 **ByteBuffer**。执行此操作时，不会复制底层数组，而是将其用作生成的 **ByteBuffer** 存储。这样产生的 **ByteBuffer** 是数组“支持”的。
 
-还可以通过使用 **allocateDirect()** 而不是 **allocation()** 来生成一个“直接”缓冲区来获得更快的速度，该缓冲区可以与操作系统进行更高的耦合。然而，这种分配的开销更大，而且实际实现因操作系统的不同而有所不同，因此，您必须再次试验您的工作应用程序，以发现直接缓冲区是否会为您带来速度上的优势。
+data.txt 文件被 **RandomAccessFile** 重新打开。**注意**，你可以在文件中移动 **FileChanne**。 在这里，它被移动到末尾，以便添加额外的写操作。
 
-一旦您调用 **read()** 来告诉 **FileChannel** 将字节存储到 **ByteBuffer** 中，您必须调用缓冲区上的 **flip()**来告诉它准备好提取字节(是的，这看起来有点粗糙，但是请记住，这是非常低级的，而且是为了达到最高速度)。如果我们要为进一步的 **read()** 操作使用缓冲区，我们还将调用 **clear()** 为每个 **read()** 准备缓冲区。这个简单的文件复制程序演示:
+对于只读访问，必须使用静态 `allocate()` 方法显式地分配 **ByteBuffer**。**NIO** 的目标是快速移动大量数据，因此 **ByteBuffer** 的大小应该很重要 —— 实际上，这里设置的 1K 都可能偏小了(我们在工作中应该反复测试以找到最佳大小)。
+
+通过使用 `allocateDirect()` 而不是 `allocate()` 来生成与操作系统具备更高耦合度的“直接”缓冲区，也有可能获得更高的速度。然而，这种分配的开销更大，而且实际效果因操作系统的不同而有所不同，因此，在工作中你必须再次测试程序，以检验直接缓冲区是否能为你带来速度上的优势。
+
+一旦调用 **FileChannel** 类的 `read()` 方法将字节数据存储到 **ByteBuffer** 中，你还必须调用缓冲区上的 `flip()` 方法来准备好提取字节（这听起来有点粗糙，实际上这已是非常低层的操作，且为了达到最高速度）。如果要进一步调用 `read()` 来使用 **ByteBuffer** ，还需要每次 `clear()` 来准备缓冲区。下面是个简单的代码示例:
 
 ```java
 // newio/ChannelCopy.java
 
-// Copying a file using channels and buffers
+// 使用 channels and buffers 移动文件
 // {java ChannelCopy ChannelCopy.java test.txt}
 import java.nio.*;
 import java.nio.channels.*;
@@ -116,9 +121,9 @@ public class ChannelCopy {
     ) {
       ByteBuffer buffer = ByteBuffer.allocate(BSIZE);
       while(in.read(buffer) != -1) {
-        buffer.flip(); // Prepare for writing
+        buffer.flip(); // 准备写入
         out.write(buffer);
-        buffer.clear();  // Prepare for reading
+        buffer.clear();  // 准备读取
       }
     } catch(IOException e) {
       throw new RuntimeException(e);
@@ -128,14 +133,14 @@ public class ChannelCopy {
 
 ```
 
-打开一个 **FileChannel** 用于读取，另一个 **FileChannel** 用于写入。分配了一个 **ByteBuffer**，当**FileChannel.read() **返回 **-1** 时(毫无疑问，这是Unix和C语言中的一个剩余物 (holdover) )，意味着您已经完成了输入。每次 **read()** 将数据放入缓冲区之后，**flip()** 都会准备好缓冲区，以便 **write()** 提取它的信息。写()之后，信息仍然在缓冲区中，**clear()** 重置所有内部指针，以便在另一次 **read()** 期间接受数据。 
+**FileChannel** 用于读取；**FileChannel** 用于写入；**ByteBuffer** 分配好存储。当调用 **FileChannel** 的 `read()` 方法返回 **-1**（毫无疑问，这是来源于 Unix 和 C 语言）时，说明到达了输入流的末尾。在每次 = `read()` 将数据放入缓冲区之后，`flip()` 都会准备好缓冲区，以便 `write()` 提取它的信息。在 `write()` 之后，数据仍然在缓冲区中，我们需要 `clear()` 来重置所有内部指针，以便在下一次 `read()` 中接受数据。 
 
-但是，前面的程序并不是处理这种操作的理想方法。特殊方法 transferTo() 和 transferFrom( )允许你直接连接一个通道到另一个:
+但是，上例并不是处理这种操作的理想方法。方法 `transferTo()` 和 `transferFrom()` 允许你直接连接此通道到彼通道：
 
 ```java
 // newio/TransferTo.java
 
-// Using transferTo() between channels
+// 使用 transferTo() 在通道间传输
 // {java TransferTo TransferTo.java TransferTo.txt}
 import java.nio.channels.*;
 import java.io.*;
@@ -163,7 +168,7 @@ public class TransferTo {
 }
 ```
 
-你不会经常这样做，但知道这一点很好。
+可能不会经常用到，但知道这一点很好。
 
 
 <!-- Converting Data -->
