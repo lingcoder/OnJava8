@@ -24,7 +24,7 @@
 
 尽管和现在的图形用户界面相比，Shell 操作方式很原始。但是同时 shell 也为我们提供了许多有用的功特性。在学习本书的过程中，我们会经常使用到 Shell，包括现在这部分的安装，还有运行 Java 程序。
 
-Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“terminal”。单击看起来像小电视屏幕的应用程序（您也可以单击“return”）。这就启动了你的用户下的 shell窗口。
+Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“terminal”。单击看起来像小电视屏幕的应用程序（您也可以单击“return”）。这就启动了你的用户下的 shell 窗口。
 
     windows：首先，通过目录打开 windows 资源管理器：
     Windows 7: 单击屏幕左下角的“开始”图标，输入“explorer”后按回车键。
@@ -42,7 +42,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“te
 **Shell基本操作**
 我在这展示的 Shell 操作和系统中大体相同。出于本书的原因，下面列举一些在 Shell 中的基本操作：
 
-```shell
+```bash
 更改目录： cd <路径> 
           cd .. 移动到上级目录 
           pushd <路径> 记住来源的同时移动到其他目录,popd 返回上一个目录
@@ -81,7 +81,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“te
     Linux/Mac 都有命令行解压程序，您可以通过互联网为Windows安装命令行解压程序。
     图形界面下（Windows 资源管理器、Mac Finder ，Linux Nautilus 或其他等效软件）右键单击该文件，
     在 Mac 上选择“open”，在 Linux 上选择“extract here”，或在 Windows 上选择“extract all…”。
-    要了解关于shell 的更多信息，请在维基百科中搜索 Windows shell，Mac/Linux用户可搜索 bash shell。
+    要了解关于 shell 的更多信息，请在维基百科中搜索 Windows shell，Mac/Linux用户可搜索 bash shell。
 
 ```
 
@@ -96,7 +96,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入“te
 1. 以下为 Chocolatey 的[安装说明](https://chocolatey.org/)。
 2. 在命令行提示符下输入下面的命令，等待片刻，结束后 Java 安装完成并自动完成环境变量设置。
 
-```shell
+```bash
  choco install jdk8`. 
 ```
 
@@ -106,7 +106,7 @@ Mac 系统自带的 Java 版本太老，为了确保本书的代码示例能被�
 1. 以下为 HomeBrew 的[安装说明](https://brew.sh/)。安装完成后执行命令 `brew update` 更新到最新版本
 2. 在命令行下执行下面的命令来安装 Java。
 
-```shell
+```bash
  brew cask install java
 ```
 
@@ -116,13 +116,13 @@ Mac 系统自带的 Java 版本太老，为了确保本书的代码示例能被�
 
 * **Ubuntu/Debian**：
 
-```shell
+```bash
      sudo apt-get update
      sudo apt-get install default-jdk
 ```
 * **Fedora/Redhat**：
 
-```shell
+```bash
     su-c "yum install java-1.8.0-openjdk"
 ```
 
@@ -131,13 +131,13 @@ Mac 系统自带的 Java 版本太老，为了确保本书的代码示例能被�
 
 打开新的命令行输入：
 
-```shell
+```bash
 java -version
 ```
 
 正常情况下 你应该看到以下类似信息(版本号信息可能不一样）：
 
-```shell
+```bash
 java version "1.8.0_112"
 Java(TM) SE Runtime Environment (build 1.8.0_112-b15)
 Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
@@ -151,11 +151,11 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
 
 1. 在 [GitHub 仓库](https://github.com/BruceEckel/OnJava8-Examples/archive/master.zip)中下载本书代码示例
 2. 解压到你所选目录里。
-3. 使用 Windows 资源管理器, Mac Finder, or Linux 的 Nautilus 或其他等效工具浏览，在该目录下打开 Shell 命令行。
+3. 使用 Windows 资源管理器, Mac Finder, or Linux 的 Nautilus 或其他等效工具浏览，在该目录下打开 bash 命令行。
 4. 如果你在正确的目录中，你应该看到该目录中名为 gradlew 和 gradlew.bat 的文件，以及许多其他文件和目录。目录与书中的章节相对应。
 5. 在命令行中输入下面的命令运行：
 
-```shell
+```bash
      Windows 系统：
           gradlew run
 
@@ -172,7 +172,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
 
 本书构建的大量 Gradle 任务都可以自动运行。Gradle 设置使用约定大于配置的方式，简单设置即可具备高可用性。本书中“一起去骑行”的某些任务不适用于此或无法执行成功。以下是你通常会使用上的分级任务列表：
 
-```java
+```bash
     编译本书中的所有 java 文件，除了部分错误示范的
     gradlew compileJava
 

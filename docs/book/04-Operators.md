@@ -26,7 +26,7 @@ Java 是从 C++ 的基础上做了一些改进和简化发展而成的。对于 
 
 运算符的优先级决定了存在多个运算符时一个表达式各部分的计算顺序。Java 对计算顺序作出了特别的规定。其中，最简单的规则就是乘法和除法在加法和减法之前完成。程序员经常都会忘记其他优先级规则，所以应该用括号明确规定计算顺序。代码示例:
 
-```JAVA
+```java
 // operators/Precedence.java
 public class Precedence {
     
@@ -62,7 +62,7 @@ public class Precedence {
 
 如果是为对象赋值，那么结果就不一样了。对一个对象进行操作时，我们实际上操作的是它的引用。所以我们将右边的对象赋予给左边时，赋予的只是该对象的引用。此时，两者指向的堆中的对象还是同一个。代码示例：
 
-```JAVA 
+```java 
 // operators/Assignment.java
 // Assignment with objects is a bit tricky
 class Tank {
@@ -100,18 +100,18 @@ public class Assignment {
 
 这种现象通常称为别名（*aliasing*），这是 Java 处理对象的一种基本方式。但是假若你不想这里出现这样的混淆的话，你可以这么做。代码示例：
 
-```JAVA
+```java
 t1.level = t2.level;
 ```
 
-较之前的做法，这样做保留了两个单独的对象，而不是丢弃一个并将 t1 和 t2 绑定到同一个对象。但是这样的操作有点违背 JAVA 的设计原则。对象的赋值是个需要重视的环节，否则你可能收获意外的“惊喜”。
+较之前的做法，这样做保留了两个单独的对象，而不是丢弃一个并将 t1 和 t2 绑定到同一个对象。但是这样的操作有点违背 Java 的设计原则。对象的赋值是个需要重视的环节，否则你可能收获意外的“惊喜”。
 
  <!-- Aliasing During Method Calls -->
 ### 方法调用中的别名现象
 
 当我们把对象传递给方法时，会发生别名现象。
 
-```JAVA
+```java
 // operators/PassObject.java
 // 正在传递的对象可能不是你之前使用的
 class Letter {
@@ -151,7 +151,7 @@ Java 的基本算术运算符与其他大多编程语言是相同的。其中包
 Java 也用一种简写形式同时进行运算和赋值操作，由运算符后跟等号表示，并且与语言中的所有运算符一致（只要有意义）。为了将 4 的值赋予给变量 x 同时将结果赋予给 x ， 可用 x += 4 来表示。下面带来代码更多代码示例：
 
 
-```JAVA
+```java
 // operators/MathOps.java
 // The mathematical operators
 import java.util.*;
@@ -238,19 +238,19 @@ u /= v : 9.940527
 
 一元加 `+` 减 `-` 运算符的操作和二元是相同的。编译器可自动识别使用何种方式解析运算：
 
-```JAVA
+```java
 x = -a;
 ```
 
 上例的代码表意清晰，编译器可正确识别。下面再看一个示例：
 
-```JAVA
+```java
 x = a * -b;
 ```
 
 虽然编译器可以正确的识别，但是程序员可能会迷惑。为了避免混淆，推荐下面的写法：
 
-```JAVA
+```java
 x = a * (-b);
 ```
 
@@ -265,7 +265,7 @@ x = a * (-b);
 
 每种类型的运算符，都有两个版本可供选用；通常将其称为“前缀版”和“后缀版”。“前递增”表示 `++` 运算符位于变量或表达式的前面；而“后递增”表示 `++` 运算符位于变量或表达式的后面。类似地，“前递减”意味着 `--` 运算符位于变量或表达式的前面；而“后递减”意味着 `--` 运算符位于变量或表达式的后面。对于前递增和前递减（如 `++a` 或 `--a`），会先执行递增/减运算，再返回值。而对于后递增和后递减（如 `a++` 或 `a--`），会先返回值，再执行递增/减运算。代码示例：
 
-```JAVA
+```java
 // operators/AutoInc.java
 // 演示 ++ 和 -- 运算符
 public class AutoInc {
@@ -310,7 +310,7 @@ C++ 名称来自于递增运算符，同时也代表着“比 C 更进一步”�
 
 关系运算符 `==` 和 `!=` 同样适用于所有对象之间的比较运算，但产生的结果却经常混淆 Java 的初学者。下面是代码示例：
 
-```JAVA
+```java
 // operators/Equivalence.java
 public class Equivalence {
     public static void main(String[] args) {
@@ -331,7 +331,7 @@ false
 
 上例的结果看起来是我们所期望的。但其实事情并非那么简单。下面我们来创建自己的类：
 
-```JAVA
+```java
 // operators/EqualsMethod2.java
 // 默认的 equals() 方法没有比较内容
 class Value {
@@ -363,7 +363,7 @@ false
 
 每个逻辑运算符 `&&` （**AND**）、`||`（**OR**）和 `!`（**非**）根据参数的逻辑关系生成布尔值 `true` 或 `false`。下面的代码示例使用了关系运算符和逻辑运算符：
 
-```JAVA
+```java
 // operators/Bool.java
 // 关系运算符和逻辑运算符
 import java.util.*;
@@ -407,7 +407,7 @@ i != j is true
 (i < 10) || (j < 10) is false
 ```
 
-在 JAVA 逻辑运算中，我们不能像 C/C++ 那样使用非布尔值， 而仅能使用 **AND**、**OR**、**NOT**。
+在 Java 逻辑运算中，我们不能像 C/C++ 那样使用非布尔值， 而仅能使用 **AND**、**OR**、**NOT**。
 下面是一次错误的尝试： ~~a || -~~。 但是，后续表达式使用关系比较生成布尔值，然后对结果使用逻辑运算结果。请注意，如果在预期为 **String** 类型的位置使用 **boolean**类型的值，则结果会自动转为适当的文本格式。
 
 我们可以将前一个程序中 **int** 的定义替换为除 **boolean** 之外的任何其他基本数据类型。
@@ -419,7 +419,7 @@ i != j is true
 
 逻辑运算符支持一种称为“短路”（*short-circuiting*）的现象。整个表达式会在运算到可以明确结果时就停止并返回结果，这意味着该逻辑表达式的后半部分不会被执行到。代码示例：
 
-```JAVA
+```java
 // operators / ShortCircuit.java 
 // 逻辑运算符的短路行为
 public class ShortCircuit {
@@ -461,7 +461,7 @@ expression is false
 
 每个测试都对参数执行比较并返回 `true` 或 `false`。同时控制台也会在方法执行时打印他们的执行状态。 下面的表达式：
 
-```JAVA
+```java
 test1（0）&& test2（2）&& test3（2）
 ```
 
@@ -476,7 +476,7 @@ test1（0）&& test2（2）&& test3（2）
 
 通常，当我们向程序中插入一个字面值常量（**Literal**）时，编译器会确切地识别它的类型。当类型不明确时，必须辅以字面值常量关联来帮助编译器识别。代码示例：
 
-```JAVA
+```java
 // operators/Literals.java
 public class Literals {
     public static void main(String[] args) {
@@ -558,7 +558,7 @@ Java 7 引入了二进制的字面值常量，由前导 `0B` 或 `0B` 表示，�
 Java 7 中有一个深思熟虑的补充：我们可以在数字文字中包含下划线 `_`，以使结果更清晰。这对于大数值的分组数字特别有用。代码示例：
 
 
-```JAVA
+```java
 // operators/Underscores.java
 public class Underscores {
     public static void main(String[] args) {
@@ -599,7 +599,7 @@ public class Underscores {
 
  指数总是采用一种我认为很不直观的记号方法:
 
-```JAVA
+```java
 // operators/Exponents.java
 // "e" 表示 10 的几次幂
 public class Exponents {
@@ -628,7 +628,7 @@ public class Exponents {
 
 注意如果编译器能够正确地识别类型，就不必使用尾随字面值常量。对于下述语句：
 
-```JAVA
+```java
 long n3 = 200;
 ```
 
