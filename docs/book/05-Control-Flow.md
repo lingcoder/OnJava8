@@ -204,7 +204,7 @@ value: 106 character: j
 
 **注意**：变量 **c** 是在 **for** 循环执行时才被定义的，并不是在 **main()** 的开头。**c** 的作用域范围仅在 **for** 循环体内。
 
-传统的面向过程语言如 C 需要先在代码块（*block*）前定义好所有变量才能够使用。这样编译器才能在创建块时，为这些变量分配内存空间。在 Java 和 C++ 中，我们可以在整个块使用变量声明，并且可以在需要时才定义变量。 这种自然的编码风格使我们的代码更容易被人理解。
+传统的面向过程语言如 C 需要先在代码块（*block*）前定义好所有变量才能够使用。这样编译器才能在创建块时，为这些变量分配内存空间。在 Java 和 C++ 中，我们可以在整个块使用变量声明，并且可以在需要时才定义变量。 这种自然的编码风格使我们的代码更容易被人理解 [^1]。
 
 上例使用了 **java.lang.Character** 包装类，该类不仅包含了基本类型 `char` 的值，还封装了一些有用的方法。例如这里就用到了静态方法 `isLowerCase()` 来判断字符否为小写。
 
@@ -442,30 +442,30 @@ public class BreakAndContinue {
 ```
 
   <sub>**[1]** 在这个 **for** 循环中，`i` 的值永远不会达到 100，因为一旦 `i` 等于 74，**break** 语句就会中断循环。通常，只有在不知道中断条件何时满足时，才需要 **break**。因为 `i` 不能被 9 整除，**continue** 语句就会使循环从头开始。这使 **i** 递增)。如果能够整除，则将值显示出来。</sub>
-
   <sub>**[2]** 使用 **for-in** 语法，结果相同。</sub>
-
   <sub>**[3]** 无限 **while** 循环。循环内的 **break** 语句可中止循环。**注意**，**continue** 语句可将控制权移回循环的顶部，而不会执行 **continue** 之后的任何操作。 因此，只有当 `i` 的值可被 10 整除时才会输出。在输出中，显示值 0，因为 `0％9` 产生 0。</sub>
 
 
-无限循环还有另一种形式： `for(;;)`。 编译器将会以 `while(true)` 同样的方式处理它，因此使用哪种完全取决于你的编程品味。
+还有一种无限循环的形式： `for(;;)`。 在编译器看来，它与 `while(true)` 无异，使用哪种完全取决于你的编程品味。
 
 <!--The Infamous “Goto”-->
 ## 臭名昭著的goto
 
-goto 关键字很早就在程序设计语言中出现。事实上，goto 是汇编语言的程序控制结构的始祖：“若条件A，则跳到这里；否则跳到那里”。若阅读由几乎所有编译器生成的汇编代码，就会发现程序控制里包含了许多跳转。然而，goto是在源码的级别跳转的，所以招致了不好的声誉。若程序总是从一个地方跳到另一个地方，还有什么办法能识别代码的流程呢？随着 Edsger Dijkstra 著名的 “Goto 有害” 论的问世，goto 便从此失宠。
+[**goto** 关键字](https://en.wikipedia.org/wiki/Goto) 很早就在程序设计语言中出现。事实上，**goto** 起源于[汇编](https://en.wikipedia.org/wiki/Assembly_language)（*assembly language*）语言中的程序控制：“若条件 A 成立，则跳到这里；否则跳到那里”。如果你读过由由编译器编译后的代码，你会发现在其程序控制中充斥了大量的跳转。较之汇编产生的代码直接运行在硬件 CPU 中，Java 也会产生自己的“汇编代码”（字节码），只不过它是运行在 Java 虚拟机里的（*Java Virtual Machine*）。
 
-事实上，真正的问题并不在于使用 goto，而在于 goto 的滥用。而且在一些少见的情况下，goto 是组织控制流程的最佳手段。
+一个源码级别跳转的 **goto**，为何招致名誉扫地呢？若程序总是从一处跳转到另一处，还有什么办法能识别代码的控制流程呢？随着 *Edsger Dijkstra*发表著名的 “Goto 有害” 论（*Goto considered harmful*）以后，**goto** 便从此失宠。甚至有人建议将它从关键字中剔除。
 
-尽管 goto 仍是 Java 的一个保留字，但并未在语言中得到正式使用；Java 没有 goto。然而，在 break和 continue 这两个关键字的身上，我们仍然能看出一些goto的影子。它并不属于一次跳转，而是中断循环语句的一种方法。之所以把它们纳入 goto 问题中一起讨论，是由于它们使用了相同的机制：标签。
+正如上述提及的经典情况，我们不应走向两个极端。问题不在 **goto**，而在于过度使用 **goto**。在极少数情况下，**goto** 实际上是控制流程的最佳方式。
 
-“标签”是后面跟一个冒号的标识符，就像下面这样：
+尽管 **goto** 仍是 Java 的一个保留字，但其并未被到正式启用。可以说， Java 中并不支持 **goto**。然而，在 **break** 和 **continue** 这两个关键字的身上，我们仍能看出一些 **goto** 的影子。它们并不属于一次跳转，而是中断循环语句的一种方法。之所以把它们纳入 **goto** 问题中一起讨论，是由于它们使用了相同的机制：标签。
+
+“标签”是后面跟一个冒号的标识符。代码示例：
 
 ```java
 label1:
 ```
 
-对 Java 来说，唯一用到标签的地方是在循环语句之前。进一步说，它实际需要紧靠在循环语句的前方——在标签和循环之间置入任何语句都是不明智的。而在循环之前设置标签的唯一理由是：我们希望在其中嵌套另一个循环或者一个开关。这是由于 break 和 continue 关键字通常只中断当前循环，但若随同标签使用，它们就会中断到存在标签的地方。如下所示：
+对 Java 来说，唯一用到标签的地方是在循环语句之前。进一步说，它实际需要紧靠在循环语句的前方 —— 在标签和循环之间置入任何语句都是不明智的。而在循环之前设置标签的唯一理由是：我们希望在其中嵌套另一个循环或者一个开关。这是由于 **break** 和 **continue** 关键字通常只中断当前循环，但若搭配标签一起使用，它们就会中断并跳转到标签所在的地方开始执行。代码示例：
 
 ```java
 label1:
@@ -483,26 +483,23 @@ outer-iteration {
 }
 ```
 
-**[1]** **break** 中断内部循环，并在外部循环结束。
+<sub>**[1]** **break** 中断内部循环，并在外部循环结束。</sub>
+<sub>**[2]** **continue** 移回内部循环的起始处。但在条件 3 中，**continue label1** 却同时中断内部循环以及外部循环，并移至 **label1** 处。</sub>
+<sub>**[3]** 随后，它实际是继续循环，但却从外部循环开始。</sub>
+<sub>**[4]** **break label1** 也会中断所有循环，并回到 **label1** 处，但并不重新进入循环。也就是说，它实际是完全中止了两个循环。</sub>
 
-**[2]** **continue** 移回内部循环的起始处。但在条件3中，**continue label1** 却同时中断内部循环以及外部循环，并移至 **label1** 处。
-
-**[3]** 随后，它实际是继续循环，但却从外部循环开始。
-
-**[4]** **break label1** 也会中断所有循环，并回到 **label1** 处，但并不重新进入循环。也就是说，它实际是完全中止了两个循环。
-
-下面是 for 循环的一个例子：
+下面是 **for** 循环的一个例子：
 
 ```java
 // control/LabeledFor.java
-// For loops with "labeled break"/"labeled continue."
+// 搭配“标签break”的for循环中使用 break 和 continue
 
 public class LabeledFor {
   public static void main(String[] args) {
     int i = 0;
-    outer: // Can't have statements here
-    for(; true ;) { // infinite loop
-      inner: // Can't have statements here
+    outer: // 此处不允许存在执行语句
+    for(; true ;) { // 无限循环
+      inner: // 此处不允许存在执行语句
       for(; i < 10; i++) {
         System.out.println("i = " + i);
         if(i == 2) {
@@ -511,14 +508,14 @@ public class LabeledFor {
         }
         if(i == 3) {
           System.out.println("break");
-          i++; // Otherwise i never
-               // gets incremented.
+          i++; // 否则 i 永远无法获得自增 
+               // 获得自增 
           break;
         }
         if(i == 7) {
           System.out.println("continue outer");
-          i++; // Otherwise i never
-               // gets incremented.
+          i++;  // 否则 i 永远无法获得自增 
+                // 获得自增 
           continue outer;
         }
         if(i == 8) {
@@ -533,10 +530,14 @@ public class LabeledFor {
         }
       }
     }
-    // Can't break or continue to labels here
+    // 在此处无法break或continue标签
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 i = 0
 continue inner
 i = 1
@@ -555,18 +556,18 @@ i = 7
 continue outer
 i = 8
 break outer
-*/
 ```
 
-注意 **break** 会中断 **for** 循环，而且在抵达 **for** 循环的末尾之前，递增表达式不会执行。由于 **break** 跳过了递增表达式，所以递增会在 **i==3** 的情况下直接执行。在 **i==7** 的情况下，**continue outer** 语句也会到达循环顶部，而且也会跳过递增，所以它也是直接递增的。
 
-如果没有 **break outer** 语句，就没有办法在一个内部循环里找到出外部循环的路径。这是由于  **break** 本身只能中断最内层的循环（对于 **continue** 同样如此）。 当然，若想在中断循环的同时退出方法，简单地用一个 **return** 即可。
+注意 **break** 会中断 **for** 循环，而且在抵达 **for** 循环的末尾之前，递增表达式不会执行。由于 **break** 跳过了递增表达式，所以递增会在 `i==3` 的情况下直接执行。在 `i==7` 的情况下，`continue outer` 语句也会到达循环顶部，而且也会跳过递增，所以它也是直接递增的。
+
+如果没有 **break outer** 语句，就没有办法在一个内部循环里找到出外部循环的路径。这是由于 **break** 本身只能中断最内层的循环（对于 **continue** 同样如此）。 当然，若想在中断循环的同时退出方法，简单地用一个 **return** 即可。
 
 下面这个例子向大家展示了带标签的 **break** 以及 **continue** 语句在 **while** 循环中的用法：
 
 ```java
 // control/LabeledWhile.java
-// "While" with "labeled break" and "labeled continue."
+// 带标签的 break 和 conitue 在 while 循环中的使用
 
 public class LabeledWhile {
   public static void main(String[] args) {
@@ -597,7 +598,11 @@ public class LabeledWhile {
     }
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Outer while loop
 i = 1
 continue
@@ -612,24 +617,24 @@ Outer while loop
 i = 6
 i = 7
 break outer
-*/
 ```
 
 同样的规则亦适用于 **while**：
 
-(1) 简单的一个 **continue** 会退回最内层循环的开头（顶部），并继续执行。
+1. 简单的一个 **continue** 会退回最内层循环的开头（顶部），并继续执行。
 
-(2) 带有标签的 **continue** 会到达标签的位置，并重新进入紧接在那个标签后面的循环。
+2. 带有标签的 **continue** 会到达标签的位置，并重新进入紧接在那个标签后面的循环。
 
-(3) **break** 会中断当前循环，并移离当前标签的末尾。
+3. **break** 会中断当前循环，并移离当前标签的末尾。
 
-(4) 带标签的 **break** 会中断当前循环，并移离由那个标签指示的循环的末尾。
+4. 带标签的 **break** 会中断当前循环，并移离由那个标签指示的循环的末尾。
 
 大家要记住的重点是：在 Java 里需要使用标签的唯一理由就是因为有循环嵌套存在，而且想从多层嵌套中 **break** 或 **continue**。
 
-**break** 和 **continue** 标签已经成为相对少用的推测特征(在前面的语言中很少或没有先例)，所以你很少在代码里看到它们。
+**break** 和 **continue** 标签在编码中的使用频率相对较低(此前的语言中很少使用或没有先例)，所以我们很少在代码里看到它们。
 
-在 **Dijkstra** 的 **“goto 有害”** 论中，他最反对的就是标签，而非 **goto**。随着标签在一个程序里数量的增多，他发现产生错误的机会也越来越多。标签和 **goto** 使我们难于对程序作静态分析。但是，Java 标签不会造成这方面的问题，因为它们的应用场合已经收到了限制，没有特别的方式用于概念程序的控制。由此也引出了一个有趣的问题：通过限制语句的能力，反而能使一项语言特性更加有用。
+在 *Dijkstra* 的 **“Goto 有害”** 论文中，他最反对的就是标签，而非 **goto**。他观察到 BUG 的数量似乎随着程序中标签的数量而增加[^2]。标签和 **goto** 使得程序难以分析。但是，Java 标签不会造成这方面的问题，因为它们的应用场景受到限制，无法用于以临时方式传输控制。由此也引出了一个有趣的情形：对语言能力的限制，反而使它这项特性更加有价值。
+
 
 ## switch
 
@@ -647,18 +652,18 @@ switch(integral-selector) {
 }
 ```
 
-其中，integral-selector (整数选择因子)是一个能够产生整数值的表达式，**switch** 能够将这个表达式的结果与每个 integral-value (整数值)相比较。若发现相符的，就执行对应的语句（简单或复合语句，其中并不需要括号）。若没有发现相符的，就执行 default 语句。
+其中，**integral-selector** （整数选择因子）是一个能够产生整数值的表达式，**switch** 能够将这个表达式的结果与每个 **integral-value** （整数值）相比较。若发现相符的，就执行对应的语句（简单或复合语句，其中并不需要括号）。若没有发现相符的，就执行  **default** 语句。
 
-在上面的定义中，大家会注意到每个 **case** 均以一个 **break** 结尾。这样可使执行流程跳转至 switch 主体的末尾。这是构建 **switch** 语句的一种传统方式，但 **break** 是可选的。若省略 break， 会继续执行后面的 **case** 语句的代码，直到遇到一个 **break** 为止。尽管通常不想出现这种情况，但对有经验的程序员来说，也许能够善加利用。注意最后的 **default** 语句没有 **break**，因为执行流程已到了break的跳转目的地。当然，如果考虑到编程风格方面的原因，完全可以在**default** 语句的末尾放置一个 **break**，尽管它并没有任何实际的用处。
+在上面的定义中，大家会注意到每个 **case** 均以一个 **break** 结尾。这样可使执行流程跳转至 **switch** 主体的末尾。这是构建 **switch** 语句的一种传统方式，但 **break** 是可选的。若省略 **break，** 会继续执行后面的 **case** 语句的代码，直到遇到一个 **break** 为止。通常我们不想出现这种情况，但对有经验的程序员来说，也许能够善加利用。注意最后的 **default** 语句没有 **break**，因为执行流程已到了 **break** 的跳转目的地。当然，如果考虑到编程风格方面的原因，完全可以在 **default** 语句的末尾放置一个 **break**，尽管它并没有任何实际的作用。
 
-switch 语句是实现多路选择的一种干净利落的一种方式（比如从一系列执行路径中挑选一个）。但它要求使用一个选择因子，并且必须是 int 或 char 那样的整数值。例如，假若将一个字串或者浮点数作为选择因子使用，那么它们在 switch 语句里是不会工作的。对于非整数类型，则必须使用一系列 if 语句。 
+**switch** 语句是一种实现多路选择的干净利落的一种方式（比如从一系列执行路径中挑选一个）。但它要求使用一个选择因子，并且必须是 **int** 或 **char** 那样的整数值。例如，假若将一个字串或者浮点数作为选择因子使用，那么它们在 switch 语句里是不会工作的。对于非整数类型（Java 7 以上版本中的 String 型除外），则必须使用一系列 **if** 语句。 在[下一章的结尾](./06-Housekeeping.md#枚举类型)中，我们将会了解到**枚举类型**被用来搭配 **switch** 工作，并优雅地解决了这种限制。
 
 下面这个例子可随机生成字母，并判断它们是元音还是辅音字母：
 
 ```java
 // control/VowelsAndConsonants.java
 
-// Demonstrates the switch statement
+// switch 执行语句的演示
 import java.util.*;
 
 public class VowelsAndConsonants {
@@ -682,7 +687,11 @@ public class VowelsAndConsonants {
     }
   }
 }
-/* Output: (First 13 Lines)
+```
+
+输出结果：
+
+```
 y, 121: Sometimes vowel
 n, 110: consonant
 z, 122: consonant
@@ -696,27 +705,24 @@ f, 102: consonant
 o, 111: vowel
 w, 119: Sometimes vowel
 z, 122: consonant
-...
-*/
+  ...
 ```
 
-由于 **Random.nextInt(26)** 会产生 0 到 26 之间的一个值，所以在其上加上一个偏移量 "a"，即可产生小写字母。在 **case** 语句中，使用单引号引起的字符也会产生用于比较的整数值。
+由于 `Random.nextInt(26)` 会产生 0 到 26 之间的一个值，所以在其上加上一个偏移量 `a`，即可产生小写字母。在 **case** 语句中，使用单引号引起的字符也会产生用于比较的整数值。
 
-请注意 **case** 语句能够堆叠在一起，为一段代码形成多重匹配，即只要符合多种条件中的一种，就执行那段特别的代码。这时也应该注意将 **break** 语句置于特定 **case** 的末尾，否则控制流程会简单地下移，处理后面的 **case**。
-
-在下面的语句中：
+请注意 **case** 语句能够堆叠在一起，为一段代码形成多重匹配，即只要符合多种条件中的一种，就执行那段特别的代码。这时也应该注意将 **break** 语句置于特定 **case** 的末尾，否则控制流程会继续往下执行，处理后面的 **case**。在下面的语句中：
 
 ```java
 int c = rand.nextInt(26) + 'a';
 ```
 
-此处 **Random.nextInt()** 将产生 0~25 之间的一个随机 **int** 值，它将被加到 **a** 上。这表示 **a** 将自动被转换为 **int** 以执行假发。为了把 **c** 当作字符打印，必须将其转型为 **char**；否则，将产生整数输出。
+此处 `Random.nextInt()` 将产生 0~25 之间的一个随机 **int** 值，它将被加到 `a` 上。这表示 `a` 将自动被转换为 **int** 以执行加法。为了把 `c` 当作字符打印，必须将其转型为 **char**；否则，将会输出整数。
 
 
 <!-- Switching on Strings -->
 ## switch字符串
 
-Java 7 增加了在字符串上 **switch** 的用法。 此示例展示了您从一组 String 可能性中选择的旧方法，以及使用 switch 的新方法：
+Java 7 增加了在字符串上 **switch** 的用法。 下例展示了从一组 **String** 中选择可能值的传统方法，以及新式方法：
 
 ```java
 // control/StringSwitch.java
@@ -724,7 +730,7 @@ Java 7 增加了在字符串上 **switch** 的用法。 此示例展示了您从
 public class StringSwitch {
   public static void main(String[] args) {
     String color = "red";
-    // Old way: using if-then
+    // 老的方式: 使用 if-then 判断
     if("red".equals(color)) {
       System.out.println("RED");
     } else if("green".equals(color)) {
@@ -736,7 +742,7 @@ public class StringSwitch {
     } else {
       System.out.println("Unknown");
     }
-    // New way: Strings in switch
+    // 新的方法: 字符串搭配 switch
     switch(color) {
       case "red":
         System.out.println("RED");
@@ -756,22 +762,26 @@ public class StringSwitch {
     }
   }
 }
-/* Output:
-RED
-RED
-*/
 ```
 
-一旦理解了 switch，这种语法就是一个逻辑扩展。 结果更清晰，更易于理解和维护。
+输出结果：
 
-作为 **switch** 字符串的第二个例子，我们重新访问 Math.random()。 它是否产生从 0 到 1 的值，包括还是不包括值 “1”？ 在数学术语中，是（0,1），还是 [0,1]，还是（0,1）还是 [0,1]？ （方括号表示“包括”，而括号表示“不包括”。）
+```
+RED
+RED
+```
 
-下面一个可能提供答案的测试程序。 所有命令行参数都作为 **String** 对象传递，因此我们可以 **switch** 参数来决定要做什么。 有一个问题：用户可能不提供任何参数，因此索引到 args 数组会导致程序失败。 要解决这个问题，我们检查数组的长度，如果它为零，我们使用一个空字符串，否则我们选择 **args** 数组中的第一个元素：
+
+一旦理解了 **switch**，你会明白这其实就是一个逻辑扩展的语法糖。新的编码方式能使得结果更清晰，更易于理解和维护。
+
+作为 **switch** 字符串的第二个例子，我们重新访问 `Math.random()`。 它是否产生从 0 到 1 的值，包括还是不包括值 1 呢？在数学术语中，它属于 (0,1)、 [0,1]、(0,1) 、[0,1] 中的哪种呢？（方括号表示“包括”，而括号表示“不包括”）
+
+下面是一个可能提供答案的测试程序。 所有命令行参数都作为 **String** 对象传递，因此我们可以 **switch** 参数来决定要做什么。 那么问题来了：如果用户不提供参数 ，索引到 `args` 的数组就会导致程序失败。 解决这个问题，我们需要预先检查数组的长度，若长度为 0，则使用**空字符串** `""` 替代；否则，选择 `args` 数组中的第一个元素：
 
 ```java
 // control/RandomBounds.java
 
-// Does Math.random() produce 0.0 and 1.0?
+// Math.random() 会产生 0.0 和 1.0 吗？
 // {java RandomBounds lower}
 import onjava.*;
 
@@ -781,12 +791,12 @@ public class RandomBounds {
     switch(args.length == 0 ? "" : args[0]) {
       case "lower":
         while(Math.random() != 0.0)
-          ; // Keep trying
+          ; // 保持重试
         System.out.println("Produced 0.0!");
         break;
       case "upper":
         while(Math.random() != 1.0)
-          ; // Keep trying
+          ; // 保持重试
         System.out.println("Produced 1.0!");
         break;
       default:
@@ -803,24 +813,21 @@ public class RandomBounds {
 
 ```java
 java RandomBounds lower 
-or
+// 或者
 java RandomBounds upper
 ```
 
-使用 onjava 包中的 TimedAbort 类，程序在三秒后中止，因此看起来 Math.random() 从不生成 0.0 或 1.0。 但这就是这样一个实验可以欺骗的地方。 如果考虑0到1之间所有不同 **double** 类型的分数（double fractions）的数量，实验中达到任何一个值的可能性可能超过一台计算机甚至一个实验者的寿命。 结果是 0.0 包含在 **Math.random()** 的输出中，而 1.0 则不包括在内。 在数学术语中，它是 [0,1）。 您必须小心分析您的实验并了解它们的局限性。结果是 0.0 包含在 **Math.random()** 的输出中，而 1.0 则不包括在内。 在数学术语中，它是 [0,1）。 您必须小心分析您的实验并了解它们的局限性。
-
+使用 `onjava` 包中的 **TimedAbort** 类可使程序在三秒后中止。从结果来看，似乎 `Math.random()` 产生的随机值里不包含 0.0 或 1.0。 这就是该测试容易混淆的地方：若要考虑 0 至 1 之间所有不同 **double** 数值的可能性，那么这个测试的耗费的时间可能超出一个人的寿命了。 这里我们直接给出正确的结果：`Math.random()` 的结果集范围包含 0.0 ，不包含 1.0。 在数学术语中，可用 [0,1）来表示。由此可知，我们必须小心分析实验并了解它们的局限性。
 
 
 ## 本章小结
 
-本章总结了我们对大多数编程语言中出现的基本特征的探索：计算，运算符优先级，类型转换，选择和迭代。 现在，您已准备好开始采取措施，使您更接近面向对象和函数式编程的世界。 下一章将介绍初始化和清理对象的重要问题，接下来的章节将介绍隐藏实现细节（implementation hiding）的这一核心概念。
+本章总结了我们对大多数编程语言中出现的基本特性的探索：计算，运算符优先级，类型转换，选择和迭代。 现在让我们准备好，开始步入面向对象和函数式编程的世界吧。 下一章的内容涵盖了 Java 编程中的重要问题：对象的[初始化和清理](./06-Housekeeping.md)。紧接着，还会介绍[封装](./07-Implementation-Hiding.md)（*implementation hiding*）的核心概念。
 
 <!--下面是脚注-->
+[^1]: 在早期的语言中，许多决策都是基于让编译器设计者的体验更好。 但在现代语言设计中，许多决策都是为了提高语言使用者的体验，尽管有时会有妥协 —— 这通常会让语言设计者后悔。<sup>
 
-1. 在早期的语言中，大量的决策都是基于使编译器编写者的生活更轻松。 你会发现，在现代语言中，大多数设计决策都会让语言用户的生活更轻松，尽管有时会有妥协 - 这通常会让语言设计师感到后悔。
-
-2. 请注意，这似乎是一个难以支持的主张，并且很可能是称为相关因果关系谬误的认知偏差的一个例子。
+[^2]: **注意**，此处观点似乎难以让人信服，很可能只是一个因认知偏差而造成的[因果关系谬误](https://en.wikipedia.org/wiki/Correlation_does_not_imply_causation)的例子。</sup>
 
 <!-- 分页 -->
-
 <div style="page-break-after: always;"></div>
