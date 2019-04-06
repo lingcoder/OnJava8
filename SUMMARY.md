@@ -355,7 +355,7 @@
     * [转换数据](docs/book/Appendix-New-IO.md#数据转换)
     * [获取原始类型](docs/book/Appendix-New-IO.md#基本类型获取)
     * [视图缓冲区](docs/book/Appendix-New-IO.md#视图缓冲区)
-    * [使用缓冲区进行数据操作](docs/book/Appendix-New-IO.md#使用缓冲区进行数据操作)
+    * [使用缓冲区进行数据操作](docs/book/Appendix-New-IO.md#缓冲区数据操作)
     * [内存映射文件](docs/book/Appendix-New-IO.md#内存映射文件)
     * [文件锁定](docs/book/Appendix-New-IO.md#文件锁定)
 * [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
