@@ -183,7 +183,7 @@ public class TransferTo {
 // newio/BufferToText.java
 // (c)2017 MindView LLC: see Copyright.txt
 // 我们无法保证该代码是否适用于其他用途。
-// 访问 http://OnJava8.com 了解更多书本信息。
+// 访问 http://OnJava8.com 了解更多本书信息。
 // text 和 ByteBuffers 互转
 import java.nio.*;
 import java.nio.channels.*;
@@ -294,7 +294,7 @@ Some textNULNULNUL
 // newio/AvailableCharSets.java
 // (c)2017 MindView LLC: see Copyright.txt
 // 我们无法保证该代码是否适用于其他用途。
-// 访问 http://OnJava8.com 了解更多书本信息。
+// 访问 http://OnJava8.com 了解更多本书信息。
 // 展示 Charsets 和 aliases
 import java.nio.charset.*;
 import java.util.*;
@@ -361,7 +361,7 @@ gb2312-1980
 // newio/GetData.java
 // (c)2017 MindView LLC: see Copyright.txt
 // 我们无法保证该代码是否适用于其他用途。
-// 访问 http://OnJava8.com 了解更多书本信息。
+// 访问 http://OnJava8.com 了解更多本书信息。
 // 从 ByteBuffer 中获取不同的数据展示
 import java.nio.*;
 
@@ -438,7 +438,7 @@ H o w d y !
 // newio/IntBufferDemo.java
 // (c)2017 MindView LLC: see Copyright.txt
 // 我们无法保证该代码是否适用于其他用途。
-// 访问 http://OnJava8.com 了解更多书本信息。
+// 访问 http://OnJava8.com 了解更多本书信息。
 // 利用 IntBuffer 保存 int 数据到 ByteBuffer
 import java.nio.*;
 
@@ -484,7 +484,7 @@ public class IntBufferDemo {
 // newio/ViewBuffers.java
 // (c)2017 MindView LLC: see Copyright.txt
 // 我们无法保证该代码是否适用于其他用途。
-// 访问 http://OnJava8.com 了解更多书本信息。
+// 访问 http://OnJava8.com 了解更多本书信息。
 import java.nio.*;
 
 public class ViewBuffers {
@@ -580,7 +580,7 @@ Double Buffer 0 -> 4.8E-322,
 // newio/Endians.java
 // (c)2017 MindView LLC: see Copyright.txt
 // 我们无法保证该代码是否适用于其他用途。
-// 访问 http://OnJava8.com 了解更多书本信息。
+// 访问 http://OnJava8.com 了解更多本书信息。
 // 不同字节存储次序的存储
 import java.nio.*;
 import java.util.*;
@@ -628,7 +628,7 @@ public class Endians {
 
 ### 缓冲区细节
 
-缓冲区由数据和四个索引组成，以有效地访问和操作该数据：*mark*、*position*、*limit* 和 *capacity*（标记、位置、限制 和 容量）。有一些方法可以设置和重置这些索引并查询它们的值。
+缓冲区由数据和四个索引组成，以有效地访问和操作该数据：*mark*、*position*、*limit* 和 *capacity*（标记、位置、限制和容量）。伴随着的还有一组方法可以设置和重置这些索引，并可查询它们的值。
 
 |  |  |
 | :----- | :----- |
@@ -649,7 +649,7 @@ public class Endians {
 // newio/UsingBuffers.java
 // (c)2017 MindView LLC: see Copyright.txt
 // 我们无法保证该代码是否适用于其他用途。
-// 访问 http://OnJava8.com 了解更多书本信息。
+// 访问 http://OnJava8.com 了解更多本书信息。
 import java.nio.*;
 
 public class UsingBuffers {
@@ -725,14 +725,14 @@ UsingBuffers
 <!-- Memory-Mapped Files -->
 ##  内存映射文件
 
-内存映射文件允许您创建和修改太大而无法放入内存的文件。使用内存映射文件，您可以假装整个文件都在内存中，并将其视为一个非常大的数组来访问它。这种方法大大简化了您编写的修改文件的代码:
+内存映射文件能让你创建和修改那些因为太大而无法放入内存的文件。有了内存映射文件，你就可以认为文件已经全部读进了内存，然后把它当成一个非常大的数组来访问。这种解决办法能大大简化修改文件的代码：
 
 ```java
 // newio/LargeMappedFiles.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
-// Creating a very large file using mapping
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多本书信息。
+// 使用内存映射来创建一个大文件
 import java.nio.*;
 import java.nio.channels.*;
 import java.io.*;
@@ -755,25 +755,30 @@ public class LargeMappedFiles {
     }
   }
 }
-/* Output:
-Finished writing
-xxxxxx
-*/
 ```
 
-为了读写，我们从 **RandomAccessFile** 开始，获取该文件的通道，然后调用 **map()** 来生成**MappedByteBuffer** ，这是一种特殊的直接缓冲区。您必须指定要在文件中映射的区域的起始点和长度—这意味着您可以选择映射大文件的较小区域。**MappedByteBuffer**  继承了它的**ByteBuffer**，所以它有所有的 **ByteBuffer **方法。这里只展示了 **put()** 和 **get()** 的最简单用法，但是您也可以使用 **asCharBuffer()** 等方法。
+输出结果：
 
-使用前面的程序创建的文件有128mb长，可能比您的操作系统一次允许的内存要大。该文件似乎可以同时访问，因为它只有一部分被带进内存，而其他部分被交换出去。这样，一个非常大的文件(最多2gb)可以很容易地修改。注意，底层操作系统的文件映射工具用于最大化性能。
+```
+Finished writing
+xxxxxx
+```
 
+为了读写，我们从 **RandomAccessFile** 开始，获取该文件的通道，然后调用 `map()` 来生成 **MappedByteBuffer** ，这是一种特殊的直接缓冲区。你必须指定要在文件中映射的区域的起始点和长度—这意味着你可以选择映射大文件的较小区域。
+
+**MappedByteBuffer**  继承了 **ByteBuffer**，所以拥有**ByteBuffer** 全部的方法。这里只展示了 `put()` 和 `get()` 的最简单用法，但是你也可以使用 `asCharBuffer()` 等方法。
+
+使用前面的程序创建的文件长度为 128MB，可能比你的操作系统单次所允许的操作的内存要大。该文件似乎可以同时访问，因为它只有一部分被带进内存，而其他部分被交换出去。这样，一个非常大的文件（最多 2GB）可以很容易地修改。**注意**，操作系统底层的文件映射工具用于性能的最大化。
+
+<!-- Performance -->
 ### 性能
 
-虽然“旧”流I/O的性能通过使用 **nio** 实现得到了改进，但是映射文件访问往往要快得多。这个程序做一个简单的性能比较:
+虽然旧的 I/O 流的性能通过使用 **NIO** 实现得到了改进，但是映射文件访问往往要快得多。下例带来一个简单的性能比较。代码示例：
 
 ```java
 // newio/MappedIO.java
-// (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多本书信息。
 import java.util.*;
 import java.nio.*;
 import java.nio.channels.*;
@@ -787,6 +792,7 @@ public class MappedIO {
     Tester(String name) {
       this.name = name;
     }
+
     public void runTest() {
       System.out.print(name + ": ");
       long start = System.nanoTime();
@@ -794,8 +800,10 @@ public class MappedIO {
       double duration = System.nanoTime() - start;
       System.out.format("%.3f%n", duration/1.0e9);
     }
+
     public abstract void test();
   }
+
   private static Tester[] tests = {
     new Tester("Stream Write") {
       @Override
@@ -906,33 +914,35 @@ public class MappedIO {
     Arrays.stream(tests).forEach(Tester::runTest);
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Stream Write: 0.615
 Mapped Write: 0.050
 Stream Read: 0.577
 Mapped Read: 0.015
 Stream Read/Write: 4.069
 Mapped Read/Write: 0.013
-*/
 ```
 
-**Tester** 是一个模板方法模式，它为匿名内部子类中定义的 **test()** 的各种实现创建一个测试框架。每个子类都执行一种测试，因此 test() 方法还为您提供了执行各种I/O活动的原型。
+**Tester** 使用了模板方法（*Template Method*）模式，它为匿名内部子类中定义的 `test()` 的各种实现创建一个测试框架。每个子类都执行一种测试，因此 `test()` 方法还提供了执行各种I/O 活动的原型。
 
 虽然映射的写似乎使用 **FileOutputStream**，但是文件映射中的所有输出必须使用 **RandomAccessFile**，就像前面代码中的读/写一样。
 
-请注意，**test()** 方法包括初始化各种I/O对象的时间，因此，尽管映射文件的设置可能很昂贵，但是与流I/O相比，总体收益非常可观。
+请注意，`test()` 方法包括初始化各种 I/O 对象的时间，因此，尽管映射文件的设置可能很昂贵，但是与流 I/O 相比，总体收益非常可观。
 
 <!-- File Locking -->
 ## 文件锁定
 
-
-文件锁定同步访问，因此文件可以是共享资源。但是，争用同一个文件的两个线程可能位于不同的jvm 中，可能一个是 Java 线程，另一个是操作系统中的某个本机线程。文件锁定对其他操作系统进程是可见的，因为Java文件锁定直接映射到本机操作系统锁定工具。
+文件锁定可同步访问，因此文件可以共享资源。但是，争用同一文件的两个线程可能位于不同的 JVM 中，或者一个可能是 Java 线程，另一个可能是操作系统中的本机线程。文件锁对其他操作系统进程可见，因为 Java 文件锁定直接映射到本机操作系统锁定工具。
 
 ```java
 // newio/FileLocking.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多本书信息。
 import java.nio.channels.*;
 import java.util.concurrent.*;
 import java.io.*;
@@ -955,31 +965,46 @@ public class FileLocking {
     }
   }
 }
-/* Output:
-Locked File
-Released Lock
-*/
 ```
 
-通过调用 **FileChannel** 上的 **tryLock()** 或 **lock()**，可以获得整个文件的 **FileLock**。( **SocketChannel、DatagramChannel **和 **ServerSocketChannel **不需要锁定，因为它们本质上是单进程实体 ; 通常不会在两个进程之间共享一个网络套接字) **tryLock()** 是非阻塞的。它试图抓住锁，但如果它不能抓住了(当其他进程已经持有相同的锁，并且它不是共享的)，它只是从方法调用返回。
+输出结果：
 
-**lock()** 会阻塞，直到获得锁，或者调用 **lock()** 的线程中断，或者调用 **lock()** 方法的通道关闭。使 用**FileLock.release()** 释放锁。还可以使用 **tryLock(long position, long size, boolean shared)** 或**lock(long position, long size, boolean shared)** 锁定文件的一部分，锁住该区域(size-position)。第三个参数指定是否共享此锁。
+```
+Locked File
+Released Lock
+```
 
-虽然零参数锁定方法适应文件大小的变化，但是如果文件大小发生变化，具有固定大小的锁不会发生变化。如果从一个位置到另一个位置获得一个锁，并且文件的增长超过了 position + size ，那么超出位置+大小的部分没有被锁定。零参数锁定方法锁定整个文件，即使它在增长。
+通过调用 **FileChannel** 上的 `tryLock()` 或 `lock()`，可以获得整个文件的 **FileLock**。（**SocketChannel**、**DatagramChannel** 和 **ServerSocketChannel** 不需要锁定，因为它们本质上是单进程实体；通常不会在两个进程之间共享一个网络套接字）。
 
-底层操作系统必须提供对独占锁或共享锁的支持。如果操作系统不支持共享锁，并且请求共享锁，则使用独占锁。可以使用 **FileLock.isShared()** 查询锁的类型 (共享或独占)。
+`tryLock()` 是非阻塞的。它试图获取锁，若不能获取（当其他进程已经持有相同的锁，并且它不是共享的），它只是从方法调用返回。
+
+`lock()` 会阻塞，直到获得锁，或者调用 `lock()` 的线程中断，或者调用 `lock()` 方法的通道关闭。使用 **FileLock.**`release()` 释放锁。
+
+还可以使用
+
+ > `tryLock(long position, long size, boolean shared)`
+
+  或 
+
+ > `lock(long position, long size, boolean shared)` 
+ 
+ 锁定文件的一部分，锁住 **size-position** 区域。第三个参数指定是否共享此锁。
+
+虽然零参数锁定方法适应文件大小的变化，但是如果文件大小发生变化，具有固定大小的锁不会发生变化。如果从一个位置到另一个位置获得一个锁，并且文件的增长超过了 *position* + *size* ，那么超出 *position* + *size* 的部分没有被锁定。零参数锁定方法锁定整个文件，即使它在增长。
+
+底层操作系统必须提供对独占锁或共享锁的支持。如果操作系统不支持共享锁并且对一个操作系统发出请求，则使用独占锁。可以使用 **FileLock.**`isShared()` 查询锁的类型（共享或独占）。
 
 <!-- Locking Portions of a Mapped File -->
-
-### 锁定映射文件的某些部分
+### 映射文件的部分锁定
 
 文件映射通常用于非常大的文件。您可能需要锁定此类文件的某些部分，以便其他进程可以修改未锁定的部分。例如，数据库必须同时对许多用户可用。这里你可以看到两个线程，每个线程都锁定文件的不同部分:
+
 
 ```java
 // newio/LockingMappedFiles.java
 // (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
+// 我们无法保证该代码是否适用于其他用途。
+// 访问 http://OnJava8.com 了解更多本书信息。
 // Locking portions of a mapped file
 import java.nio.*;
 import java.nio.channels.*;
@@ -1000,6 +1025,7 @@ public class LockingMappedFiles {
     new LockAndModify(
       out, LENGTH/2, LENGTH/2 + LENGTH/4);
   }
+
   private static class LockAndModify extends Thread {
     private ByteBuffer buff;
     private int start, end;
@@ -1011,6 +1037,7 @@ public class LockingMappedFiles {
       buff = mbb.slice();
       start();
     }
+
     @Override
     public void run() {
       try {
@@ -1030,22 +1057,25 @@ public class LockingMappedFiles {
     }
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Locked: 75497471 to 113246206
 Locked: 0 to 50331647
 Released: 75497471 to 113246206
 Released: 0 to 50331647
-*/
-
 ```
 
-**LockAndModify** 线程类设置缓冲区并创建要修改的 **slice()**，在 **run()** 中，锁在文件通道上获取(不能在缓冲区上获取锁—只能在通道上获取锁)。**lock()** 的调用非常类似于获取对象上的线程锁——现在有了一个“临界区”，可以对文件的这部分进行独占访问。[^1]
 
-当 JVM 退出或关闭获取锁的通道时，锁会自动释放，但是您也可以显式地调用 **FileLock** 对象上的**release()**，如上所示。
+**LockAndModify** 线程类设置缓冲区并创建要修改的 `slice()`，在 `run()` 中，锁在文件通道上获取（不能在缓冲区上获取锁—只能在通道上获取锁）。`lock()` 的调用非常类似于获取对象上的线程锁 —— 现在有了一个“临界区”，可以对文件的这部分进行独占访问。[^1]
+
+当 JVM 退出或关闭获取锁的通道时，锁会自动释放，但是你也可以显式地调用 **FileLock** 对象上的 `release()`，如上所示。
+
 
 <!-- 脚注 -->
+[^1]:更多详情可参考[附录:并发底层原理](./book/Appendix-Low-Level-Concurrency.md)。
 
-1. 您可以在附录:低级并发中找到关于线程的更多细节。
-=======
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
