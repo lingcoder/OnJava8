@@ -20,7 +20,7 @@ Java 8 中引入的解决方案是在[接口](10-Interfaces.md)中添加 **defau
 <!-- Stream Creation -->
 ## 流创建
 
-你可以通过 **Stream.of()** 很容易的将一组元素转发成为流（**Bubble** 类在之前的章节中已经定义过了）：
+你可以通过 **Stream.of()** 很容易的将一组元素转化成为流（**Bubble** 类在之前的章节中已经定义过了）：
 
 ```java
 // streams/StreamOf.java
@@ -219,7 +219,7 @@ public class RandomWords implements Supplier<String> {
         // Skip the first line:
         for (String line : lines.subList(1, lines.size())) {
             for (String word : line.split("[ .?,]+"))
-            words.add(word.toLowerCase());
+                words.add(word.toLowerCase());
         }
     }
     public String get() {
@@ -245,7 +245,19 @@ public class RandomWords implements Supplier<String> {
 it shop sir the much cheese by conclusion district is
 ```
 
+在这里你可以看到更为复杂的 **split()** 的使用。在构造器中，每一行都被 **split()** 方法通过空格或者被方括号包裹的任意标点符号进行分割。在结束方括号后面的 **+** 代表「+ 前面的东西可以出现一次或者多次」。
 
+你将注意到在构造函数中循环体使用命令式编程（外部迭代）。在以后的例子中，你将会看到我门如何消除这一点。这种旧的形式不是特别糟糕，但是到处使用流会让你觉得更好一些。
+
+在 **toString()** 和 **main()** 中你看到了 **collect()** 收集操作，它根据参数来组合所有流中的元素。
+
+当你使用 **Collectors.joining()**，你将会得到一个 **String** 类型的结果，每个元素都根据 **joining()** 的参数来进行分割。还有许多不同的 **Collectors** 用于获取不同的结果。
+
+在 **main()** 中，我们看到了 **Stream.generate()** 的预览版本，它可以把任意  **Supplier\<T\>** 用于生成 **T** 类型的流。
+
+
+
+### int 类型的范围（Ranges of int）
 
 
 
