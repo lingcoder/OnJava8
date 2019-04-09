@@ -14,3 +14,9 @@ _book
 *.epub
 *.mobi
 *.pdf
+
+# OSX junk files
+.DS_Store
+._*
+*/.DS_Store
+*/._*
