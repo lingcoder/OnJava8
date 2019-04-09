@@ -18,7 +18,43 @@
 
 <!-- Composition Syntax -->
 ## 组合语法
-
+在前面的学习中，“组合”（**Composition**）已经被多次使用。你仅需要把对象的引用（**object references**）放置在一个新的类里，这就使用了组合。例如，假设你需要一个对象，其中内置了几个String对象，两个基本类型（**primitives**）的属性字段，一个自定义Class的对象。对于非基本类型对象，将引用直接放置在Class中，对于基本类型属性字段则仅进行声明（**define**）。
+// reuse/SprinklerSystem.java
+// Composition for code reuse
+class WaterSource {
+private String s;
+WaterSource() {
+System.out.println("WaterSource()");
+s = "Constructed";
+}
+@Override
+public String toString() { return s; }
+}
+public class SprinklerSystem {
+private String valve1, valve2, valve3, valve4;
+private WaterSource source = new WaterSource();
+private int i;
+private float f;
+@Override
+public String toString() {
+return
+"valve1 = " + valve1 + " " +
+"valve2 = " + valve2 + " " +
+"valve3 = " + valve3 + " " +
+"valve4 = " + valve4 + "\n" +
+"i = " + i + " " + "f = " + f + " " +
+"source = " + source; // [1]
+}
+public static void main(String[] args) {
+SprinklerSystem sprinklers = new SprinklerSystem();
+System.out.println(sprinklers);
+}
+}
+/* Output:
+WaterSource()
+valve1 = null valve2 = null valve3 = null valve4 = null
+i = 0 f = 0.0 source = Constructed
+*/
 
 <!-- Inheritance Syntax -->
 ## 继承语法
