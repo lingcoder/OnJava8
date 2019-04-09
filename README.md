@@ -2,64 +2,87 @@
 
 ## 书籍简介
 
-* 本书原作者为 \[美\] [Bruce Eckel](https://github.com/BruceEckel)，即（*Thinking in Java 4th Edition,2006*）的作者。
+* 本书原作者为 \[美\] *Bruce Eckel*，即（*Thinking in Java 4th Edition,2006*）的作者。
 * 本书是事实上的 *Thinking in Java 5th Edition*（*On Java 8,2017*）。
-* *Thinking in Java 4th Edition*基于 **JAVA 5**版本；*On Java 8*基于**JAVA 8**版本。
+* *Thinking in Java 4th Edition* 基于 **JAVA 5** 版本；*On Java 8* 基于 **JAVA 8** 版本。
 
 
-## 快速阅读传送门
+## 传送门
 
-- GitHub 快速阅读：[进入目录](https://github.com/LingCoder/OnJava8/blob/master/SUMMARY.md)
+- 目录阅读：[进入](https://github.com/LingCoder/OnJava8/blob/master/SUMMARY.md)
 
-- Gitee 快速阅读：[进入目录](https://gitee.com/lingcoder/OnJava8/blob/master/SUMMARY.md)
+- GitHub Pages 完整阅读：[进入](https://lingcoder.github.io/OnJava8/)
 
-- GitBook 完整阅读：[进入Gitbook](https://lingcoder.gitbook.io/onjava8)
+- Gitee Pages 完整阅读：[进入](https://lingcoder.gitee.io/onjava8/)
 
 
 ## 翻译进度
-- [x] 前言 
-- [x] 简介 
-- [x] 第一章 对象的概念
-- [x] 第二章 安装Java和本书用例
-- [x] 第三章 万物皆对象
-- [ ] 第四章 运算符 (正在翻译中……)
-- [x] 第五章 控制流
-- [ ] 第六章 初始化和清理 (正在翻译中……)
-- [ ] 第七章 封装 (正在翻译中……)
-- [x] 第十三章 函数式编程
-- [x] 附录:新IO
 
-- [ ] 待续······
+- [x] [前言](docs/book/00-Preface.md)
+- [x] [简介](docs/book/00-Introduction.md)
+- [x] [第一章 对象的概念](docs/book/01-What-is-an-Object.md)
+- [x] [第二章 安装Java和本书用例](docs/book/02-Installing-Java-and-the-Book-Examples.md)
+- [x] [第三章 万物皆对象](docs/book/03-Objects-Everywhere.md)
+- [x] [第四章 运算符](docs/book/04-Operators.md)
+- [x] [第五章 控制流](docs/book/05-Control-Flow.md)
+- [ ] [第六章 初始化和清理](docs/book/06-Housekeeping.md) (正在翻译中……)
+- [ ] [第七章 封装](docs/book/07-Implementation-Hiding.md) (正在翻译中……)
+- [ ] [第八章 复用](docs/book/08-Reuse.md)
+- [ ] [第九章 多态](docs/book/09-Polymorphism.md)
+- [ ] [第十章 接口](docs/book/10-Interfaces.md)
+- [ ] [第十一章 内部类](docs/book/11-Inner-Classes.md)
+- [ ] [第十二章 集合](docs/book/12-Collections.md)
+- [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
+- [ ] [第十四章 流式编程](docs/book/14-Streams.md)
+- [ ] [第十五章 异常](docs/book/15-Exceptions.md)
+- [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
+- [ ] [第十七章 文件](docs/book/17-Files.md)
+- [ ] [第十八章 字符串](docs/book/18-Strings.md)
+- [ ] [第十九章 类型信息](docs/book/19-Type-Information.md)
+- [ ] [第二十章 泛型](docs/book/20-Generics.md)
+- [ ] [第二十一章 数组](docs/book/21-Arrays.md)
+- [ ] [第二十二章 枚举](docs/book/22-Enumerations.md)
+- [ ] [第二十三章 注解](docs/book/23-Annotations.md)
+- [ ] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
+- [ ] [第二十五章 设计模式](docs/book/25-Patterns.md)
+- [ ] [附录:补充](docs/book/Appendix-Supplements.md)
+- [ ] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)
+- [ ] [附录:文档注释](docs/book/Appendix-Javadoc.md)
+- [ ] [附录:对象传递和返回](docs/book/Appendix-Passing-and-Returning-Objects.md)
+- [ ] [附录:流式IO](docs/book/Appendix-IO-Streams.md)
+- [ ] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
+- [x] [附录:新IO](docs/book/Appendix-New-IO.md)
+- [ ] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
+
+- [ ] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)
+  
+- [ ] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
+
+- [ ] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
+
+- [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
+
+- [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
+
+- [ ] [附录:成为一名程序员](docs/book/Appendix-Becoming-a-Programmer.md)
+
 
 
 ## 一起交流
 
-交流群：721698221 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=4cb8bdc26879e544a0e1c2027305afef699029d5c0f314099a239b7c4f309c5f"><img border="0" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/qqgroup.png" alt="OnJava8翻译交流" title="OnJava8翻译交流"></a>( 点击图标即可加入 )<br>
+交流群：721698221 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=4cb8bdc26879e544a0e1c2027305afef699029d5c0f314099a239b7c4f309c5f"><img border="0" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/docs/images/qqgroup.png" alt="OnJava8翻译交流" title="OnJava8翻译交流"></a>( 点击图标即可加入 )<br>
 
 <div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/images/QQGroupQRCode.png"  alt="QQGroupQRCode"/>
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/assets/QQGroupQRCode.png"  alt="QQGroupQRCode"/>
  </div>
 
 
-## 更新记录
+## 大事记
 
 - 2018-11-20  初始化项目
 
-- 2018-12-20 前言，简介翻译完成
 
-- 2019-01-01 第一章 对象的概念翻译完成
-
-- 2019-01-06 第二章 安装Java和本书用例翻译完成
-
-- 2019-03-14 第三章 万物皆对象翻译完成
-
-- 2019-03-17 第五章 控制流翻译完成
-
-- 2019-03-20 第十三章 函数式编程翻译完成
-
-- 2019-03-24 附录:新IO翻译完成
-
-## 原书作者
+## 原书资料
 
 <div align="left">
 <img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/cover_small.jpg"  alt="cover_small"/>
@@ -67,17 +90,19 @@
 
 * 作者: Bruce Eckel 
 * ISBN: 9780981872520
+* 页数：2038
+* 发行：仅电子版
 
 ## 贡献者
 
-* 主译: LingCoder,LortSir
-* 参译: 
-* 校对：nickChenyx
+* 主译: [LingCoder](https://github.com/LingCoder)
+* 参译: [LortSir](https://github.com/LortSir)
+* 校对：[nickChenyx](https://github.com/nickChenyx)
 
 
 ## 翻译说明
 
-1. 本书排版布局和翻译风格上参考了**阮一峰**老师的[中文技术文档的写作规范](https://github.com/ruanyf/document-style-guide)
+1. 本书排版布局和翻译风格上参考**阮一峰**老师的 [中文技术文档的写作规范](https://github.com/ruanyf/document-style-guide)
 2. 采用第一人称叙述。
 3. 由于中英行文差异，完全的逐字逐句翻译会很冗余啰嗦。所以本人在翻译过程中，去除了部分主题无关内容、重复描写。
 4. 译者在翻译中同时参考了谷歌、百度、有道翻译的译文以及《Java编程思想》第四版中文版的部分内容（对其翻译死板，生造名词，语言精炼度差问题进行规避和改正）。最后结合译者自己的理解进行本地化，尽量做到专业和言简意赅，方便大家更好的理解学习。
@@ -92,9 +117,9 @@
 可以把一些不尽人意的语句翻译的更好更有趣  
 对于以上各类建议，请以 issue 或 pr 的形式发送，我看到之后会尽快处理  
 使用 MarkDown 编辑器，md 语法格式进行文档翻译及排版工作  
-完成之后 Pull Request  
+完成之后 PullRequest  
 如没问题的话，我会合并到主分支  
-如果不太明白 md 的排版，可以不必太过纠结，我会在合并提交时代为排版  
+如不熟悉 md 排版，可不必纠结，我会在合并 pr 时代为排版  
 如还有其它问题，欢迎发送 issue，谢谢~  
 
 
