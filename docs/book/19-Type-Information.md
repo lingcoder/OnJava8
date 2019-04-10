@@ -82,14 +82,89 @@ Triangle.draw()
 
 <!-- The Class Object -->
 
-## Class对象
+## `Class`对象
+
+要理解 RTTI 在 Java 中的工作原理，首先必须知道类型信息在运行时是如何表示的。这项工作是由称为**`Class`对象**的特殊对象完成的，它包含了与类有关的信息。实际上，`Class`对象就是用来创建该类所有"常规"对象的。Java使用`Class`对象来实现RTTI，即便是类型转换这样的操作都是用`Class`对象实现的。不仅如此，`Class`类还提供了很多使用RTTI的其它方式。
+
+类是程序的一部分，每个类都有一个`Class`对象。换言之，每当我们编写并且编译了一个新类，就会产生一个`Class`对象(更恰当的说，是被保存在一个同名的`.class`文件中)。为了生成这个类的对象，Java虚拟机(JVM)先会调用"类加载器"子系统把这个类加载到内存中。
+
+类加载器子系统可能包含一条类加载器链，但有且只有一个**原生类加载器**，它是JVM实现的一部分。原生类加载器加载的是"可信类"(包括Java API类)。它们通常是从本地盘加载的。在这条链中，通常不需要添加额外的类加载器，但是如果你有特殊需求(例如以某种特殊的方式加载类，以支持Web服务器应用，或者通过网络下载类)，也可以挂载额外的类加载器。
+
+所有的类都是第一次使用时动态加载到JVM中的，当程序创建第一个对类的静态成员的引用时，就会加载这个类。
+
+> 其实构造器也是类的静态方法，虽然构造器前面并没有`static`关键字。所以，使用`new`操作符创建类的新对象，这个操作也算作对类的静态成员引用。
+
+因此，Java程序在它开始运行之前并没有被完全加载，很多部分是在需要时才会加载。这一点与许多传统编程语言不同，动态加载使得Java具有一些静态加载语言(如C++)很难或者根本不可能实现的特性。
+
+类加载器首先会检查这个类的`Class`对象是否已经加载，如果尚未加载，默认的类加载器就会根据类名查找`.class`文件(如果有附加的类加载器，这时候可能就会在数据库中或者通过其它方式获得字节码)。这个类的字节码被加载后，JVM会对其进行验证，确保它没有损坏，并且不包含不良的Java代码(这是Java安全防范的一种措施)。
+
+> 译者注：这里对类加载机制讲得不是很清楚，可以参考《深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）》第7章
+
+一旦某个类的`Class`对象被载入内存，它就可以用来创建这个类的所有对象。下面的示范程序可以证明这点：
+
+```java
+// typeinfo/SweetShop.java
+// Examination of the way the class loader works
+class Cookie {
+  static { System.out.println("Loading Cookie"); }
+}
+
+class Gum {
+  static { System.out.println("Loading Gum"); }
+}
+
+class Candy {
+  static { System.out.println("Loading Candy"); }
+}
+
+public class SweetShop {
+  public static void main(String[] args) {
+    System.out.println("inside main");
+    new Candy();
+    System.out.println("After creating Candy");
+    try {
+      Class.forName("Gum");
+    } catch(ClassNotFoundException e) {
+      System.out.println("Couldn't find Gum");
+    }
+    System.out.println("After Class.forName(\"Gum\")");
+    new Cookie();
+    System.out.println("After creating Cookie");
+  }
+}
+/* Output:
+inside main
+Loading Candy
+After creating Candy
+Loading Gum
+After Class.forName("Gum")
+Loading Cookie
+After creating Cookie
+*/
+```
+
+上面的代码中，`Candy`、`Gum`和`Cookie`这几个类都有一个`static{...}`静态初始化块，这些静态初始化块在类第一次被加载的时候就会执行。也就是说，静态初始化块会打印出相应的信息，告诉我们这些类分别是什么时候被加载了。而在`main()`里边，创建对象 的代码都放在了`print()`语句之间，以帮助我们判断类加载的时间点。
+
+从输出中可以看到，`Class`对象仅在需要的时候才会被加载，`static`初始化是在类加载时进行的。
+
+代码里面还有特别有趣的一行：
+
+```java
+Class.forName("Gum");
+```
+
+所有`Class`对象都属于`Class`类，而且它跟其他普通对象一样，我们可以获取和操控它的引用(这也是类加载器的工作)。`forName()`是`Class`类的一个静态方法，我们可以使用`forName()`根据目标类的类名（`String`）得到该类的`Class`对象。上面的代码忽略了`forName()`的返回值，因为那个调用是为了得到它产生的"副作用"。从结果可以看出，`forName()`执行的副作用是如果`Gum`类没有被加载就加载它，而在加载的过程中，`Gum`的`static`初始化块被执行了。
+
+还需要注意的是，如果`Class.forName()`找不到要加载的类，它就会抛出异常`ClassNotFoundException`。上面的例子中我们只是简单地报告了问题，但在更严密的程序里，就要在异常处理程序中解决这个问题。
+
+
 
 <!-- Checking Before a Cast -->
 
 ## 类型转换检测
 
-
 <!-- Registered Factories -->
+
 ## 注册工厂
 
 
