@@ -443,6 +443,167 @@ Bubble(4)
 
 ### iterate()
 
+**Stream.iterate()** 以种子（第一个参数）开头，并将其传给方法（第二个参数）。方法的结果将添加到流，并存储作为第一个参数用于下次调用 **iterate()**，依次类推。我们可以使用 **iterate()** 用于生成一个 Fibonacci 序列（你在上一章中遇到）：
+
+```java
+// streams/Fibonacci.java
+import java.util.stream.*;
+public class Fibonacci {
+    int x = 1;
+    
+    Stream<Integer> numbers() {
+        return Stream.iterate(0, i -> {
+            int result = x + i;
+            x = i;
+            return result;
+        });
+    }
+    
+    public static void main(String[] args) {
+        new Fibonacci().numbers()
+                       .skip(20) // Don't use the first 20
+                       .limit(10) // Then take 10 of them
+                       .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+6765
+10946
+17711
+28657
+46368
+75025
+121393
+196418
+317811
+514229
+```
+
+Fibonacci 序列将序列中最后两个元素进行求和以产生下一个元素。**iterate()** 只能记忆结果，因此我们需要使用一个变量 **x** 来用于追踪另外一个元素。
+
+在 **main()** 中，我们使用了一个你之前没有见过的 **skip() ** 操作。它只是根据它的参数丢弃指定数量的流元素。在这里，我们丢弃了前 20 个元素。
+
+### Stream Builders
+
+在建造者设计模式中，首先创建一个 builder 对象，传递给它多个构造器信息，最后执行“构造”。**Stream** 库提供了这样的 **Builder**。在这里，我们重新审视读取文件并将其转换成为单词流的过程：
+
+```java
+// streams/FileToWordsBuilder.java
+import java.io.*;
+import java.nio.file.*;
+import java.util.stream.*;
+
+public class FileToWordsBuilder {
+    Stream.Builder<String> builder = Stream.builder();
+    
+    public FileToWordsBuilder(String filePath) throws Exception {
+        Files.lines(Paths.get(filePath))
+             .skip(1) // Skip the comment line at the beginning
+              .forEach(line -> {
+                  for (String w : line.split("[ .?,]+"))
+                      builder.add(w);
+              });
+    }
+    
+    Stream<String> stream() {
+        return builder.build();
+    }
+    
+    public static void main(String[] args) throws Exception {
+        new FileToWordsBuilder("Cheese.dat")
+            .stream()
+            .limit(7)
+            .map(w -> w + " ")
+            .forEach(System.out::print);
+    }
+}
+```
+
+输出为：
+
+```java
+Not much of a cheese shop really
+```
+
+注意，构造器会添加文件中的所有单词（除了第一行，它是包含文件路径信息的注释），但是其并没有调用 **build()** 方法。这意味着，只要你不调用 **stream()** 方法，就可以继续向 **builder** 对象中添加单词。
+
+在此类的更完整的版本中，你可以添加一个标志位用于查看 **build()** 方法是否被调用，并且可能的话增加一个可以添加更多单词的方法。在 **Stream.Builder** 调用 **build()** 方法后继续尝试添加单词会产生一个异常。
+
+### Arrays
+
+**Arrays** 类中含有一个名为 **stream()** 的静态方法用于把数组转换成为流。我们可以重写 **interfaces/Machine.java** 中的 **main()** 方法用于创建一个流，并将 **execute()** 应用于每一个元素：
+
+```java
+// streams/Machine2.java
+import java.util.*;
+import onjava.Operations;
+public class Machine2 {
+    public static void main(String[] args) {
+        Arrays.stream(new Operations[] {
+            () -> Operations.show("Bing"),
+            () -> Operations.show("Crack"),
+            () -> Operations.show("Twist"),
+            () -> Operations.show("Pop")
+        }).forEach(Operations::execute);
+    }
+}
+```
+
+输出为：
+
+```java
+Bing
+Crack
+Twist
+Pop
+```
+
+**new Operations[]** 表达式动态创建了 **Operations** 对象的数组。
+
+**stream()** 方法同样可以产生 **IntStream**，**LongStream** 和 **DoubleStream**。
+
+```java
+// streams/ArrayStreams.java
+import java.util.*;
+import java.util.stream.*;
+
+public class ArrayStreams {
+    public static void main(String[] args) {
+        Arrays.stream(new double[] { 3.14159, 2.718, 1.618 })
+            .forEach(n -> System.out.format("%f ", n));
+        System.out.println();
+        
+        Arrays.stream(new int[] { 1, 3, 5 })
+            .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        
+        Arrays.stream(new long[] { 11, 22, 44, 66 })
+            .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        
+        // Select a subrange:
+        Arrays.stream(new int[] { 1, 3, 5, 7, 15, 28, 37 }, 3, 6)
+            .forEach(n -> System.out.format("%d ", n));
+    }
+}
+```
+
+输出为：
+
+```java
+3.141590 2.718000 1.618000
+1 3 5
+11 22 44 66
+7 15 28
+```
+
+最后一次 **stream()** 的调用有两个额外的参数。第一个参数告诉 **stream()** 从哪里开始在数组中选择元素，第二个参数用于告知在哪里停止。每种不同类型的 **stream()** 方法都有这个版本。
+
+### 正则表达式（Regular Expressions）
 
 
 
