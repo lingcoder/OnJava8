@@ -3,6 +3,78 @@
 <!-- Streams -->
 # 第十四章 流式编程
 
+Collections 优化了对象的存储。Streams 是和对象组的处理有关。流是一系列与任何特定存储机制无关的元素 — 实际上我们说流没有“存储”。
+
+不需要迭代集合中的元素，而是在管道中绘制元素并对其操作的流。这些管道经常被组合在一起，在流上形成一个操作管道。
+
+在大多数情况下，将对象存储在集合中的原因是为了处理他们，因此你将会发现你将把编程的主要焦点从集合转移到了流上。流的一个核心好处是，它使得程序更加短小并且更易理解。当 Lambda 表达式和方法引用（method references）和流一起使用的时候感觉自成一体。流使得 Java 8 更巨吸引力。
+
+例如，你想展现在 5 到 20 之间随机选择的序列中只出现一次的数字，并且是排序好的。事实上，你对他们进行排序可能使得你的精力首先集中在选择一个已排序的集合。但是对于流，你只需要简单的说明你想要什么：
+
+```java
+// streams/Randoms.java
+import java.util.*;
+public class Randoms {
+    public static void main(String[] args) {
+        new Random(47)
+            .ints(5, 20)
+            .distinct()
+            .limit(7)
+            .sorted()
+            .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+6
+10
+13
+16
+17
+18
+19
+```
+
+首先，我们给 **Random** 对象一个种子（以便程序再次运行时产生相同的输出）。**ints()** 方法产生一个流并且 **ints()** 方法有多种方式的重载 — 两个参数限定了数值产生的边界。这将生成一个整数流。我们告诉他使用中间流操作（intermediate stream operation） **distinct()** 来获取它们的唯一值，然后使用 **limit()** 方法获取前 7 个元素。接下来，我们使用 **sorted()** 方法希望元素是有序的。最终，我们希望显示每个条目，因此使用 **forEach()**，它根据传递给它的函数对每个流对象执行操作。在这里，我们传递了一个可以在控制台展现每个元素的方法引用 **System.out::println** 。
+
+注意 **Randoms.java** 中没有声明任何变量。流可以对具有状态的系统建模，并且不需要使用赋值或者可变数据，这非常有用。
+
+声明式编程是一种风格，在这种风格中，我们声明我们想要做什么而不是指定如何去做，这就是你在函数式编程中所看到的。注意，理解命令式编程的形式要困难的多：
+
+```java
+// streams/ImperativeRandoms.java
+import java.util.*;
+public class ImperativeRandoms {
+    public static void main(String[] args) {
+        Random rand = new Random(47);
+        SortedSet<Integer> rints = new TreeSet<>();
+        while(rints.size() < 7) {
+            int r = rand.nextint(20);
+            if(r < 5) continue;
+            rints.add(r);
+        }
+        System.out.println(rints);
+    }
+}
+```
+
+输出为：
+
+```java
+[7, 8, 9, 11, 13, 15, 18]
+```
+
+在 **Randoms.java** 中，我们无需定义任何变量，但是在这里我们定义了 3 个变量： **rand**，**rints** 和 **r**。这个代码变的更加复杂，是由于 **nextInt()** 没有下界选项 — 其内置的下界永远为 0，因此我们生成额外的数值并过滤小于 5 的值。
+
+注意，你必须研究代码来弄清楚发生了什么，而在 **Randoms.java** 中，代码只是告诉了你它在做什么。这种清晰度是 Java 8 中流使人最信服的原因之一。
+
+在 **ImperativeRandoms.java** 中显式的编写迭代机制称之为外部迭代。在 **Randoms.java** 中，你没有看到这些机制，你并没有看到这样类似的机制，它是流编程中的核心特征被称之为内部迭代。内部迭代产生更可读的代码，也更容易使用多个处理器。通过放松对迭代发生的控制，你可以将控制权交给并行化机制。你将在[并发编程]()这一章了解这一点。
+
+流另一个重要方面是他们是惰性（lazy）的，意味着它们只在绝对必要时进行评估。你可以将流看作“延迟列表”。由于评估延迟，流可以使我们表示非常大（甚至无限）的序列，并且没有内存担忧。
+
 <!-- Java 8 Stream Support -->
 
 ## 流支持
