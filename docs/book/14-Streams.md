@@ -3,6 +3,78 @@
 <!-- Streams -->
 # 第十四章 流式编程
 
+Collections 优化了对象的存储。Streams 是和对象组的处理有关。流是一系列与任何特定存储机制无关的元素 — 实际上我们说流没有“存储”。
+
+不需要迭代集合中的元素，而是在管道中绘制元素并对其操作的流。这些管道经常被组合在一起，在流上形成一个操作管道。
+
+在大多数情况下，将对象存储在集合中的原因是为了处理他们，因此你将会发现你将把编程的主要焦点从集合转移到了流上。流的一个核心好处是，它使得程序更加短小并且更易理解。当 Lambda 表达式和方法引用（method references）和流一起使用的时候感觉自成一体。流使得 Java 8 更巨吸引力。
+
+例如，你想展现在 5 到 20 之间随机选择的序列中只出现一次的数字，并且是排序好的。事实上，你对他们进行排序可能使得你的精力首先集中在选择一个已排序的集合。但是对于流，你只需要简单的说明你想要什么：
+
+```java
+// streams/Randoms.java
+import java.util.*;
+public class Randoms {
+    public static void main(String[] args) {
+        new Random(47)
+            .ints(5, 20)
+            .distinct()
+            .limit(7)
+            .sorted()
+            .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+6
+10
+13
+16
+17
+18
+19
+```
+
+首先，我们给 **Random** 对象一个种子（以便程序再次运行时产生相同的输出）。**ints()** 方法产生一个流并且 **ints()** 方法有多种方式的重载 — 两个参数限定了数值产生的边界。这将生成一个整数流。我们告诉他使用中间流操作（intermediate stream operation） **distinct()** 来获取它们的唯一值，然后使用 **limit()** 方法获取前 7 个元素。接下来，我们使用 **sorted()** 方法希望元素是有序的。最终，我们希望显示每个条目，因此使用 **forEach()**，它根据传递给它的函数对每个流对象执行操作。在这里，我们传递了一个可以在控制台展现每个元素的方法引用 **System.out::println** 。
+
+注意 **Randoms.java** 中没有声明任何变量。流可以对具有状态的系统建模，并且不需要使用赋值或者可变数据，这非常有用。
+
+声明式编程是一种风格，在这种风格中，我们声明我们想要做什么而不是指定如何去做，这就是你在函数式编程中所看到的。注意，理解命令式编程的形式要困难的多：
+
+```java
+// streams/ImperativeRandoms.java
+import java.util.*;
+public class ImperativeRandoms {
+    public static void main(String[] args) {
+        Random rand = new Random(47);
+        SortedSet<Integer> rints = new TreeSet<>();
+        while(rints.size() < 7) {
+            int r = rand.nextint(20);
+            if(r < 5) continue;
+            rints.add(r);
+        }
+        System.out.println(rints);
+    }
+}
+```
+
+输出为：
+
+```java
+[7, 8, 9, 11, 13, 15, 18]
+```
+
+在 **Randoms.java** 中，我们无需定义任何变量，但是在这里我们定义了 3 个变量： **rand**，**rints** 和 **r**。这个代码变的更加复杂，是由于 **nextInt()** 没有下界选项 — 其内置的下界永远为 0，因此我们生成额外的数值并过滤小于 5 的值。
+
+注意，你必须研究代码来弄清楚发生了什么，而在 **Randoms.java** 中，代码只是告诉了你它在做什么。这种清晰度是 Java 8 中流使人最信服的原因之一。
+
+在 **ImperativeRandoms.java** 中显式的编写迭代机制称之为外部迭代。在 **Randoms.java** 中，你没有看到这些机制，你并没有看到这样类似的机制，它是流编程中的核心特征被称之为内部迭代。内部迭代产生更可读的代码，也更容易使用多个处理器。通过放松对迭代发生的控制，你可以将控制权交给并行化机制。你将在[并发编程]()这一章了解这一点。
+
+流另一个重要方面是他们是惰性（lazy）的，意味着它们只在绝对必要时进行评估。你可以将流看作“延迟列表”。由于评估延迟，流可以使我们表示非常大（甚至无限）的序列，并且没有内存担忧。
+
 <!-- Java 8 Stream Support -->
 
 ## 流支持
@@ -443,6 +515,167 @@ Bubble(4)
 
 ### iterate()
 
+**Stream.iterate()** 以种子（第一个参数）开头，并将其传给方法（第二个参数）。方法的结果将添加到流，并存储作为第一个参数用于下次调用 **iterate()**，依次类推。我们可以使用 **iterate()** 用于生成一个 Fibonacci 序列（你在上一章中遇到）：
+
+```java
+// streams/Fibonacci.java
+import java.util.stream.*;
+public class Fibonacci {
+    int x = 1;
+    
+    Stream<Integer> numbers() {
+        return Stream.iterate(0, i -> {
+            int result = x + i;
+            x = i;
+            return result;
+        });
+    }
+    
+    public static void main(String[] args) {
+        new Fibonacci().numbers()
+                       .skip(20) // Don't use the first 20
+                       .limit(10) // Then take 10 of them
+                       .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+6765
+10946
+17711
+28657
+46368
+75025
+121393
+196418
+317811
+514229
+```
+
+Fibonacci 序列将序列中最后两个元素进行求和以产生下一个元素。**iterate()** 只能记忆结果，因此我们需要使用一个变量 **x** 来用于追踪另外一个元素。
+
+在 **main()** 中，我们使用了一个你之前没有见过的 **skip() ** 操作。它只是根据它的参数丢弃指定数量的流元素。在这里，我们丢弃了前 20 个元素。
+
+### Stream Builders
+
+在建造者设计模式中，首先创建一个 builder 对象，传递给它多个构造器信息，最后执行“构造”。**Stream** 库提供了这样的 **Builder**。在这里，我们重新审视读取文件并将其转换成为单词流的过程：
+
+```java
+// streams/FileToWordsBuilder.java
+import java.io.*;
+import java.nio.file.*;
+import java.util.stream.*;
+
+public class FileToWordsBuilder {
+    Stream.Builder<String> builder = Stream.builder();
+    
+    public FileToWordsBuilder(String filePath) throws Exception {
+        Files.lines(Paths.get(filePath))
+             .skip(1) // Skip the comment line at the beginning
+              .forEach(line -> {
+                  for (String w : line.split("[ .?,]+"))
+                      builder.add(w);
+              });
+    }
+    
+    Stream<String> stream() {
+        return builder.build();
+    }
+    
+    public static void main(String[] args) throws Exception {
+        new FileToWordsBuilder("Cheese.dat")
+            .stream()
+            .limit(7)
+            .map(w -> w + " ")
+            .forEach(System.out::print);
+    }
+}
+```
+
+输出为：
+
+```java
+Not much of a cheese shop really
+```
+
+注意，构造器会添加文件中的所有单词（除了第一行，它是包含文件路径信息的注释），但是其并没有调用 **build()** 方法。这意味着，只要你不调用 **stream()** 方法，就可以继续向 **builder** 对象中添加单词。
+
+在此类的更完整的版本中，你可以添加一个标志位用于查看 **build()** 方法是否被调用，并且可能的话增加一个可以添加更多单词的方法。在 **Stream.Builder** 调用 **build()** 方法后继续尝试添加单词会产生一个异常。
+
+### Arrays
+
+**Arrays** 类中含有一个名为 **stream()** 的静态方法用于把数组转换成为流。我们可以重写 **interfaces/Machine.java** 中的 **main()** 方法用于创建一个流，并将 **execute()** 应用于每一个元素：
+
+```java
+// streams/Machine2.java
+import java.util.*;
+import onjava.Operations;
+public class Machine2 {
+    public static void main(String[] args) {
+        Arrays.stream(new Operations[] {
+            () -> Operations.show("Bing"),
+            () -> Operations.show("Crack"),
+            () -> Operations.show("Twist"),
+            () -> Operations.show("Pop")
+        }).forEach(Operations::execute);
+    }
+}
+```
+
+输出为：
+
+```java
+Bing
+Crack
+Twist
+Pop
+```
+
+**new Operations[]** 表达式动态创建了 **Operations** 对象的数组。
+
+**stream()** 方法同样可以产生 **IntStream**，**LongStream** 和 **DoubleStream**。
+
+```java
+// streams/ArrayStreams.java
+import java.util.*;
+import java.util.stream.*;
+
+public class ArrayStreams {
+    public static void main(String[] args) {
+        Arrays.stream(new double[] { 3.14159, 2.718, 1.618 })
+            .forEach(n -> System.out.format("%f ", n));
+        System.out.println();
+        
+        Arrays.stream(new int[] { 1, 3, 5 })
+            .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        
+        Arrays.stream(new long[] { 11, 22, 44, 66 })
+            .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        
+        // Select a subrange:
+        Arrays.stream(new int[] { 1, 3, 5, 7, 15, 28, 37 }, 3, 6)
+            .forEach(n -> System.out.format("%d ", n));
+    }
+}
+```
+
+输出为：
+
+```java
+3.141590 2.718000 1.618000
+1 3 5
+11 22 44 66
+7 15 28
+```
+
+最后一次 **stream()** 的调用有两个额外的参数。第一个参数告诉 **stream()** 从哪里开始在数组中选择元素，第二个参数用于告知在哪里停止。每种不同类型的 **stream()** 方法都有这个版本。
+
+### 正则表达式（Regular Expressions）
 
 
 
