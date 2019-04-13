@@ -48,7 +48,7 @@ else
   “statement”
 ```
 
-布尔表达式（*Boolean-expression*）必须生成 **boolean** 类型的结果，执行语句 `statement` 既可以是只包含单个分号 `;` 的简单语句，也可以是包含大括号 `{}` 的复合语句 —— 封闭在大括号内的一组简单语句。 凡本书中提及的“statement”一词，皆表示类似的执行语句。
+布尔表达式（Boolean-expression）必须生成 **boolean** 类型的结果，执行语句 `statement` 既可以是只包含单个分号 `;` 的简单语句，也可以是包含大括号 `{}` 的复合语句 —— 封闭在大括号内的一组简单语句。 凡本书中提及的“statement”一词，皆表示类似的执行语句。
 
 下面是一个有关 **if-else** 语句的例子。`test()` 方法可以告知你两个数值之间的大小关系。代码示例：
 
@@ -168,7 +168,7 @@ for(initialization; Boolean-expression; step)
   statement
 ```
 
-初始化 (*initialization*) 表达式、布尔表达式 (*Boolean-expression*) ，或者步进 (*step*) 运算，都可以为空。每次迭代之前都会判断布尔表达式的结果是否成立。一旦计算结果为 `false`，则跳出 **for** 循环体并继续执行后面代码。 每次循环结束时，都会执行一次步进。
+初始化 (initialization) 表达式、布尔表达式 (Boolean-expression) ，或者步进 (step) 运算，都可以为空。每次迭代之前都会判断布尔表达式的结果是否成立。一旦计算结果为 `false`，则跳出 **for** 循环体并继续执行后面代码。 每次循环结束时，都会执行一次步进。
 
 **for** 循环通常用于“计数”任务。代码示例：
 
@@ -204,7 +204,7 @@ value: 106 character: j
 
 **注意**：变量 **c** 是在 **for** 循环执行时才被定义的，并不是在 **main()** 的开头。**c** 的作用域范围仅在 **for** 循环体内。
 
-传统的面向过程语言如 C 需要先在代码块（*block*）前定义好所有变量才能够使用。这样编译器才能在创建块时，为这些变量分配内存空间。在 Java 和 C++ 中，我们可以在整个块使用变量声明，并且可以在需要时才定义变量。 这种自然的编码风格使我们的代码更容易被人理解 [^1]。
+传统的面向过程语言如 C 需要先在代码块（block）前定义好所有变量才能够使用。这样编译器才能在创建块时，为这些变量分配内存空间。在 Java 和 C++ 中，我们可以在整个块使用变量声明，并且可以在需要时才定义变量。 这种自然的编码风格使我们的代码更容易被人理解 [^1]。
 
 上例使用了 **java.lang.Character** 包装类，该类不仅包含了基本类型 `char` 的值，还封装了一些有用的方法。例如这里就用到了静态方法 `isLowerCase()` 来判断字符否为小写。
 
@@ -239,7 +239,7 @@ i = 4 j = 8
 
 ## for-in语法 
 
-Java 5 引入了更为简洁的“增强版 **for** 循环”语法来操纵数组和集合。（更多细节，可参考 [数组](./21-Arrays.md) 和 [集合](./12-Collections.md) 章节内容）。，大部分文档也称其为 **for-each** 语法，但因为了不与 Java 8 新添的 **forEach()** 产生混淆，因此我称之为 **for-in** 循环。 （Python 已有类似的先例，如：**for x in sequence**）。**注意**：你可能会在其他地方看到不同叫法。
+Java 5 引入了更为简洁的“增强版 **for** 循环”语法来操纵数组和集合。（更多细节，可参考 [数组](./21-Arrays.md) 和 [集合](./12-Collections.md) 章节内容）。，大部分文档也称其为 **for-each** 语法，但因为了不与 Java 8 新添的 `forEach()` 产生混淆，因此我称之为 **for-in** 循环。 （Python 已有类似的先例，如：**for x in sequence**）。**注意**：你可能会在其他地方看到不同叫法。
 
 **for-in** 无需你去创建 **int** 变量和步进来控制循环计数。 下面我们来遍历获取 **float** 数组中的元素。代码示例：
 
@@ -313,7 +313,7 @@ for(int i = 0; i < 100; i++)
 
 正因如此，除非先创建一个 **int** 数组，否则我们无法使用 **for-in** 循环来操作。为简化测试过程，我已在 `onjava` 包中封装了 **Range** 类，利用其 `range()` 方法可自动生成恰当的数组。
 
-在 [封装](./07-Implementation-Hiding.md)（*Implementation Hiding*）这一章里我们介绍了静态导入（*static import*），无需了解细节就可以直接使用。 有关静态导入的语法，可以在 **import** 语句中看到：
+在 [封装](./07-Implementation-Hiding.md)（Implementation Hiding）这一章里我们介绍了静态导入（static import），无需了解细节就可以直接使用。 有关静态导入的语法，可以在 **import** 语句中看到：
 
 ```java
 // control/ForInInt.java
@@ -451,7 +451,7 @@ public class BreakAndContinue {
 <!--The Infamous “Goto”-->
 ## 臭名昭著的goto
 
-[**goto** 关键字](https://en.wikipedia.org/wiki/Goto) 很早就在程序设计语言中出现。事实上，**goto** 起源于[汇编](https://en.wikipedia.org/wiki/Assembly_language)（*assembly language*）语言中的程序控制：“若条件 A 成立，则跳到这里；否则跳到那里”。如果你读过由由编译器编译后的代码，你会发现在其程序控制中充斥了大量的跳转。较之汇编产生的代码直接运行在硬件 CPU 中，Java 也会产生自己的“汇编代码”（字节码），只不过它是运行在 Java 虚拟机里的（*Java Virtual Machine*）。
+[**goto** 关键字](https://en.wikipedia.org/wiki/Goto) 很早就在程序设计语言中出现。事实上，**goto** 起源于[汇编](https://en.wikipedia.org/wiki/Assembly_language)（assembly language）语言中的程序控制：“若条件 A 成立，则跳到这里；否则跳到那里”。如果你读过由由编译器编译后的代码，你会发现在其程序控制中充斥了大量的跳转。较之汇编产生的代码直接运行在硬件 CPU 中，Java 也会产生自己的“汇编代码”（字节码），只不过它是运行在 Java 虚拟机里的（Java Virtual Machine）。
 
 一个源码级别跳转的 **goto**，为何招致名誉扫地呢？若程序总是从一处跳转到另一处，还有什么办法能识别代码的控制流程呢？随着 *Edsger Dijkstra*发表著名的 “Goto 有害” 论（*Goto considered harmful*）以后，**goto** 便从此失宠。甚至有人建议将它从关键字中剔除。
 
@@ -822,7 +822,7 @@ java RandomBounds upper
 
 ## 本章小结
 
-本章总结了我们对大多数编程语言中出现的基本特性的探索：计算，运算符优先级，类型转换，选择和迭代。 现在让我们准备好，开始步入面向对象和函数式编程的世界吧。 下一章的内容涵盖了 Java 编程中的重要问题：对象的[初始化和清理](./06-Housekeeping.md)。紧接着，还会介绍[封装](./07-Implementation-Hiding.md)（*implementation hiding*）的核心概念。
+本章总结了我们对大多数编程语言中出现的基本特性的探索：计算，运算符优先级，类型转换，选择和迭代。 现在让我们准备好，开始步入面向对象和函数式编程的世界吧。 下一章的内容涵盖了 Java 编程中的重要问题：对象的[初始化和清理](./06-Housekeeping.md)。紧接着，还会介绍[封装](./07-Implementation-Hiding.md)（implementation hiding）的核心概念。
 
 <!--下面是脚注-->
 [^1]: 在早期的语言中，许多决策都是基于让编译器设计者的体验更好。 但在现代语言设计中，许多决策都是为了提高语言使用者的体验，尽管有时会有妥协 —— 这通常会让语言设计者后悔。<sup>
