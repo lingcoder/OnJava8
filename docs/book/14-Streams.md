@@ -677,7 +677,53 @@ public class ArrayStreams {
 
 ### 正则表达式（Regular Expressions）
 
+Java 的正则表达式已经在[字符串]()这一章节介绍过了。Java 8 在 **java.util.regex.Pattern** 中增加了一个新的方法 `splitAsStream()`，这个方法可以根据你所传入的公式将字符序列转化为流。但是这里有一个限制，输入只能是 **CharSequence**，因此不能将流作为 `splitAsStream()` 的参数。
 
+我们再一次查看将文件处理为单词流的过程。这一次，我们使用流将文件分割为单独的字符串，接着使用正则表达式将字符串转化为单词流。
+
+```java
+// streams/FileToWordsRegexp.java
+import java.io.*;
+import java.nio.file.*;
+import java.util.stream.*;
+import java.util.regex.Pattern;
+public class FileToWordsRegexp {
+    private String all;
+    public FileToWordsRegexp(String filePath) throws Exception {
+        all = Files.lines(Paths.get(filePath))
+        .skip(1) // First (comment) line
+        .collect(Collectors.joining(" "));
+    }
+    public Stream<String> stream() {
+        return Pattern
+        .compile("[ .,?]+").splitAsStream(all);
+    }
+    public static void
+    main(String[] args) throws Exception {
+        FileToWordsRegexp fw = new FileToWordsRegexp("Cheese.dat");
+        fw.stream()
+          .limit(7)
+          .map(w -> w + " ")
+          .forEach(System.out::print);
+        fw.stream()
+          .skip(7)
+          .limit(2)
+          .map(w -> w + " ")
+          .forEach(System.out::print);
+    }
+}
+```
+
+输出为：
+
+```java
+Not much of a cheese shop really is it
+```
+
+在构造器中我们读取了文件中的所有内容（再一次跳过了第一行注释），并将其转化成为单行字符串。现在，当你调用 `stream()` 方法的时候，可以像往常一样获取一个流，但这次你可以多次调用 `stream()` 方法，在已存储的字符串中创建一个新的流。这里有个限制，整个文件必须存储在内存中；在大多数情况下这并不是什么问题，但是这损失了流中非常重要的好处：
+
+1. 流“不需要存储”。当然它们需要一些内部存储，但是这只是序列的一小部分，和持有整个序列所需要的并不相同。
+2. 它们是惰性评估的。幸运的是，我们将在稍晚一些的时候查看如何如解决这个问题。
 
 <!-- Intermediate Operations -->
 
