@@ -301,7 +301,7 @@ public class RecursiveFibonacci {
 ## 方法引用
 
 
-Java 8 方法引用指的是没有以前版本的 Java 所需的额外包袱的方法。 方法引用是类名或对象名，后面跟 :: [^4]，然后是方法的名称。
+Java 8 方法引用没有历史包袱。方法引用组成：类名或对象名，后面跟 `::` [^4]，然后跟方法名称。
 
 ```java
 // functional/MethodReferences.java
@@ -349,12 +349,15 @@ public class MethodReferences {
     c.call("Help!");
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 call()
 Hello, Bob
 valuable information
 Help!
-*/
 ```
 
 **[1]** 我们从单一方法接口开始（同样，你很快就会了解到这一点的重要性）。
@@ -367,26 +370,26 @@ Help!
 
 **[5]** `assist()` 是静态内部类中的静态方法。
 
-**[6]** 我们将 **Describe** 对象的方法引用分配给 **Callable** , 它没有 `show()` 方法，而是 `call()` 方法。 但是，Java似乎接受用这个看似奇怪的赋值，因为方法引用符合 **Callable** 的 `call()` 方法的签名。
+**[6]** 我们将 **Describe** 对象的方法引用分配给 **Callable** , 它没有 `show()` 方法，而是 `call()` 方法。 但是，Java 似乎接受用这个看似奇怪的赋值，因为方法引用符合 **Callable** 的 `call()` 方法的签名。
 
 **[7]** 我们现在可以通过调用 `call()` 来调用 `show()`，因为 Java 将 `call()` 映射到 `show()`。
 
-**[8]** 这是一个静态方法引用。
+**[8]** 这是一个**静态**方法引用。
 
-**[9] **这是 **[6]** 的另一个版本：附加到存活对象的方法的方法参考，有时称为*绑定方法引用*。
+**[9]** 这是 **[6]** 的另一个版本：附加到存活对象的方法的方法参考，有时称为*绑定方法引用*。
 
-**[10]** 最后，获取静态内部类的静态方法的方法引用，用起来就像 **[8]**中的外部类。
+**[10]** 最后，获取静态内部类的静态方法的方法引用，用起来就像 **[8]** 中的外部类。
 
-这不是一个详尽的例子; 我们很快就会看到方法参考的所有变化。
+上例并无详尽; 我们很快就会看到方法参考的所有变化。
 
 ### Runnable
 
-**Runnable** 接口自 1.0 版以来一直在 Java 中，因此不需要导入。 它也符合特殊的单方法接口格式：它的方法run()不带参数，也没有返回值。 因此，我们可以使用 Lambda 表达式和方法引用作为 **Runnable**：
+**Runnable** 接口自 1.0 版以来一直在 Java 中，因此不需要导入。它也符合特殊的单方法接口格式：它的方法 `run()` 不带参数，也没有返回值。因此，我们可以使用 Lambda 表达式和方法引用作为 **Runnable**：
 
 ```java
 // functional/RunnableMethodReference.java
 
-// Method references with interface Runnable
+// 方法引用与 Runnable 接口的结合使用
 
 class Go {
   static void go() {
@@ -410,18 +413,22 @@ public class RunnableMethodReference {
     new Thread(Go::go).start();
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Anonymous
 lambda
 Go::go()
-*/
 ```
 
-**Thread** 对象将 **Runnable** 作为其构造函数参数，并具有会调用 `run()` 的方法  `start()`。 请注意，只有**匿名内部类**才需要具有名为 `run()` 的方法。
+**Thread** 对象将 **Runnable** 作为其构造函数参数，并具有会调用 `run()` 的方法  `start()`。 **注意**，只有**匿名内部类**才需要具有名为 `run()` 的方法。
+
 
 <!-- Unbound Method References -->
-
 ### 未绑定的方法引用
+
 
 未绑定的方法引用是指没有关联对象的普通（非静态）方法。 要使用未绑定的引用，你必须提供以下对象：
 
