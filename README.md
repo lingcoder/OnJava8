@@ -2,9 +2,9 @@
 
 ## 书籍简介
 
-* 本书原作者为 \[美\] *Bruce Eckel*，即（*Thinking in Java 4th Edition,2006*）的作者。
-* 本书是事实上的 *Thinking in Java 5th Edition*（*On Java 8,2017*）。
-* *Thinking in Java 4th Edition* 基于 **JAVA 5** 版本；*On Java 8* 基于 **JAVA 8** 版本。
+* 本书原作者为 [美] Bruce Eckel，即《Java 编程思想》的作者。
+* 本书是事实上的 《Java 编程思想》第五版。
+* 《Java 编程思想》第四版基于 JAVA **5** 版本；《On Java 8》 基于 JAVA **8** 版本。
 
 
 ## 传送门
@@ -38,7 +38,7 @@
 - [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
 - [ ] [第十七章 文件](docs/book/17-Files.md)
 - [ ] [第十八章 字符串](docs/book/18-Strings.md)
-- [ ] [第十九章 类型信息](docs/book/19-Type-Information.md) (正在翻译中……)
+- [ ] [第十九章 类型信息](docs/book/19-Type-Information.md) 
 - [ ] [第二十章 泛型](docs/book/20-Generics.md)
 - [ ] [第二十一章 数组](docs/book/21-Arrays.md)
 - [ ] [第二十二章 枚举](docs/book/22-Enumerations.md)
@@ -53,17 +53,11 @@
 - [ ] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
 - [x] [附录:新IO](docs/book/Appendix-New-IO.md)
 - [ ] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
-
-- [ ] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)
-  
+- [ ] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
 - [ ] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
-
 - [ ] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
-
 - [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
-
 - [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
-
 - [ ] [附录:成为一名程序员](docs/book/Appendix-Becoming-a-Programmer.md)
 
 
