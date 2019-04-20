@@ -1126,11 +1126,7 @@ Not much of a cheese shop really
 
 在 `System.out.format()` 中的 **%s** 表名参数为 String 类型。
 
-### Optional
 
-
-
- 
 
 <!-- Optional -->
 
