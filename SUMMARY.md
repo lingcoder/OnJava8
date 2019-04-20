@@ -159,7 +159,7 @@
     * [for-in和迭代器](docs/book/12-Collections.md#for-in和迭代器)
     * [本章小结](docs/book/12-Collections.md#本章小结)
 * [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
-    * [旧vs新](docs/book/13-Functional-Programming.md#新旧对比)
+    * [新旧对比](docs/book/13-Functional-Programming.md#新旧对比)
     * [Lambda表达式](docs/book/13-Functional-Programming.md#Lambda表达式)
     * [方法引用](docs/book/13-Functional-Programming.md#方法引用)
     * [函数式接口](docs/book/13-Functional-Programming.md#函数式接口)
