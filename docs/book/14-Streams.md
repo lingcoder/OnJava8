@@ -1129,11 +1129,543 @@ Not much of a cheese shop really
 
 
 <!-- Optional -->
-
 ## Optional类
 
+在我们查看终端操作之前，我们必须考虑如果你在一个空流中获取元素会发生什么。我们喜欢为了“happy path”而将流连接起来，并假设为空会被中断。在流中放置 **null** 是很好的中断方法。我们可以使用哪种对象作为流元素的持有者，如果我们寻找的元素并不存在也可以友好的告诉我们（也就是说，没有异常）？
+
+这个想法是通过 **Optional** 实现的。确保标准流操作返回 **Optional** 对象，因为它们并不能保证预期结果一定存在。它们包括：
+
+- `findFirst()` 返回一个包含第一个元素的 **Optional** 对象，如果流为空则返回 **Optional.empty**
+- `findAny()` 返回包含任意元素的 **Optional** 对象，如果流为空则返回 **Optional.empty**
+- `max` 和 `min()` 返回一个包含最大值或者最小值的 **Optional** 对象，如果流为空则返回 **Optional.empty**
+
+ 不再以 “identity”对象开头版本的 `reduce()`将其返回值包装在 **Optional** 中。（“identity”对象成为另一个版本的 `reduce()` 的默认结果，因此不存在空结果的风险）
+
+对于数字流 **IntStream**、**LongStream** 和 **DoubleStream**，`average()` 会将结果包装在 **Optional** 以防止流为空。
+
+以下是对空流进行的所有这些操作的简单测试：
+
+```java
+// streams/OptionalsFromEmptyStreams.java
+import java.util.*;
+import java.util.stream.*;
+class OptionalsFromEmptyStreams {
+    public static void main(String[] args) {
+        System.out.println(Stream.<String>empty()
+             .findFirst());
+        System.out.println(Stream.<String>empty()
+             .findAny());
+        System.out.println(Stream.<String>empty()
+             .max(String.CASE_INSENSITIVE_ORDER));
+        System.out.println(Stream.<String>empty()
+             .min(String.CASE_INSENSITIVE_ORDER));
+        System.out.println(Stream.<String>empty()
+             .reduce((s1, s2) -> s1 + s2));
+        System.out.println(IntStream.empty()
+             .average());
+    }
+}
+```
+
+输出为：
+
+```java
+Optional.empty
+Optional.empty
+Optional.empty
+Optional.empty
+Optional.empty
+OptionalDouble.empty
+```
+
+当流为空的时候你会获得一个 **Optional.empty** 对象，而不是抛出异常。**Optional** 拥有 `toString()` 方法可以用于展示有用信息。
+
+注意，空流是通过 `Stream.<String>empty()` 创建的。如果你在没有任何上下文环境的情况下调用 `Stream.empty()`，Java 并不知道它的数据类型；这个语法解决了这个问题。如果编译器拥有了足够的上下文信息，比如：
+
+```java
+Stream<String> s = Stream.empty();
+```
+
+就可以在调用 `empty()` 时推断类型。
+
+这个示例展现了 **Optional** 的两个基本用法：
+
+```java
+// streams/OptionalBasics.java
+import java.util.*;
+import java.util.stream.*;
+class OptionalBasics {
+    static void test(Optional<String> optString) {
+        if(optString.isPresent())
+        System.out.println(optString.get()); else
+        System.out.println("Nothing inside!");
+    }
+    public static void main(String[] args) {
+        test(Stream.of("Epithets").findFirst());
+        test(Stream.<String>empty().findFirst());
+    }
+}
+```
+
+输出为：
+
+```java
+Epithets
+Nothing inside!
+```
+
+当你接收到 **Optional** 对象时，你首先调用 `isPresent()` 检查其中是否包含元素。如果存在，你可以使用 `get()` 获取。
+
+### 便利函数（Convenience Functions）
+
+解包 **Optional** 有许多便利函数，简化了“检查并对所包含的对象执行某些操作”的上述过程：
+
+- `ifPresent(Consumer)`：当值存在时调用 **Consumer**，否则什么不做。
+- `orElse(otherObject)`：如果值存在则直接返回，否则生成 **otherObject**。
+- `orElseGet(Supplier)`：如果值存在直接生成对象，否则使用 **Supplier** 函数生成一个可替代对象。
+- `orElseThrow(Supplier)`：如果值存在直接生成对象，否则使用 **Supplier** 函数生成一个异常。
+
+如下是针对不同便利函数的简单演示：
+
+```java
+// streams/Optionals.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
+public class Optionals {
+    static void basics(Optional<String> optString) {
+        if(optString.isPresent())
+            System.out.println(optString.get()); 
+        else
+            System.out.println("Nothing inside!");
+    }
+    static void ifPresent(Optional<String> optString) {
+        optString.ifPresent(System.out::println);
+    }
+    static void orElse(Optional<String> optString) {
+        System.out.println(optString.orElse("Nada"));
+    }
+    static void orElseGet(Optional<String> optString) {
+        System.out.println(
+        optString.orElseGet(() -> "Generated"));
+    }
+    static void orElseThrow(Optional<String> optString) {
+        try {
+            System.out.println(optString.orElseThrow(
+            () -> new Exception("Supplied")));
+        }
+        catch(Exception e) {
+            System.out.println("Caught " + e);
+        }
+    }
+    static void test(String testName, Consumer<Optional<String>> cos) {
+        System.out.println(" === " + testName + " === ");
+        cos.accept(Stream.of("Epithets").findFirst());
+        cos.accept(Stream.<String>empty().findFirst());
+    }
+    public static void main(String[] args) {
+        test("basics", Optionals::basics);
+        test("ifPresent", Optionals::ifPresent);
+        test("orElse", Optionals::orElse);
+        test("orElseGet", Optionals::orElseGet);
+        test("orElseThrow", Optionals::orElseThrow);
+    }
+}
+```
+
+输出为：
+
+```java
+=== basics ===
+Epithets
+Nothing inside!
+=== ifPresent ===
+Epithets
+=== orElse ===
+Epithets
+Nada
+=== orElseGet ===
+Epithets
+Generated
+=== orElseThrow ===
+Epithets
+Caught java.lang.Exception: Supplied
+```
+
+` test() ` 方法通过使用与所有示例方法匹配的 **Consumer** 来防止代码重复。`orElseThrow()` 使用 **catch** 关键字来捕获 `orElseThrow()` 抛出的异常。你想会在 [异常]() 这一章节中学习细节。
+
+### 创建 Optional（Creating Optionals）
+
+当你编写自己的代码生成 **Optional** 时，这里有 3 个你可以使用的静态方法：
+
+- `empty()`：生成一个内部没有任何东西的 **Optional**。
+- `of(value)`：如果你已经确定值不为空，使用这个方法将值包装成 **Optional**。
+- `ofNullable(value)`：如果你不知道值知否为空。这个方法会在值为空的时候自动生成 **Optional.empty**，否则将值包装在 **Optional** 中。
+
+你可以查看这是如何工作的：
+
+```java
+// streams/CreatingOptionals.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
+class CreatingOptionals {
+    static void test(String testName, Optional<String> opt) {
+        System.out.println(" === " + testName + " === ");
+        System.out.println(opt.orElse("Null"));
+    }
+    public static void main(String[] args) {
+        test("empty", Optional.empty());
+        test("of", Optional.of("Howdy"));
+        try {
+            test("of", Optional.of(null));
+        } catch(Exception e) {
+            System.out.println(e);
+        }
+        test("ofNullable", Optional.ofNullable("Hi"));
+        test("ofNullable", Optional.ofNullable(null));
+    }
+}
+```
+
+输出为：
+
+```java
+=== empty ===
+Null
+=== of ===
+Howdy
+java.lang.NullPointerException
+=== ofNullable ===
+Hi
+=== ofNullable ===
+Null
+```
+
+如果我们试图将 **null** 传递 `of()` 用于创建 **Optional** 对象，这就会爆炸。`ofNullable()` 会优雅的处理 **null**，所以它似乎是最安全的。
+
+### Optional 对象操作
+
+3 个方法开启了 **Optional** 的后续操作，所以如果你的流管道生成了 **Optional** 对象，你可以在结尾做更多的事情：
+
+- `filter(Predicate)`：将 **Predicate** 应用于 **Optional** 的内容，并将结果返回。如果 **Optional** 不满足 **Predicate**，则返回 **empty**。如果 **Optional** 已经为空，则将其返回。
+- `map(Function)`：如果 **Optional** 不为空，则将 **Function**  应用于 **Optional** 的内容，并将结果返回。否则，直接返回 **Optional.empty**。
+- `flatMap(Function)`：如同 `map()` ， 但是提供的映射函数将结果包装在 **Optional** 对象中，因此 `flatMap()` 不会在最后进行任何包装。
+
+如上方法都不适用于数值型 **Optional**。普通流过滤器会在 **Predicate** 返回 false 时删除流元素。**Optional.filter()** 当 **Predicate** 失败时不会删除 **Optional**——it leaves it, 但将其转化为空：
+
+```java
+// streams/OptionalFilter.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
+class OptionalFilter {
+    static String[] elements = {
+            "Foo", "", "Bar", "Baz", "Bingo"
+    };
+    static Stream<String> testStream() {
+        return Arrays.stream(elements);
+    }
+    static void test(String descr, Predicate<String> pred) {
+        System.out.println(" ---( " + descr + " )---");
+        for(int i = 0; i <= elements.length; i++) {
+            System.out.println(
+                    testStream()
+                            .skip(i)
+                            .findFirst()
+                            .filter(pred));
+        }
+    }
+    public static void main(String[] args) {
+        test("true", str -> true);
+        test("false", str -> false);
+        test("str != \"\"", str -> str != "");
+        test("str.length() == 3", str -> str.length() == 3);
+        test("startsWith(\"B\")",
+                str -> str.startsWith("B"));
+    }
+}
+```
+
+输出为：
+
+```java
+---( true )---
+Optional[Foo]
+Optional[]
+Optional[Bar]
+Optional[Baz]
+Optional[Bingo]
+Optional.empty
+---( false )---
+Optional.empty
+Optional.empty
+Optional.empty
+Optional.empty
+Optional.empty
+Optional.empty
+---( str != "" )---
+Optional[Foo]
+Optional.empty
+Optional[Bar]
+Optional[Baz]
+Optional[Bingo]
+Optional.empty
+---( str.length() == 3 )---
+Optional[Foo]
+Optional.empty
+Optional[Bar]
+Optional[Baz]
+Optional.empty
+Optional.empty
+---( startsWith("B") )---
+Optional.empty
+Optional.empty
+Optional[Bar]
+Optional[Baz]
+Optional[Bingo]
+Optional.empty
+```
+
+即使输出看起来像流，但是特别注意 `test()` 中的 for 循环。它在每一次 for 循环时重新启动流，然后根据 for 循环的索引跳过指定个数的元素，这就是它在流中的每个连续元素上结束的原因。接下来调用 `findFirst()` 获取剩余元素中的第一个元素，结果会包装在 **Optional** 中。
+
+值得注意的是，不同于普通的 for 循环。这里的索引值范围并不是 **i < elements.length**， 而是 **i <= elements.length**，所以最后一个元素实际上超越了流。方便的是，这将自动成为 **Optional.empty**，你可以在每一个测试的结尾中看到。
+
+像 `map()`一样 ， `Optional.map()` 应用函数，但是对于 **Optional**，它仅在 **Optional** 不为空时才应用映射函数。它还将 **Optional** 的内容提取到映射函数：
+
+```java
+// streams/OptionalMap.java
+import java.util.Arrays;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+class OptionalMap {
+    static String[] elements = {"12", "", "23", "45"};
+
+    static Stream<String> testStream() {
+        return Arrays.stream(elements);
+    }
+
+    static void test(String descr, Function<String, String> func) {
+        System.out.println(" ---( " + descr + " )---");
+        for (int i = 0; i <= elements.length; i++) {
+            System.out.println(
+                    testStream()
+                            .skip(i)
+                            .findFirst() // Produces an Optional
+                            .map(func));
+        }
+    }
+
+    public static void main(String[] args) {
+        // If Optional is not empty, map() first extracts
+        // the contents which it then passes
+        // to the function:
+        test("Add brackets", s -> "[" + s + "]");
+        test("Increment", s -> {
+            try {
+                return Integer.parseInt(s) + 1 + "";
+            } catch (NumberFormatException e) {
+                return s;
+            }
+        });
+        test("Replace", s -> s.replace("2", "9"));
+        test("Take last digit", s -> s.length() > 0 ?
+                s.charAt(s.length() - 1) + "" : s);
+    }
+    // After the function is finished, map() wraps the
+    // result in an Optional before returning it:
+}
+```
+
+输出为：
+
+```java
+---( Add brackets )---
+Optional[[12]]
+Optional[[]]
+Optional[[23]]
+Optional[[45]]
+Optional.empty
+---( Increment )---
+Optional[13]
+Optional[]
+Optional[24]
+Optional[46]
+Optional.empty
+---( Replace )---
+Optional[19]
+Optional[]
+Optional[93]
+Optional[45]
+Optional.empty
+---( Take last digit )---
+Optional[2]
+Optional[]
+Optional[3]
+Optional[5]
+Optional.empty
+```
+
+映射函数的返回结果会自动包装成为 **Optional**。正如你所看到的，**Optional.empty** 会被直接跳过不使用任何映射函数。
+
+对于 **Optional** 的 `flatMap()` 应用于已经生成 **Optional** 的映射函数，所以 `flatMap()` 不会像 `map()` 所做的那样将结果封装在 **Optional** 中：
+
+```java
+// streams/OptionalFlatMap.java
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+class OptionalFlatMap {
+    static String[] elements = {"12", "", "23", "45"};
+
+    static Stream<String> testStream() {
+        return Arrays.stream(elements);
+    }
+
+    static void test(String descr,
+                     Function<String, Optional<String>> func) {
+        System.out.println(" ---( " + descr + " )---");
+        for (int i = 0; i <= elements.length; i++) {
+            System.out.println(
+                    testStream()
+                            .skip(i)
+                            .findFirst()
+                            .flatMap(func));
+        }
+    }
+
+    public static void main(String[] args) {
+        test("Add brackets",
+                s -> Optional.of("[" + s + "]"));
+        test("Increment", s -> {
+            try {
+                return Optional.of(
+                        Integer.parseInt(s) + 1 + "");
+            } catch (NumberFormatException e) {
+                return Optional.of(s);
+            }
+        });
+        test("Replace",
+                s -> Optional.of(s.replace("2", "9")));
+        test("Take last digit",
+                s -> Optional.of(s.length() > 0 ?
+                        s.charAt(s.length() - 1) + ""
+                        : s));
+    }
+}
+```
+
+输出为：
+
+```java
+---( Add brackets )---
+Optional[[12]]
+Optional[[]]
+Optional[[23]]
+Optional[[45]]
+Optional.empty
+ ---( Increment )---
+Optional[13]
+Optional[]
+Optional[24]
+Optional[46]
+Optional.empty
+ ---( Replace )---
+Optional[19]
+Optional[]
+Optional[93]
+Optional[45]
+Optional.empty
+ ---( Take last digit )---
+Optional[2]
+Optional[]
+Optional[3]
+Optional[5]
+Optional.empty
+```
+
+如同 `map()` 一样，`flatMap()` 将解压非空 **Optional** 的内容并将其应用在映射函数。唯一的区别就是 `flatMap()` 不会把结果包装在 **Optional** 中，因为映射函数已经做了这件事情。在如上的示例中，我已经在每一个映射函数中显示的完成了包装，但是但显然 `Optional.flatMap()` 是为已经自己生成 **Optional** 的函数而设计的。
+
+### Optional 流（Streams of Optionals）
+
+假设你有一个可能产生 **null** 的生成器。如果你使用这个生成器来创建流，你会自然的想用  **Optional** 来包装元素。如下是它的样子：
+
+```java
+// streams/Signal.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
+public class Signal {
+    private final String msg;
+    public Signal(String msg) { this.msg = msg; }
+    public String getMsg() { return msg; }
+    @Override
+    public String toString() {
+        return "Signal(" + msg + ")";
+    }
+    static Random rand = new Random(47);
+    public static Signal morse() {
+        switch(rand.nextInt(4)) {
+            case 1: return new Signal("dot");
+            case 2: return new Signal("dash");
+            default: return null;
+        }
+    }
+    public static Stream<Optional<Signal>> stream() {
+        return Stream.generate(Signal::morse)
+                .map(signal -> Optional.ofNullable(signal));
+    }
+}
+```
+
+当你想使用这个流的时候，你必须弄清楚如何解包 **Optional**：
+
+```java
+// streams/StreamOfOptionals.java
+import java.util.*;
+import java.util.stream.*;
+public class StreamOfOptionals {
+    public static void main(String[] args) {
+        Signal.stream()
+                .limit(10)
+                .forEach(System.out::println);
+        System.out.println(" ---");
+        Signal.stream()
+                .limit(10)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+Optional[Signal(dash)]
+Optional[Signal(dot)]
+Optional[Signal(dash)]
+Optional.empty
+Optional.empty
+Optional[Signal(dash)]
+Optional.empty
+Optional[Signal(dot)]
+Optional[Signal(dash)]
+Optional[Signal(dash)]
+---
+Signal(dot)
+Signal(dot)
+Signal(dash)
+Signal(dash)
+```
+
+在这里，我们使用 `filter()` 来保留那些非空 **Optional**，然后在 `map()` 中使用 `get()` 获取元素。因为每一种情况都需要你决定“无价值”的含义，所以通常要为每个应用程序采用不同的方法。
 
 <!-- Terminal Operations -->
+
 ## 终端操作
 
 
