@@ -1247,7 +1247,58 @@ stream, streams, throws, toCollection, trim, util,
 void, words2]
 ```
 
+`Files.lines()` 打开 **Path** 并将其转换成为行流。下一行代码将根据一个或者多个非单词字符（\\\\w+）作为边界对行进行分割，然后使用 `Arrays.stream()` 将其转化成为流，并将结果展平映射成为单词流。`matches(\\d+)` 寻找并移除那些全是数字的字符串（注意 **words2** 是通过的）。接下来我们使用 `String.trim()` 去除单词两边的空白，`filter()`过滤所有长度小于 3 的单词，然后只获取 100 个单词，并最终将其塞入到 **TreeSet** 中。
 
+我们也可以在流中生成 **Map**：
+
+```java
+// streams/MapCollector.java
+import java.util.*;
+import java.util.stream.*;
+class Pair {
+    public final Character c;
+    public final Integer i;
+    Pair(Character c, Integer i) {
+        this.c = c;
+        this.i = i;
+    }
+    public Character getC() { return c; }
+    public Integer getI() { return i; }
+    @Override
+    public String toString() {
+        return "Pair(" + c + ", " + i + ")";
+    }
+}
+class RandomPair {
+    Random rand = new Random(47);
+    // An infinite iterator of random capital letters:
+    Iterator<Character> capChars = rand.ints(65,91)
+            .mapToObj(i -> (char)i)
+            .iterator();
+    public Stream<Pair> stream() {
+        return rand.ints(100, 1000).distinct()
+                .mapToObj(i -> new Pair(capChars.next(), i));
+    }
+}
+public class MapCollector {
+    public static void main(String[] args) {
+        Map<Integer, Character> map =
+                new RandomPair().stream()
+                        .limit(8)
+                        .collect(
+                                Collectors.toMap(Pair::getI, Pair::getC));
+        System.out.println(map);
+    }
+}
+```
+
+输出为：
+
+```java
+{688=W, 309=C, 293=B, 761=N, 858=N, 668=G, 622=F, 751=N}
+```
+
+**Pair** 只是一个基础的数据对象。**RandomPair** 创建了随机生成的 **Pair** 对象流。
 
 ## 本章小结
 
