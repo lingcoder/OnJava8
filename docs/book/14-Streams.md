@@ -1136,8 +1136,119 @@ Not much of a cheese shop really
 <!-- Terminal Operations -->
 ## 终端操作
 
-
 <!-- Summary -->
+
+这些操作获取一个流并产生一个最终结果；它们不会像后端流提供任何东西。因此，终端操作总是你在管道中做的最后一件事情。
+
+### 转化成数组（Convert to an Array）
+
+- `toArray()`：将流转换成适当类型的数组。
+- `toArray(generator)`：在特殊情况下，生成器用于分配你自己的数组存储。
+
+如果流操作产生的结果必须使用的是数组形式，这是非常有用的。例如，假设我们想要以一种我们可以将它们作为流重用的方式捕获随机数，这样我们每次都可以得到相同的流。 我们可以通过将它们存储在一个数组中来实现：
+
+```java
+// streams/RandInts.java
+package streams;
+import java.util.*;
+import java.util.stream.*;
+public class RandInts {
+    private static int[] rints = new Random(47).ints(0, 1000).limit(100).toArray();
+    public static IntStream rands() {
+        return Arrays.stream(rints);
+    }
+}
+```
+
+一个包含 100 个数值范围在 0 到 10000 之间的随机数流转换成为数组并将其存储在 **rints** 中，所以在每次调用 `rands()` 的时候你都可以重复的获取相同的流。
+
+### 每一个元素应用最终操作（Apply a Final Operation to Every Element）
+
+- `forEach(Consumer)`：你已经看到很多次 `System.out::println` 作为 **Consumer** 函数。
+- `forEachOrdered(Consumer)`： 这个版本保证了 forEach 的操作顺序是原始流顺序。
+
+第一种形式是显示的设计为以任何顺序操作元素，这只在引入 `parallel()` 操作时才有意义。在 [并发]() 章节之前我们不会深入研究这个问题，但是这里有一个简单的介绍：`parallel()` 告诉 Java 尝试在多个处理器上运行操作。它可以做到这一点是因为我们使用流——流可以被分割为多个流（通常一个流一个处理器）并且每个流运行在不同的处理器上。因为我们使用的是内部循环而不是外部循环，这是可行的。
+
+在你对 `parallel()` 的看似容易感到过于兴奋之前，它实际上相当棘手，所以请等到我们进入 [并发]() 编程章节。
+
+但是，我们可以通过将 `parallel()` 引入一个示例来了解 `forEachOrdered(Consumer)` 的效果和需求：
+
+```java
+// streams/ForEach.java
+import java.util.*;
+import java.util.stream.*;
+import static streams.RandInts.*;
+public class ForEach {
+    static final int SZ = 14;
+    public static void main(String[] args) {
+        rands().limit(SZ)
+                .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        rands().limit(SZ)
+                .parallel()
+                .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        rands().limit(SZ)
+                .parallel()
+                .forEachOrdered(n -> System.out.format("%d ", n));
+    }
+}
+```
+
+输出为：
+
+```java
+258 555 693 861 961 429 868 200 522 207 288 128 551 589
+551 861 429 589 200 522 555 693 258 128 868 288 961 207
+258 555 693 861 961 429 868 200 522 207 288 128 551 589
+```
+
+我已经隔离了 sz，以便轻松尝试不同的尺寸。 然而，即使是 14 的 sz 也会产生有趣的结果。在第一个流中，我们没有使用 `parallel()` 所以按照它们从 `rands()` 出现的顺序显示结果。第二个流我们引入了 `parallel()` ，即使是很小的流，你也会看到输出结果和之前的顺序并不一样。这是由于多个处理器正在解决这个问题，如果你多次运行这个程序，你将会看到这个结果均是不同的，由于多个处理器同时处理该问题而产生的非确定性因素。
+
+最后一个流依旧使用了 `parallel()`，但是通过使用 `forEachOrdered()` 强制结果保留原始顺序。因此使用 `parallel()` 对于非并行流没有任何影响。
+
+### 收集（Collecting）
+
+- `collect(Collector)`：使用 **Collector** 来累计流元素到结果集合中。
+- `collect(Supplier, BiConsumer, BiConsumer)`：同上，但是 **Supplier** 创建了一个新的结果集合，第一个 **BiConsumer** 是将下一个元素包含在结果中的函数，而第二个 **BiConsumer** 是用于将两个值组合起来。
+
+你只看到了少数几个 **Collectors** 对象的示例。如果你查看 ` java.util.stream.Collectors`的文档，你会发现其中的一些实现非常复杂。例如，我们可以将元素收集到任意一种特定的集合中。假设我们想将我们的元素最终在 **TreeSet** 中，以保证它们总是有序的。在 **Collectors** 里面没有特定的 **toTreeSet()** 方法，但是你可以使用 ` Collectors.toCollection()`并为任何类型的Collection提供构造函数引用。 该程序将文件中的单词拉入**TreeSet** ：
+
+```java
+// streams/TreeSetOfWords.java
+import java.util.*;
+import java.nio.file.*;
+import java.util.stream.*;
+public class TreeSetOfWords {
+    public static void
+    main(String[] args) throws Exception {
+        Set<String> words2 =
+                Files.lines(Paths.get("TreeSetOfWords.java"))
+                        .flatMap(s -> Arrays.stream(s.split("\\W+")))
+                        .filter(s -> !s.matches("\\d+")) // No numbers
+                        .map(String::trim)
+                        .filter(s -> s.length() > 2)
+                        .limit(100)
+                        .collect(Collectors.toCollection(TreeSet::new));
+        System.out.println(words2);
+    }
+}
+```
+
+输出为：
+
+```java
+[Arrays, Collectors, Exception, Files, Output, Paths,
+Set, String, System, TreeSet, TreeSetOfWords, args,
+class, collect, file, filter, flatMap, get, import,
+java, length, limit, lines, main, map, matches, new,
+nio, numbers, out, println, public, split, static,
+stream, streams, throws, toCollection, trim, util,
+void, words2]
+```
+
+
+
 ## 本章小结
 
 
