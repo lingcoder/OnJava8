@@ -729,8 +729,407 @@ Not much of a cheese shop really is it
 
 ## 中间操作
 
+中间操作用于在一个流中获取元素，并将元素放入另一个流的后端用以连接不同的操作。
+
+### 跟踪和调试
+
+`peek()` 操作的目的是帮助调试。它允许你无修改的查看流中的元素：
+
+```java
+// streams/Peeking.java
+class Peeking {
+    public static void main(String[] args) throws Exception {
+        FileToWords.stream("Cheese.dat")
+        .skip(21)
+        .limit(4)
+        .map(w -> w + " ")
+        .peek(System.out::print)
+        .map(String::toUpperCase)
+        .peek(System.out::print)
+        .map(String::toLowerCase)
+        .forEach(System.out::print);
+    }
+}
+```
+
+输出为：
+
+```java
+Well WELL well it IT it s S s so SO so
+```
+
+**FileToWords** 很快就被定义好了，但是它的功能就像我们之前所看到的的版本那样：产生 **String** 对象的流。之后在他们通过管道的时候使用 `peek()` 偷窥它们。
+
+因为 `peek()` 符合 没有返回值的 **Consumer** 函数式接口，所以不可能使用不同的元素来替换流中的对象。你只能观察它们。
+
+### 排序流中元素
+
+你已经在 **Randoms.java** 看到了使用默认比较器的 `sorted()` 函数。还有 `sorted()` 的第二种形式，需要传入一个 **Comparator** 参数：
+
+```java
+// streams/SortedComparator.java
+import java.util.*;
+public class SortedComparator {
+    public static void main(String[] args) throws Exception {
+        FileToWords.stream("Cheese.dat")
+        .skip(10)
+        .limit(10)
+        .sorted(Comparator.reverseOrder())
+        .map(w -> w + " ")
+        .forEach(System.out::print);
+    }
+}
+```
+
+输出为：
+
+```java
+you what to the that sir leads in district And
+```
+
+你可以为 `sorted()` 传入一个 lambda 函数作为其参数，但是这里也有预先实现好的比较器 —— 在这里我们所使用的是反转“自然顺序”。
+
+### 移除元素
+
+`distinct()`：在 **Randoms.java** 中，`distinct()` 去除了流中的重复元素。使用 `distinct()` 相比创建一个 `Set` 用于消除重复元素的工作量要小得多。
+
+`filter(Predicate)`：过滤操作只会保留那些传递给参数是产生 true 的元素 - 过滤器函数。
+
+在这个例子中，过滤器函数是 ` isPrime()`，用于检测质数。
+
+```java
+// streams/Prime.java
+import java.util.stream.*;
+import static java.util.stream.LongStream.*;
+public class Prime {
+    public static Boolean isPrime(long n) {
+        return rangeClosed(2, (long)Math.sqrt(n))
+        .noneMatch(i -> n % i == 0);
+    }
+    public LongStream numbers() {
+        return iterate(2, i -> i + 1)
+        .filter(Prime::isPrime);
+    }
+    public static void main(String[] args) {
+        new Prime().numbers()
+        .limit(10)
+        .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        new Prime().numbers()
+        .skip(90)
+        .limit(10)
+        .forEach(n -> System.out.format("%d ", n));
+    }
+}
+```
+
+输出为：
+
+```java
+2 3 5 7 11 13 17 19 23 29
+467 479 487 491 499 503 509 521 523 541
+```
+
+`rangeClosed() ` 包含了上界值。如果余数没有产生 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 false。 `noneMatch()`  操作在第一次失败之后就会推出，而不是进行全部尝试。
+
+### 应用操作到所有元素
+
+`map(Function) `：将 **Function** 操作应用在输入流的每一个元素中，并将返回值传递到输出流中。
+
+`mapToInt(ToIntFunction)`：操作同上，但结果是 **IntStream**。
+
+`mapToLong(ToLongFunction)`：操作同上，但结果是 **LongStream**。
+
+`mapToDouble(ToDoubleFunction)` ： 操作同上，但结果是 **DoubleStream**。
+
+在这里，我们使用 `map()` 映射多种函数到一个字符串流中：
+
+```java
+// streams/FunctionMap.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
+class FunctionMap {
+    static String[] elements = { "12", "", "23", "45" };
+    static Stream<String>
+    testStream() {
+        return Arrays.stream(elements);
+    }
+    static void test(String descr, Function<String, String> func) {
+        System.out.println(" ---( " + descr + " )---");
+        testStream()
+        .map(func)
+        .forEach(System.out::println);
+    }
+    public static void main(String[] args) {
+        test("add brackets", s -> "[" + s + "]");
+        test("Increment", s -> {
+            try {
+                return Integer.parseint(s) + 1 + "";
+            }
+            catch(NumberFormatException e) {
+                return s;
+            }
+        }
+        );
+        test("Replace", s -> s.replace("2", "9"));
+        test("Take last digit", s -> s.length() > 0 ?
+        s.charAt(s.length() - 1) + "" : s);
+    }
+}
+```
+
+输出为：
+
+```java
+---( add brackets )---
+[12]
+[]
+[23]
+[45]
+---( Increment )---
+13
+24
+46
+---( Replace )---
+19
+93
+45
+---( Take last digit )---
+2
+3
+5
+```
+
+在“Increment”测试中，我们使用 `Integer.parseInt()` 去试图将一个字符串转化为整数。如果字符串不能转化成为整数就会抛出一个 **NumberFormatException** 异常，我们只需回过头来将原始字符串放回到输出流中。
+
+在以上例子中，` map()` 将一个字符串映射为另一个字符串，但是我们完全可以产生和接收类型完全不同的类型，从而改变流的数据类型。这里是一个例子：
+
+```java
+// streams/FunctionMap2.java
+// Different input and output types
+import java.util.*;
+import java.util.stream.*;
+class Numbered {
+    final int n;
+    Numbered(int n) {
+        this.n = n;
+    }
+    @Override
+    public String toString() {
+        return "Numbered(" + n + ")";
+    }
+}
+class FunctionMap2 {
+    public static void main(String[] args) {
+        Stream.of(1, 5, 7, 9, 11, 13)
+        .map(Numbered::new)
+        .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+Numbered(1)
+Numbered(5)
+Numbered(7)
+Numbered(9)
+Numbered(11)
+Numbered(13)
+```
+
+我们获取了许多 int 类型整数，并通过构造器 `Numbered::new` 将它们转化成为 **Numbereds** 类型。
+
+如果使用 **Function** 产生的结果是数值类型的一种，你必须使用相似的 **mapTo**-operations 操作进行替代：
+
+```java
+// streams/FunctionMap3.java
+// Producing numeric output streams
+import java.util.*;
+import java.util.stream.*;
+class FunctionMap3 {
+    public static void main(String[] args) {
+        Stream.of("5", "7", "9")
+        .mapToint(Integer::parseint)
+        .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        Stream.of("17", "19", "23")
+        .mapTolong(long::parselong)
+        .forEach(n -> System.out.format("%d ", n));
+        System.out.println();
+        Stream.of("17", "1.9", ".23")
+        .mapTodouble(double::parsedouble)
+        .forEach(n -> System.out.format("%f ", n));
+    }
+}
+```
+
+输出为：
+
+```java
+5 7 9
+17 19 23
+17.000000 1.900000 0.230000
+```
+
+不幸的是，Java 设计者并没有尽最大的努力来消除原始类型。
+
+### 在 map() 期间组合流
+
+假如你有一个即将到来的元素流，并且你打算对流元素使用 `map()` 函数。你已经找到了那些你在其他地方找不到的可爱的函数功能，但是这里有一个问题：这个函数功能产生一个流。你想要的只是产生一个元素流，但是你生成的是一个元素流的流。
+
+`flatMap()` 做了两件事情：它获取你的流产生（ stream-producing）函数，并将其应用于新到的元素（正如 `map()` 所做的），然后获取每一个流并将其“展平”为元素。所以它的输出只是元素。
+
+`flatMap(Function)`：当 **Function** 产生流时使用。
+
+`flatMapToInt(Function)`：当 **Function** 产生 **IntStream**  时使用。
+
+`flatMapToLong(Function)`：当 **Function** 产生 **LongStream** 时使用。
+
+`flatMapToDouble(Function)`：当 **Function** 产生 **DoubleStream** 时使用。
+
+为了了解它是如何工作的，我们将从 `map()` 的一个刻意设计的函数开始，这个函数接受一个整数并产生一个字符串流：
+
+```java
+// streams/StreamOfStreams.java
+import java.util.stream.*;
+public class StreamOfStreams {
+    public static void main(String[] args) {
+        Stream.of(1, 2, 3)
+        .map(i -> Stream.of("Gonzo", "Kermit", "Beaker"))
+        .map(e-> e.getClass().getName())
+        .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+java.util.stream.ReferencePipeline$Head
+java.util.stream.ReferencePipeline$Head
+java.util.stream.ReferencePipeline$Head
+```
+
+我们天真的希望能够得到字符串流，但是我们得到的确实流元素为“Head”流的流。但是我们可以使用 `flatMap()` 来轻松解决这个问题：
+
+```java
+// streams/FlatMap.java
+import java.util.stream.*;
+public class FlatMap {
+    public static void main(String[] args) {
+        Stream.of(1, 2, 3)
+        .flatMap(i -> Stream.of("Gonzo", "Fozzie", "Beaker"))
+        .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+Gonzo
+Fozzie
+Beaker
+Gonzo
+Fozzie
+Beaker
+Gonzo
+Fozzie
+Beaker
+```
+
+因此，从映射返回的每个流都会自动展平为其组件字符串。
+
+如下是另一演示，我们从一个整数流开始，然后使用每一个整数去创建许多随机数。
+
+```java
+// streams/StreamOfRandoms.java
+import java.util.*;
+import java.util.stream.*;
+public class StreamOfRandoms {
+    static Random rand = new Random(47);
+    public static void main(String[] args) {
+        Stream.of(1, 2, 3, 4, 5)
+            .flatMapToInt(i -> IntStream.concat(
+        rand.ints(0, 100).limit(i), IntStream.of(-1)))
+            .forEach(n -> System.out.format("%d ", n));
+    }
+}
+```
+
+输出为：
+
+```java
+58 -1 55 93 -1 61 61 29 -1 68 0 22 7 -1 88 28 51 89 9 -1
+```
+
+我在这里引入了`concat()`，它以参数顺序组合了两个流。 因此，在每个随机 Integer 流的末尾，我添加一个 -1 作为标记，因此ni你可以看到最终流确实是从一组展平流中创建的。
+
+因为 `rand.ints()` 产生了一个 **IntStream**，所以我必须使用 `flatMap()`、`concat()` 和 `of()` 的特定整数版本。
+
+让我们再看一下将文件划分为单词流的任务。我们上一次遇到的是 **FileToWordsRegexp.java**，它的问题是它需要我们将整个文件读入行列表中 —— 因此我们需要存储该列表。我们真正想要的是创建以一个不需要中间存储的单词流。
+
+再一次，我们使用 ` flatMap()` 来解决这个问题：
+
+```java
+// streams/FileToWords.java
+import java.nio.file.*;
+import java.util.stream.*;
+import java.util.regex.Pattern;
+public class FileToWords {
+    public static Stream<String> stream(String filePath) throws Exception {
+        return Files.lines(Paths.get(filePath))
+        .skip(1) // First (comment) line
+        .flatMap(line ->
+        Pattern.compile("\W+").splitAsStream(line));
+    }
+}
+```
+
+因为 `stream()` 方法可以自己完成整个创建流的构成，所以它现在是个静态方法。
+
+注意 **\\\\W+** 是一个正则表达式。**\\\\W** 的意思是 “非单词字符”，**+** 的意思是“可以出现一次或者多次”。小写版本的 “**\\\\w**” 代表“单词字符”。
+
+我们之前遇到的问题是 `Pattern.compile().splitAsStream()`产生的结果为流，这意味着当我们只是想要一个简单的单词流，在传入的行流（stream of lines）上调用 `map()` 会产生一个单词流的流。幸运的是，`flatMap()`  可以将元素流的流展平为一个简单的元素流。或者，我们可以使用 `String.split()` 生成一个数组，其可以被 `Arrays.stream()` 转化成为流：
+
+```java
+.flatMap(line -> Arrays.stream(line.split("\\W+"))))
+```
+
+因为我们拥有了一个真的流（而不是在 **FileToWordsRegexp.java** 基于集合存储的流），每一次我们想要一个新的流就必须从头创建，因为这个流并不能被重复使用：
+
+```java
+// streams/FileToWordsTest.java
+import java.util.stream.*;
+public class FileToWordsTest {
+    public static void main(String[] args) throws Exception {
+        FileToWords.stream("Cheese.dat")
+        .limit(7)
+        .forEach(s -> System.out.format("%s ", s));
+        System.out.println();
+        FileToWords.stream("Cheese.dat")
+        .skip(7)
+        .limit(2)
+        .forEach(s -> System.out.format("%s ", s));
+    }
+}
+```
+
+输出为：
+
+```java
+Not much of a cheese shop really
+```
+
+在 `System.out.format()` 中的 **%s** 表名参数为 String 类型。
+
+
 
 <!-- Optional -->
+
 ## Optional类
 
 
