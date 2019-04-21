@@ -1298,7 +1298,93 @@ public class MapCollector {
 {688=W, 309=C, 293=B, 761=N, 858=N, 668=G, 622=F, 751=N}
 ```
 
-**Pair** 只是一个基础的数据对象。**RandomPair** 创建了随机生成的 **Pair** 对象流。
+**Pair** 只是一个基础的数据对象。**RandomPair** 创建了随机生成的 **Pair** 对象流。如果我们能以某种方式组合两个流, 那就再好不过了, 但 Java 在这个问题上与我们斗争。所以我创建了一个整数流，并且使用 `mapToObj` 将其转化成为 **Pair** 流。 **capChars** 随机生成的大写字母迭代器从流开始，然后 `iterator()` 方法允许我们在 `stream()` 方法中使用它。就我所知, 这是组合多个流以生成新的对象流的唯一方法。
+
+在这里，我们只使用最简单形式的 `Collectors.toMap()`，这个方法值需要一个可以从流中获取键值对的函数。但是这还有另外一种形式，需要一个函数来处理键碰撞的情况。
+
+在大多数情况下，你可以在 `java.util.stream.Collectors`寻找到你想要的预先定义好的 **Collector**。在少数情况下当你找不到想要的时候，你可以使用第二种形式的 ` collect()`。 I’ll basically leave that as a more advanced exercise, 但是这里有一个例子给出了基本想法：
+
+```java
+// streams/SpecialCollector.java
+import java.util.*;
+import java.util.stream.*;
+public class SpecialCollector {
+    public static void main(String[] args) throws Exception {
+        ArrayList<String> words =
+                FileToWords.stream("Cheese.dat")
+                        .collect(ArrayList::new,
+                                ArrayList::add,
+                                ArrayList::addAll);
+        words.stream()
+                .filter(s -> s.equals("cheese"))
+                .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+cheese
+cheese
+```
+
+在这里， **ArrayList** 的方法已经执行了你所需要的操作，但是似乎更有可能的是，如果你必须使用这种形式的 `collect()`，则必须自己创建特殊的定义。
+
+### 组合所有流元素（Combining All Stream Elements）
+
+- `reduce(BinaryOperator)`：使用 **BinaryOperator** 来组合所有流中的元素。因为流可能为空，其返回值为 **Optional**。
+- `reduce(identity, BinaryOperator)`：功能同上，但是使用 **identity** 作为其组合的初始值。因此如果流为空，**identity** 就是结果。
+- `reduce(identity, BiFunction, BinaryOperator)`：这个版本更为复杂（所以我们不会介绍它），在这里被提到是因为它使用起来会更有效。通常，你可以显示的组合 `map()` 和 `reduce()` 来更简单的表达这一点。
+
+如下是一个用于演示 `reduce()` 的示例：
+
+```java
+// streams/Reduce.java
+import java.util.*;
+import java.util.stream.*;
+class Frobnitz {
+    int size;
+    Frobnitz(int sz) { size = sz; }
+    @Override
+    public String toString() {
+        return "Frobnitz(" + size + ")";
+    }
+    // Generator:
+    static Random rand = new Random(47);
+    static final int BOUND = 100;
+    static Frobnitz supply() {
+        return new Frobnitz(rand.nextInt(BOUND));
+    }
+}
+public class Reduce {
+    public static void main(String[] args) {
+        Stream.generate(Frobnitz::supply)
+                .limit(10)
+                .peek(System.out::println)
+                .reduce((fr0, fr1) -> fr0.size < 50 ? fr0 : fr1)
+                .ifPresent(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+Frobnitz(58)
+Frobnitz(55)
+Frobnitz(93)
+Frobnitz(61)
+Frobnitz(61)
+Frobnitz(29)
+Frobnitz(68)
+Frobnitz(0)
+Frobnitz(22)
+Frobnitz(7)
+Frobnitz(29)
+```
+
+
 
 ## 本章小结
 
