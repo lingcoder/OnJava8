@@ -26,14 +26,14 @@
 - [x] [第四章 运算符](docs/book/04-Operators.md)
 - [x] [第五章 控制流](docs/book/05-Control-Flow.md)
 - [ ] [第六章 初始化和清理](docs/book/06-Housekeeping.md) (正在翻译中……)
-- [ ] [第七章 封装](docs/book/07-Implementation-Hiding.md) (正在翻译中……)
+- [ ] [第七章 封装](docs/book/07-Implementation-Hiding.md) 
 - [ ] [第八章 复用](docs/book/08-Reuse.md)(正在翻译中……)
 - [ ] [第九章 多态](docs/book/09-Polymorphism.md)
 - [ ] [第十章 接口](docs/book/10-Interfaces.md)
 - [ ] [第十一章 内部类](docs/book/11-Inner-Classes.md)
 - [ ] [第十二章 集合](docs/book/12-Collections.md)
 - [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
-- [ ] [第十四章 流式编程](docs/book/14-Streams.md) (正在翻译中……)
+- [x] [第十四章 流式编程](docs/book/14-Streams.md) 
 - [ ] [第十五章 异常](docs/book/15-Exceptions.md)
 - [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
 - [ ] [第十七章 文件](docs/book/17-Files.md)
@@ -90,8 +90,8 @@
 ## 贡献者
 
 * 主译: [LingCoder](https://github.com/LingCoder)
-* 参译: [LortSir](https://github.com/LortSir)
-* 校对：[nickChenyx](https://github.com/nickChenyx)
+* 参译: [sjsdfg](https://github.com/sjsdfg)，[LortSir](https://github.com/LortSir)
+* 校对：[LingCoder](https://github.com/LingCoder)，[nickChenyx](https://github.com/nickChenyx)
 
 
 ## 翻译说明
