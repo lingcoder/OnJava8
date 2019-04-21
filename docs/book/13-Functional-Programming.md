@@ -370,7 +370,7 @@ Help!
 
 **[5]** `assist()` 是静态内部类中的静态方法。
 
-**[6]** 我们将 **Describe** 对象的方法引用分配给 **Callable** , 它没有 `show()` 方法，而是 `call()` 方法。 但是，Java 似乎接受用这个看似奇怪的赋值，因为方法引用符合 **Callable** 的 `call()` 方法的签名。
+**[6]** 我们将 **Describe** 对象的方法引用赋值给 **Callable** , 它没有 `show()` 方法，而是 `call()` 方法。 但是，Java 似乎接受用这个看似奇怪的赋值，因为方法引用符合 **Callable** 的 `call()` 方法的签名。
 
 **[7]** 我们现在可以通过调用 `call()` 来调用 `show()`，因为 Java 将 `call()` 映射到 `show()`。
 
@@ -555,7 +555,7 @@ public class CtorReference {
 
 **Dog** 有三个构造函数，函数接口内的 `make()` 方法反映了构造函数参数列表（ `make()` 方法名称可以不同）。
 
-**注意**我们如何对 **[1]**，**[2]** 和 **[3]** 中的每一个使用 `Dog :: new`。 这 3 个构造函数只有一个相同名称：`:: new`，但在每种情况下都分配给不同的接口。编译器可以检测并知道从哪个构造函数引用。
+**注意**我们如何对 **[1]**，**[2]** 和 **[3]** 中的每一个使用 `Dog :: new`。 这 3 个构造函数只有一个相同名称：`:: new`，但在每种情况下都赋值给不同的接口。编译器可以检测并知道从哪个构造函数引用。
 
 编译器能识别并调用你的构造函数（ 在本例中为 `make()`）。
 
@@ -563,29 +563,29 @@ public class CtorReference {
 ## 函数式接口
 
 
-方法引用和 Lambda 表达式都是必须赋值的，并且这些赋值需要编译器的类型信息以确保类型正确性。 Lambda 表达式特别引入了新的要求。 考虑：
+方法引用和 Lambda 表达式必须被赋值，同时编译器需要识别类型信息以确保类型正确。 Lambda 表达式特别引入了新的要求。 代码示例：
 
 ```java
 x -> x.toString()
 ```
 
-我们看到返回类型必须是 **String**，但 `x` 是什么类型？
+我们清楚这里返回类型必须是 **String**，但 `x` 是什么类型呢？
 
-因为 Lambda 表达式包含一种类型推断形式（编译器会对类型进行描述，而不是要求程序员显式），编译器必须能够以某种方式推导出 `x` 的类型。
+Lambda 表达式包含类型推导（编译器会自动推导出类型信息，避免了程序员显式地声明）。编译器必须能够以某种方式推导出 `x` 的类型。
 
-这是第二个例子：
+下面是第 2 个代码示例：
 
 ```java
 (x, y) -> x + y
 ```
 
-现在 `x` 和 `y` 可以是支持 `+` 运算符的任何类型，包括两个不同的数字类型或一个 **String** 以及一些将自动转换为 **String** 的类型（这包括大多数类型）。 但是，当分配此 Lambda 表达式时，编译器必须确定 `x` 和 `y` 的确切类型以生成正确的代码。
+现在 `x` 和 `y` 可以是任何支持 `+` 运算符连接的数据类型，可以是两个不同的数值类型或者是 1 个 **String** 加任意一种可自动转换为 **String** 的数据类型（这包括了大多数类型）。 但是，当 Lambda 表达式被赋值时，编译器必须确定 `x` 和 `y` 的确切类型以生成正确的代码。
 
-同样的问题适用于方法引用。 假设你要传递 `System.out :: println` 到你正在编写的方法 ，你为方法的参数给出了什么类型？
+该问题也适用于方法引用。 假设你要传递 `System.out :: println` 到你正在编写的方法 ，你怎么知道传递给方法的参数的类型？
 
-为了解决这个问题，Java 8 引入了 `java.util.function`，它包含一组接口，这些接口是 Lambda 表达式和方法引用的目标类型。 每个接口只包含一个抽象方法，称为函数式方法。
+为了解决这个问题，Java 8 引入了 `java.util.function` 包。它包含一组接口，这些接口是 Lambda 表达式和方法引用的目标类型。 每个接口只包含一个抽象方法，称为函数式方法。
 
-在编写接口时，可以使用 `@FunctionalInterface` 注释强制执行此“函数方法”模式：
+在编写接口时，可以使用 `@FunctionalInterface` 注解强制执行此“函数方法”模式：
 
 ```java
 // functional/FunctionalAnnotation.java
@@ -605,7 +605,7 @@ interface NotFunctional {
   String goodbye(String arg);
   String hello(String arg);
 }
-Produces error message:
+产生错误信息:
 NotFunctional is not a functional interface
 multiple non-overriding abstract methods
 found in interface NotFunctional
@@ -627,51 +627,53 @@ public class FunctionalAnnotation {
 }
 ```
 
-`@FunctionalInterface` 注释是可选的; Java 将 `Functional` 和 `FunctionalNoAnn` 视为 `main()` 中的函数接口。 `@FunctionalInterface` 的值在 `NotFunctional` 的定义中可见。接口中的如果有多个方法则会产生编译时错误消息。
+`@FunctionalInterface` 注解是可选的; Java 将 `Functional` 和 `FunctionalNoAnn` 视为主方法中的函数接口。 `@FunctionalInterface` 的值在 `NotFunctional` 的定义中可见：接口中的如果有多个方法则会产生编译时错误消息。
 
-仔细观察 `f` 和 `fna` 定义中会发生什么。 `Functional` 和 `FunctionalNoAnn` 定义接口。 然而，分配的只是方法 `goodbye()`。首先，这只是一种方法而不是一种类。 其次，它甚至不是一个实现了该接口的类里的方法。这是添加到 Java 8 中的一些魔力：如果将方法引用或 Lambda 表达式分配给函数接口（以及类型适合），Java将使你的分配适应目标接口。 在背后，编译器将方法引用或 Lambda 表达式包装在实现目标接口的类的实例中。
+仔细观察 `f` 和 `fna` 声明中会发生什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口类的方法。Java 8 在这里添加了一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数接口（以及适合的类型），Java 会适配你的赋值到目标接口。 编译器会自动包装方法引用或 Lambda 表达式到实现目标接口的类的实例中。
 
-尽管 `FunctionalAnnotation` 确实适合 `Functional` 模型，但如果我们尝试将 `FunctionalAnnotation` 直接分配给 `Functional`，就像 `fac` 的定义一样，Java 将不会让我们成功，因为它没有明确地实现 `Functional` 接口。 但令人惊讶的是 ，Java8 允许我们为接口分配函数，从而产生更好，更简单的语法。
+尽管 `FunctionalAnnotation` 确实适合 `Functional` 模型，但 Java 不允许我们将 `FunctionalAnnotation` 像 `fac` 定义一样直接赋值给 `Functional`，因为它没有明确地实现 `Functional` 接口。 令人惊奇的是 ，Java 8 允许我们以简便的语法为接口赋值函数。
 
-`java.util.function` 的目标是创建一组完整的目标接口，这样你通常不需要定义自己的接口。 主要是因为原始类型，这会产生一小部分接口。 如果你了解命名模式，通常可以通过查看名称来检测特定接口的作用。
+`java.util.function` 包旨在创建一组完整的目标接口，使得我们一般情况下不需再定义自己的接口。这主要是因为基本类型会产生一小部分接口。 如果你了解命名模式，顾名思义就能知道特定接口的作用。
 
  以下是基本命名准则：
 
-1. 如果它只处理对象而不是原语，那么它只是一个简单的名称，如 `Function`，`Consumer`，`Predicate` 等。参数类型通过泛型添加。
+1. 如果只处理对象而非基本类型，名称为 `Function`，`Consumer`，`Predicate` 等。参数类型通过泛型添加。
 
-2. 如果它采用原始参数，则由名称的第一部分表示，如 `LongConsumer`，`DoubleFunction`，`IntPredicate` 等。例外情况是原始的供应商类型。
+2. 如果是基本类型，则由名称的第一部分表示，如 `LongConsumer`，`DoubleFunction`，`IntPredicate` 等，但基本 `Supplier` 类型例外。
 
-3. 如果它返回原始结果，则用 `To` 表示，如 `ToLongFunction <T>` 和 `IntToLongFunction`。
+3. 如果返回值为基本类型，则用 `To` 表示，如 `ToLongFunction <T>` 和 `IntToLongFunction`。
 
-4. 如果它返回与其参数相同的类型，则它是一个运算符，其中一个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
+4. 如果返回值类型与参数类型一致，则是一个运算符：单个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
 
-5. 如果它需要两个参数并返回一个布尔值，那么它就是一个谓词（ Predicate ）。
+5. 如果是 2 个参数且返回值为布尔值，则是一个谓词（Predicate）。
 
-6. 如果它需要两个不同类型的参数，则名称中有一个 `Bi`。
+6. 如果是两个参数类型不同，则名称中有一个 `Bi`。
 
-该表描述了java.util.function中的目标类型 
+下表描述了 `java.util.function` 中的目标类型（包括例外情况）：
 
-……..下面的表格内容，直接复制PDF文档下来很难看懂。( 待整理 )
+| **特征** |**函数式方法名**|**示例**|
+| :---- | :----: | :----: |
+|无参； <br> 无返回值|**Runnable** <br> (java.lang)  <br>  `run()`|**Runnable**|
+|无参； <br> 返回类型任意|**Supplier** <br> `get()` <br> `getAs类型()`| **Supplier<T>  <br> BooleanSupplier  <br> IntSupplier  <br> LongSupplier  <br> DoubleSupplier**|
+|无参数； <br> 返回类型任意|**Callable** <br> (java.util.concurrent)  <br> `call()`|**Callable\<V>**|
+|1 参数； <br> 无返回值|**Consumer** <br> `accept()`|**Consumer<T> <br> IntConsumer <br> LongConsumer <br> DoubleConsumer**|
+|2 参数 **Consumer**|**BiConsumer** <br> `accept()`|**BiConsumer\<T,U>**|
+|2 参数 **Consumer**； <br> 1 引用； <br> 1 基本类型|**Obj类型Consumer** <br> `accept()`|**ObjIntConsumer<T> <br> ObjLongConsumer\<T> <br> ObjDoubleConsumer\<T>**|
+|1 参数； <br> 返回类型不同|**Function** <br> `apply()` <br> **To类型** 和 **类型To类型** <br> `applyAs类型()`|**Function\<T,R> <br> IntFunction\<R> <br> LongFunction\<R> <br> DoubleFunction<R> <br> ToIntFunction<T> <br> ToLongFunction\<T> <br> ToDoubleFunction\<T> <br> IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
+|1 参数； <br> 返回类型相同|**UnaryOperator** <br> `apply()`|**UnaryOperator<T> <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator**|
+|2 参数类型相同； <br> 返回类型相同|**BinaryOperator** <br> `apply()`|**BinaryOperator\<T> <br> IntBinaryOperator <br> LongBinaryOperator <br> DoubleBinaryOperator**|
+|2 参数类型相同; <br> 返回整型|Comparator <br> (java.util) <br> `compare()`|**Comparator\<T>**|
+|2 参数； <br> 返回布尔型|**Predicate** <br> `test()`|**Predicate\<T> <br> BiPredicate\<T,U> <br> IntPredicate <br> LongPredicate <br> DoublePredicate**|
+|参数基本类型； <br> 返回基本类型|**类型To类型Function** <br> `applyAs类型()`|**IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
+|2 参数类型不同|**Bi操作** <br> (不同方法名)|**BiFunction\<T,U,R> <br> BiConsumer\<T,U> <br> BiPredicate<T,U> <br> ToIntBiFunction\<T,U> <br> ToLongBiFunction\<T,U> <br> ToDoubleBiFunction<T**|
 
-(with noted exceptions):
+此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出更多行的函数式接口。
 
-**Name Characteristic Functional Usage Method Runnable** No arguments;
+能看出来在创建 `java.util.function` 时，设计者做出了一些选择。 
 
- (java.lang) **Runnable** Returns nothing **run() Supplier<T> Supplier BooleanSupplier** No arguments; 
+例如，为什么没有 `IntComparator`，`LongComparator` 和 `DoubleComparator` 呢？有 `BooleanSupplier` 却没有其他表示 **Boolean** 的接口；有通用的 `BiConsumer` 却没有用于 **int**，**long** 和 **double** 的 `BiConsumers` 变体（我对他们放弃的原因表示同情）。这是疏忽还是有人决定（他们是如何得出这个结论的）？
 
-get()  IntSupplier  Returns any type getAstype() LongSupplier DoubleSupplier Callable No arguments; (java.util.concurrent)  Callable<V> Returns any type call() Consumer<T> One argument;
-
-Consumer IntConsumer Returns nothing accept() LongConsumer DoubleConsumer 
-
-Two-argument BiConsumer BiConsumer<T,U> Consumer accept() Two-argument Consumer; ObjIntConsumer<T> First arg is a ObjtypeConsumer ObjLongConsumer<T> reference; accept() Second arg is a ObjDoubleConsumer<T> primitive Function<T,R> IntFunction<R> LongFunction<R> DoubleFunction<R> ToIntFunction<T> Function One argument; ToLongFunction<T> apply() Returns a different ToDoubleFunction<T> type Totype & typeTotype: IntToLongFunction applyAstype() IntToDoubleFunction LongToIntFunction LongToDoubleFunction DoubleToIntFunction DoubleToLongFunction UnaryOperator<T> One argument; UnaryOperator IntUnaryOperator Returns the same type apply() LongUnaryOperator DoubleUnaryOperator BinaryOperator<T> Two arguments, same type; BinaryOperator IntBinaryOperator Returns the same apply() LongBinaryOperator type DoubleBinaryOperator Two arguments, Comparator same type; (java.util) Comparator<T> Returns int compare() Predicate<T> BiPredicate<T,U> Two arguments; Predicate IntPredicate Returns boolean test() LongPredicate DoublePredicate IntToLongFunction IntToDoubleFunction Primitive argument; typeTotypeFunction LongToIntFunction Returns a primitive applyAstype() LongToDoubleFunction DoubleToIntFunction DoubleToLongFunction BiFunction<T,U,R> BiConsumer<T,U> Two arguments; Bioperation BiPredicate<T,U> Different types (method name varies) ToIntBiFunction<T,U> ToLongBiFunction<T,U> ToDoubleBiFunction<T,U>
-
-
-
-你可能会想到用于进一步添加更多行，但此表提供了基本概念，并且应该帮到或多或少地推断出你需要的函数接口。
-
-你可以看到在创建 `java.util.function` 时做出了一些选择。 例如，为什么没有 `IntComparator`，`LongComparator` 和 `DoubleComparator` ？ 有一个 `BooleanSupplier`，但没有其他接口表示 **Boolean**。 有一个通用的 `BiConsumer`，但没有用于所有 **int**，**long** 和 **double** 的 `BiConsumers` 变体（ 我可以支持他们为什么放弃那个）。 这是疏忽还是有人决定（他们是如何得出这个结论的）？
-
-你还可以看到原始类型为 Java 添加了多少复杂性。 由于效率问题，它们被包含在该语言的第一版中 - 这很快就得到了缓解。 现在，在语言的生命周期中，我们仍然受到语言设计选择不佳的影响。
+你还可以看到基本类型给 Java 添加了多少复杂性。为了缓解效率问题，该语言的第一版中就包含了基本类型。现在，在语言的生命周期中，我们仍然受到语言设计选择不佳的影响。
 
 下面枚举基于 Lambda 表达式的所有不同 Function 变体的示例：
 
@@ -741,11 +743,11 @@ public class FunctionVariants {
 }
 ```
 
-这些 Lambda 表达式尝试生成适合对应函数签名的最简代码。 在某些情况下，强制转换是必要的，否则编译器会抱怨截断错误。
+这些 Lambda 表达式尝试生成适合对应函数签名的最简代码。 在某些情况下，有必要进行强制类型转换，否则编译器会报截断错误。
 
-`main()` 中的每个测试都显示了 `Function` 接口中不同类型的 `apply` 方法。 每个都产生一个对其相关的 Lambda 表达式的调用。
+主方法中的每个测试都显示了 `Function` 接口中不同类型的 `apply()` 方法。 每个都产生一个与其关联的 Lambda 表达式的调用。
 
-方法引用有自己的魔力：
+方法引用有自己的小魔法：
 
 ```java
 / functional/MethodConversion.java
@@ -773,17 +775,20 @@ public class MethodConversion {
     bic.accept(new In1(), new In2());
   }
 }
-/* Output:
-accept()
-someOtherName()
-*/
 ```
 
-查看 `BiConsumer` 的文档。 你会看到它的函数方法是 `accept()`。 实际上，如果我们将方法命名为 `accept()`，它就可以作为方法引用。 但是我们可以给它一个完全不同的名称，比如 `someOtherName()`，它也可以运行，只要参数类型和返回类型与 `BiConsumer` 的 `accept()` 相同。
+输出结果：
 
-因此，在使用函数接口时，名称无关紧要 - 只有参数类型和返回类型相同。 Java 将你的名称映射到接口的函数方法。 要调用方法，可以调用函数方法名称（在本例中为 `accept()`），而不是你的方法名称。
+```
+accept()
+someOtherName()
+```
 
-现在我们将查看应用于方法引用的所有基于类的 Functionals（即那些不涉及原始类型的函数）。 我再次创建了适合函数签名的最简单方法：
+查看 `BiConsumer` 的文档，你会看到 `accept()` 方法。 实际上，如果我们将方法命名为 `accept()`，它就可以作为方法引用。 但是我们也可用不同的名称，比如 `someOtherName()`。只要参数类型、返回类型与 `BiConsumer` 的 `accept()` 相同即可。
+
+因此，在使用函数接口时，名称无关紧要——只要参数类型和返回类型相同。 Java 会将你的方法映射到接口方法。 要调用方法，可以调用接口的函数式方法（在本例中为 `accept()`），而不是你的方法名。
+
+现在我们来看看所有基于类的函数式，应用于方法引用（即那些不涉及基本类型的函数）。下例我们创建了一个最简单的函数式签名。代码示例：
 
 ```java
 // functional/ClassFunctionals.java
@@ -831,13 +836,13 @@ public class ClassFunctionals {
 }
 ```
 
-请注意，每个方法名称都是任意的（ `f1()，f2()`等），但正如你刚才看到的，一旦将方法引用分配给函数接口，你就可以调用与该接口关联的函数方法。 在此示例中，这些是 `get()，compare()，accept()，apply()` 和 `test()`。
+请**注意**，每个方法名称都是随意的（如 `f1()`，`f2()`等）。正如你刚才看到的，一旦将方法引用赋值给函数接口，我们就可以调用与该接口关联的函数方法。 在此示例中为 `get()`、`compare()`、`accept()`、`apply()` 和 `test()`。
+
 
 <!-- Functional Interfaces with More Arguments -->
+### 多参数函数式接口
 
-### 有着更多参数的函数接口
-
-`java.util.functional` 中的接口是有限的。 比如有了 `BiFunction`，但它不能变化。 如果需要三参数函数的接口怎么办？ 其实这些接口非常简单，很容易查看 Java 库源代码并自行创建：
+`java.util.functional` 中的接口是有限的。比如有了 `BiFunction`，但它不能变化。 如果需要三参数函数的接口怎么办？ 其实这些接口非常简单，很容易查看 Java 库源代码并自行创建。代码示例：
 
 ```java
 // functional/TriFunction.java
@@ -848,7 +853,7 @@ public interface TriFunction<T, U, V, R> {
 }
 ```
 
-一个简短的测试将验证它是否有效：
+简单测试，验证它是否有效：
 
 ```java
 // functional/TriFunctionTest.java
@@ -865,7 +870,7 @@ public class TriFunctionTest {
 
 这里我们测试方法引用和 Lambda 表达式。
 
-### 缺少原始类型的函数
+### 缺少基本类型的函数
 
 让我们重温一下 `BiConsumer`，看看我们如何创建缺少 **int**，**long** 和 **double** 的各种排列：
 
@@ -887,16 +892,19 @@ public class BiConsumerPermutations {
     bicil.accept(1, 11L);
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 47, 11.340000
 92, 22.450000
 1, 11
-*/
 ```
 
-为了显示，我使用 `System.out.format()`，它类似于 `System.out.println()`，除了它提供了更多的显示选项。 这里，`%f` 表示我将 `n` 作为浮点值给出，`%d` 表示 `n` 是一个整数值。 我能够包含空格，并且它不会添加换行符，除非你输入 `%n`  - 它也会接受传统 `\n` 换行符，但 `%n` 是自动跨平台的，这是使用的 `format()` 的另一个原因。
+这里使用 `System.out.format()` 来显示。它类似于 `System.out.println()` 但提供了更多的显示选项。 这里，`%f` 表示我将 `n` 作为浮点值给出，`%d` 表示 `n` 是一个整数值。 我能够包含空格，并且它不会添加换行符，除非你输入 `%n`  - 它也会接受传统 `\n` 换行符，但 `%n` 是自动跨平台的，这是使用的 `format()` 的另一个原因。
 
-该示例仅使用适当的包装器类型，装箱和拆箱负责在原始类型之间来回转换。 我们也可以使用包装类型，例如 Function，而不是预定义的原始类型：
+上例简单使用了包装类型，装箱和拆箱用于在基本类型之间来回转换。 我们也可以使用包装类型，如 `Function`，而不是预定义的基本类型。代码示例：
 
 ```java
 // functional/FunctionWithWrapped.java
@@ -911,7 +919,7 @@ public class FunctionWithWrapped {
 }
 ```
 
-如果没有强制转换，则会收到错误消息：“ Integer 无法转换为 Double ”，而 **IntToDoubleFunction** 版本没有此类问题。 Java库代码里 **IntToDoubleFunction** 是这样子的：
+如果没有强制转换，则会收到错误消息：“Integer cannot be converted to Double”（**Integer** 无法转换为 **Double**），而使用 **IntToDoubleFunction** 就没有此类问题。 **IntToDoubleFunction** 接口的源代码是这样的：
 
 ```java
 @FunctionalInterface 
@@ -920,11 +928,11 @@ public interface IntToDoubleFunction {
 }
 ```
 
-因为我们可以简单地编写 `Function <Integer，Double>` 并产生工作结果，所以很明显，函数的原始类型的唯一原因是为了防止传递参数和返回结果所涉及的自动装箱和自动装箱。 也就是说，为了性能。
+之所以我们可以简单地编写 `Function <Integer，Double>` 并返回合适的结果，很明显是为了性能。使用基本类型可以防止传递参数和返回结果过程中的自动装箱和自动拆箱。
 
-似乎可以安全地推测，某些函数类型具有定义而其他类型没有定义是因为考虑到了使用频率。
+似乎是考虑到使用频率，某些函数类型并没有预定义。
 
-当然，如果由于缺少原始类型的函数而导致性能实际上成为问题，你可以轻松编写自己的接口（ 使用Java库源进行参考 ） - 尽管这似乎不太可能是你的性能瓶颈。
+当然，如果因缺少基本类型而造成的性能问题，你也可以轻松编写自己的接口（ 参考 Java 源代码）——尽管这里出现性能瓶颈的可能性不大。
 
 <!-- Higher-Order Functions-->
 ## 高阶函数
@@ -1149,7 +1157,7 @@ public class Closure5 {
 
 要成为 “effectively final” ，意味着你可以将 final 关键字应用于变量声明而不更改任何其余代码。 它实际上是 `final`的，你只是没有明说。
 
-我们实际上可以通过在闭包中使用它们之前将 `x` 和  `i` 分配给 `final` 变量来解决 `Closure5.java` 中的问题：
+我们实际上可以通过在闭包中使用它们之前将 `x` 和  `i` 赋值给 `final` 变量来解决 `Closure5.java` 中的问题：
 
 ```java
 
@@ -1169,7 +1177,7 @@ public class Closure6 {
 }
 ```
 
-由于我们在分配后永远不会更改 `iFinal` 和 `xFinal` ，因此在这里使用 `final` 是多余的。
+由于我们在赋值后永远不会更改 `iFinal` 和 `xFinal` ，因此在这里使用 `final` 是多余的。
 
 如果你使用引用怎么办？ 我们可以从 **int** 更改为 **Integer**：
 
@@ -1225,9 +1233,9 @@ public class Closure8 {
 
 这次它可以运行：我们修改 `List` 的内容而没产生编译时错误。 当你查看此示例的输出时，它看起来确实非常安全，因为每次调用 `makeFun()`时，都会创建并返回一个全新的 `ArrayList`  - 这意味着它不会被共享，因此每个生成的闭包都有自己独立的 `ArrayList`  他们不能互相干扰。
 
-并且请注意我已经声明 `ai` 是 `final` 的，尽管在这个例子中你可以去掉 `final` 并得到相同的结果（试试吧！）。 应用于对象引用的 `final` 关键字仅表示不会重新分配引用。 它并没有说你无法修改对象本身。
+并且请注意我已经声明 `ai` 是 `final` 的，尽管在这个例子中你可以去掉 `final` 并得到相同的结果（试试吧！）。 应用于对象引用的 `final` 关键字仅表示不会重新赋值引用。 它并没有说你无法修改对象本身。
 
-看看 `Closure7.java` 和 `Closure8.java` 之间的区别，我们看到 `Closure7.java` 实际上有一个 `i` 的重新分配。 也许这是 “effectively final” 错误消息的触发点：
+看看 `Closure7.java` 和 `Closure8.java` 之间的区别，我们看到 `Closure7.java` 实际上有一个 `i` 的重新赋值。 也许这是 “effectively final” 错误消息的触发点：
 
 ```java
 // functional/Closure9.java
@@ -1245,7 +1253,7 @@ public class Closure9 {
 }
 ```
 
-引用的重新分配确实会触发错误消息。 如果只修改指向的对象，Java 会接受它。 只要没有其他人获得对该对象的引用（这意味着你有多个可以修改对象的实体，此时事情会变得非常混乱），这可能是安全的。[^6]
+引用的重新赋值确实会触发错误消息。 如果只修改指向的对象，Java 会接受它。 只要没有其他人获得对该对象的引用（这意味着你有多个可以修改对象的实体，此时事情会变得非常混乱），这可能是安全的。[^6]
 
 然而，如果我们现在回顾一下 `Closure1.java.` ，那就有一个难题：`i` 被修改却没有编译器投诉。 它既不是 `final` 的，也不是“effectively final"的。因为 `i` 是外围类的成员，所以这样做肯定是安全的（ 除非你正在创建共享可变内存的多个函数）。实际上，你可以争辩说在这种情况下不会发生变量捕获（variable capture）。 可以肯定的是，`Closure3.java` 的错误消息专门针对局部变量。 因此，规则并不像说“在Lambda之外定义的任何变量必须是 `final` 的或 `effectively final` 那么简单。相反，你必须考虑捕获的变量是否实际 `final`。 如果它是对象中的字段，那么它有一个独立的生存期，并且不需要任何特殊的捕获，以便稍后在调用 Lambda 时存在。
 
@@ -1422,7 +1430,7 @@ Hi Ho Hup
 
 对于每个级别的箭头级联（arrow-cascading），你可以围绕类型声明包装另一个函数。
 
-处理原始类型和装箱时，请使用适当的功能接口：
+处理基本类型和装箱时，请使用适当的功能接口：
 
 ```java
 // functional/CurriedIntAdd.java
