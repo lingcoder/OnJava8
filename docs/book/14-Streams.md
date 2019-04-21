@@ -1384,10 +1384,203 @@ Frobnitz(7)
 Frobnitz(29)
 ```
 
+**Frobnitz** 包含了一个名为 `supply()` 的生成器；因为这个方法对于 **Supplier\<Frobnitz\>** 是签名兼容的，我们可以将其方法引用传递给 `Stream.generate()`（这种签名兼容性被称作结构一致性）。我们使用没有给“起始值”的 `reduce()`方法，这意味着它的返回值是 **Optional** 类型的。`Optional.ifPresent()` 只有在结果非空的时候才会调用 **Consumer\<Frobnitz\>** （`println` 方法可以被调用是因为 **Frobnitz** 可以通过 `toString()` 方法转换成 **String**）。
 
+Lambda 表达式中的第一个参数 **fr0** 是上一次调用 `reduce()` 的结果。而第二个参数 **fr1** 是从流传递过来值。
+
+`reduce()` 中的 Lambda 表达式使用了三元表达式来获取结果，当其 size 大于 50 的时候获取 **fr0** 或者获取序列中的下一个值 **fr1**。因此你会取得第一个 size 小于 50 的 **Frobnitz**，只要找到了就这个结果就会紧紧的攥住它，即使有其他候选者也会出现。虽然这是一个非常奇怪的约束，但是它确实让你对 `reduce()` 有了更多的了解。
+
+### 匹配（Matching）
+
+- `allMatch(Predicate)` ：如果流的每个元素根据提供的 **Predicate** 都返回 true 时，结果返回为 true。这个操作将会在第一个 false 之后短路；也就是不会在发生 false 之后继续执行计算。
+- `anyMatch(Predicate)`：如果流中的一个元素根据提供的 **Predicate** 返回 true 时，结果返回为 true。这个操作将会在第一个 true 之后短路；也就是不会在发生 true 之后继续执行计算。
+- `noneMatch(Predicate)`：如果流的每个元素根据提供的 **Predicate** 都返回 false 时，结果返回为 true。这个操作将会在第一个 true 之后短路；也就是不会在发生 true 之后继续执行计算。
+
+你已经在 **Prime.java** 中看到了 `noneMatch()` 的示例；` allMatch()` 和 `anyMatch()` 的用法基本上是等同的。让我们探究短路行为。为了创建消除冗余代码的 ` show()` 方法，我们必须首先发现如何概括地描述所有三个匹配器操作, 然后将其转换为称为 **Matcher** 的接口：
+
+```java
+// streams/Matching.java
+// Demonstrates short-circuiting of *Match() operations
+import java.util.stream.*;
+import java.util.function.*;
+import static streams.RandInts.*;
+
+interface Matcher extends BiPredicate<Stream<Integer>, Predicate<Integer>> {}
+        
+public class Matching {
+    static void show(Matcher match, int val) {
+        System.out.println(
+                match.test(
+                        IntStream.rangeClosed(1, 9)
+                                .boxed()
+                                .peek(n -> System.out.format("%d ", n)),
+                        n -> n < val));
+    }
+    public static void main(String[] args) {
+        show(Stream::allMatch, 10);
+        show(Stream::allMatch, 4);
+        show(Stream::anyMatch, 2);
+        show(Stream::anyMatch, 0);
+        show(Stream::noneMatch, 5);
+        show(Stream::noneMatch, 0);
+    }
+}
+```
+
+输出为：
+
+```java
+1 2 3 4 5 6 7 8 9 true
+1 2 3 4 false
+1 true
+1 2 3 4 5 6 7 8 9 false
+1 false
+1 2 3 4 5 6 7 8 9 true
+```
+
+**BiPredicate** 是一个二元谓词，这意味着它只能接受两个参数并且只返回 true 或者 false。它的第一个参数使我们要测试的流，第二个参数是一个谓词 **Predicate**。因为 **Matcher** 适用于所有的 **Stream::*Match** 方法形式，我们可以传递每一个到 `show()` 中。`match.test()` 的调用会被转换成 **Stream::*Match** 函数的调用。
+
+`show()` 获取两个参数，**Matcher** 匹配器和用于表示谓词测试 **n < val** 中最大值的 **val**。这个方法生成一个从 1 到 9 的整数流。`peek()` 是用于像我们展示测试在短路之前的情况。你可以在输出中发现每一次短路都会发生。
+
+### 选择元素（Selecting an Element）
+
+- `findFirst()`：返回一个含有第一个流元素的 **Optional**，如果流为空返回 **Optional.empty**。
+- `findAny(`：返回含有任意流元素的 **Optional**，如果流为空返回 **Optional.empty**。
+
+```java
+// streams/SelectElement.java
+import java.util.*;
+import java.util.stream.*;
+import static streams.RandInts.*;
+public class SelectElement {
+    public static void main(String[] args) {
+        System.out.println(rands().findFirst().getAsInt());
+        System.out.println(
+                rands().parallel().findFirst().getAsInt());
+        System.out.println(rands().findAny().getAsInt());
+        System.out.println(
+                rands().parallel().findAny().getAsInt());
+    }
+}
+```
+
+输出为：
+
+```java
+258
+258
+258
+242
+```
+
+`findFirst()` 无论流是否为并行化的，总是会选择流中的第一个元素。对于非并行流，`findAny()`会选择流中的第一个元素（即使从定义上来看是选择任意元素）。在这个例子中，我们使用 `parallel()` 来并行流从而引入 `findAny()` 选择非第一个流元素的可能性。
+
+如果必须选择流中最后一个元素，那就使用 ` reduce()`：
+
+```java
+// streams/LastElement.java
+import java.util.*;
+import java.util.stream.*;
+public class LastElement {
+    public static void main(String[] args) {
+        OptionalInt last = IntStream.range(10, 20)
+                .reduce((n1, n2) -> n2);
+        System.out.println(last.orElse(-1));
+        // Non-numeric object:
+        Optional<String> lastobj =
+                Stream.of("one", "two", "three")
+                        .reduce((n1, n2) -> n2);
+        System.out.println(
+                lastobj.orElse("Nothing there!"));
+    }
+}
+```
+
+输出为：
+
+```java
+19
+three
+```
+
+`reduce()`  的参数只是用最后一个元素替换了最后两个元素，最终只生成最后一个元素。如果为数字流，你必须使用相近的数字可选类型（ numeric optional type），否则你使用的 Optional 类型为 **Optional\<String\>**。
+
+### 信息（Informational）
+
+- `count()`：流中的元素个数。
+- `max(Comparator)`：根据所传入的 **Comparator** 所决定的“最大”元素。
+- `min(Comparator)`：根据所传入的 **Comparator** 所决定的“最小”元素。
+
+字符串类型有预先定义好的 **Comparator**，这简化了我们的示例：
+
+```java
+// streams/Informational.java
+import java.util.stream.*;
+import java.util.function.*;
+public class Informational {
+    public static void
+    main(String[] args) throws Exception {
+        System.out.println(
+                FileToWords.stream("Cheese.dat").count());
+        System.out.println(
+                FileToWords.stream("Cheese.dat")
+                        .min(String.CASE_INSENSITIVE_ORDER)
+                        .orElse("NONE"));
+        System.out.println(
+                FileToWords.stream("Cheese.dat")
+                        .max(String.CASE_INSENSITIVE_ORDER)
+                        .orElse("NONE"));
+    }
+}
+```
+
+输出为：
+
+```java
+32
+a
+you
+```
+
+`min()` 和 `max()` 的返回类型为 **Optional**，这需要我们使用 `orElse()`来解包。
+
+### 数字流信息（Information for Numeric Streams）
+
+- `average()` ：求取流元素平均值。
+- `max()` 和 `min()`：因为这些操作在数字流上面，所以不需要 **Comparator**。
+- `sum()`：对所有流元素进行求和。
+- `summaryStatistics()`：生成可能有用的数据。目前还不太清楚他们为什么觉得有必要这样做, 但是你可以直接使用方法产生所有的数据。
+
+```java
+// streams/NumericStreamInfo.java
+import java.util.stream.*;
+import static streams.RandInts.*;
+public class NumericStreamInfo {
+    public static void main(String[] args) {
+        System.out.println(rands().average().getAsDouble());
+        System.out.println(rands().max().getAsInt());
+        System.out.println(rands().min().getAsInt());
+        System.out.println(rands().sum());
+        System.out.println(rands().summaryStatistics());
+    }
+}
+```
+
+输出为：
+
+```java
+507.94
+998
+8
+50794
+IntSummaryStatistics{count=100, sum=50794, min=8, average=507.940000, max=998}
+```
+
+这些操作对于 **LongStream** 和 **DoubleStream** 也同样适用。
 
 ## 本章小结
 
+流改变了甚至极大的提升了 Java 编程的性质，并可能极大的组织了 Java 编程人员像诸如 scala 这种函数式语言的流动。在本书的剩余部分，我们将尽可能的使用流。
 
 <!-- 分页 -->
 
