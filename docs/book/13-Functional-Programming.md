@@ -938,9 +938,9 @@ public interface IntToDoubleFunction {
 ## 高阶函数
 
 
-这个名字听起来有点令人生畏，但是：高阶函数只是一个消耗或产生函数的函数。
+这个名字听起来有点令人生畏，但是：[高阶函数](https://en.wikipedia.org/wiki/Higher-order_function)（Higher-order Function）只是一个消费或产生函数的函数。
 
-我们先来看看产生一个函数：
+我们先来看看如何产生一个函数：
 
 ```java
 // functional/ProduceFunction.java
@@ -959,18 +959,20 @@ public class ProduceFunction {
     System.out.println(f.apply("YELLING"));
   }
 }
-/* Output:
+```
+
+输出结果：
+```
 yelling
-*/
 ```
 
 这里，`produce()` 是高阶函数。
 
-**[1]** 使用继承，你可以轻松地为你的专用接口创建别名。
+**[1]** 使用继承，可以轻松地为你的专用接口创建别名。
 
-**[2]** 使用 Lambda 表达式，在方法中创建和返回一个函数几乎毫不费力。
+**[2]** 使用 Lambda 表达式，在方法中轻松创建和返回一个函数。
 
-要 `consume` 函数（consume a function），其对应的 `consuming` 方法 （the consuming method）的参数列表必须正确描述函数类型：
+要消费一个函数，消费函数需要在参数列表正确地描述函数类型。代码示例：
 
 ```java
 // functional/ConsumeFunction.java
@@ -990,7 +992,7 @@ public class ConsumeFunction {
 }
 ```
 
-当你根据 `consume` 的函数生成新函数时，事情变得特别有趣，比如：
+有趣的是，根据消费函数生成新函数。代码示例：
 
 ```java
 // functional/TransformFunction.java
@@ -1022,13 +1024,18 @@ public class TransformFunction {
     O o = f2.apply(new I());
   }
 }
-/* Output:
-I
-O
-*/
 ```
 
-在这里，`transform()` 生成一个与传入的函数具有相同签名的函数，但是你可以生成任何你想要的类型。这在 `Function` 接口中使用名为 `andThen()` 的默认方法，该方法专门用于操作函数。 顾名思义，在调用in函数之后调用 `toThen()`（还有 `compose()`，它在 `in` 函数之前应用新函数）。 要附加一个 `andThen()` 函数，我们只需将该函数作为参数传递。 `transform()` 产生的是一个新函数，它将 `in` 的动作与 `andThen()` 参数的动作结合起来。
+输出结果：
+
+```
+I
+O
+```
+
+在这里，`transform()` 生成一个与传入的函数具有相同签名的函数，但是你可以生成任何你想要的类型。
+
+这在 `Function` 接口中使用名为 `andThen()` 的默认方法，该方法专门用于操作函数。 顾名思义，在调用 `in` 函数之后调用 `toThen()`（还有 `compose()`，它在 `in` 函数之前应用新函数）。 要附加一个 `andThen()` 函数，我们只需将该函数作为参数传递。 `transform()` 产生的是一个新函数，它将 `in` 的动作与 `andThen()` 参数的动作结合起来。
 
 <!-- Closures -->
 ## 闭包
@@ -1075,11 +1082,14 @@ public class SharedStorage {
     System.out.println(f3.getAsInt());
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 0
 1
 2
-*/
 ```
 
 每次调用 `getAsInt()` 都会增加 `i`，表明存储是共享的。
@@ -1223,12 +1233,15 @@ public class Closure8 {
     System.out.println(l2);
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 [1]
 [1]
 [1, 42]
 [1, 96]
-*/
 ```
 
 这次它可以运行：我们修改 `List` 的内容而没产生编译时错误。 当你查看此示例的输出时，它看起来确实非常安全，因为每次调用 `makeFun()`时，都会创建并返回一个全新的 `ArrayList`  - 这意味着它不会被共享，因此每个生成的闭包都有自己独立的 `ArrayList`  他们不能互相干扰。
@@ -1316,10 +1329,13 @@ public class FunctionComposition {
       f4.apply("GO AFTER ALL AMBULANCES"));
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 AFTER ALL AMBULANCES
 _fter _ll _mbul_nces
-*/
 ```
 
 这里要看的重要一点是我们正在创建一个新函数 `f4`，然后可以使用 `apply()`（几乎）像任何其他函数一样调用它。[^8]
@@ -1346,10 +1362,13 @@ public class PredicateComposition {
       .forEach(System.out::println);
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 foobar
 foobaz
-*/
 ```
 
 `p4` 获取所有谓词并将它们组合成一个更复杂的谓词，其中包含：“如果 `String` 不包含 'bar' 且长度小于5，或者它包含 'foo' ，则结果为 `true`。”因为它产生如此清晰的语法，我在`main()`中作了一些小伎俩，并借用了下一章的内容。 首先，我创建一个 `String` 对象的 “流”（序列），然后将每个对象提供给 `filter()`操作。 `filter()`使用我们的 `p4` 谓词来决定要保留流中的哪个对象以及要丢弃的对象。 最后，我使用 `forEach()`将 `println` 方法引用应用于每个幸存的对象。
@@ -1390,12 +1409,15 @@ public class CurryingAndPartials {
       System.out.println(sumHi.apply("Hey"));
    }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Hi Ho
 Hi Ho
 Hup Ho
 Hup Hey
-*/
 ```
 
 **[1]** 这是一条巧妙的线:一连串的箭头。注意，在函数接口声明中，函数的第二个参数是另一个函数。
@@ -1423,9 +1445,10 @@ public class Curry3Args {
       System.out.println(ho.apply("Hup"));
    }
 }
-/* Output:
+```
+
+输出结果：
 Hi Ho Hup
-*/
 ```
 
 对于每个级别的箭头级联（arrow-cascading），你可以围绕类型声明包装另一个函数。
@@ -1445,9 +1468,12 @@ public class CurriedIntAdd {
     System.out.println(add4.applyAsInt(5));
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 9
-*/
 ```
 
 你可以在因特网上找到更多 currying 示例。 通常这些是 Java 以外的语言，但如果你理解它们的基本概念，它们应该很容易翻译。
