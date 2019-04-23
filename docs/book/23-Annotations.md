@@ -28,8 +28,29 @@
 
 ## 基本语法
 
-
 <!-- Writing Annotation Processors -->
+
+在下面的例子中，使用 `@Test` 对 `testExecute()` 进行注解。该注解本身不做任何事情，但是编译器要保证其类路径上有 `@Test` 注解的定义。你将在本章看到，我们通过注解创建了一个工具用于运行这个方法：
+
+```java
+// annotations/Testable.java
+package annotations;
+import onjava.atunit.*;
+public class Testable {
+    public void execute() {
+        System.out.println("Executing..");
+    }
+    @Test
+    void testExecute() { execute(); }
+}
+```
+
+被注解标注的方法和其他的方法没有任何区别。在这个例子中，注解 `@Test` 可以和任何修饰符共同用于方法，注入 **public**、**static** 或 **void**。用语法的角度上看，注解和使用方式和修饰符的使用方式一致。
+
+### 定义注解
+
+如下是一个注解的定义。注解的定义看起来很像接口的定义。事实上，它们和其他 Java 接口一样，也会被编译成 class 文件。
+
 ## 编写注解处理器
 
 
