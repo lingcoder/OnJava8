@@ -51,6 +51,66 @@ public class Testable {
 
 如下是一个注解的定义。注解的定义看起来很像接口的定义。事实上，它们和其他 Java 接口一样，也会被编译成 class 文件。
 
+```java
+// onjava/atunit/Test.java
+// The @Test tag
+package onjava.atunit;
+import java.lang.annotation.*;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Test {}
+```
+
+除了 @ 符号之外， `@Test` 的定义看起来更像一个空接口。注解的定义也需要一些元注解（meta-annoation），比如 `@Target` 和 `@Retention`。`@Target` 定义你的注解可以应用在哪里（例如是方法还是字段）。`@Retention` 定义了注解在哪里可用，在源代码中（SOURCE），class文件（CLASS）中或者是在运行时（RUNTIME）。
+
+注解通常会包含一些表示特定值的元素。当分析处理注解的时候，程序或工具可以利用这些值。注解的元素看起来就像接口的方法，但是可以为其指定默认值。
+
+不包含任何元素的注解称为标记注解（marker annotation），例如上例中的 `@Test` 就是标记注解。
+
+下面是一个简单的注解，我们可以用它来追踪项目中的用例。程序员可以使用该注解来标注满足特定用例的一个方法或者一组方法。于是，项目经理可以通过统计已经实现的用例来掌控项目的进展，而开发者在维护项目时可以轻松的找到用例用于更新，或者他们可以调试系统中业务逻辑。
+
+```java
+// annotations/UseCase.java
+import java.lang.annotation.*;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UseCase {
+    int id();
+    String description() default "no description";
+}
+```
+
+注意 **id** 和 **description** 与方法定义类似。由于编译器会对 **id** 进行类型检查，因此将跟踪数据库与用例文档和源代码相关联是可靠的方式。**description** 元素拥有一个 **default** 值，如果在注解某个方法时没有给出 **description** 的值。则该注解的处理器会使用此元素的默认值。
+
+在下面的类中，有三个方法被注解为用例：
+
+```java
+// annotations/PasswordUtils.java
+import java.util.*;
+public class PasswordUtils {
+    @UseCase(id = 47, description =
+            "Passwords must contain at least one numeric")
+    public boolean validatePassword(String passwd) {
+        return (passwd.matches("\\w*\\d\\w*"));
+    }
+    @UseCase(id = 48)
+    public String encryptPassword(String passwd) {
+        return new StringBuilder(passwd)
+                .reverse().toString();
+    }
+    @UseCase(id = 49, description =
+            "New passwords can't equal previously used ones")
+    public boolean checkForNewPassword(
+            List<String> prevPasswords, String passwd) {
+        return !prevPasswords.contains(passwd);
+    }
+}
+```
+
+注解的元素在使用时表现为 名-值 对的形式，并且需要放置在 `@UseCase` 声明之后的括号内。在 `encryptPassword()` 方法的注解中，并没有给出 **description** 的默认值，所以在 **@interface UseCase** 的注解处理器分析处理这个类的时候会使用该元素的默认值。
+
+你应该能够想象到如何使用这套工具来“勾勒”出将要建造的凶，然后在建造的过程中逐渐实现系统的各项功能。
+
 ## 编写注解处理器
 
 
