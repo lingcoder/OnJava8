@@ -27,7 +27,7 @@ OO（object oriented，面向对象）是抽象数据，FP（functional programm
 
 更好的是，“不可变对象和无副作用”范例解决了并发编程中最基本和最棘手的问题之一（当程序的某些部分同时在多个处理器上运行时）。这是可变共享状态的问题，这意味着代码的不同部分（在不同的处理器上运行）可以尝试同时修改同一块内存（谁赢了？没人知道）。如果函数永远不会修改现有值但只生成新值，则不会对内存产生争用，这是纯函数式语言的定义。 因此，经常提出纯函数式语言作为并行编程的解决方案（还有其他可行的解决方案）。
 
-需要提醒大家的是，函数式语言背后有很多动机，这意味着描述它们可能会有些混淆。它通常取决于各种观点：“为并行编程”，“代码可靠性”和“代码创建和库复用”。[^1] 同时，函数式编程的参数能帮助程序员创建更快更健壮的代码 —— 部分仍然只是假设。虽然已有一些好的范例，[^2]但我们还不能证明纯函数式语言就是解决编程问题的最佳方法。
+需要提醒大家的是，函数式语言背后有很多动机，这意味着描述它们可能会有些混淆。它通常取决于各种观点：“为并行编程”，“代码可靠性”和“代码创建和库复用”。[^1] 同时，函数式编程的参数能帮助程序员创建更快更健壮的代码 —— 部分仍然只是假设。虽然已有一些好的范例[^2]，但我们还不能证明纯函数式语言就是解决编程问题的最佳方法。
 
 FP 思想值得融入非 FP 语言，如 Python。Java 8 也从中吸收并支持了 FP。我们将在此章探讨。
 
@@ -1041,15 +1041,15 @@ O
 ## 闭包
 
 
-在上一节的 `ProduceFunction.java` 中，我们从方法返回了一个 Lambda 函数。 这个例子让事情变得简单，但是我们必须在返回 Lambdas 时探讨一些问题。
+在上一节的 `ProduceFunction.java` 中，我们从方法中返回 Lambda 函数。 虽然过程简单，但是有些问题必须再回过头来探讨一下。
 
-*闭包*一词概括了这些问题。 闭包非常重要，因为它们可以轻松生成函数。
+**闭包**（Closure）一词总结了这些问题。 它非常重要，利用闭包可以轻松生成函数。
 
-考虑一个更复杂的 Lambda，它使用函数作用域之外的变量。 返回该函数会发生什么？ 也就是说，当你调用函数时，它对那些 “外部 ”变量引用了什么?  如果语言不能自动解决这个问题，那将变得非常具有挑战性。 能够解决这个问题的语言被称为**支持闭包**，或者在词法上限定范围( 也使用术语变量捕获 )。Java 8提供了有限但合理的闭包支持，
+考虑一个更复杂的 Lambda，它使用函数作用域之外的变量。 返回该函数会发生什么？ 也就是说，当你调用函数时，它对那些 “外部 ”变量引用了什么?  如果语言不能自动解决这个问题，那将变得非常具有挑战性。 能够解决这个问题的语言被称为**支持闭包**，或者在词法上限定范围( 也使用术语变量捕获 )。Java 8 提供了有限但合理的闭包支持，
 
 我们将用一些简单的例子来研究它。
 
-首先，这里有一个方法返回一个访问对象字段和方法参数的函数:
+首先，下例函数中，方法返回访问对象字段和方法参数。代码示例：
 
 ```java
 // functional/Closure1.java
@@ -1064,8 +1064,7 @@ public class Closure1 {
 }
 ```
 
-但是，仔细考虑一下，`i` 的这种用法并不是一个很大的挑战，因为对象很可能在你调用 `makeFun()` 之后就存在了——实际上，垃圾收集器几乎肯定会保留一个对象，并将现有的函数以这种方式绑定到该对象上。当然，如果你对同一个对象多次调用 `makeFun()` ，你最终会得到多个函数，它们都为 `i` 共享相同的存储空间:
-
+但是，仔细考虑一下，`i` 的这种用法并非是个大难题，因为对象很可能在你调用 `makeFun()` 之后就存在了——实际上，垃圾收集器几乎肯定会保留一个对象，并将现有的函数以这种方式绑定到该对象上[^5]。当然，如果你对同一个对象多次调用 `makeFun()` ，你最终会得到多个函数，它们都为 `i` 共享相同的存储空间:
 ```java
 // functional/SharedStorage.java
 
@@ -1109,7 +1108,7 @@ public class Closure2 {
 }
 ```
 
-由 `makeFun()` 返回的 `IntSupplier` “关闭” `i` 和 `x`，因此当你调用返回的函数时两者仍然有效。 但请注意，我没有像 `Closure1.java` 那样增加i。 尝试递增它会产生编译时错误：
+由 `makeFun()` 返回的 `IntSupplier` “关闭” `i` 和 `x`，因此当你调用返回的函数时两者仍然有效。 但请**注意**，我没有像 `Closure1.java` 那样递增 `i`，因为会产生编译时错误。代码示例：
 
 ```java
 // functional/Closure3.java
@@ -1120,15 +1119,15 @@ import java.util.function.*;
 public class Closure3 {
   IntSupplier makeFun(int x) {
     int i = 0;
-    // Neither x++ nor i++ will work:
+    // x++ 和 i++ 都会报错：
     return () -> x++ + i++;
   }
 }
 ```
 
-`x` 和 `i` 的操作都犯了同样的错误：
+`x` 和 `i` 的操作都犯了同样的错误：从 Lambda 表达式引用的局部变量必须是 `final` 或者实 `final` 效果的。
 
-显然，从 Lambda 表达式引用的局部变量必须是 `final` 或者 实际的 `final` （effectively final），如果我们声明 `x`和 `i` 是 `final` ，它将起作用，因为那时我们不能增加任何一个：
+如果使用 `final` 修饰 `x`和 `i`，就不能再递增它们的值了。代码示例：
 
 ```java
 // functional/Closure4.java
@@ -1143,16 +1142,16 @@ public class Closure4 {
 }
 ```
 
-但是为什么 `Closure2.java` 在 `x` 和 `i `不是 `final` 却可以运行？
+那么为什么在 `Closure2.java` 中， `x` 和 `i` 非 `final` 却可以运行呢？
 
-这就是 “实际” `final `（effectively final）的含义出现的地方。 这个术语是为 Java 8 创建的，表示你没有明确地声明变量是 `final` 的，但你仍然是这样对待它 - 你没有改变它。 如果局部变量的初始值永远不会改变，那么它实际上是最终的。
+这就叫做**等同 final 效果**（Effectively Final）。这个术语是在 Java 8 才开始出现的，表示虽然没有明确地声明变量是 `final` 的，但是因变量值没被改变过而实际有了 `final` 同等的效果。 如果局部变量的初始值永远不会改变，那么它实际上就是 `final` 的。
 
-如果 `x` 和 `i` 在方法中的其他位置更改（但不在返回函数内部），则编译器仍将其视为错误。 每个增量产生一个单独的错误消息：
+如果 `x` 和 `i` 的值在方法中的其他位置发生改变（但不在返回的函数内部），则编译器仍将视其为错误。每个递增操作则会分别产生错误消息。代码示例：
 
 ```java
 / functional/Closure5.java
 
-// {WillNotCompile}
+// {无法编译成功}
 import java.util.function.*;
 
 public class Closure5 {
@@ -1165,9 +1164,9 @@ public class Closure5 {
 }
 ```
 
-要成为 “effectively final” ，意味着你可以将 final 关键字应用于变量声明而不更改任何其余代码。 它实际上是 `final`的，你只是没有明说。
+我们可以通过将 `final` 关键字应用于变量声明来实现**等同 final 效果**， 不用更改任何其余代码。 实际上它就是具备 `final` 效果的，只是没有明确说明。
 
-我们实际上可以通过在闭包中使用它们之前将 `x` 和  `i` 赋值给 `final` 变量来解决 `Closure5.java` 中的问题：
+通过在闭包中使用 `final` 关键字提前修饰变量 `x` 和  `i` ， 我们解决了 `Closure5.java` 中的问题。代码示例：
 
 ```java
 
@@ -1187,14 +1186,14 @@ public class Closure6 {
 }
 ```
 
-由于我们在赋值后永远不会更改 `iFinal` 和 `xFinal` ，因此在这里使用 `final` 是多余的。
+上例中 `iFinal` 和 `xFinal` 的值在赋值后并没有改变过，因此在这里使用 `final` 是多余的。
 
-如果你使用引用怎么办？ 我们可以从 **int** 更改为 **Integer**：
+如果这里是引用的话，需要把 **int** 型更改为 **Integer** 型。代码示例：
 
 ```java
 // functional/Closure7.java
 
-// {WillNotCompile}
+// {无法编译成功}
 import java.util.function.*;
 
 public class Closure7 {
@@ -1206,7 +1205,7 @@ public class Closure7 {
 }
 ```
 
-编译器仍然足够聪明，可以看到 `i` 正在被更改。 包装器类型可能正在进行特殊处理，所以让我们尝试一下List：
+编译器非常智能，它能识别变量 `i` 的值正在被更改。 对于包装类型的处理可能比较特殊，所以让我们使用下面的 List 的例子。代码示例：
 
 ```java
 // functional/Closure8.java
@@ -1244,16 +1243,16 @@ public class Closure8 {
 [1, 96]
 ```
 
-这次它可以运行：我们修改 `List` 的内容而没产生编译时错误。 当你查看此示例的输出时，它看起来确实非常安全，因为每次调用 `makeFun()`时，都会创建并返回一个全新的 `ArrayList`  - 这意味着它不会被共享，因此每个生成的闭包都有自己独立的 `ArrayList`  他们不能互相干扰。
+可以看到，这次一切正常。我们改变了 List 的值却没产生编译时错误。通过观察本例的输出结果，我们发现这看起来非常安全。这是因为每次调用 `makeFun()` 时，其实都会创建并返回一个全新的 `ArrayList`。 也就是说，每个闭包都有自己独立的 `ArrayList` 他们不能互相干扰和共享。
 
-并且请注意我已经声明 `ai` 是 `final` 的，尽管在这个例子中你可以去掉 `final` 并得到相同的结果（试试吧！）。 应用于对象引用的 `final` 关键字仅表示不会重新赋值引用。 它并没有说你无法修改对象本身。
+请**注意**我已经声明 `ai` 是 `final` 的了。尽管在这个例子中你可以去掉 `final` 并得到相同的结果（试试吧！）。 应用于对象引用的 `final` 关键字仅表示不会重新赋值引用。 它并不代表你不能修改对象本身。
 
-看看 `Closure7.java` 和 `Closure8.java` 之间的区别，我们看到 `Closure7.java` 实际上有一个 `i` 的重新赋值。 也许这是 “effectively final” 错误消息的触发点：
+下面我们来看看 `Closure7.java` 和 `Closure8.java` 之间的区别。我们看到：在 `Closure7.java` 中变量 `i` 有过重新赋值。 也许这就是**等同 final 效果**错误消息的触发点。
 
 ```java
 // functional/Closure9.java
 
-// {WillNotCompile}
+// {无法编译成功}
 import java.util.*;
 import java.util.function.*;
 
@@ -1266,12 +1265,11 @@ public class Closure9 {
 }
 ```
 
-引用的重新赋值确实会触发错误消息。 如果只修改指向的对象，Java 会接受它。 只要没有其他人获得对该对象的引用（这意味着你有多个可以修改对象的实体，此时事情会变得非常混乱），这可能是安全的。[^6]
+上例，重新赋值引用会触发错误消息。如果只修改指向的对象则没问题，只要没有其他人获得对该对象的引用（这意味着你有多个实体可以修改对象，此时事情会变得非常混乱），基本上就是安全的[^6]。
 
-然而，如果我们现在回顾一下 `Closure1.java.` ，那就有一个难题：`i` 被修改却没有编译器投诉。 它既不是 `final` 的，也不是“effectively final"的。因为 `i` 是外围类的成员，所以这样做肯定是安全的（ 除非你正在创建共享可变内存的多个函数）。实际上，你可以争辩说在这种情况下不会发生变量捕获（variable capture）。 可以肯定的是，`Closure3.java` 的错误消息专门针对局部变量。 因此，规则并不像说“在Lambda之外定义的任何变量必须是 `final` 的或 `effectively final` 那么简单。相反，你必须考虑捕获的变量是否实际 `final`。 如果它是对象中的字段，那么它有一个独立的生存期，并且不需要任何特殊的捕获，以便稍后在调用 Lambda 时存在。
+让我们回顾一下 `Closure1.java`。那么现在问题来了：为什么变量 `i` 被修改编译器却没有报错呢。 它既不是 `final` 的，也不是**等同 final 效果**的。因为 `i` 是外围类的成员，所以这样做肯定是安全的（除非你正在创建共享可变内存的多个函数）。是的，你可以辩称在这种情况下不会发生变量捕获（Variable Capture）。但可以肯定的是，`Closure3.java` 的错误消息是专门针对局部变量的。因此，规则并非只是“在 Lambda 之外定义的任何变量必须是 `final` 的或**等同 final 效果**那么简单。相反，你必须考虑捕获的变量是否是**等同 final 效果**的。 如果它是对象中的字段，那么它拥有独立的生存周期，并且不需要任何特殊的捕获，以便稍后在调用 Lambda 时存在。
 
 <!-- Inner Classes as Closures -->
-
 ### 作为闭包的内部类
 
 我们可以复制我们的例子使用匿名内部类:
@@ -1284,9 +1282,9 @@ import java.util.function.*;
 public class AnonymousClosure {
   IntSupplier makeFun(int x) {
     int i = 0;
-    // Same rules apply:
-    // i++; // Not "effectively final"
-    // x++; // Ditto
+    // 同样规则的应用:
+    // i++; // 非等同 final 效果
+    // x++; // 同上
     return new IntSupplier() {
       public int getAsInt() { return x + i; }
     };
@@ -1294,13 +1292,13 @@ public class AnonymousClosure {
 }
 ```
 
-事实证明，只要有内部类，就会有闭包（Java 8只 会使闭包变得更容易）。 在 Java 8 之前，要求是 `x` 和 `i` 被明确声明为 `final`。 使用 Java 8，内部类的规则已经放宽，包括 “effectively final”。
+实际上只要有内部类，就会有闭包（Java 8 只是简化了闭包操作）。在 Java 8 之前，变量 `x` 和 `i` 必须被明确声明为 `final`。在 Java 8 中，内部类的规则放宽，包括**等同 final 效果**。
 
 <!-- Function Composition -->
 ## 函数组合
 
 
-函数组合基本上意味着“将函数粘贴在一起以创建新函数”，它通常被认为是函数编程的一部分。你在`TransformFunction.java` 中看到了一个使用 `andThen()` 的函数组合示例。一些 `java.util` 的函数接口包含支持函数组合的方法。
+函数组合基本上意味着“将函数粘贴在一起以创建新函数”，它通常被认为是函数编程的一部分。你在 `TransformFunction.java` 中看到了一个使用 `andThen()` 的函数组合示例。一些 `java.util` 的函数接口包含支持函数组合的方法 [^7]。
 
 Compositional Supporting Method Interfaces Function BiFunction Consumer BiConsumer IntConsumer andThen(argument) Performs the original LongConsumer operation followed by DoubleConsumer the argument operation.
 
@@ -1338,9 +1336,9 @@ AFTER ALL AMBULANCES
 _fter _ll _mbul_nces
 ```
 
-这里要看的重要一点是我们正在创建一个新函数 `f4`，然后可以使用 `apply()`（几乎）像任何其他函数一样调用它。[^8]
+重点看正在创建的新函数 `f4`，使用 `apply()` 的方式与常规几乎无异[^8]。
 
-当 `f1` 获得String时，它已经被`f2` 剥离了前三个字符。 这是因为对 `compose（f2）`的调用意味着在 `f1` 之前调用 `f2`。
+当 `f1` 获得String时，它已经被`f2` 剥离了前三个字符。这是因为对 `compose（f2）`的调用意味着在 `f1` 之前调用 `f2`。
 
 这是Predicate逻辑运算的演示：
 
@@ -1371,7 +1369,7 @@ foobar
 foobaz
 ```
 
-`p4` 获取所有谓词并将它们组合成一个更复杂的谓词，其中包含：“如果 `String` 不包含 'bar' 且长度小于5，或者它包含 'foo' ，则结果为 `true`。”因为它产生如此清晰的语法，我在`main()`中作了一些小伎俩，并借用了下一章的内容。 首先，我创建一个 `String` 对象的 “流”（序列），然后将每个对象提供给 `filter()`操作。 `filter()`使用我们的 `p4` 谓词来决定要保留流中的哪个对象以及要丢弃的对象。 最后，我使用 `forEach()`将 `println` 方法引用应用于每个幸存的对象。
+`p4` 获取所有谓词并将它们组合成一个更复杂的谓词，其中包含：“如果 `String` 不包含 'bar' 且长度小于5，或者它包含 'foo' ，则结果为 `true`。”因为它产生如此清晰的语法，我在`main()`中作了一些小伎俩，并借用了下一章的内容。首先，我创建一个 `String` 对象的 “流”（序列），然后将每个对象提供给 `filter()`操作。 `filter()`使用我们的 `p4` 谓词来决定要保留流中的哪个对象以及要丢弃的对象。最后，我使用 `forEach()`将 `println` 方法引用应用于每个幸存的对象。
 
 你可以从输出中看到 `p4` 是如何工作的：任何带有 “foo ”的东西都会存活，即使它的长度大于5。 “fongopuckey” 太长了，没有 “bar” 来保存它。
 
@@ -1379,7 +1377,7 @@ foobaz
 ## Currying和Partial-Evaluation
 
 
-*Currying* 以 Haskell Curry 命名，Haskell Curry 是其发明者之一，可能是唯一一个以他的名字命名的重要事物的计算机领域的人物（另一个是 Haskell 编程语言）。 Currying 意味着从一个函数开始，该函数接受多个参数，并将其转换为一系列函数，每个函数只接受一个参数。
+[Curryiny](https://en.wikipedia.org/wiki/Currying) 的名称来自于其发明者之一 *Haskell Curry*。他可能也是计算机领域唯一一个名字被命名重要事物的人物（另一个是 Haskell 编程语言）。 Currying 意味着从一个函数开始，该函数接受多个参数，并将其转换为一系列函数，每个函数只接受一个参数。
 
 ```java
 // functional/CurryingAndPartials.java
@@ -1476,7 +1474,7 @@ public class CurriedIntAdd {
 9
 ```
 
-你可以在因特网上找到更多 currying 示例。 通常这些是 Java 以外的语言，但如果你理解它们的基本概念，它们应该很容易翻译。
+你可以在因特网上找到更多 currying 示例。通常这些是 Java 以外的语言，但如果你理解它们的基本概念，它们应该很容易翻译。
 
 <!-- Pure Functional Programming -->
 ## 纯函数式编程
@@ -1500,18 +1498,16 @@ Lambda 表达式和方法引用并没有将 Java 转换成函数式语言，而�
 
 <!--下面是脚注-->
 
-1. 粘贴功能结合在一起是一个非常不同的方法,但它仍然使一种图书馆。
-2. 例如,这个电子书是利用 Pandoc 制作出来的，纯函数式语言编写的一个程序 Haskell。
-3. 有时函数语言将其描述为“代码即数据”。“
-4. 这个语法来自 C++。
-5. 我还没有验证过这种说法。
-6. 在并发编程一章中，当你理解更改共享变量 “不是线程安全的” 时，这将更有意义。
-7. 接口能够支持方法的原因是它们是 Java 8 默认方法，你将在下一章中了解到。
-8. 一些语言，例如 Python，允许像调用其他函数一样调用组合函数。但这是 Java，所以我们取我们能得到的。
-9. 见,例如，不可变和可变性检测器。( Immutables and Mutability Detector)
-
+[^1]: 功能粘贴在一起的方法的确有点与众不同，但它仍不失为一个库。
+[^2]: 例如,这个电子书是利用 [Pandoc](http://pandoc.org/) 制作出来的，它是用纯函数式语言 [Haskell](https://www.haskell.org/) 编写的一个程序 。
+[^3]: 有时函数式语言将其描述为“代码即数据”。“
+[^4]: 这个语法来自 C++。
+[^5]: 我还没有验证过这种说法。
+[^6]: 当你理解了[并发编程](./24-Concurrent-Programming.md)章节的内容，你就能明白为什么更改共享变量 “不是线程安全的” 的了。
+[^7]: 接口能够支持方法的原因是它们是 Java 8 默认方法，你将在下一章中了解到。
+[^8]: 一些语言，如 Python，允许像调用其他函数一样调用组合函数。但这是 Java，所以我们做做可为之事。
+[^9]: 例如，[Immutables](https://immutables.github.io/) 和 [Mutability Detector](https://mutabilitydetector.github.io/MutabilityDetector/)。
 
 
 <!-- 分页 -->
-
 <div style="page-break-after: always;"></div>
