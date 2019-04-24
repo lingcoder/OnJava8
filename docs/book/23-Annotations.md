@@ -111,14 +111,178 @@ public class PasswordUtils {
 
 你应该能够想象到如何使用这套工具来“勾勒”出将要建造的凶，然后在建造的过程中逐渐实现系统的各项功能。
 
+### 元注解
+
+Java 语言中目前有 5 种标准注解（前面介绍过），以及 5 种元注解。元注解用于注解其他的注解
+
+| 注解        | 解释                                                         |
+| ----------- | ------------------------------------------------------------ |
+| @Target     | 表示注解可以用于哪些地方。可能的 **ElementType** 参数包括：<br/>**CONSTRUCTOR**：构造器的声明<br/>**FIELD**：字段声明（包括 enum 实例）<br/>**LOCAL_VARIABLE**：局部变量声明<br/>**METHOD**：方法声明<br/>**PACKAGE**：包声明<br/>**PARAMETER**：参数声明<br/>**TYPE**：类、接口（包括注解类型）或者 enum 声明 |
+| @Retention  | 表示注解信息保存的时长。可选的 **RetentionPolicy** 参数包括：<br/>**SOURCE**：注解将被编译器丢弃<br/>**CLASS**：注解在 class 文件中可用，但是会被 VM 丢弃。<br/>**RUNTIME**：VM 将在运行期也保留注解，因此可以通过反射机制读取注解的信息。 |
+| @Documented | 将此注解保存在 Javadoc 中                                    |
+| @Interited  | 允许子类继承父类的注解                                       |
+| @Repeatable | 允许一个注解可以被使用一次或者多次（Java 8）。               |
+
+大多数时候，程序员定义自己的注解，并编写自己的处理器来处理他们。
+
 ## 编写注解处理器
+
+如果没有用于读取注解的工具，那么注解不会比注释更有用。使用注解中一个很重要的部分就是，创建与使用注解处理器。Java 拓展了反射机制的 API 用于帮助你创造这类工具。同时他还提供了 javac 编译器钩子在编译时使用注解。
+
+下面是一个非常简单的注解处理器，我们用它来读取被注解的 **PasswordUtils** 类，并且使用反射机制来寻找 **@UseCase** 标记。给定一组 **id** 值，然后列出在 **PasswordUtils** 中找到的用例，以及缺失的用例。
+
+```java
+// annotations/UseCaseTracker.java
+import java.util.*;
+import java.util.stream.*;
+import java.lang.reflect.*;
+public class UseCaseTracker {
+    public static void
+    trackUseCases(List<Integer> useCases, Class<?> cl) {
+        for(Method m : cl.getDeclaredMethods()) {
+            UseCase uc = m.getAnnotation(UseCase.class);
+            if(uc != null) {
+                System.out.println("Found Use Case " +
+                        uc.id() + "\n " + uc.description());
+                useCases.remove(Integer.valueOf(uc.id()));
+            }
+        }
+        useCases.forEach(i ->
+                System.out.println("Missing use case " + i));
+    }
+    public static void main(String[] args) {
+        List<Integer> useCases = IntStream.range(47, 51)
+                .boxed().collect(Collectors.toList());
+        trackUseCases(useCases, PasswordUtils.class);
+    }
+}
+```
+
+输出为：
+
+```java
+Found Use Case 48
+no description
+Found Use Case 47
+Passwords must contain at least one numeric
+Found Use Case 49
+New passwords can't equal previously used ones
+Missing use case 50
+```
+
+这个程序用了两个反射的方法：`getDeclaredMethods()`  和 `getAnnotation()`，它们都属于 **AnnotatedElement** 接口（**Class**，**Method** 与 **Field** 类都实现了该接口）。`getAnnotation()` 方法返回指定类型的注解对象，在本例中就是 “**UseCase**”。如果被注解的方法上没有该类型的注解，返回值就为 **null**。我们通过调用 `id()` 和 `description()` 方法来提取元素值。注意 `encryptPassword()` 方法在注解的时候没有指定 **description** 的值，因此处理器在处理它对应的注解时，通过 `description()` 取得的是默认值 “no description”。
+
+### 注解元素
+
+在 **UseCase.java** 中定义的 **@UseCase** 的标签包含 int 元素 **id** 和 String 元素 **description**。注解元素可用的类型如下所示：
+
+- 所有基本类型（int、float、boolean等）
+- String
+- Class
+- enum
+- Annotation
+- 以上类型的数组
+
+如果你使用了其他类型，编译器就会报错。注意，也不允许使用任何包装类型，但是由于自动装箱的存在，这不算是什么限制。注解也可以作为元素的类型。稍后你会看到，注解嵌套是一个非常有用的技巧。
+
+### 默认值限制
+
+编译器对于元素的默认值有些过于挑剔。首先，元素不能有不确定的值。也就是说，元素要么有默认值，要么就在使用注解时提供元素的值。
+
+这里有另外一个限制：任何非基本类型的元素， 无论是在源代码声明时还是在注解接口中定义默认值时，都不能使用 null 作为其值。这个限制使得处理器很难表现一个元素的存在或者缺失的状态，因为在每个注解的声明中，所有的元素都存在，并且具有相应的值。为了绕开这个约束，可以自定义一些特殊的值，比如空字符串或者负数用于表达某个元素不存在。
+
+```java
+// annotations/SimulatingNull.java
+import java.lang.annotation.*;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SimulatingNull {
+    int id() default -1;
+    String description() default "";
+}
+```
+
+这是一个在定义注解的习惯用法。
+
+### 生成外部文件
+
 
 
 <!-- Using javac to Process Annotations -->
+
 ## 使用javac处理注解
+
+当有些框架需要一些额外的信息才能与你的源代码协同工作，这种情况下注解就会变得十分有用。像 Enterprise JavaBeans (EJB3 之前)这样的技术，每一个 Bean 都需要需要大量的接口和部署描述文件，而这些就是“样板”文件。Web Service，自定义标签库以及对象/关系映射工具（例如 Toplink 和 Hibernate）通常都需要 XML 描述文件，而这些文件脱离于代码之外。除了定义 Java 类，程序员还必须忍受沉闷，重复的提供某些信息，例如类名和包名等已经在原始类中已经提供的信息。每当你使用外部描述文件时，他就拥有了一个类的两个独立信息源，这经常导致代码的同步问题。同时这也要求了为项目工作的程序员在知道如何编写 Java 程序的同时，也必须知道如何编辑描述文件。
+
+假设你想提供一些基本的对象/关系映射功能，能够自动生成数据库表。你可以使用 XML 描述文件来指明类的名字、每个成员以及数据库映射的相关信息。但是，通过使用注解，你可以把所有信息都保存在 **JavaBean** 源文件中。为此你需要一些用于定义数据库名称、数据库列以及将 SQL 类型映射到属性的注解。
+
+以下是一个注解的定义，它告诉注解处理器应该创建一个数据库表：
+
+```java
+// annotations/database/DBTable.java
+package annotations.database;
+import java.lang.annotation.*;
+@Target(ElementType.TYPE) // Applies to classes only
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DBTable {
+    String name() default "";
+}
+```
+
+在 `@Target` 注解中指定的每一个 **ElementType** 就是一个约束，它告诉编译器，这个自定义的注解只能用于指定的类型。你可以指定 **enum ElementType** 中的一个值，或者以逗号分割的形式指定多个值。如果想要将注解应用于所有的 **ElementType**，那么可以省去 `@Target` 注解，但是这并不常见。
+
+注意 **@DBTable** 中有一个 `name()` 元素，该注解通过这个元素为处理器创建数据库时提供表的名字。
+
+如下是修饰字段的注解：
+
+```java
+// annotations/database/Constraints.java
+package annotations.database;
+import java.lang.annotation.*;
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Constraints {
+    boolean primaryKey() default false;
+    boolean allowNull() default true;
+    boolean unique() default false;
+}
+```
+
+```java
+// annotations/database/SQLString.java
+package annotations.database;
+import java.lang.annotation.*;
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SQLString {
+    int value() default 0;
+    String name() default "";
+    Constraints constraints() default @Constraints;
+}
+```
+
+```java
+// annotations/database/SQLInteger.java
+package annotations.database;
+import java.lang.annotation.*;
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SQLInteger {
+    String name() default "";
+    Constraints constraints() default @Constraints;
+}
+```
+
+**@Constraints** 注解允许处理器提供数据库表的元数据。**@Constraints** 代表了数据库通常提供的约束的一小部分，但是它索要表达的思想已经很清楚了。`primaryKey()`，`allowNull()` 和 `unique()` 元素明智的提供了默认值，从而使得在大多数情况下，该注解的使用者不需要输入太多东西。
+
+另外两个 **@interface** 定义的是 SQL 类型。如果希望这个框架更有价值的话，我们应该为每个 SQL 类型都定义相应的注解。不过为为示例，两个元素足够了。
+
+
+
 
 
 <!-- Annotation-Based Unit Testing -->
+
 ## 基于注解的单元测试
 
 
