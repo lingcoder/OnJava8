@@ -1298,15 +1298,18 @@ public class AnonymousClosure {
 ## 函数组合
 
 
-函数组合基本上意味着“将函数粘贴在一起以创建新函数”，它通常被认为是函数编程的一部分。你在 `TransformFunction.java` 中看到了一个使用 `andThen()` 的函数组合示例。一些 `java.util` 的函数接口包含支持函数组合的方法 [^7]。
+函数组合（Function Composition）意为“多个函数组合成新函数”。它通常是函数式编程的基本组成部分。在前面的 `TransformFunction.java` 类中，有一个使用 `andThen()` 的函数组合示例。在 `java.util.function` 包里包含支持函数组合的一些接口方法 [^7]。
 
-Compositional Supporting Method Interfaces Function BiFunction Consumer BiConsumer IntConsumer andThen(argument) Performs the original LongConsumer operation followed by DoubleConsumer the argument operation.
+| 组合方法 | 支持接口 |
+| :----- | :----- |
+| `andThen(argument)` <br> 根据参数执行原始操作 | **Function <br> BiFunction <br> Consumer <br> BiConsumer <br> IntConsumer <br> LongConsumer <br> DoubleConsumer <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator <br> BinaryOperator** |
+| `compose(argument)` <br> 根据参数执行原始操作 | **Function <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator** |
+| `and(argument)`  <br> 短路**逻辑与**原始断言和参数断言 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `or(argument)` <br> 短路**逻辑或**原始断言和参数断言 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `negate()` <br> 该断言的**逻辑否**断言| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
 
-UnaryOperator IntUnaryOperator LongUnaryOperator DoubleUnaryOperator BinaryOperator Function compose(argument) UnaryOperator Performs the argument IntUnaryOperator operation followed by the original operation. LongUnaryOperator DoubleUnaryOperator Predicate and(argument) BiPredicate Short-circuiting logical IntPredicate AND of the original predicate and the LongPredicate argument predicate. DoublePredicate Predicate or(argument) BiPredicate Short-circuiting logical OR of the original IntPredicate predicate and the LongPredicate argument predicate. DoublePredicate Predicate negate() BiPredicate A predicate that is the IntPredicate logical negation of this predicate. LongPredicate DoublePredicate
 
-( 待整理 )
-
-此示例使用 `Function` 里的  `compose()`和 `andThen()`
+下例使用了 `Function` 里的 `compose()`和 `andThen()`。代码示例：
 
 ```java
 // functional/FunctionComposition.java
@@ -1336,11 +1339,11 @@ AFTER ALL AMBULANCES
 _fter _ll _mbul_nces
 ```
 
-重点看正在创建的新函数 `f4`，使用 `apply()` 的方式与常规几乎无异[^8]。
+这里我们重点看正在创建的新函数 `f4`。它调用 `apply()` 的方式与常规几乎无异[^8]。
 
-当 `f1` 获得String时，它已经被`f2` 剥离了前三个字符。这是因为对 `compose（f2）`的调用意味着在 `f1` 之前调用 `f2`。
+当 `f1` 获得字符串时，它已经被`f2` 剥离了前三个字符。这是因为对 `compose（f2）`的调用意味着在 `f1` 之前调用 `f2`。
 
-这是Predicate逻辑运算的演示：
+下例是 `Predicate` 的逻辑运算演示.代码示例：
 
 ```java
 // functional/PredicateComposition.java
@@ -1369,9 +1372,11 @@ foobar
 foobaz
 ```
 
-`p4` 获取所有谓词并将它们组合成一个更复杂的谓词，其中包含：“如果 `String` 不包含 'bar' 且长度小于5，或者它包含 'foo' ，则结果为 `true`。”因为它产生如此清晰的语法，我在`main()`中作了一些小伎俩，并借用了下一章的内容。首先，我创建一个 `String` 对象的 “流”（序列），然后将每个对象提供给 `filter()`操作。 `filter()`使用我们的 `p4` 谓词来决定要保留流中的哪个对象以及要丢弃的对象。最后，我使用 `forEach()`将 `println` 方法引用应用于每个幸存的对象。
+`p4` 获取到了所有断言并组合成一个更复杂的断言。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
 
-你可以从输出中看到 `p4` 是如何工作的：任何带有 “foo ”的东西都会存活，即使它的长度大于5。 “fongopuckey” 太长了，没有 “bar” 来保存它。
+正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建一个流的字符串对象集合，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的断言来确定对象的去留。最后我们使用 `forEach()` 和 `println` 方法打印出留下来的对象。
+
+从输出结果我们可以看到 `p4` 的工作流程：任何带有 `foo` 的东西都会留下，即使它的长度大于 5。 `fongopuckey` 因长度超出和不包含 `bar` 而被丢弃。
 
 <!-- Currying and  Partial Evaluation -->
 ## Currying和Partial-Evaluation
@@ -1446,6 +1451,8 @@ public class Curry3Args {
 ```
 
 输出结果：
+
+```
 Hi Ho Hup
 ```
 
