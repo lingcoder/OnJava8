@@ -366,7 +366,7 @@ Help!
 
 **[3]** `hello()` 也符合 `call()` 的签名。 
 
-[4] ...就像是 `help()`，一个静态内部类中的非静态方法。(原文：… as is help(), a non-static method within a static inner class.)
+**[4]** 就像是 `help()`，静态内部类中的非静态方法。
 
 **[5]** `assist()` 是静态内部类中的静态方法。
 
@@ -382,7 +382,7 @@ Help!
 
 上例只是简短的介绍，我们很快就能看到方法引用的全部变化。
 
-### Runnable
+### Runnable接口
 
 **Runnable** 接口自 1.0 版以来一直在 Java 中，因此不需要导入。它也符合特殊的单方法接口格式：它的方法 `run()` 不带参数，也没有返回值。因此，我们可以使用 Lambda 表达式和方法引用作为 **Runnable**：
 
@@ -667,7 +667,8 @@ public class FunctionalAnnotation {
 |参数基本类型； <br> 返回基本类型|**类型To类型Function** <br> `applyAs类型()`|**IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
 |2 参数类型不同|**Bi操作** <br> (不同方法名)|**BiFunction\<T,U,R\> <br> BiConsumer\<T,U\> <br> BiPredicate\<T,U\> <br> ToIntBiFunction\<T,U\> <br> ToLongBiFunction\<T,U\> <br> ToDoubleBiFunction\<T\>**|
 
-此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出更多行的函数式接口。
+
+　　此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出更多行的函数式接口。
 
 能看出来在创建 `java.util.function` 时，设计者做出了一些选择。 
 
@@ -1379,10 +1380,10 @@ foobaz
 从输出结果我们可以看到 `p4` 的工作流程：任何带有 `foo` 的东西都会留下，即使它的长度大于 5。 `fongopuckey` 因长度超出和不包含 `bar` 而被丢弃。
 
 <!-- Currying and  Partial Evaluation -->
-## Currying和Partial-Evaluation
+## 柯里化和部分求值
 
 
-[Curryiny](https://en.wikipedia.org/wiki/Currying) 的名称来自于其发明者之一 *Haskell Curry*。他可能也是计算机领域唯一一个名字被命名重要事物的人物（另一个是 Haskell 编程语言）。 Currying 意味着从一个函数开始，该函数接受多个参数，并将其转换为一系列函数，每个函数只接受一个参数。
+[柯里化](https://en.wikipedia.org/wiki/Currying)（Currying）的名称来自于其发明者之一 *Haskell Curry*。他可能是计算机领域唯一名字被命名重要概念的人（另外就是 Haskell 编程语言）。 柯里化意为：将一个多参数的函数，转换为一系列单参数函数。
 
 ```java
 // functional/CurryingAndPartials.java
@@ -1390,12 +1391,12 @@ foobaz
 import java.util.function.*;
 
 public class CurryingAndPartials {
-   // Uncurried:
+   // 未柯里化:
    static String uncurried(String a, String b) {
       return a + b;
    }
    public static void main(String[] args) {
-      // Curried function:
+      // 柯里化的函数:
       Function<String, Function<String, String>> sum =
          a -> b -> a + b; // [1]
 
@@ -1405,7 +1406,7 @@ public class CurryingAndPartials {
         hi = sum.apply("Hi "); // [2]
       System.out.println(hi.apply("Ho"));
 
-      // Partial application:
+      // 部分应用:
       Function<String, String> sumHi =
         sum.apply("Hup ");
       System.out.println(sumHi.apply("Ho"));
@@ -1423,11 +1424,11 @@ Hup Ho
 Hup Hey
 ```
 
-**[1]** 这是一条巧妙的线:一连串的箭头。注意，在函数接口声明中，函数的第二个参数是另一个函数。
+**[1]** 这一连串的箭头很巧妙。*注意*，在函数接口声明中，第二个参数是另一个函数。
 
-**[2]** currying 的目标是能够通过提供一个参数来创建一个新函数，所以现在有了一个 “带参函数” 和剩下的 “无参函数” 。实际上，你从一个双参数函数开始，最后得到一个单参数函数。
+**[2]** 柯里化的目的是能够通过提供一个参数来创建一个新函数，所以现在有了一个“带参函数”和剩下的 “无参函数” 。实际上，你从一个双参数函数开始，最后得到一个单参数函数。
 
-你可以通过添加另一个级别来 curry 一个三参数函数:
+我们可以通过添加级别来柯里化一个三参数函数：
 
 ```java
 // functional/Curry3Args.java
@@ -1456,9 +1457,9 @@ public class Curry3Args {
 Hi Ho Hup
 ```
 
-对于每个级别的箭头级联（arrow-cascading），你可以围绕类型声明包装另一个函数。
+对于每个级别的箭头级联（Arrow-cascading），你可以围绕类型声明包装成另一个函数。
 
-处理基本类型和装箱时，请使用适当的功能接口：
+处理基本类型和装箱时，请使用适当的 **Function** 接口：
 
 ```java
 // functional/CurriedIntAdd.java
@@ -1481,27 +1482,27 @@ public class CurriedIntAdd {
 9
 ```
 
-你可以在因特网上找到更多 currying 示例。通常这些是 Java 以外的语言，但如果你理解它们的基本概念，它们应该很容易翻译。
+更多柯里化示例，可搜索互联网。通常这些是 Java 以外的语言，理解它们的基本概念，就应该很容易翻译。
 
 <!-- Pure Functional Programming -->
 ## 纯函数式编程
 
 
-在没有函数支持的情况下，即使用像C这样的原始语言，也可以按照一定的原则编写纯函数程序。Java使它比这更容易，但是你必须小心地使一切都成为 `final`，并确保你的所有方法和函数没有副作用。因为 Java 本质上不是一种不可变的语言，所以如果你犯了错误，编译器不会提供任何帮助。
+即使没有函数式支持，像 C 这样的基础语言，也可以按照一定的原则编写纯函数程序。Java 8 让函数式编程更简单，不过我们要确保一切是 `final` 的，同时你的所有方法和函数没有副作用。因为 Java 在本质上并非是不可变语言，我们无法通过编译器查错。
 
-有第三方工具可以帮助你[^9]，但是使用 `Scala` 或 `Clojure` 这样的语言可能更容易，因为它们从一开始就是为保持不变性而设计的。这些语言使你可以用 Java 编写项目的一部分，如果你必须用纯函数式编写，则可以用 `Scala` 编写其他部分 (这需要一些规则) 或 `Clojure` (这需要的少得多)。虽然你将在并发编程一章中看到 Java确实支持并发，但是如果这是你项目的核心部分，你可能会考虑至少在项目的一部分中使用 `Scala` 或 `Clojure`之类的语言。
+这种情况下，我们可以借助第三方工具[^9]，但使用 Scala 或 Clojure 这样的语言可能更简单。因为它们从一开始就是为保持不变性而设计的。你可以采用这些语言来编写你的 Java 项目的一部分。如果必须要用纯函数式编写，则可以用 Scala（需要一些规则） 或 Clojure （需要的规则更少）。虽然 Java 支持[并发编程](./24-Concurrent-Programming.md)，但如果这是你项目的核心部分，你应该考虑在项目部分功能中使用 `Scala` 或 `Clojure` 之类的语言。
 
 <!-- Summary -->
 ## 本章小结
 
 
-Lambda 表达式和方法引用并没有将 Java 转换成函数式语言，而是提供了对函数式编程的支持。它们对 Java 是一个巨大的改进，因为它们允许你编写更简洁、更干净、更容易理解的代码。在下一章中，你将看到它们如何启用流。如果你像我一样，你会喜欢流媒体。
+Lambda 表达式和方法引用并没有将 Java 转换成函数式语言，而是提供了对函数式编程的支持。这对 Java 来说是一个巨大的改进。因为这允许你编写更简洁明了，易于理解的代码。在下一章中，你会看到它们在流式编程中的应用。相信你会像我一样，喜欢上流式编程。
 
-这些特性可能会满足大部分 Java 程序员的需求，他们已经对 Clojure 和 Scala 等新的、功能更强的语言感到不安和嫉妒，并阻止 Java 程序员流向这些语言 (或者，如果他们仍然决定迁移，至少会为他们做好更好的准备)。
+这些特性满足大部分 Java 程序员的需求。他们开始羡慕嫉妒 Clojure、Scala 这类新语言的功能，并试图阻止 Java 程序员流失到其他阵营 （就算不能阻止，起码提供了更好的选择）。
 
-但是，Lambdas 和方法引用远非完美，我们永远要为 Java 设计人员在早期令人兴奋的语言中做出的草率决定付出代价。特别是，没有泛型 Lambda，所以 Lambda 实际上不是 Java 中的第一类公民。这并不意味着 Java 8不是一个很大的改进，但它确实意味着，就像许多 Java 特性一样，你最终会感到沮丧。
+但是，Lambdas 和方法引用远非完美，我们永远要为 Java 设计者早期的草率决定付出代价。特别是没有泛型 Lambda，所以 Lambda 在 Java 中并非一等公民。虽然我不否认 Java 8 的巨大改进，但这意味着和许多 Java 特性一样，它的使用还是会让人感觉沮丧和鸡肋。
 
-当你遇到学习困难时，请记住，你可以从 ide (如 NetBeans、IntelliJ Idea 和 Eclipse )获得帮助，这些 ide 将建议你何时可以使用 Lambda 表达式或方法引用 (并且经常为你重写代码!)
+当你遇到学习困难时，请记住通过 IDE（NetBeans、IntelliJ Idea 和 Eclipse）获得帮助，因为 IDE 可以智能提示你何时使用 Lambda 表达式或方法引用，甚至有时还能为你优化代码。
 
 <!--下面是脚注-->
 

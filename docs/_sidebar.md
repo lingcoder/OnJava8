@@ -145,7 +145,7 @@
     * [高阶函数](book/13-Functional-Programming.md#高阶函数)
     * [闭包](book/13-Functional-Programming.md#闭包)
     * [函数组合](book/13-Functional-Programming.md#函数组合)
-    * [Currying和Partial-Evaluation](book/13-Functional-Programming.md#Currying和Partial-Evaluation)
+    * [柯里化和部分求值](book/13-Functional-Programming.md#柯里化和部分求值)
     * [纯函数式编程](book/13-Functional-Programming.md#纯函数式编程)
     * [本章小结](book/13-Functional-Programming.md#本章小结)
 * [第十四章 流式编程](book/14-Streams.md)
