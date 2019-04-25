@@ -206,12 +206,6 @@ public @interface SimulatingNull {
 
 ### 生成外部文件
 
-
-
-<!-- Using javac to Process Annotations -->
-
-## 使用javac处理注解
-
 当有些框架需要一些额外的信息才能与你的源代码协同工作，这种情况下注解就会变得十分有用。像 Enterprise JavaBeans (EJB3 之前)这样的技术，每一个 Bean 都需要需要大量的接口和部署描述文件，而这些就是“样板”文件。Web Service，自定义标签库以及对象/关系映射工具（例如 Toplink 和 Hibernate）通常都需要 XML 描述文件，而这些文件脱离于代码之外。除了定义 Java 类，程序员还必须忍受沉闷，重复的提供某些信息，例如类名和包名等已经在原始类中已经提供的信息。每当你使用外部描述文件时，他就拥有了一个类的两个独立信息源，这经常导致代码的同步问题。同时这也要求了为项目工作的程序员在知道如何编写 Java 程序的同时，也必须知道如何编辑描述文件。
 
 假设你想提供一些基本的对象/关系映射功能，能够自动生成数据库表。你可以使用 XML 描述文件来指明类的名字、每个成员以及数据库映射的相关信息。但是，通过使用注解，你可以把所有信息都保存在 **JavaBean** 源文件中。为此你需要一些用于定义数据库名称、数据库列以及将 SQL 类型映射到属性的注解。
@@ -276,6 +270,186 @@ public @interface SQLInteger {
 **@Constraints** 注解允许处理器提供数据库表的元数据。**@Constraints** 代表了数据库通常提供的约束的一小部分，但是它索要表达的思想已经很清楚了。`primaryKey()`，`allowNull()` 和 `unique()` 元素明智的提供了默认值，从而使得在大多数情况下，该注解的使用者不需要输入太多东西。
 
 另外两个 **@interface** 定义的是 SQL 类型。如果希望这个框架更有价值的话，我们应该为每个 SQL 类型都定义相应的注解。不过为为示例，两个元素足够了。
+
+这些 SQL 类型具有 `name()` 元素和 `constraints()` 元素。后者利用了嵌套注解的功能，将数据库列的类型约束信息嵌入其中。注意 `constraints()` 元素的默认值时 **@Constraints**。由于在 **@Constraints** 注解类型之后，没有在括号中指明 **@Constraints** 元素的值，因此，**constraints()** 的默认值为所有元素都为默认值的 **@Constraints** 注解。如果要使得嵌入的  **@Constraints**  注解中的 `unique()` 元素为 true，并作为 `constraints()` 元素的默认值，你可以像如下定义：
+
+```java
+// annotations/database/Uniqueness.java
+// Sample of nested annotations
+package annotations.database;
+public @interface Uniqueness {
+    Constraints constraints()
+            default @Constraints(unique = true);
+}
+```
+
+下面是一个简单的，使用了如上注解的类：
+
+```java
+// annotations/database/Member.java
+package annotations.database;
+@DBTable(name = "MEMBER")
+public class Member {
+    @SQLString(30) String firstName;
+    @SQLString(50) String lastName;
+    @SQLInteger Integer age;
+    @SQLString(value = 30,
+            constraints = @Constraints(primaryKey = true))
+    String reference;
+    static int memberCount;
+    public String getReference() { return reference; }
+    public String getFirstName() { return firstName; }
+    public String getLastName() { return lastName; }
+    @Override
+    public String toString() { return reference; }
+    public Integer getAge() { return age; }
+}
+```
+
+类注解 **@DBTable** 注解给定了元素值 MEMBER，它将会作为标的名字。类的属性 **firstName** 和 **firstName** 都被注解为 **@SQLString** 类型并且给了默认元素值分别为 30 和 50。这些注解都有两个有趣的地方：首先，他们都使用了嵌入的 **@Constraints** 注解的默认值；其次，它们都是用了快捷方式特性。如果你在注解中定义了名为 **value** 的元素，并且在使用该注解时，**value** 为唯一一个需要赋值的元素，你就不需要使用名—值对的语法，你只需要在括号中给出 **value** 元素的值即可。这可以应用于任何合法类型的元素。这也限制了你必须将元素命名为 **value**，不过在上面的例子中，这样的注解语句也更易于理解：
+
+```java
+@SQLString(30)
+```
+
+处理器将在穿件表的时候使用该值设置 SQL 列的大小。
+
+默认值的语法虽然很灵巧，但是它很快就变的复杂起来。以 **reference** 字段的注解为例，上面拥有 **@SQLString** 注解，但是这个字段也将成为表的主键，因此在嵌入的 **@Constraint** 注解中设定 **primaryKey** 元素的值。这时事情就变的复杂了。你不得不为这个嵌入的注解使用很长的名—值对的形式，来指定元素名称和 **@interface** 的名称。同时，由于有特殊命名的 **value** 也不是唯一需要赋值的元素，因此不能再使用快捷方式特性。如你所见，最终结果不算清晰易懂。
+
+### 替代方案
+
+可以使用多种不同的方式来定义自己的注解用于上述任务。例如，你可以使用一个单一的注解类 **@TableColumn**，它拥有一个 **enum** 元素，元素值定义了 **STRING**，**INTEGER**，**FLOAT** 等类型。这消除了每个 SQL 类型都需要定义一个 **@interface** 的负担，不过也使得用额外信息修饰 SQL 类型变的不可能，这些额外的信息例如长度或精度等，都可能是非常有用的。
+
+你也可以使用一个 **String** 类型的元素来描述实际的 SQL 类型，比如 “VARCHAR(30)” 或者 “INTEGER”。这使得你可以修饰 SQL 类型，但是这也将 Java 类型到 SQL 类型的映射绑在了一起，这不是一个好的设计。你并不想在数据库更改之后重新编译你的代码；如果我们只需要告诉注解处理器，我们正在使用的是什么“口味（favor）”的 SQL，然后注解助力器来为我们处理 SQL 类型的细节，那将是一个优雅的设计。
+
+第三种可行的方案是一起使用两个注解，**@Constraints** 和相应的 SQL 类型（例如，**@SQLInteger**）去注解同一个字段。这可能会让代码有些混乱，但是编译器允许你对同一个目标使用多个注解。在 Java 8，在使用多个注解的时候，你可以重复使用同一个注解。
+
+### 注解不支持继承
+
+你不能使用 **extends** 关键字来继承 **@interfaces**。这真是一个遗憾，如果可以定义**@TableColumn** 注解（参考前面的建议），同时嵌套一个 **@SQLType** 类型的注解，讲究将成为一个优雅的设计。按照这种方式，你可以通过继承 **@SQLType** 来创造各种 SQL 类型。例如 **@SQLInteger** 和 **@SQLString**。如果支持继承，就会大大减少打字的工作量并且使得语法更整洁。在 Java 的未来版本中，似乎没有任何关于让注解支持继承的提案，所以在当前情况下，上例中的解决方案可能已经是最佳方案了。
+
+### 实现处理器
+
+下面是一个注解处理器的例子，他将读取一个类文件，检查上面的数据库注解，并生成用于创建数据库的 SQL 命令：
+
+```java
+// annotations/database/TableCreator.java
+// Reflection-based annotation processor
+// {java annotations.database.TableCreator
+// annotations.database.Member}
+package annotations.database;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TableCreator {
+    public static void
+    main(String[] args) throws Exception {
+        if (args.length < 1) {
+            System.out.println(
+                    "arguments: annotated classes");
+            System.exit(0);
+        }
+        for (String className : args) {
+            Class<?> cl = Class.forName(className);
+            DBTable dbTable = cl.getAnnotation(DBTable.class);
+            if (dbTable == null) {
+                System.out.println(
+                        "No DBTable annotations in class " +
+                                className);
+                continue;
+            }
+            String tableName = dbTable.name();
+            // If the name is empty, use the Class name:
+            if (tableName.length() < 1)
+                tableName = cl.getName().toUpperCase();
+            List<String> columnDefs = new ArrayList<>();
+            for (Field field : cl.getDeclaredFields()) {
+                String columnName = null;
+                Annotation[] anns =
+                        field.getDeclaredAnnotations();
+                if (anns.length < 1)
+                    continue; // Not a db table column
+                if (anns[0] instanceof SQLInteger) {
+                    SQLInteger sInt = (SQLInteger) anns[0];
+                    // Use field name if name not specified
+                    if (sInt.name().length() < 1)
+                        columnName = field.getName().toUpperCase();
+                    else
+                        columnName = sInt.name();
+                    columnDefs.add(columnName + " INT" +
+                            getConstraints(sInt.constraints()));
+                }
+                if (anns[0] instanceof SQLString) {
+                    SQLString sString = (SQLString) anns[0];
+                    // Use field name if name not specified.
+                    if (sString.name().length() < 1)
+                        columnName = field.getName().toUpperCase();
+                    else
+                        columnName = sString.name();
+                    columnDefs.add(columnName + " VARCHAR(" +
+                            sString.value() + ")" +
+                            getConstraints(sString.constraints()));
+                }
+                StringBuilder createCommand = new StringBuilder(
+                        "CREATE TABLE " + tableName + "(");
+                for (String columnDef : columnDefs)
+                    createCommand.append(
+                            "\n " + columnDef + ",");
+                // Remove trailing comma
+                String tableCreate = createCommand.substring(
+                        0, createCommand.length() - 1) + ");";
+                System.out.println("Table Creation SQL for " +
+                        className + " is:\n" + tableCreate);
+            }
+        }
+    }
+
+    private static String getConstraints(Constraints con) {
+        String constraints = "";
+        if (!con.allowNull())
+            constraints += " NOT NULL";
+        if (con.primaryKey())
+            constraints += " PRIMARY KEY";
+        if (con.unique())
+            constraints += " UNIQUE";
+        return constraints;
+    }
+}
+```
+
+输出为：
+
+```sql
+Table Creation SQL for annotations.database.Member is:
+CREATE TABLE MEMBER(
+    FIRSTNAME VARCHAR(30));
+Table Creation SQL for annotations.database.Member is:
+CREATE TABLE MEMBER(
+    FIRSTNAME VARCHAR(30),
+    LASTNAME VARCHAR(50));
+Table Creation SQL for annotations.database.Member is:
+CREATE TABLE MEMBER(
+    FIRSTNAME VARCHAR(30),
+    LASTNAME VARCHAR(50),
+    AGE INT);
+Table Creation SQL for annotations.database.Member is:
+CREATE TABLE MEMBER(
+    FIRSTNAME VARCHAR(30),
+    LASTNAME VARCHAR(50),
+    AGE INT,
+    REFERENCE VARCHAR(30) PRIMARY KEY);
+```
+
+
+
+<!-- Using javac to Process Annotations -->
+
+## 使用javac处理注解
+
+
 
 
 
