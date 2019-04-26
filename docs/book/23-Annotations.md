@@ -443,17 +443,180 @@ CREATE TABLE MEMBER(
     REFERENCE VARCHAR(30) PRIMARY KEY);
 ```
 
+`main()` 方法会循环处理命令行传入的每一个类名。每一个类都是用 ` forName()` 方法进行加载，并使用 `getAnnotation(DBTable.class)` 来检查该类是否带有 **@DBTable** 注解。如果存在，将表名存储起来。然后读取这个类的所有字段，并使用 `getDeclaredAnnotations()` 进行检查。这个方法返回一个包含特定字段上所有注解的数组。然后使用 **instanceof** 操作符判断这些注解是否是 **@SQLInteger** 或者 **@SQLString** 类型。如果是的话，在对应的处理块中将构造出相应的数据库列的字符串片段。注意，由于注解没有继承机制，如果要获取近似多台的行为，使用 `getDeclaredAnnotations()` 似乎是唯一的方式。
 
+嵌套的 **@Constraint** 注解被传递给 `getConstraints()`方法，并用它来构造一个包含 SQL 约束的 String 对象。
+
+需要提醒的是，上面演示的技巧对于真实的对象/映射关系而言，是十分幼稚的。使用 **@DBTable** 的注解来获取表的的名称，这使得如果要修改表的名字，则迫使你重新编译 Java 代码。这种效果并不理想。现在已经有了很多可用的框架，用于将对象映射到数据库中，并且越来越多的框架开始使用注解了。
 
 <!-- Using javac to Process Annotations -->
 
 ## 使用javac处理注解
 
+通过 **javac**，你可以通过创建编译时（compile-time）注解处理器在 Java 源文件上使用注解，而不是编译之后的 class 文件。但是这里有一个重大限制：你不能通过处理器来改变源代码。唯一影响输出的方式就是创建新的文件。
 
+如果你的注解处理器创建了新的源文件，在新一轮处理中注解会检查源文件本身。工具在检测一轮之后持续循环，直到不再有新的源文件产生。然后它编译所有的源文件。
 
+每一个你编写的注解都需要处理器，但是 **javac** 可以非常容易的将多个注解处理器合并在一起。你可以指定多个需要处理的类，并且你可以添加监听器用于监听注解处理完成后接到通知。
 
+本节中的示例将帮助您开始学习，但如果您必须深入学习，请做好反复学习，大量访问 Google 和StackOverflow 的准备。
 
+### 最简单的处理器
 
+让我们开始定义我们能想到的最简单的处理器，只是为了编译和测试。如下是注解的定义：
+
+```java
+// annotations/simplest/Simple.java
+// A bare-bones annotation
+package annotations.simplest;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+@Retention(RetentionPolicy.SOURCE)
+@Target({ElementType.TYPE, ElementType.METHOD,
+        ElementType.CONSTRUCTOR,
+        ElementType.ANNOTATION_TYPE,
+        ElementType.PACKAGE, ElementType.FIELD,
+        ElementType.LOCAL_VARIABLE})
+public @interface Simple {
+    String value() default "-default-";
+}
+```
+
+**@Retention** 的参数现在为 **SOURCE**，这意味着注解不会再存留在编译后的代码。这在编译时处理注解是没有必要的，它只是指出，在这里，**javac** 是唯一有机会处理注解的代理。
+
+**@Target** 声明了几乎所有的目标类型（除了 **PACKAGE**） ，同样是为了演示。下面是一个测试示例。
+
+```java
+// annotations/simplest/SimpleTest.java
+// Test the "Simple" annotation
+// {java annotations.simplest.SimpleTest}
+package annotations.simplest;
+@Simple
+public class SimpleTest {
+    @Simple
+    int i;
+    @Simple
+    public SimpleTest() {}
+    @Simple
+    public void foo() {
+        System.out.println("SimpleTest.foo()");
+    }
+    @Simple
+    public void bar(String s, int i, float f) {
+        System.out.println("SimpleTest.bar()");
+    }
+    @Simple
+    public static void main(String[] args) {
+        @Simple
+        SimpleTest st = new SimpleTest();
+        st.foo();
+    }
+}
+```
+
+输出为：
+
+```java
+SimpleTest.foo()
+```
+
+在这里我们使用 **@Simple** 注解了所有 **@Target** 声明允许的地方。
+
+**SimpleTest.java** 只需要 **Simple.java** 就可以编译成功。当我们编译的时候什么都没有发生。
+
+**javac** 允许 **@Simple** 注解（只要它存在）在我们创建处理器并将其 hook 到编译器之前，不做任何事情。
+
+如下是一个十分简单的处理器，其所作的事情就是把注解相关的信息打印出来：
+
+```java
+// annotations/simplest/SimpleProcessor.java
+// A bare-bones annotation processor
+package annotations.simplest;
+import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.*;
+import java.util.*;
+@SupportedAnnotationTypes(
+        "annotations.simplest.Simple")
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
+public class SimpleProcessor
+        extends AbstractProcessor {
+    @Override
+    public boolean process(
+            Set<? extends TypeElement> annotations,
+            RoundEnvironment env) {
+        for(TypeElement t : annotations)
+            System.out.println(t);
+        for(Element el :
+                env.getElementsAnnotatedWith(Simple.class))
+            display(el);
+        return false;
+    }
+    private void display(Element el) {
+        System.out.println("==== " + el + " ====");
+        System.out.println(el.getKind() +
+                " : " + el.getModifiers() +
+                " : " + el.getSimpleName() +
+                " : " + el.asType());
+        if(el.getKind().equals(ElementKind.CLASS)) {
+            TypeElement te = (TypeElement)el;
+            System.out.println(te.getQualifiedName());
+            System.out.println(te.getSuperclass());
+            System.out.println(te.getEnclosedElements());
+        }
+        if(el.getKind().equals(ElementKind.METHOD)) {
+            ExecutableElement ex = (ExecutableElement)el;
+            System.out.print(ex.getReturnType() + " ");
+            System.out.print(ex.getSimpleName() + "(");
+            System.out.println(ex.getParameters() + ")");
+        }
+    }
+}
+```
+
+（旧的，失效的）**apt** 版本的处理器需要额外的方法来确定支持哪些注解以及支持的 Java 版本。不过，你现在可以简单的使用 **@SupportedAnnotationTypes** 和 **@SupportedSourceVersion** 注解（这是一个很好的示例关于注解如何简化你的代码）。
+
+你唯一需要实现的方法就是 `process()`，这里是所有行为发生的地方。第一个参数告诉你哪个注解是存在的，第二个参数保留了剩余信息。我们所做的事情只是打印了注解（这里只存在一个），可以看 **TypeElement** 文档中的其他行为。通过使用 `process()` 的第二个操作，我们循环所有被 **@Simple** 注解的元素，并且针对每一个元素调用我们的 `display()` 方法。所有 **Element** 展示了本身的基本信息；例如，`getModifiers()` 告诉你它是否为 **public** 和 **static** 的。
+
+**Element** 只能执行那些编译器解析的所有基本对象共有的操作，而类和方法之类的东西有额外的信息需要提取。所以（如果你阅读了正确的文档，但是我没有在任何文档中找到——我不得不通过 StackOverflow 寻找线索）你检查它是哪种 **ElementKind**，让后将其向下转换为更具体的元素类型，注入针对 CLASS 的 TypeElement 和 针对 METHOD 的ExecutableElement。此时，可以为这些元素调用其他方法。
+
+动态向下转型（在编译期不进行检查）并不像是 Java 的做事方式，这非常不直观这也是为什么我从未想过要这样做事。相反，我花了好几天的时间，试图发现你应该如何访问这些信息，而这些信息至少在某种程度上是用不起作用的恰当方法简单明了的。我还没有遇到任何东西说上面是规范的形式，但在我看来是。
+
+如果只是通过平常的方式来编译 **SimpleTest.java**，你不会得到任何结果。为了得到注解输出，你必须增加一个 **processor** 标志并且连接注解处理器类
+
+```shell
+javac -processor annotations.simplest.SimpleProcessor SimpleTest.java
+```
+
+现在编译器有了输出
+
+```shell
+annotations.simplest.Simple
+==== annotations.simplest.SimpleTest ====
+CLASS : [public] : SimpleTest : annotations.simplest.SimpleTest
+annotations.simplest.SimpleTest
+java.lang.Object
+i,SimpleTest(),foo(),bar(java.lang.String,int,float),main(java.lang.String[])
+==== i ====
+FIELD : [] : i : int
+==== SimpleTest() ====
+CONSTRUCTOR : [public] : <init> : ()void
+==== foo() ====
+METHOD : [public] : foo : ()void
+void foo()
+==== bar(java.lang.String,int,float) ====
+METHOD : [public] : bar : (java.lang.String,int,float)void
+void bar(s,i,f)
+==== main(java.lang.String[]) ====
+METHOD : [public, static] : main : (java.lang.String[])void
+void main(args)
+```
+
+这给了你一些可以发现的东西，包括参数名和类型、返回值等。
+
+### 更复杂的处理器
 
 <!-- Annotation-Based Unit Testing -->
 
