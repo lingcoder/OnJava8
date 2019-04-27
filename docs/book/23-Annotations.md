@@ -618,16 +618,1192 @@ void main(args)
 
 ### 更复杂的处理器
 
+当你创建用于 javac 注解处理器时，你不能使用 Java 的反射特性，因为你处理的是源代码，而并非是编译后的 class 文件。各种 mirror[^3 ] 解决这个问题的方法是，通过允许你在未编译的源代码中查看方法、字段和类型。
+
+如下是一个用于提取类中方法的注解，所以它可以被抽取成为一个接口：
+
+```java
+// annotations/ifx/ExtractInterface.java
+// javac-based annotation processing
+package annotations.ifx;
+import java.lang.annotation.*;
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.SOURCE)
+public @interface ExtractInterface {
+    String interfaceName() default "-!!-";
+}
+```
+
+**RetentionPolicy** 的值为 **SOURCE**，这是为了在提取类中的接口之后不再将注解信息保留在 class 文件中。接下来的测试类提供了一些公用方法，这些方法可以成为接口的一部分：
+
+```java
+// annotations/ifx/Multiplier.java
+// javac-based annotation processing
+// {java annotations.ifx.Multiplier}
+package annotations.ifx;
+@ExtractInterface(interfaceName="IMultiplier")
+public class Multiplier {
+    public boolean flag = false;
+    private int n = 0;
+    public int multiply(int x, int y) {
+        int total = 0;
+        for(int i = 0; i < x; i++)
+            total = add(total, y);
+        return total;
+    }
+    public int fortySeven() { return 47; }
+    private int add(int x, int y) {
+        return x + y;
+    }
+    public double timesTen(double arg) {
+        return arg * 10;
+    }
+    public static void main(String[] args) {
+        Multiplier m = new Multiplier();
+        System.out.println(
+                "11 * 16 = " + m.multiply(11, 16));
+    }
+}
+```
+
+输出为：
+
+```java
+11 * 16 = 176
+```
+
+**Multiplier** 类（只能处理正整数）拥有一个 `multiply()` 方法，这个方法会多次调用私有方法 `add()` 来模拟乘法操作。` add()` 是私有方法，因此不能成为接口的一部分。其他的方法提供了语法多样性。注解被赋予 **IMultiplier** 的 **InterfaceName** 作为要创建的接口的名称。
+
+这里有一个编译时处理器用于提取有趣的方法，并创建一个新的 interface 源代码文件（这个源文件将会在下一轮中被自动编译）：
+
+```java
+// annotations/ifx/IfaceExtractorProcessor.java
+// javac-based annotation processing
+package annotations.ifx;
+import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.*;
+import javax.lang.model.util.*;
+import java.util.*;
+import java.util.stream.*;
+import java.io.*;
+@SupportedAnnotationTypes(
+        "annotations.ifx.ExtractInterface")
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
+public class IfaceExtractorProcessor
+        extends AbstractProcessor {
+    private ArrayList<Element>
+            interfaceMethods = new ArrayList<>();
+    Elements elementUtils;
+    private ProcessingEnvironment processingEnv;
+    @Override
+    public void init(
+            ProcessingEnvironment processingEnv) {
+        this.processingEnv = processingEnv;
+        elementUtils = processingEnv.getElementUtils();
+    }
+    @Override
+    public boolean process(
+            Set<? extends TypeElement> annotations,
+            RoundEnvironment env) {
+        for(Element elem:env.getElementsAnnotatedWith(
+                ExtractInterface.class)) {
+            String interfaceName = elem.getAnnotation(
+                    ExtractInterface.class).interfaceName();
+            for(Element enclosed :
+                    elem.getEnclosedElements()) {
+                if(enclosed.getKind()
+                        .equals(ElementKind.METHOD) &&
+                        enclosed.getModifiers()
+                                .contains(Modifier.PUBLIC) &&
+                        !enclosed.getModifiers()
+                                .contains(Modifier.STATIC)) {
+                    interfaceMethods.add(enclosed);
+                }
+            }
+            if(interfaceMethods.size() > 0)
+                writeInterfaceFile(interfaceName);
+        }
+        return false;
+    }
+    private void
+    writeInterfaceFile(String interfaceName) {
+        try(
+                Writer writer = processingEnv.getFiler()
+                        .createSourceFile(interfaceName)
+                        .openWriter()
+        ) {
+            String packageName = elementUtils
+                    .getPackageOf(interfaceMethods
+                            .get(0)).toString();
+            writer.write(
+                    "package " + packageName + ";\n");
+            writer.write("public interface " +
+                    interfaceName + " {\n");
+            for(Element elem : interfaceMethods) {
+                ExecutableElement method =
+                        (ExecutableElement)elem;
+                String signature = " public ";
+                signature += method.getReturnType() + " ";
+                signature += method.getSimpleName();
+                signature += createArgList(
+                        method.getParameters());
+                System.out.println(signature);
+                writer.write(signature + ";\n");
+            }
+            writer.write("}");
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private String createArgList(
+            List<? extends VariableElement> parameters) {
+        String args = parameters.stream()
+                .map(p -> p.asType() + " " + p.getSimpleName())
+                .collect(Collectors.joining(", "));
+        return "(" + args + ")";
+    }
+}
+```
+
+**Elements** 对象实例 **elementUtils** 是一组静态方法的工具；我们用它来寻找 **writeInterfaceFile()** 中含有的包名。
+
+`getEnclosedElements()`方法会通过指定的元素生成所有的“闭包”元素。在这里，这个类闭包了它的所有元素。通过使用 `getKind()` 我们会找到所有的 **public** 和 **static** 方法，并将其添加到 **interfaceMethods** 列表中。接下来 `writeInterfaceFile()` 使用 **interfaceMethods** 列表里面的值生成新的接口定义。注意，在 `writeInterfaceFile()` 使用了向下转型到 **ExecutableElement**，这使得我们可以获取所有的方法信息。**createArgList()** 是一个帮助方法，用于生成参数列表。
+
+**Filer**是 `getFiler()` 生成的，并且是 **PrintWriter** 的一种实例，可以用于创建新文件。我们使用 **Filer** 对象，而不是原生的 **PrintWriter** 原因是，这个对象可以运行 **javac** 追踪你创建的新文件，这使得它可以在新一轮中检查新文件中的注解并编译文件。
+
+如下是一个命令行，可以在编译的时候使用处理器：
+
+```shell
+javac -processor annotations.ifx.IfaceExtractorProcessor Multiplier.java
+```
+
+新生成的 **IMultiplier.java** 的文件，正如你通过查看上面处理器的 `println()` 语句所猜测的那样，如下所示：
+
+```java
+package annotations.ifx;
+public interface IMultiplier {
+    public int multiply(int x, int y);
+    public int fortySeven();
+    public double timesTen(double arg);
+}
+```
+
+这个类同样会被 **javac** 编译（在某一轮中），所以你会在同一个目录中看到 **IMultiplier.class** 文件。
+
 <!-- Annotation-Based Unit Testing -->
 
 ## 基于注解的单元测试
 
+单元测试是对类中每个方法提供一个或者多个测试的一种时间，其目的是为了有规律的测试一个类中每个部分是否具备正确的行为。在 Java 中，最著名的单元测试工具就是 **JUnit**。**JUnit** 4 版本已经包含了注解。在注解版本之前的 JUnit 一个最主要的问题是，为了启动和运行 **JUnit** 测试，有大量的“仪式”需要标注。这种负担已经减轻了一些，**但是**注解使得测试更接近“可以工作的最简单的测试系统”。
+
+在注解版本之前的 JUnit，你必须创建一个单独的文件来保存单元测试。通过注解，我们可以将单元测试集成在需要被测试的类中，从而将单元测试的时间和麻烦降到了最低。这种方式有额外的好处，就是使得测试私有方法和公有方法变的一样容易。
+
+这个基于注解的测试框架叫做 **@Unit**。其最基本的测试形式，可能也是你使用的最多的一个注解是 **@Test**，我们使用 **@Test** 来标记测试方法。测试方法不带参数，并返回 **boolean** 结果来说明测试方法成功或者失败。你可以任意命名它的测试方法。同时 **@Unit** 测试方法可以是任意你喜欢的访问修饰方法，包括 **private**。
+
+要使用 **@Unit**，你必须导入 **onjava.atunit** 包，并且使用 **@Unit** 的测试标记为合适的方法和字段打上标签（在接下来的例子中你会学到），然后让你的构建系统对编译后的类运行 **@Unit**，下面是一个简单的例子：
+
+```java
+// annotations/AtUnitExample1.java
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/AtUnitExample1.class}
+package annotations;
+import onjava.atunit.*;
+import onjava.*;
+public class AtUnitExample1 {
+    public String methodOne() {
+        return "This is methodOne";
+    }
+    public int methodTwo() {
+        System.out.println("This is methodTwo");
+        return 2;
+    }
+    @Test
+    boolean methodOneTest() {
+        return methodOne().equals("This is methodOne");
+    }
+    @Test
+    boolean m2() { return methodTwo() == 2; }
+    @Test
+    private boolean m3() { return true; }
+    // Shows output for failure:
+    @Test
+    boolean failureTest() { return false; }
+    @Test
+    boolean anotherDisappointment() {
+        return false;
+    }
+}
+```
+
+输出为：
+
+```java
+annotations.AtUnitExample1
+. m3
+. methodOneTest
+. m2 This is methodTwo
+. failureTest (failed)
+. anotherDisappointment (failed)
+(5 tests)
+>>> 2 FAILURES <<<
+annotations.AtUnitExample1: failureTest
+annotations.AtUnitExample1: anotherDisappointment
+```
+
+使用 **@Unit** 进行测试的类必须定义在某个包中（即必须包括 **package** 声明）。
+
+**@Test** 注解被置于 `methodOneTest()`、 `m2()`、`m3()`、`failureTest()` 以及 a`notherDisappointment()` 方法之前，它们告诉 **@Unit** 方法作为单元测试来运行。同时 **@Test** 确保这些方法没有任何参数并且返回值为 **boolean** 或者 **void**。当你填写单元测试时，唯一需要做的就是决定测试是成功还是失败，（对于返回值为 **boolean** 的方法）应该返回 **ture** 还是 **false**。
+
+如果你熟悉 **JUnit**，你还将注意到 **@Unit** 输出的信息更多。你会看到现在正在运行的测试的输出更有用，最后它会告诉你导致失败的类和测试。
+
+你并非必须将测试方法嵌入到原来的类中，有时候这种事情根本做不到。要生产一个非嵌入式的测试，最简单的方式就是继承：
+
+```java
+// annotations/AUExternalTest.java
+// Creating non-embedded tests
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/AUExternalTest.class}
+package annotations;
+import onjava.atunit.*;
+import onjava.*;
+public class AUExternalTest extends AtUnitExample1 {
+    @Test
+    boolean _MethodOne() {
+        return methodOne().equals("This is methodOne");
+    }
+    @Test
+    boolean _MethodTwo() {
+        return methodTwo() == 2;
+    }
+}
+```
+
+输出为：
+
+```java
+annotations.AUExternalTest
+. tMethodOne
+. tMethodTwo This is methodTwo
+OK (2 tests)
+```
+
+这个示例还表现出灵活命名的价值。在这里，**@Test** 方法被命名为下划线前缀加上要测试的方法名称（我并不认为这是一种理想的命名形式，这只是表现一种可能性罢了）。
+
+你也可以使用组合来创建非嵌入式的测试：
+
+```java
+// annotations/AUComposition.java
+// Creating non-embedded tests
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/AUComposition.class}
+package annotations;
+import onjava.atunit.*;
+import onjava.*;
+public class AUComposition {
+    AtUnitExample1 testObject = new AtUnitExample1();
+    @Test
+    boolean tMethodOne() {
+        return testObject.methodOne()
+                .equals("This is methodOne");
+    }
+    @Test
+    boolean tMethodTwo() {
+        return testObject.methodTwo() == 2;
+    }
+}
+```
+
+输出为：
+
+```java
+annotations.AUComposition
+. tMethodTwo This is methodTwo
+. tMethodOne
+OK (2 tests)
+```
+
+因为在每一个测试里面都会创建 **AUComposition** 对象，所以创建新的成员变量 **testObject** 用于以后的每一个测试方法。
+
+因为 **@Unit** 中没有 **JUnit** 中特殊的 **assert** 方法，不过另一种形式的 **@Test** 方法仍然允许返回值为 **void**（如果你还想使用 **true** 或者 **false** 的话，也可以使用 **boolean** 作为方法返回值类型）。为了表示测试成功，可以使用 Java 的 **assert** 语句。Java 断言机制需要你在 java 命令行行加上 **-ea** 标志来开启，但是 **@Unit** 已经自动开启了该功能。要表示测试失败的话，你甚至可以使用异常。**@Unit** 的设计目标之一就是尽可能减少添加额外的语法，而 Java 的 **assert** 和异常对于报告错误而言，即已经足够了。一个失败的 **assert** 或者从方法从抛出的异常都被视为测试失败，但是 **@Unit** 不会在这个失败的测试上卡住，它会继续运行，直到所有测试完毕，下面是一个示例程序：
+
+```java
+// annotations/AtUnitExample2.java
+// Assertions and exceptions can be used in @Tests
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/AtUnitExample2.class}
+package annotations;
+import java.io.*;
+import onjava.atunit.*;
+import onjava.*;
+public class AtUnitExample2 {
+    public String methodOne() {
+        return "This is methodOne";
+    }
+    public int methodTwo() {
+        System.out.println("This is methodTwo");
+        return 2;
+    }
+    @Test
+    void assertExample() {
+        assert methodOne().equals("This is methodOne");
+    }
+    @Test
+    void assertFailureExample() {
+        assert 1 == 2: "What a surprise!";
+    }
+    @Test
+    void exceptionExample() throws IOException {
+        try(FileInputStream fis =
+                    new FileInputStream("nofile.txt")) {} // Throws
+    }
+    @Test
+    boolean assertAndReturn() {
+        // Assertion with message:
+        assert methodTwo() == 2: "methodTwo must equal 2";
+        return methodOne().equals("This is methodOne");
+    }
+}
+```
+
+输出为：
+
+```java
+annotations.AtUnitExample2
+. exceptionExample java.io.FileNotFoundException:
+nofile.txt (The system cannot find the file specified)
+(failed)
+. assertExample
+. assertAndReturn This is methodTwo
+. assertFailureExample java.lang.AssertionError: What
+a surprise!
+(failed)
+(4 tests)
+>>> 2 FAILURES <<<
+annotations.AtUnitExample2: exceptionExample
+annotations.AtUnitExample2: assertFailureExample
+```
+
+如下是一个使用非嵌入式测试的例子，并且使用了断言，它将会对 **java.util.HashSet** 进行一些简单的测试：
+
+```java
+// annotations/HashSetTest.java
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/HashSetTest.class}
+package annotations;
+import java.util.*;
+import onjava.atunit.*;
+import onjava.*;
+public class HashSetTest {
+    HashSet<String> testObject = new HashSet<>();
+    @Test
+    void initialization() {
+        assert testObject.isEmpty();
+    }
+    @Test
+    void _Contains() {
+        testObject.add("one");
+        assert testObject.contains("one");
+    }
+    @Test
+    void _Remove() {
+        testObject.add("one");
+        testObject.remove("one");
+        assert testObject.isEmpty();
+    }
+}
+```
+
+采用继承的方式可能会更简单，也没有一些其他的约束。
+
+对每一个单元测试而言，**@Unit** 都会使用默认的无参构造器，为该测试类所属的类创建出一个新的实例。并在此新创建的对象上运行测试，然后丢弃该对象，以免对其他测试产生副作用。如此创建对象导致我们依赖于类的默认构造器。如果你的类没有默认构造器，或者对象需要复杂的构造过程，那么你可以创建一个 **static** 方法专门负责构造对象，然后使用 **@TestObjectCreate** 注解标记该方法，例子如下：
+
+```java
+// annotations/AtUnitExample3.java
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/AtUnitExample3.class}
+package annotations;
+import onjava.atunit.*;
+import onjava.*;
+public class AtUnitExample3 {
+    private int n;
+    public AtUnitExample3(int n) { this.n = n; }
+    public int getN() { return n; }
+    public String methodOne() {
+        return "This is methodOne";
+    }
+    public int methodTwo() {
+        System.out.println("This is methodTwo");
+        return 2;
+    }
+    @TestObjectCreate
+    static AtUnitExample3 create() {
+        return new AtUnitExample3(47);
+    }
+    @Test
+    boolean initialization() { return n == 47; }
+    @Test
+    boolean methodOneTest() {
+        return methodOne().equals("This is methodOne");
+    }
+    @Test
+    boolean m2() { return methodTwo() == 2; }
+}
+```
+
+输出为：
+
+```java
+annotations.AtUnitExample3
+. initialization
+. m2 This is methodTwo
+. methodOneTest
+OK (3 tests)
+```
+
+**@TestObjectCreate** 修饰的方法必须声明为 **static** ，且必须返回一个你正在测试的类型对象，这一切都由 **@Unit** 负责确保成立。
+
+有的时候，你需要向单元测试中增加一些字段。这时候可以使用 **@TestProperty** 注解，由它注解的字段表示只在单元测试中使用（因此，在你将产品发布给客户之前，他们应该被删除）。在下面的例子中，一个 **String** 通过 `String.split()` 方法进行分割，从其中读取一个值，这个值将会被生成测试对象：
+
+```java
+// annotations/AtUnitExample4.java
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/AtUnitExample4.class}
+// {VisuallyInspectOutput}
+package annotations;
+import java.util.*;
+import onjava.atunit.*;
+import onjava.*;
+public class AtUnitExample4 {
+    static String theory = "All brontosauruses " +
+            "are thin at one end, much MUCH thicker in the " +
+            "middle, and then thin again at the far end.";
+    private String word;
+    private Random rand = new Random(); // Time-based seed
+    public AtUnitExample4(String word) {
+        this.word = word;
+    }
+    public String getWord() { return word; }
+    public String scrambleWord() {
+        List<Character> chars = Arrays.asList(
+                ConvertTo.boxed(word.toCharArray()));
+        Collections.shuffle(chars, rand);
+        StringBuilder result = new StringBuilder();
+        for(char ch : chars)
+            result.append(ch);
+        return result.toString();
+    }
+    @TestProperty
+    static List<String> input =
+            Arrays.asList(theory.split(" "));
+    @TestProperty
+    static Iterator<String> words = input.iterator();
+    @TestObjectCreate
+    static AtUnitExample4 create() {
+        if(words.hasNext())
+            return new AtUnitExample4(words.next());
+        else
+            return null;
+    }
+    @Test
+    boolean words() {
+        System.out.println("'" + getWord() + "'");
+        return getWord().equals("are");
+    }
+    @Test
+    boolean scramble1() {
+// Use specific seed to get verifiable results:
+        rand = new Random(47);
+        System.out.println("'" + getWord() + "'");
+        String scrambled = scrambleWord();
+        System.out.println(scrambled);
+        return scrambled.equals("lAl");
+    }
+    @Test
+    boolean scramble2() {
+        rand = new Random(74);
+        System.out.println("'" + getWord() + "'");
+        String scrambled = scrambleWord();
+        System.out.println(scrambled);
+        return scrambled.equals("tsaeborornussu");
+    }
+}
+```
+
+输出为：
+
+```java
+annotations.AtUnitExample4
+. words 'All'
+(failed)
+. scramble1 'brontosauruses'
+ntsaueorosurbs
+(failed)
+. scramble2 'are'
+are
+(failed)
+(3 tests)
+>>> 3 FAILURES <<<
+annotations.AtUnitExample4: words
+annotations.AtUnitExample4: scramble1
+annotations.AtUnitExample4: scramble2
+```
+
+**@TestProperty** 也可以用来标记那些只在测试中使用的方法，但是它们本身不是测试方法。
+
+如果你的测试对象需要执行某些初始化工作，并且使用完成之后还需要执行清理工作，那么可以选择使用 **static** 的  **@TestObjectCleanup** 方法，当测试对象使用结束之后，该方法会为你执行清理工作。在下面的示例中，**@TestObjectCleanup** 为每一个测试对象都打开了一个文件，因此必须在丢弃测试的时候关闭该文件：
+
+```java
+// annotations/AtUnitExample5.java
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/AtUnitExample5.class}
+package annotations;
+import java.io.*;
+import onjava.atunit.*;
+import onjava.*;
+public class AtUnitExample5 {
+    private String text;
+    public AtUnitExample5(String text) {
+        this.text = text;
+    }
+    @Override
+    public String toString() { return text; }
+    @TestProperty
+    static PrintWriter output;
+    @TestProperty
+    static int counter;
+    @TestObjectCreate
+    static AtUnitExample5 create() {
+        String id = Integer.toString(counter++);
+        try {
+            output = new PrintWriter("Test" + id + ".txt");
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new AtUnitExample5(id);
+    }
+    @TestObjectCleanup
+    static void cleanup(AtUnitExample5 tobj) {
+        System.out.println("Running cleanup");
+        output.close();
+    }
+    @Test
+    boolean test1() {
+        output.print("test1");
+        return true;
+    }
+    @Test
+    boolean test2() {
+        output.print("test2");
+        return true;
+    }
+    @Test
+    boolean test3() {
+        output.print("test3");
+        return true;
+    }
+}
+```
+
+输出为：
+
+```java
+annotations.AtUnitExample5
+. test1
+Running cleanup
+. test3
+Running cleanup
+. test2
+Running cleanup
+OK (3 tests)
+```
+
+在输出中我们可以看到，清理方法会在每个测试方法结束之后自动运行。
+
+### 在 @Unit 中使用泛型
+
+泛型为 **@Unit** 出了一个难题，因为我们不可能“通用测试”。我们必须针对某个特定类型的参数或者参数集才能进行测试。解决方法十分简单，让测试类继承自泛型类的一个特定版本即可：
+
+下面是一个 **stack** 的简单实现：
+
+```java
+// annotations/StackL.java
+// A stack built on a LinkedList
+package annotations;
+import java.util.*;
+public class StackL<T> {
+    private LinkedList<T> list = new LinkedList<>();
+    public void push(T v) { list.addFirst(v); }
+    public T top() { return list.getFirst(); }
+    public T pop() { return list.removeFirst(); }
+}
+```
+
+为了测试 String 版本，我们直接让测试类继承一个 Stack\<String\> ：
+
+```java
+// annotations/StackLStringTst.java
+// Applying @Unit to generics
+// {java onjava.atunit.AtUnit
+// build/classes/main/annotations/StackLStringTst.class}
+package annotations;
+import onjava.atunit.*;
+import onjava.*;
+public class
+StackLStringTst extends StackL<String> {
+    @Test
+    void tPush() {
+        push("one");
+        assert top().equals("one");
+        push("two");
+        assert top().equals("two");
+    }
+    @Test
+    void tPop() {
+        push("one");
+        push("two");
+        assert pop().equals("two");
+        assert pop().equals("one");
+    }
+    @Test
+    void tTop() {
+        push("A");
+        push("B");
+        assert top().equals("B");
+        assert top().equals("B");
+    }
+}
+```
+
+输出为：
+
+```java
+annotations.StackLStringTst
+. tTop
+. tPush
+. tPop
+OK (3 tests)
+```
+
+这种方法存在的唯一缺点是，继承使我们失去了访问被测试的类中 **private** 方法的能力。这对你非常重要，那你要么把 private 方法变为 **protected**，要么添加一个非 **private** 的 **@TestProperty** 方法，由它来调用 **private** 方法（稍后我们会看到，**AtUnitRemover** 会删除产品中的 **@TestProperty** 方法）。
+
+**@Unit** 搜索那些包含合适注解的类文件，然后运行 **@Test** 方法。我的主要目标就是让 **@Unit** 测试系统尽可能的透明，使得人们使用它的时候只需要添加 **@Test** 注解，而不需要特殊的编码和知识（现在版本的 **JUnit** 符合这个实践）。不过，如果说编写测试不会遇到任何困难，也不太可能，因此 **@Unit** 会尽量让这些困难变的微不足道，希望通过这种方式，你们会更乐意编写测试。
+
+### 实现 @Unit
+
+首先我们需要定义所有的注解类型。这些都是简单的标签，并且没有任何字段。@Test 标签在本章开头已经定义过了，这里是其他所需要的注解：
+
+```java
+// onjava/atunit/TestObjectCreate.java
+// The @Unit @TestObjectCreate tag
+package onjava.atunit;
+import java.lang.annotation.*;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TestObjectCreate {}
+```
+
+```java
+// onjava/atunit/TestObjectCleanup.java
+// The @Unit @TestObjectCleanup tag
+package onjava.atunit;
+import java.lang.annotation.*;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TestObjectCleanup {}
+```
+
+```java
+// onjava/atunit/TestProperty.java
+// The @Unit @TestProperty tag
+package onjava.atunit;
+import java.lang.annotation.*;
+// Both fields and methods can be tagged as properties:
+@Target({ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TestProperty {}
+```
+
+所有测试的保留属性都为 **RUNTIME**，这是因为 **@Unit** 必须在编译后的代码中发现这些注解。
+
+要实现系统并运行测试，我们还需要反射机制来提取注解。下面这个程序通过注解中的信息，决定如何构造测试对象，并在测试对象上运行测试。正是由于注解帮助，这个程序才会如此短小而直接：
+
+```java
+// onjava/atunit/AtUnit.java
+// An annotation-based unit-test framework
+// {java onjava.atunit.AtUnit}
+package onjava.atunit;
+import java.lang.reflect.*;
+import java.io.*;
+import java.util.*;
+import java.nio.file.*;
+import java.util.stream.*;
+import onjava.*;
+public class AtUnit implements ProcessFiles.Strategy {
+    static Class<?> testClass;
+    static List<String> failedTests= new ArrayList<>();
+    static long testsRun = 0;
+    static long failures = 0;
+    public static void
+    main(String[] args) throws Exception {
+        ClassLoader.getSystemClassLoader()
+                .setDefaultAssertionStatus(true); // Enable assert
+        new ProcessFiles(new AtUnit(), "class").start(args);
+        if(failures == 0)
+            System.out.println("OK (" + testsRun + " tests)");
+        else {
+            System.out.println("(" + testsRun + " tests)");
+            System.out.println(
+                    "\n>>> " + failures + " FAILURE" +
+                            (failures > 1 ? "S" : "") + " <<<");
+            for(String failed : failedTests)
+                System.out.println(" " + failed);
+        }
+    }
+    @Override
+    public void process(File cFile) {
+        try {
+            String cName = ClassNameFinder.thisClass(
+                    Files.readAllBytes(cFile.toPath()));
+            if(!cName.startsWith("public:"))
+                return;
+            cName = cName.split(":")[1];
+            if(!cName.contains("."))
+                return; // Ignore unpackaged classes
+            testClass = Class.forName(cName);
+        } catch(IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        TestMethods testMethods = new TestMethods();
+        Method creator = null;
+        Method cleanup = null;
+        for(Method m : testClass.getDeclaredMethods()) {
+            testMethods.addIfTestMethod(m);
+            if(creator == null)
+                creator = checkForCreatorMethod(m);
+            if(cleanup == null)
+                cleanup = checkForCleanupMethod(m);
+        }
+        if(testMethods.size() > 0) {
+            if(creator == null)
+                try {
+                    if(!Modifier.isPublic(testClass
+                            .getDeclaredConstructor()
+                            .getModifiers())) {
+                        System.out.println("Error: " + testClass +
+                                " no-arg constructor must be public");
+                        System.exit(1);
+                    }
+                } catch(NoSuchMethodException e) {
+// Synthesized no-arg constructor; OK
+                }
+            System.out.println(testClass.getName());
+        }
+        for(Method m : testMethods) {
+            System.out.print(" . " + m.getName() + " ");
+            try {
+                Object testObject = createTestObject(creator);
+                boolean success = false;
+                try {
+                    if(m.getReturnType().equals(boolean.class))
+                        success = (Boolean)m.invoke(testObject);
+                    else {
+                        m.invoke(testObject);
+                        success = true; // If no assert fails
+                    }
+                } catch(InvocationTargetException e) {
+// Actual exception is inside e:
+                    System.out.println(e.getCause());
+                }
+                System.out.println(success ? "" : "(failed)");
+                testsRun++;
+                if(!success) {
+                    failures++;
+                    failedTests.add(testClass.getName() +
+                            ": " + m.getName());
+                }
+                if(cleanup != null)
+                    cleanup.invoke(testObject, testObject);
+            } catch(IllegalAccessException |
+                    IllegalArgumentException |
+                    InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    public static
+    class TestMethods extends ArrayList<Method> {
+        void addIfTestMethod(Method m) {
+            if(m.getAnnotation(Test.class) == null)
+                return;
+            if(!(m.getReturnType().equals(boolean.class) ||
+                    m.getReturnType().equals(void.class)))
+                throw new RuntimeException("@Test method" +
+                        " must return boolean or void");
+            m.setAccessible(true); // If it's private, etc.
+            add(m);
+        }
+    }
+    private static
+    Method checkForCreatorMethod(Method m) {
+        if(m.getAnnotation(TestObjectCreate.class) == null)
+            return null;
+        if(!m.getReturnType().equals(testClass))
+            throw new RuntimeException("@TestObjectCreate " +
+                    "must return instance of Class to be tested");
+        if((m.getModifiers() &
+                java.lang.reflect.Modifier.STATIC) < 1)
+            throw new RuntimeException("@TestObjectCreate " +
+                    "must be static.");
+        m.setAccessible(true);
+        return m;
+    }
+    private static
+    Method checkForCleanupMethod(Method m) {
+        if(m.getAnnotation(TestObjectCleanup.class) == null)
+            return null;
+        if(!m.getReturnType().equals(void.class))
+            throw new RuntimeException("@TestObjectCleanup " +
+                    "must return void");
+        if((m.getModifiers() &
+                java.lang.reflect.Modifier.STATIC) < 1)
+            throw new RuntimeException("@TestObjectCleanup " +
+                    "must be static.");
+        if(m.getParameterTypes().length == 0 ||
+                m.getParameterTypes()[0] != testClass)
+            throw new RuntimeException("@TestObjectCleanup " +
+                    "must take an argument of the tested type.");
+        m.setAccessible(true);
+        return m;
+    }
+    private static Object
+    createTestObject(Method creator) {
+        if(creator != null) {
+            try {
+                return creator.invoke(testClass);
+            } catch(IllegalAccessException |
+                    IllegalArgumentException |
+                    InvocationTargetException e) {
+                throw new RuntimeException("Couldn't run " +
+                        "@TestObject (creator) method.");
+            }
+        } else { // Use the no-arg constructor:
+            try {
+                return testClass.newInstance();
+            } catch(InstantiationException |
+                    IllegalAccessException e) {
+                throw new RuntimeException(
+                        "Couldn't create a test object. " +
+                                "Try using a @TestObject method.");
+            }
+        }
+    }
+}
+```
+
+虽然它可能是“过早的重构”（因为它只在书中使用过一次），**AtUnit.java** 使用了 **ProcessFiles** 工具逐步判断命令行中的参数，决定它是一个目录还是文件，并采取相应的行为。这可以应用于不同的解决方法，是因为它包含了一个 可用于自定义的 **Strategy** 接口：
+
+```java
+// onjava/ProcessFiles.java
+package onjava;
+import java.io.*;
+import java.nio.file.*;
+public class ProcessFiles {
+    public interface Strategy {
+        void process(File file);
+    }
+    private Strategy strategy;
+    private String ext;
+    public ProcessFiles(Strategy strategy, String ext) {
+        this.strategy = strategy;
+        this.ext = ext;
+    }
+    public void start(String[] args) {
+        try {
+            if(args.length == 0)
+                processDirectoryTree(new File("."));
+            else
+                for(String arg : args) {
+                    File fileArg = new File(arg);
+                    if(fileArg.isDirectory())
+                        processDirectoryTree(fileArg);
+                    else {
+// Allow user to leave off extension:
+                        if(!arg.endsWith("." + ext))
+                            arg += "." + ext;
+                        strategy.process(
+                                new File(arg).getCanonicalFile());
+                    }
+                }
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void processDirectoryTree(File root) throws IOException {
+        PathMatcher matcher = FileSystems.getDefault()
+                .getPathMatcher("glob:**/*.{" + ext + "}");
+        Files.walk(root.toPath())
+                .filter(matcher::matches)
+                .forEach(p -> strategy.process(p.toFile()));
+    }
+}
+```
+
+**AtUnit** 类实现了 **ProcessFiles.Strategy**，其包含了一个 `process()` 方法。在这种方式下，**AtUnit** 实例可以作为参数传递给 **ProcessFiles** 构造器。第二个构造器的参数告诉 **ProcessFiles** 如寻找所有包含 “class” 拓展名的文件。
+
+如下是一个简单的使用示例：
+
+```java
+// annotations/DemoProcessFiles.java
+import onjava.ProcessFiles;
+public class DemoProcessFiles {
+    public static void main(String[] args) {
+        new ProcessFiles(file -> System.out.println(file),
+                "java").start(args);
+    }
+}
+```
+
+输出为：
+
+```java
+.\AtUnitExample1.java
+.\AtUnitExample2.java
+.\AtUnitExample3.java
+.\AtUnitExample4.java
+.\AtUnitExample5.java
+.\AUComposition.java
+.\AUExternalTest.java
+.\database\Constraints.java
+.\database\DBTable.java
+.\database\Member.java
+.\database\SQLInteger.java
+.\database\SQLString.java
+.\database\TableCreator.java
+.\database\Uniqueness.java
+.\DemoProcessFiles.java
+.\HashSetTest.java
+.\ifx\ExtractInterface.java
+.\ifx\IfaceExtractorProcessor.java
+.\ifx\Multiplier.java
+.\PasswordUtils.java
+.\simplest\Simple.java
+.\simplest\SimpleProcessor.java
+.\simplest\SimpleTest.java
+.\SimulatingNull.java
+.\StackL.java
+.\StackLStringTst.java
+.\Testable.java
+.\UseCase.java
+.\UseCaseTracker.java
+```
+
+如果没有命令行参数，这个程序会遍历当前的目录树。你还可以提供多个参数，这些参数可以是类文件（带或不带.class扩展名）或目录。
+
+回到我们对 **AtUnit.java** 的讨论，因为 **@Unit** 会自动找到可测试的类和方法，所以不需要“套件”机制。
+
+**AtUnit.java** 中存在的一个我们必须要解决的问题是，当它发现类文件时，类文件名中的限定类名（包括包）不明显。为了发现这个信息，必须解析类文件 - 这不是微不足道的，但也不是不可能的。 找到 .class 文件时，会打开它并读取其二进制数据并将其传递给 `ClassNameFinder.thisClass()`。 在这里，我们正在进入“字节码工程”领域，因为我们实际上正在分析类文件的内容：
+
+```java
+// onjava/atunit/ClassNameFinder.java
+// {java onjava.atunit.ClassNameFinder}
+package onjava.atunit;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import onjava.*;
+public class ClassNameFinder {
+    public static String thisClass(byte[] classBytes) {
+        Map<Integer,Integer> offsetTable = new HashMap<>();
+        Map<Integer,String> classNameTable = new HashMap<>();
+        try {
+            DataInputStream data = new DataInputStream(
+                    new ByteArrayInputStream(classBytes));
+            int magic = data.readInt(); // 0xcafebabe
+            int minorVersion = data.readShort();
+            int majorVersion = data.readShort();
+            int constantPoolCount = data.readShort();
+            int[] constantPool = new int[constantPoolCount];
+            for(int i = 1; i < constantPoolCount; i++) {
+                int tag = data.read();
+                // int tableSize;
+                switch(tag) {
+                    case 1: // UTF
+                        int length = data.readShort();
+                        char[] bytes = new char[length];
+                        for(int k = 0; k < bytes.length; k++)
+                            bytes[k] = (char)data.read();
+                        String className = new String(bytes);
+                        classNameTable.put(i, className);
+                        break;
+                    case 5: // LONG
+                    case 6: // DOUBLE
+                        data.readLong(); // discard 8 bytes
+                        i++; // Special skip necessary
+                        break;
+                    case 7: // CLASS
+                        int offset = data.readShort();
+                        offsetTable.put(i, offset);
+                        break;
+                    case 8: // STRING
+                        data.readShort(); // discard 2 bytes
+                        break;
+                    case 3: // INTEGER
+                    case 4: // FLOAT
+                    case 9: // FIELD_REF
+                    case 10: // METHOD_REF
+                    case 11: // INTERFACE_METHOD_REF
+                    case 12: // NAME_AND_TYPE
+                    case 18: // Invoke Dynamic
+                        data.readInt(); // discard 4 bytes
+                        break;
+                    case 15: // Method Handle
+                        data.readByte();
+                        data.readShort();
+                        break;
+                    case 16: // Method Type
+                        data.readShort();
+                        break;
+                    default:
+                        throw
+                                new RuntimeException("Bad tag " + tag);
+                }
+            }
+            short accessFlags = data.readShort();
+            String access = (accessFlags & 0x0001) == 0 ?
+                    "nonpublic:" : "public:";
+            int thisClass = data.readShort();
+            int superClass = data.readShort();
+            return access + classNameTable.get(
+                    offsetTable.get(thisClass)).replace('/', '.');
+        } catch(IOException | RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    // Demonstration:
+    public static void main(String[] args) throws Exception {
+        PathMatcher matcher = FileSystems.getDefault()
+                .getPathMatcher("glob:**/*.class");
+// Walk the entire tree:
+        Files.walk(Paths.get("."))
+                .filter(matcher::matches)
+                .map(p -> {
+                    try {
+                        return thisClass(Files.readAllBytes(p));
+                    } catch(Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .filter(s -> s.startsWith("public:"))
+// .filter(s -> s.indexOf('$') >= 0)
+                .map(s -> s.split(":")[1])
+                .filter(s -> !s.startsWith("enums."))
+                .filter(s -> s.contains("."))
+                .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```java
+onjava.ArrayShow
+onjava.atunit.AtUnit$TestMethods
+onjava.atunit.AtUnit
+onjava.atunit.ClassNameFinder
+onjava.atunit.Test
+onjava.atunit.TestObjectCleanup
+onjava.atunit.TestObjectCreate
+onjava.atunit.TestProperty
+onjava.BasicSupplier
+onjava.CollectionMethodDifferences
+onjava.ConvertTo
+onjava.Count$Boolean
+onjava.Count$Byte
+onjava.Count$Character
+onjava.Count$Double
+onjava.Count$Float
+onjava.Count$Integer
+onjava.Count$Long
+onjava.Count$Pboolean
+onjava.Count$Pbyte
+onjava.Count$Pchar
+onjava.Count$Pdouble
+onjava.Count$Pfloat
+onjava.Count$Pint
+onjava.Count$Plong
+onjava.Count$Pshort
+onjava.Count$Short
+onjava.Count
+onjava.CountingIntegerList
+onjava.CountMap
+onjava.Countries
+onjava.Enums
+onjava.FillMap
+onjava.HTMLColors
+onjava.MouseClick
+onjava.Nap
+onjava.Null
+onjava.Operations
+onjava.OSExecute
+onjava.OSExecuteException
+onjava.Pair
+onjava.ProcessFiles$Strategy
+onjava.ProcessFiles
+onjava.Rand$Boolean
+onjava.Rand$Byte
+onjava.Rand$Character
+onjava.Rand$Double
+onjava.Rand$Float
+onjava.Rand$Integer
+onjava.Rand$Long
+onjava.Rand$Pboolean
+onjava.Rand$Pbyte
+onjava.Rand$Pchar
+onjava.Rand$Pdouble
+onjava.Rand$Pfloat
+onjava.Rand$Pint
+onjava.Rand$Plong
+onjava.Rand$Pshort
+onjava.Rand$Short
+onjava.Rand$String
+onjava.Rand
+onjava.Range
+onjava.Repeat
+onjava.RmDir
+onjava.Sets
+onjava.Stack
+onjava.Suppliers
+onjava.TimedAbort
+onjava.Timer
+onjava.Tuple
+onjava.Tuple2
+onjava.Tuple3
+onjava.Tuple4
+onjava.Tuple5
+onjava.TypeCounter
+```
+
+ 虽然无法在这里介绍其中所有的细节，但是每个类文件都必须遵循一定的格式，而我已经尽力用有意义的字段来表示这些从 **ByteArrayInputStream** 中提取出来的数据片段。通过施加在输入流上的读操作，你能看出每个信息片的大小。例如每一个类的头 32 个 bit 总是一个 “神秘数字” **0xcafebabe**，而接下来的两个 **short** 值是版本信息。常量池包含了程序的常量，所以这是一个可变的值。接下来的 **short** 告诉我们这个常量池有多大，然后我们为其创建一个尺寸合适的数组。常量池中的每一个元素，其长度可能是固定式，也可能是可变的值，因此我们必须检查每一个常量的起始标记，然后才能知道该怎么做，这就是 switch 语句的工作。我们并不打算精确的分析类中所有的数据，仅仅是从文件的起始一步一步的走，直到取得我们所需的信息，因此你会发现，在这个过程中我们丢弃了大量的数据。关于类的信息都保存在 **classNameTable** 和 **offsetTable** 中。在读取常量池之后，就找到了 **this_class** 信息，这是 **offsetTable** 的一个坐标，通过它可以找到进入  **classNameTable** 的坐标，然后就可以得到我们所需的类的名字了。
+
+现在让我们回到 **AtUtil.java** 中，process() 方法中拥有了类的名字，然后检查它是否包含“.”，如果有就表示该类定义于一个包中。没有包的类会被忽略。如果一个类在包中，那么我们就可以使用标准的类加载器通过 `Class.forName()`  将其加载进来。现在我们可以对这个类进行 **@Unit** 注解的分析工作了。
+
+我们只需要关注三件事：首先是 **@Test** 方法，它们被保存在 **TestMehtods** 列表中，然后检查其是否具有 @TestObjectCreate 和 **@TestObjectCleanup****** 方法。从代码中可以看到，我们通过调用相应的方法来查询注解从而找到这些方法。
+
+每找到一个 @Test 方法，就打印出来当前类的名字，于是观察者立刻就可以知道发生了什么。接下来开始执行测试，也就是打印出方法名，然后调用 createTestObject() （如果存在一个加了 @TestObjectCreate 注解的方法），或者调用默认构造器。一旦创建出来测试对象，如果调用其上的测试方法。如果测试的返回值为 boolean，就捕获该结果。如果测试方法没有返回值，那么就没有异常发生，我们就假设测试成功，反之，如果当 assert 失败或者有任何异常抛出的时候，就说明测试失败，这时将异常信息打印出来以显示错误的原因。如果有失败的测试发生，那么还要统计失败的次数，并将失败所属的类和方法加入到 failedTests 中，以便最后报告给用户。
 
 <!-- Summary -->
+
 ## 本章小结
 
+注解是 Java 引入的一项非常受欢迎的补充，它提供了一种结构化，并且具有类型检查能力的新途径，从而使得你能够为代码中加入元数据，而且不会导致代码杂乱并难以阅读。使用注解能够帮助我们避免编写累赘的部署描述性文件，以及其他的生成文件。而 Javadoc 中的 @deprecated 被 @Deprecated 注解所替代的事实也说明，与注释性文字相比，注解绝对更适用于描述类相关的信息。
 
+Java 提供了很少的内置注解。这意味着如果你在别处找不到可用的类库，那么就只能自己创建新的注解以及相应的处理器。通过将注解处理器链接到 javac，你可以一步完成编译新生成的文件，简化了构造过程。
+
+API 的提供方和框架将会将注解作为他们工具的一部分。通过 @Unit 系统，我们可以想象，注解会极大的改变我们的 Java 编程体验。
 
 <!-- 分页 -->
 
 <div style="page-break-after: always;"></div>
+
+[^3 ]: The Java designers coyly suggest that a mirror is where you find a reflection.
