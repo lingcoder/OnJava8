@@ -27,7 +27,7 @@ OO（object oriented，面向对象）是抽象数据，FP（functional programm
 
 更好的是，“不可变对象和无副作用”范例解决了并发编程中最基本和最棘手的问题之一（当程序的某些部分同时在多个处理器上运行时）。这是可变共享状态的问题，这意味着代码的不同部分（在不同的处理器上运行）可以尝试同时修改同一块内存（谁赢了？没人知道）。如果函数永远不会修改现有值但只生成新值，则不会对内存产生争用，这是纯函数式语言的定义。 因此，经常提出纯函数式语言作为并行编程的解决方案（还有其他可行的解决方案）。
 
-需要提醒大家的是，函数式语言背后有很多动机，这意味着描述它们可能会有些混淆。它通常取决于各种观点：“为并行编程”，“代码可靠性”和“代码创建和库复用”。[^1] 同时，函数式编程的参数能帮助程序员创建更快更健壮的代码 —— 部分仍然只是假设。虽然已有一些好的范例，[^2]但我们还不能证明纯函数式语言就是解决编程问题的最佳方法。
+需要提醒大家的是，函数式语言背后有很多动机，这意味着描述它们可能会有些混淆。它通常取决于各种观点：“为并行编程”，“代码可靠性”和“代码创建和库复用”。[^1] 同时，函数式编程的参数能帮助程序员创建更快更健壮的代码 —— 部分仍然只是假设。虽然已有一些好的范例[^2]，但我们还不能证明纯函数式语言就是解决编程问题的最佳方法。
 
 FP 思想值得融入非 FP 语言，如 Python。Java 8 也从中吸收并支持了 FP。我们将在此章探讨。
 
@@ -366,7 +366,7 @@ Help!
 
 **[3]** `hello()` 也符合 `call()` 的签名。 
 
-[4] ...就像是 `help()`，一个静态内部类中的非静态方法。(原文：… as is help(), a non-static method within a static inner class.)
+**[4]** 就像是 `help()`，静态内部类中的非静态方法。
 
 **[5]** `assist()` 是静态内部类中的静态方法。
 
@@ -378,11 +378,11 @@ Help!
 
 **[9]** 这是 **[6]** 的另一个版本：附加到存活对象的方法的方法参考，有时称为*绑定方法引用*。
 
-**[10]** 最后，获取静态内部类的静态方法的方法引用，用起来就像 **[8]** 中的外部类。
+**[10]** 最后，获取静态内部类的方法引用的操作与 **[8]** 中外部类方式一样。
 
-上例并无详尽; 我们很快就会看到方法参考的所有变化。
+上例只是简短的介绍，我们很快就能看到方法引用的全部变化。
 
-### Runnable
+### Runnable接口
 
 **Runnable** 接口自 1.0 版以来一直在 Java 中，因此不需要导入。它也符合特殊的单方法接口格式：它的方法 `run()` 不带参数，也没有返回值。因此，我们可以使用 Lambda 表达式和方法引用作为 **Runnable**：
 
@@ -653,21 +653,22 @@ public class FunctionalAnnotation {
 
 | **特征** |**函数式方法名**|**示例**|
 | :---- | :----: | :----: |
-|无参； <br> 无返回值|**Runnable** <br> (java.lang)  <br>  `run()`|**Runnable**|
-|无参； <br> 返回类型任意|**Supplier** <br> `get()` <br> `getAs类型()`| **Supplier<T>  <br> BooleanSupplier  <br> IntSupplier  <br> LongSupplier  <br> DoubleSupplier**|
-|无参数； <br> 返回类型任意|**Callable** <br> (java.util.concurrent)  <br> `call()`|**Callable\<V>**|
-|1 参数； <br> 无返回值|**Consumer** <br> `accept()`|**Consumer<T> <br> IntConsumer <br> LongConsumer <br> DoubleConsumer**|
-|2 参数 **Consumer**|**BiConsumer** <br> `accept()`|**BiConsumer\<T,U>**|
-|2 参数 **Consumer**； <br> 1 引用； <br> 1 基本类型|**Obj类型Consumer** <br> `accept()`|**ObjIntConsumer<T> <br> ObjLongConsumer\<T> <br> ObjDoubleConsumer\<T>**|
-|1 参数； <br> 返回类型不同|**Function** <br> `apply()` <br> **To类型** 和 **类型To类型** <br> `applyAs类型()`|**Function\<T,R> <br> IntFunction\<R> <br> LongFunction\<R> <br> DoubleFunction<R> <br> ToIntFunction<T> <br> ToLongFunction\<T> <br> ToDoubleFunction\<T> <br> IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
-|1 参数； <br> 返回类型相同|**UnaryOperator** <br> `apply()`|**UnaryOperator<T> <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator**|
-|2 参数类型相同； <br> 返回类型相同|**BinaryOperator** <br> `apply()`|**BinaryOperator\<T> <br> IntBinaryOperator <br> LongBinaryOperator <br> DoubleBinaryOperator**|
-|2 参数类型相同; <br> 返回整型|Comparator <br> (java.util) <br> `compare()`|**Comparator\<T>**|
-|2 参数； <br> 返回布尔型|**Predicate** <br> `test()`|**Predicate\<T> <br> BiPredicate\<T,U> <br> IntPredicate <br> LongPredicate <br> DoublePredicate**|
+|无参数； <br> 无返回值|**Runnable** <br> (java.lang)  <br>  `run()`|**Runnable**|
+|无参数； <br> 返回类型任意|**Supplier** <br> `get()` <br> `getAs类型()`| **Supplier\<T\>  <br> BooleanSupplier  <br> IntSupplier  <br> LongSupplier  <br> DoubleSupplier**|
+|无参数； <br> 返回类型任意|**Callable** <br> (java.util.concurrent)  <br> `call()`|**Callable\<V\>**|
+|1 参数； <br> 无返回值|**Consumer** <br> `accept()`|**Consumer\<T\> <br> IntConsumer <br> LongConsumer <br> DoubleConsumer**|
+|2 参数 **Consumer**|**BiConsumer** <br> `accept()`|**BiConsumer\<T,U\>**|
+|2 参数 **Consumer**； <br> 1 引用； <br> 1 基本类型|**Obj类型Consumer** <br> `accept()`|**ObjIntConsumer\<T\> <br> ObjLongConsumer\<T\> <br> ObjDoubleConsumer\<T\>**|
+|1 参数； <br> 返回类型不同|**Function** <br> `apply()` <br> **To类型** 和 **类型To类型** <br> `applyAs类型()`|**Function\<T,R\> <br> IntFunction\<R\> <br> LongFunction\<R\> <br> DoubleFunction\<R\> <br> ToIntFunction\<T\> <br> ToLongFunction\<T\> <br> ToDoubleFunction\<T\> <br> IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
+|1 参数； <br> 返回类型相同|**UnaryOperator** <br> `apply()`|**UnaryOperator\<T\> <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator**|
+|2 参数类型相同； <br> 返回类型相同|**BinaryOperator** <br> `apply()`|**BinaryOperator\<T\> <br> IntBinaryOperator <br> LongBinaryOperator <br> DoubleBinaryOperator**|
+|2 参数类型相同; <br> 返回整型|Comparator <br> (java.util) <br> `compare()`|**Comparator\<T\>**|
+|2 参数； <br> 返回布尔型|**Predicate** <br> `test()`|**Predicate\<T\> <br> BiPredicate\<T,U\> <br> IntPredicate <br> LongPredicate <br> DoublePredicate**|
 |参数基本类型； <br> 返回基本类型|**类型To类型Function** <br> `applyAs类型()`|**IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
-|2 参数类型不同|**Bi操作** <br> (不同方法名)|**BiFunction\<T,U,R> <br> BiConsumer\<T,U> <br> BiPredicate<T,U> <br> ToIntBiFunction\<T,U> <br> ToLongBiFunction\<T,U> <br> ToDoubleBiFunction<T**|
+|2 参数类型不同|**Bi操作** <br> (不同方法名)|**BiFunction\<T,U,R\> <br> BiConsumer\<T,U\> <br> BiPredicate\<T,U\> <br> ToIntBiFunction\<T,U\> <br> ToLongBiFunction\<T,U\> <br> ToDoubleBiFunction\<T\>**|
 
-此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出更多行的函数式接口。
+
+　　此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出更多行的函数式接口。
 
 能看出来在创建 `java.util.function` 时，设计者做出了一些选择。 
 
@@ -938,9 +939,9 @@ public interface IntToDoubleFunction {
 ## 高阶函数
 
 
-这个名字听起来有点令人生畏，但是：高阶函数只是一个消耗或产生函数的函数。
+这个名字听起来有点令人生畏，但是：[高阶函数](https://en.wikipedia.org/wiki/Higher-order_function)（Higher-order Function）只是一个消费或产生函数的函数。
 
-我们先来看看产生一个函数：
+我们先来看看如何产生一个函数：
 
 ```java
 // functional/ProduceFunction.java
@@ -959,18 +960,20 @@ public class ProduceFunction {
     System.out.println(f.apply("YELLING"));
   }
 }
-/* Output:
+```
+
+输出结果：
+```
 yelling
-*/
 ```
 
 这里，`produce()` 是高阶函数。
 
-**[1]** 使用继承，你可以轻松地为你的专用接口创建别名。
+**[1]** 使用继承，可以轻松地为你的专用接口创建别名。
 
-**[2]** 使用 Lambda 表达式，在方法中创建和返回一个函数几乎毫不费力。
+**[2]** 使用 Lambda 表达式，在方法中轻松创建和返回一个函数。
 
-要 `consume` 函数（consume a function），其对应的 `consuming` 方法 （the consuming method）的参数列表必须正确描述函数类型：
+要消费一个函数，消费函数需要在参数列表正确地描述函数类型。代码示例：
 
 ```java
 // functional/ConsumeFunction.java
@@ -990,7 +993,7 @@ public class ConsumeFunction {
 }
 ```
 
-当你根据 `consume` 的函数生成新函数时，事情变得特别有趣，比如：
+有趣的是，根据消费函数生成新函数。代码示例：
 
 ```java
 // functional/TransformFunction.java
@@ -1022,27 +1025,32 @@ public class TransformFunction {
     O o = f2.apply(new I());
   }
 }
-/* Output:
-I
-O
-*/
 ```
 
-在这里，`transform()` 生成一个与传入的函数具有相同签名的函数，但是你可以生成任何你想要的类型。这在 `Function` 接口中使用名为 `andThen()` 的默认方法，该方法专门用于操作函数。 顾名思义，在调用in函数之后调用 `toThen()`（还有 `compose()`，它在 `in` 函数之前应用新函数）。 要附加一个 `andThen()` 函数，我们只需将该函数作为参数传递。 `transform()` 产生的是一个新函数，它将 `in` 的动作与 `andThen()` 参数的动作结合起来。
+输出结果：
+
+```
+I
+O
+```
+
+在这里，`transform()` 生成一个与传入的函数具有相同签名的函数，但是你可以生成任何你想要的类型。
+
+这在 `Function` 接口中使用名为 `andThen()` 的默认方法，该方法专门用于操作函数。 顾名思义，在调用 `in` 函数之后调用 `toThen()`（还有 `compose()`，它在 `in` 函数之前应用新函数）。 要附加一个 `andThen()` 函数，我们只需将该函数作为参数传递。 `transform()` 产生的是一个新函数，它将 `in` 的动作与 `andThen()` 参数的动作结合起来。
 
 <!-- Closures -->
 ## 闭包
 
 
-在上一节的 `ProduceFunction.java` 中，我们从方法返回了一个 Lambda 函数。 这个例子让事情变得简单，但是我们必须在返回 Lambdas 时探讨一些问题。
+在上一节的 `ProduceFunction.java` 中，我们从方法中返回 Lambda 函数。 虽然过程简单，但是有些问题必须再回过头来探讨一下。
 
-*闭包*一词概括了这些问题。 闭包非常重要，因为它们可以轻松生成函数。
+**闭包**（Closure）一词总结了这些问题。 它非常重要，利用闭包可以轻松生成函数。
 
-考虑一个更复杂的 Lambda，它使用函数作用域之外的变量。 返回该函数会发生什么？ 也就是说，当你调用函数时，它对那些 “外部 ”变量引用了什么?  如果语言不能自动解决这个问题，那将变得非常具有挑战性。 能够解决这个问题的语言被称为**支持闭包**，或者在词法上限定范围( 也使用术语变量捕获 )。Java 8提供了有限但合理的闭包支持，
+考虑一个更复杂的 Lambda，它使用函数作用域之外的变量。 返回该函数会发生什么？ 也就是说，当你调用函数时，它对那些 “外部 ”变量引用了什么?  如果语言不能自动解决这个问题，那将变得非常具有挑战性。 能够解决这个问题的语言被称为**支持闭包**，或者在词法上限定范围( 也使用术语变量捕获 )。Java 8 提供了有限但合理的闭包支持，
 
 我们将用一些简单的例子来研究它。
 
-首先，这里有一个方法返回一个访问对象字段和方法参数的函数:
+首先，下例函数中，方法返回访问对象字段和方法参数。代码示例：
 
 ```java
 // functional/Closure1.java
@@ -1057,8 +1065,7 @@ public class Closure1 {
 }
 ```
 
-但是，仔细考虑一下，`i` 的这种用法并不是一个很大的挑战，因为对象很可能在你调用 `makeFun()` 之后就存在了——实际上，垃圾收集器几乎肯定会保留一个对象，并将现有的函数以这种方式绑定到该对象上。当然，如果你对同一个对象多次调用 `makeFun()` ，你最终会得到多个函数，它们都为 `i` 共享相同的存储空间:
-
+但是，仔细考虑一下，`i` 的这种用法并非是个大难题，因为对象很可能在你调用 `makeFun()` 之后就存在了——实际上，垃圾收集器几乎肯定会保留一个对象，并将现有的函数以这种方式绑定到该对象上[^5]。当然，如果你对同一个对象多次调用 `makeFun()` ，你最终会得到多个函数，它们都为 `i` 共享相同的存储空间:
 ```java
 // functional/SharedStorage.java
 
@@ -1075,11 +1082,14 @@ public class SharedStorage {
     System.out.println(f3.getAsInt());
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 0
 1
 2
-*/
 ```
 
 每次调用 `getAsInt()` 都会增加 `i`，表明存储是共享的。
@@ -1099,7 +1109,7 @@ public class Closure2 {
 }
 ```
 
-由 `makeFun()` 返回的 `IntSupplier` “关闭” `i` 和 `x`，因此当你调用返回的函数时两者仍然有效。 但请注意，我没有像 `Closure1.java` 那样增加i。 尝试递增它会产生编译时错误：
+由 `makeFun()` 返回的 `IntSupplier` “关闭” `i` 和 `x`，因此当你调用返回的函数时两者仍然有效。 但请**注意**，我没有像 `Closure1.java` 那样递增 `i`，因为会产生编译时错误。代码示例：
 
 ```java
 // functional/Closure3.java
@@ -1110,15 +1120,15 @@ import java.util.function.*;
 public class Closure3 {
   IntSupplier makeFun(int x) {
     int i = 0;
-    // Neither x++ nor i++ will work:
+    // x++ 和 i++ 都会报错：
     return () -> x++ + i++;
   }
 }
 ```
 
-`x` 和 `i` 的操作都犯了同样的错误：
+`x` 和 `i` 的操作都犯了同样的错误：从 Lambda 表达式引用的局部变量必须是 `final` 或者实 `final` 效果的。
 
-显然，从 Lambda 表达式引用的局部变量必须是 `final` 或者 实际的 `final` （effectively final），如果我们声明 `x`和 `i` 是 `final` ，它将起作用，因为那时我们不能增加任何一个：
+如果使用 `final` 修饰 `x`和 `i`，就不能再递增它们的值了。代码示例：
 
 ```java
 // functional/Closure4.java
@@ -1133,16 +1143,16 @@ public class Closure4 {
 }
 ```
 
-但是为什么 `Closure2.java` 在 `x` 和 `i `不是 `final` 却可以运行？
+那么为什么在 `Closure2.java` 中， `x` 和 `i` 非 `final` 却可以运行呢？
 
-这就是 “实际” `final `（effectively final）的含义出现的地方。 这个术语是为 Java 8 创建的，表示你没有明确地声明变量是 `final` 的，但你仍然是这样对待它 - 你没有改变它。 如果局部变量的初始值永远不会改变，那么它实际上是最终的。
+这就叫做**等同 final 效果**（Effectively Final）。这个术语是在 Java 8 才开始出现的，表示虽然没有明确地声明变量是 `final` 的，但是因变量值没被改变过而实际有了 `final` 同等的效果。 如果局部变量的初始值永远不会改变，那么它实际上就是 `final` 的。
 
-如果 `x` 和 `i` 在方法中的其他位置更改（但不在返回函数内部），则编译器仍将其视为错误。 每个增量产生一个单独的错误消息：
+如果 `x` 和 `i` 的值在方法中的其他位置发生改变（但不在返回的函数内部），则编译器仍将视其为错误。每个递增操作则会分别产生错误消息。代码示例：
 
 ```java
 / functional/Closure5.java
 
-// {WillNotCompile}
+// {无法编译成功}
 import java.util.function.*;
 
 public class Closure5 {
@@ -1155,9 +1165,9 @@ public class Closure5 {
 }
 ```
 
-要成为 “effectively final” ，意味着你可以将 final 关键字应用于变量声明而不更改任何其余代码。 它实际上是 `final`的，你只是没有明说。
+我们可以通过将 `final` 关键字应用于变量声明来实现**等同 final 效果**， 不用更改任何其余代码。 实际上它就是具备 `final` 效果的，只是没有明确说明。
 
-我们实际上可以通过在闭包中使用它们之前将 `x` 和  `i` 赋值给 `final` 变量来解决 `Closure5.java` 中的问题：
+通过在闭包中使用 `final` 关键字提前修饰变量 `x` 和  `i` ， 我们解决了 `Closure5.java` 中的问题。代码示例：
 
 ```java
 
@@ -1177,14 +1187,14 @@ public class Closure6 {
 }
 ```
 
-由于我们在赋值后永远不会更改 `iFinal` 和 `xFinal` ，因此在这里使用 `final` 是多余的。
+上例中 `iFinal` 和 `xFinal` 的值在赋值后并没有改变过，因此在这里使用 `final` 是多余的。
 
-如果你使用引用怎么办？ 我们可以从 **int** 更改为 **Integer**：
+如果这里是引用的话，需要把 **int** 型更改为 **Integer** 型。代码示例：
 
 ```java
 // functional/Closure7.java
 
-// {WillNotCompile}
+// {无法编译成功}
 import java.util.function.*;
 
 public class Closure7 {
@@ -1196,7 +1206,7 @@ public class Closure7 {
 }
 ```
 
-编译器仍然足够聪明，可以看到 `i` 正在被更改。 包装器类型可能正在进行特殊处理，所以让我们尝试一下List：
+编译器非常智能，它能识别变量 `i` 的值正在被更改。 对于包装类型的处理可能比较特殊，所以让我们使用下面的 List 的例子。代码示例：
 
 ```java
 // functional/Closure8.java
@@ -1223,24 +1233,27 @@ public class Closure8 {
     System.out.println(l2);
   }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 [1]
 [1]
 [1, 42]
 [1, 96]
-*/
 ```
 
-这次它可以运行：我们修改 `List` 的内容而没产生编译时错误。 当你查看此示例的输出时，它看起来确实非常安全，因为每次调用 `makeFun()`时，都会创建并返回一个全新的 `ArrayList`  - 这意味着它不会被共享，因此每个生成的闭包都有自己独立的 `ArrayList`  他们不能互相干扰。
+可以看到，这次一切正常。我们改变了 List 的值却没产生编译时错误。通过观察本例的输出结果，我们发现这看起来非常安全。这是因为每次调用 `makeFun()` 时，其实都会创建并返回一个全新的 `ArrayList`。 也就是说，每个闭包都有自己独立的 `ArrayList` 他们不能互相干扰和共享。
 
-并且请注意我已经声明 `ai` 是 `final` 的，尽管在这个例子中你可以去掉 `final` 并得到相同的结果（试试吧！）。 应用于对象引用的 `final` 关键字仅表示不会重新赋值引用。 它并没有说你无法修改对象本身。
+请**注意**我已经声明 `ai` 是 `final` 的了。尽管在这个例子中你可以去掉 `final` 并得到相同的结果（试试吧！）。 应用于对象引用的 `final` 关键字仅表示不会重新赋值引用。 它并不代表你不能修改对象本身。
 
-看看 `Closure7.java` 和 `Closure8.java` 之间的区别，我们看到 `Closure7.java` 实际上有一个 `i` 的重新赋值。 也许这是 “effectively final” 错误消息的触发点：
+下面我们来看看 `Closure7.java` 和 `Closure8.java` 之间的区别。我们看到：在 `Closure7.java` 中变量 `i` 有过重新赋值。 也许这就是**等同 final 效果**错误消息的触发点。
 
 ```java
 // functional/Closure9.java
 
-// {WillNotCompile}
+// {无法编译成功}
 import java.util.*;
 import java.util.function.*;
 
@@ -1253,12 +1266,11 @@ public class Closure9 {
 }
 ```
 
-引用的重新赋值确实会触发错误消息。 如果只修改指向的对象，Java 会接受它。 只要没有其他人获得对该对象的引用（这意味着你有多个可以修改对象的实体，此时事情会变得非常混乱），这可能是安全的。[^6]
+上例，重新赋值引用会触发错误消息。如果只修改指向的对象则没问题，只要没有其他人获得对该对象的引用（这意味着你有多个实体可以修改对象，此时事情会变得非常混乱），基本上就是安全的[^6]。
 
-然而，如果我们现在回顾一下 `Closure1.java.` ，那就有一个难题：`i` 被修改却没有编译器投诉。 它既不是 `final` 的，也不是“effectively final"的。因为 `i` 是外围类的成员，所以这样做肯定是安全的（ 除非你正在创建共享可变内存的多个函数）。实际上，你可以争辩说在这种情况下不会发生变量捕获（variable capture）。 可以肯定的是，`Closure3.java` 的错误消息专门针对局部变量。 因此，规则并不像说“在Lambda之外定义的任何变量必须是 `final` 的或 `effectively final` 那么简单。相反，你必须考虑捕获的变量是否实际 `final`。 如果它是对象中的字段，那么它有一个独立的生存期，并且不需要任何特殊的捕获，以便稍后在调用 Lambda 时存在。
+让我们回顾一下 `Closure1.java`。那么现在问题来了：为什么变量 `i` 被修改编译器却没有报错呢。 它既不是 `final` 的，也不是**等同 final 效果**的。因为 `i` 是外围类的成员，所以这样做肯定是安全的（除非你正在创建共享可变内存的多个函数）。是的，你可以辩称在这种情况下不会发生变量捕获（Variable Capture）。但可以肯定的是，`Closure3.java` 的错误消息是专门针对局部变量的。因此，规则并非只是“在 Lambda 之外定义的任何变量必须是 `final` 的或**等同 final 效果**那么简单。相反，你必须考虑捕获的变量是否是**等同 final 效果**的。 如果它是对象中的字段，那么它拥有独立的生存周期，并且不需要任何特殊的捕获，以便稍后在调用 Lambda 时存在。
 
 <!-- Inner Classes as Closures -->
-
 ### 作为闭包的内部类
 
 我们可以复制我们的例子使用匿名内部类:
@@ -1271,9 +1283,9 @@ import java.util.function.*;
 public class AnonymousClosure {
   IntSupplier makeFun(int x) {
     int i = 0;
-    // Same rules apply:
-    // i++; // Not "effectively final"
-    // x++; // Ditto
+    // 同样规则的应用:
+    // i++; // 非等同 final 效果
+    // x++; // 同上
     return new IntSupplier() {
       public int getAsInt() { return x + i; }
     };
@@ -1281,21 +1293,24 @@ public class AnonymousClosure {
 }
 ```
 
-事实证明，只要有内部类，就会有闭包（Java 8只 会使闭包变得更容易）。 在 Java 8 之前，要求是 `x` 和 `i` 被明确声明为 `final`。 使用 Java 8，内部类的规则已经放宽，包括 “effectively final”。
+实际上只要有内部类，就会有闭包（Java 8 只是简化了闭包操作）。在 Java 8 之前，变量 `x` 和 `i` 必须被明确声明为 `final`。在 Java 8 中，内部类的规则放宽，包括**等同 final 效果**。
 
 <!-- Function Composition -->
 ## 函数组合
 
 
-函数组合基本上意味着“将函数粘贴在一起以创建新函数”，它通常被认为是函数编程的一部分。你在`TransformFunction.java` 中看到了一个使用 `andThen()` 的函数组合示例。一些 `java.util` 的函数接口包含支持函数组合的方法。
+函数组合（Function Composition）意为“多个函数组合成新函数”。它通常是函数式编程的基本组成部分。在前面的 `TransformFunction.java` 类中，有一个使用 `andThen()` 的函数组合示例。在 `java.util.function` 包里包含支持函数组合的一些接口方法 [^7]。
 
-Compositional Supporting Method Interfaces Function BiFunction Consumer BiConsumer IntConsumer andThen(argument) Performs the original LongConsumer operation followed by DoubleConsumer the argument operation.
+| 组合方法 | 支持接口 |
+| :----- | :----- |
+| `andThen(argument)` <br> 根据参数执行原始操作 | **Function <br> BiFunction <br> Consumer <br> BiConsumer <br> IntConsumer <br> LongConsumer <br> DoubleConsumer <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator <br> BinaryOperator** |
+| `compose(argument)` <br> 根据参数执行原始操作 | **Function <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator** |
+| `and(argument)`  <br> 短路**逻辑与**原始断言和参数断言 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `or(argument)` <br> 短路**逻辑或**原始断言和参数断言 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `negate()` <br> 该断言的**逻辑否**断言| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
 
-UnaryOperator IntUnaryOperator LongUnaryOperator DoubleUnaryOperator BinaryOperator Function compose(argument) UnaryOperator Performs the argument IntUnaryOperator operation followed by the original operation. LongUnaryOperator DoubleUnaryOperator Predicate and(argument) BiPredicate Short-circuiting logical IntPredicate AND of the original predicate and the LongPredicate argument predicate. DoublePredicate Predicate or(argument) BiPredicate Short-circuiting logical OR of the original IntPredicate predicate and the LongPredicate argument predicate. DoublePredicate Predicate negate() BiPredicate A predicate that is the IntPredicate logical negation of this predicate. LongPredicate DoublePredicate
 
-( 待整理 )
-
-此示例使用 `Function` 里的  `compose()`和 `andThen()`
+下例使用了 `Function` 里的 `compose()`和 `andThen()`。代码示例：
 
 ```java
 // functional/FunctionComposition.java
@@ -1316,17 +1331,20 @@ public class FunctionComposition {
       f4.apply("GO AFTER ALL AMBULANCES"));
   }
 }
-/* Output:
-AFTER ALL AMBULANCES
-_fter _ll _mbul_nces
-*/
 ```
 
-这里要看的重要一点是我们正在创建一个新函数 `f4`，然后可以使用 `apply()`（几乎）像任何其他函数一样调用它。[^8]
+输出结果：
 
-当 `f1` 获得String时，它已经被`f2` 剥离了前三个字符。 这是因为对 `compose（f2）`的调用意味着在 `f1` 之前调用 `f2`。
+```
+AFTER ALL AMBULANCES
+_fter _ll _mbul_nces
+```
 
-这是Predicate逻辑运算的演示：
+这里我们重点看正在创建的新函数 `f4`。它调用 `apply()` 的方式与常规几乎无异[^8]。
+
+当 `f1` 获得字符串时，它已经被`f2` 剥离了前三个字符。这是因为对 `compose（f2）`的调用意味着在 `f1` 之前调用 `f2`。
+
+下例是 `Predicate` 的逻辑运算演示.代码示例：
 
 ```java
 // functional/PredicateComposition.java
@@ -1346,21 +1364,26 @@ public class PredicateComposition {
       .forEach(System.out::println);
   }
 }
-/* Output:
-foobar
-foobaz
-*/
 ```
 
-`p4` 获取所有谓词并将它们组合成一个更复杂的谓词，其中包含：“如果 `String` 不包含 'bar' 且长度小于5，或者它包含 'foo' ，则结果为 `true`。”因为它产生如此清晰的语法，我在`main()`中作了一些小伎俩，并借用了下一章的内容。 首先，我创建一个 `String` 对象的 “流”（序列），然后将每个对象提供给 `filter()`操作。 `filter()`使用我们的 `p4` 谓词来决定要保留流中的哪个对象以及要丢弃的对象。 最后，我使用 `forEach()`将 `println` 方法引用应用于每个幸存的对象。
+输出结果：
 
-你可以从输出中看到 `p4` 是如何工作的：任何带有 “foo ”的东西都会存活，即使它的长度大于5。 “fongopuckey” 太长了，没有 “bar” 来保存它。
+```
+foobar
+foobaz
+```
+
+`p4` 获取到了所有断言并组合成一个更复杂的断言。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
+
+正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建一个流的字符串对象集合，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的断言来确定对象的去留。最后我们使用 `forEach()` 和 `println` 方法打印出留下来的对象。
+
+从输出结果我们可以看到 `p4` 的工作流程：任何带有 `foo` 的东西都会留下，即使它的长度大于 5。 `fongopuckey` 因长度超出和不包含 `bar` 而被丢弃。
 
 <!-- Currying and  Partial Evaluation -->
-## Currying和Partial-Evaluation
+## 柯里化和部分求值
 
 
-*Currying* 以 Haskell Curry 命名，Haskell Curry 是其发明者之一，可能是唯一一个以他的名字命名的重要事物的计算机领域的人物（另一个是 Haskell 编程语言）。 Currying 意味着从一个函数开始，该函数接受多个参数，并将其转换为一系列函数，每个函数只接受一个参数。
+[柯里化](https://en.wikipedia.org/wiki/Currying)（Currying）的名称来自于其发明者之一 *Haskell Curry*。他可能是计算机领域唯一名字被命名重要概念的人（另外就是 Haskell 编程语言）。 柯里化意为：将一个多参数的函数，转换为一系列单参数函数。
 
 ```java
 // functional/CurryingAndPartials.java
@@ -1368,12 +1391,12 @@ foobaz
 import java.util.function.*;
 
 public class CurryingAndPartials {
-   // Uncurried:
+   // 未柯里化:
    static String uncurried(String a, String b) {
       return a + b;
    }
    public static void main(String[] args) {
-      // Curried function:
+      // 柯里化的函数:
       Function<String, Function<String, String>> sum =
          a -> b -> a + b; // [1]
 
@@ -1383,26 +1406,29 @@ public class CurryingAndPartials {
         hi = sum.apply("Hi "); // [2]
       System.out.println(hi.apply("Ho"));
 
-      // Partial application:
+      // 部分应用:
       Function<String, String> sumHi =
         sum.apply("Hup ");
       System.out.println(sumHi.apply("Ho"));
       System.out.println(sumHi.apply("Hey"));
    }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Hi Ho
 Hi Ho
 Hup Ho
 Hup Hey
-*/
 ```
 
-**[1]** 这是一条巧妙的线:一连串的箭头。注意，在函数接口声明中，函数的第二个参数是另一个函数。
+**[1]** 这一连串的箭头很巧妙。*注意*，在函数接口声明中，第二个参数是另一个函数。
 
-**[2]** currying 的目标是能够通过提供一个参数来创建一个新函数，所以现在有了一个 “带参函数” 和剩下的 “无参函数” 。实际上，你从一个双参数函数开始，最后得到一个单参数函数。
+**[2]** 柯里化的目的是能够通过提供一个参数来创建一个新函数，所以现在有了一个“带参函数”和剩下的 “无参函数” 。实际上，你从一个双参数函数开始，最后得到一个单参数函数。
 
-你可以通过添加另一个级别来 curry 一个三参数函数:
+我们可以通过添加级别来柯里化一个三参数函数：
 
 ```java
 // functional/Curry3Args.java
@@ -1423,14 +1449,17 @@ public class Curry3Args {
       System.out.println(ho.apply("Hup"));
    }
 }
-/* Output:
-Hi Ho Hup
-*/
 ```
 
-对于每个级别的箭头级联（arrow-cascading），你可以围绕类型声明包装另一个函数。
+输出结果：
 
-处理基本类型和装箱时，请使用适当的功能接口：
+```
+Hi Ho Hup
+```
+
+对于每个级别的箭头级联（Arrow-cascading），你可以围绕类型声明包装成另一个函数。
+
+处理基本类型和装箱时，请使用适当的 **Function** 接口：
 
 ```java
 // functional/CurriedIntAdd.java
@@ -1445,47 +1474,48 @@ public class CurriedIntAdd {
     System.out.println(add4.applyAsInt(5));
   }
 }
-/* Output:
-9
-*/
 ```
 
-你可以在因特网上找到更多 currying 示例。 通常这些是 Java 以外的语言，但如果你理解它们的基本概念，它们应该很容易翻译。
+输出结果：
+
+```
+9
+```
+
+更多柯里化示例，可搜索互联网。通常这些是 Java 以外的语言，理解它们的基本概念，就应该很容易翻译。
 
 <!-- Pure Functional Programming -->
 ## 纯函数式编程
 
 
-在没有函数支持的情况下，即使用像C这样的原始语言，也可以按照一定的原则编写纯函数程序。Java使它比这更容易，但是你必须小心地使一切都成为 `final`，并确保你的所有方法和函数没有副作用。因为 Java 本质上不是一种不可变的语言，所以如果你犯了错误，编译器不会提供任何帮助。
+即使没有函数式支持，像 C 这样的基础语言，也可以按照一定的原则编写纯函数程序。Java 8 让函数式编程更简单，不过我们要确保一切是 `final` 的，同时你的所有方法和函数没有副作用。因为 Java 在本质上并非是不可变语言，我们无法通过编译器查错。
 
-有第三方工具可以帮助你[^9]，但是使用 `Scala` 或 `Clojure` 这样的语言可能更容易，因为它们从一开始就是为保持不变性而设计的。这些语言使你可以用 Java 编写项目的一部分，如果你必须用纯函数式编写，则可以用 `Scala` 编写其他部分 (这需要一些规则) 或 `Clojure` (这需要的少得多)。虽然你将在并发编程一章中看到 Java确实支持并发，但是如果这是你项目的核心部分，你可能会考虑至少在项目的一部分中使用 `Scala` 或 `Clojure`之类的语言。
+这种情况下，我们可以借助第三方工具[^9]，但使用 Scala 或 Clojure 这样的语言可能更简单。因为它们从一开始就是为保持不变性而设计的。你可以采用这些语言来编写你的 Java 项目的一部分。如果必须要用纯函数式编写，则可以用 Scala（需要一些规则） 或 Clojure （需要的规则更少）。虽然 Java 支持[并发编程](./24-Concurrent-Programming.md)，但如果这是你项目的核心部分，你应该考虑在项目部分功能中使用 `Scala` 或 `Clojure` 之类的语言。
 
 <!-- Summary -->
 ## 本章小结
 
 
-Lambda 表达式和方法引用并没有将 Java 转换成函数式语言，而是提供了对函数式编程的支持。它们对 Java 是一个巨大的改进，因为它们允许你编写更简洁、更干净、更容易理解的代码。在下一章中，你将看到它们如何启用流。如果你像我一样，你会喜欢流媒体。
+Lambda 表达式和方法引用并没有将 Java 转换成函数式语言，而是提供了对函数式编程的支持。这对 Java 来说是一个巨大的改进。因为这允许你编写更简洁明了，易于理解的代码。在下一章中，你会看到它们在流式编程中的应用。相信你会像我一样，喜欢上流式编程。
 
-这些特性可能会满足大部分 Java 程序员的需求，他们已经对 Clojure 和 Scala 等新的、功能更强的语言感到不安和嫉妒，并阻止 Java 程序员流向这些语言 (或者，如果他们仍然决定迁移，至少会为他们做好更好的准备)。
+这些特性满足大部分 Java 程序员的需求。他们开始羡慕嫉妒 Clojure、Scala 这类新语言的功能，并试图阻止 Java 程序员流失到其他阵营 （就算不能阻止，起码提供了更好的选择）。
 
-但是，Lambdas 和方法引用远非完美，我们永远要为 Java 设计人员在早期令人兴奋的语言中做出的草率决定付出代价。特别是，没有泛型 Lambda，所以 Lambda 实际上不是 Java 中的第一类公民。这并不意味着 Java 8不是一个很大的改进，但它确实意味着，就像许多 Java 特性一样，你最终会感到沮丧。
+但是，Lambdas 和方法引用远非完美，我们永远要为 Java 设计者早期的草率决定付出代价。特别是没有泛型 Lambda，所以 Lambda 在 Java 中并非一等公民。虽然我不否认 Java 8 的巨大改进，但这意味着和许多 Java 特性一样，它的使用还是会让人感觉沮丧和鸡肋。
 
-当你遇到学习困难时，请记住，你可以从 ide (如 NetBeans、IntelliJ Idea 和 Eclipse )获得帮助，这些 ide 将建议你何时可以使用 Lambda 表达式或方法引用 (并且经常为你重写代码!)
+当你遇到学习困难时，请记住通过 IDE（NetBeans、IntelliJ Idea 和 Eclipse）获得帮助，因为 IDE 可以智能提示你何时使用 Lambda 表达式或方法引用，甚至有时还能为你优化代码。
 
 <!--下面是脚注-->
 
-1. 粘贴功能结合在一起是一个非常不同的方法,但它仍然使一种图书馆。
-2. 例如,这个电子书是利用 Pandoc 制作出来的，纯函数式语言编写的一个程序 Haskell。
-3. 有时函数语言将其描述为“代码即数据”。“
-4. 这个语法来自 C++。
-5. 我还没有验证过这种说法。
-6. 在并发编程一章中，当你理解更改共享变量 “不是线程安全的” 时，这将更有意义。
-7. 接口能够支持方法的原因是它们是 Java 8 默认方法，你将在下一章中了解到。
-8. 一些语言，例如 Python，允许像调用其他函数一样调用组合函数。但这是 Java，所以我们取我们能得到的。
-9. 见,例如，不可变和可变性检测器。( Immutables and Mutability Detector)
-
+[^1]: 功能粘贴在一起的方法的确有点与众不同，但它仍不失为一个库。
+[^2]: 例如,这个电子书是利用 [Pandoc](http://pandoc.org/) 制作出来的，它是用纯函数式语言 [Haskell](https://www.haskell.org/) 编写的一个程序 。
+[^3]: 有时函数式语言将其描述为“代码即数据”。“
+[^4]: 这个语法来自 C++。
+[^5]: 我还没有验证过这种说法。
+[^6]: 当你理解了[并发编程](./24-Concurrent-Programming.md)章节的内容，你就能明白为什么更改共享变量 “不是线程安全的” 的了。
+[^7]: 接口能够支持方法的原因是它们是 Java 8 默认方法，你将在下一章中了解到。
+[^8]: 一些语言，如 Python，允许像调用其他函数一样调用组合函数。但这是 Java，所以我们做做可为之事。
+[^9]: 例如，[Immutables](https://immutables.github.io/) 和 [Mutability Detector](https://mutabilitydetector.github.io/MutabilityDetector/)。
 
 
 <!-- 分页 -->
-
 <div style="page-break-after: always;"></div>
