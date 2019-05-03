@@ -28,7 +28,7 @@ public class Randoms {
 
 输出结果：
 
-```java
+```
 6
 10
 13
@@ -63,7 +63,7 @@ public class ImperativeRandoms {
 
 输出结果：
 
-```java
+```
 [7, 8, 9, 11, 13, 15, 18]
 ```
 
@@ -92,7 +92,7 @@ Java 8 采用的解决方案是：在[接口](10-Interfaces.md)中添加被 `def
 <!-- Stream Creation -->
 ## 流创建
 
-你可以通过 `Stream.of()` 很容易的将一组元素转化成为流（`Bubble` 类在之前的章节中已经定义过了）：
+你可以通过 `Stream.of()` 很容易地将一组元素转化成为流（`Bubble` 类在之前的章节中已经定义过了）：
 
 ```java
 // streams/StreamOf.java
@@ -112,7 +112,7 @@ public class StreamOf {
 
 输出结果：
 
-```java
+```
 Bubble(1)
 Bubble(2)
 Bubble(3)
@@ -152,9 +152,9 @@ public class CollectionToStream {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 6
 a pie! It's for wonderful day
 phi: 1.618
@@ -162,15 +162,15 @@ e: 2.718
 pi: 3.14159
 ```
 
-在创建 `List<Bubble>` 对象之后，我们只需要简单的调用所有集合中都有的方法 `stream()`。中间操作 `map()` 会获取流中的所有元素，并且对流中元素应用操作从而产生新的元素，并将其传递到流中。通常情况 `map()` 方法获取对象并产生新的对象，但是这里有特殊版本的方法用于数值类型的流。例如，`mapToInt()` 方法将一个对象流（objects stream）转换成为包含整形数字的 `IntStream`。同样有针对 `Float` 和 `Double` 的类似名字的操作。
+在创建 `List<Bubble>` 对象之后，我们只需要简单地调用所有集合中都有的 `stream()`。中间操作 `map()` 会获取流中的所有元素，并且对流中元素应用操作从而产生新的元素，并将其传递到流中。通常 `map()` 会获取对象并产生新的对象，但是这里有特殊版本的方法用于数值类型的流。例如，`mapToInt()` 方法将一个对象流（objects stream）转换成为包含整形数字的 `IntStream`。同样，针对 `Float` 和 `Double` 也有类似名字的操作。
 
-我们通过在 `String` 类型上面应用 `split()` - split 方法会根据参数来拆分字符串 - 获取元素用于定义 `w`。稍后你会看到这个参数十分复杂，但是在这里我们只是根据空格来分割字符串。
+我们通过调用字符串的 `split()`（该方法会根据参数来拆分字符串）来获取元素用于定义变量 `w`。稍后你会知道 `split()` 参数可以是十分复杂，但在这里我们只是根据空格来分割字符串。
 
-为了从 `Map` 集合中产生流数据，我们首先调用 `entrySet()` 去产生一个对象流，每个对象都包含一个键以及与其相关联的值。然后调用 `getKey()` 和 `getValue()` 将其分开。
+为了从 **Map** 集合中产生流数据，我们首先调用 `entrySet()` 去产生一个对象流，每个对象都包含一个 `key` 键以及与其相关联的 `value` 值。然后调用 `getKey()` 和 `getValue()` 将其分开。
 
 ### 随机数流
 
-`Random` 类被一组生成流的方法增强了：
+`Random` 类被一组生成流的方法增强了。代码示例：
 
 ```java
 // streams/RandomGenerators.java
@@ -189,15 +189,15 @@ public class RandomGenerators {
         show(rand.ints().boxed());
         show(rand.longs().boxed());
         show(rand.doubles().boxed());
-        // Control the lower and upper bounds:
+        // 控制上标和下标：
         show(rand.ints(10, 20).boxed());
         show(rand.longs(50, 100).boxed());
         show(rand.doubles(20, 30).boxed());
-        // Control the stream size:
+        // 控制流大小：
         show(rand.ints(2).boxed());
         show(rand.longs(2).boxed());
         show(rand.doubles(2).boxed());
-        // Control the stream size and bounds:
+        // 控制流的大小和角标
         show(rand.ints(3, 3, 9).boxed());
         show(rand.longs(3, 12, 22).boxed());
         show(rand.doubles(3, 11.5, 12.3).boxed());
@@ -205,9 +205,9 @@ public class RandomGenerators {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 -1172028779
 1717241110
 -2014573909
@@ -261,20 +261,22 @@ public class RandomGenerators {
 ++++++++
 ```
 
-为了消除冗余代码，我创建了一个泛型方法 `show(Stream<T> stream)` （在讲解泛型之前就使用这个特性，确实有点作弊，但是回报是值得的）。类型参数 `T` 可以是任何类型，所以这个方法对 `Integer`， `Long` 和 `Double` 类型都生效。但是 `Random` 类只能生成原始数据类型 **int**， **long**， **double** 的流。幸运的是， `boxed()` 流操作将会自动的把基本类型包装成为对应的装箱类型，从而使得 `show()` 能够接受流。
+为了消除冗余代码，我创建了一个泛型方法 `show(Stream<T> stream)` （在讲解泛型之前就使用这个特性，确实有点作弊，但是回报是值得的）。类型参数 `T` 可以是任何类型，所以这个方法对 **Integer**、**Long** 和 **Double** 类型都生效。但是 **Random** 类只能生成基本类型 **int**， **long**， **double** 的流。幸运的是， `boxed()` 流操作将会自动的把基本类型包装成为对应的装箱类型，从而使得 `show()` 能够接受流。
 
-我们可以使用 `Random` 为任意对象集合创建 `Supplier`。如下是一个从文本文件提供 `String` 对象的例子：
+我们可以使用 **Random** 为任意对象集合创建 **Supplier**。如下是一个从文本文件提供字符串对象的例子。
 
-```java
+Cheese.dat 文件内容：
+
+```
 // streams/Cheese.dat
 Not much of a cheese shop really, is it?
 Finest in the district, sir.
 And what leads you to that conclusion?
 Well, it's so clean.
 It's certainly uncontaminated by cheese.
-We use the Files class to read all the lines from a file into a
-List<String> :
 ```
+
+我们通过 **File** 类将 Cheese.dat 文件的所有行读取到 `List<String>` 中。代码示例：
 
 ```java
 // streams/RandomWords.java
@@ -288,7 +290,7 @@ public class RandomWords implements Supplier<String> {
     Random rand = new Random(47);
     RandomWords(String fname) throws IOException {
         List<String> lines = Files.readAllLines(Paths.get(fname));
-        // Skip the first line:
+        // 略过第一行
         for (String line : lines.subList(1, lines.size())) {
             for (String word : line.split("[ .?,]+"))
                 words.add(word.toLowerCase());
@@ -311,24 +313,24 @@ public class RandomWords implements Supplier<String> {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 it shop sir the much cheese by conclusion district is
 ```
 
-在这里你可以看到更为复杂的 `split()` 的使用。在构造器中，每一行都被 `split()` 方法通过空格或者被方括号包裹的任意标点符号进行分割。在结束方括号后面的 `+` 代表「+ 前面的东西可以出现一次或者多次」。
+在这里你可以看到更为复杂的 `split()` 运用。在构造器中，每一行都被 `split()` 通过空格或者被方括号包裹的任意标点符号进行分割。在结束方括号后面的 `+` 代表 `+` 前面的东西可以出现一次或者多次。
 
-你将注意到在构造函数中循环体使用命令式编程（外部迭代）。在以后的例子中，你将会看到我门如何消除这一点。这种旧的形式不是特别糟糕，但是到处使用流会让你觉得更好一些。
+我们注意到在构造函数中循环体使用命令式编程（外部迭代）。在以后的例子中，你会看到我们如何消除这一点。这种旧的形式虽不是特别糟糕，但使用流会让你的代码更好看一些。
 
-在 `toString()` 和 `main()` 中你看到了 `collect()` 收集操作，它根据参数来组合所有流中的元素。
+在 `toString()` 和主方法中你看到了 `collect()` 收集操作，它根据参数来组合所有流中的元素。
 
-当你使用 `Collectors.joining()`，你将会得到一个 `String` 类型的结果，每个元素都根据 `joining()` 的参数来进行分割。还有许多不同的 `Collectors` 用于获取不同的结果。
+当你使用 **Collectors.**`joining()`，你将会得到一个 `String` 类型的结果，每个元素都根据 `joining()` 的参数来进行分割。还有许多不同的 `Collectors` 用于获取不同的结果。
 
-在 `main()` 中，我们看到了 `Stream.generate()` 的预览版本，它可以把任意  `Supplier<T>` 用于生成 `T` 类型的流。
+在主方法中，我们看到了 **Stream.**`generate()` 的预览版本，它可以把任意  `Supplier<T>` 用于生成 `T` 类型的流。
 
 
-### int 类型的范围（Ranges of int）
+### int 类型的范围
 
 `IntStream` 类提供了  `range()` 方法用于生成整数序列的流。编写循环时，这个方法会更加便利：
 
@@ -337,35 +339,35 @@ it shop sir the much cheese by conclusion district is
 import static java.util.stream.IntStream.*;
 public class Ranges {
     public static void main(String[] args) {
-        // The traditional way:
+        // 传统方法:
         int result = 0;
         for (int i = 10; i < 20; i++)
             result += i;
         System.out.println(result);
-        // for-in with a range:
+        // for-in 循环:
         result = 0;
         for (int i : range(10, 20).toArray())
             result += i;
         System.out.println(result);
-        // Use streams:
+        // 使用流:
         System.out.println(range(10, 20).sum());
     }
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 145
 145
 145
 ```
 
-在 `main()` 方法中的第一种方式是我们传统编写 `for` 循环的方式。在第二种方法，我们使用 `range()` 创建了流并将其转化为数组，然后在 `for-in` 代码块中使用。但是，如果你能够像第三种方法全程使用流是很好的。在每种情况下，我们对范围中的数字进行求和，并且流中可以很方便的使用 `sum()` 操作求和。
+在主方法中的第一种方式是我们传统编写 `for` 循环的方式；第二种方式，我们使用 `range()` 创建了流并将其转化为数组，然后在 `for-in` 代码块中使用。但是，如果你能像第三种方法那样全程使用流是更好的。我们对范围中的数字进行求和。在流中可以很方便的使用 `sum()` 操作求和。
 
-注意 `IntStream.range()` 相比 `onjava.Range.range()` 拥有更多的限制。这是由于其可选的第三个参数，后者能够生成步长大于 1 的范围，并且可以从大到小来生成。
+注意 **IntStream.**`range()` 相比 `onjava.Range.range()` 拥有更多的限制。这是由于其可选的第三个参数，后者允许步长大于 1，并且可以从大到小来生成。
 
-为了替换简单的 `for` 循环，这里是一个 `repeat()` 实用程序：
+实用小功能 `repeat()` 可以用来替换简单的 `for` 循环。代码示例：
 
 ```java
 // onjava/Repeat.java
@@ -394,9 +396,9 @@ public class Looping {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Looping!
 Looping!
 Looping!
@@ -404,11 +406,11 @@ Hi!
 Hi!
 ```
 
-在代码中包含并解释 `repeat()` 似乎有些不值得。它似乎是一个相当透明的工具，但它取决于你的团队和公司的运作方式
+原则上，在代码中包含并解释 `repeat()` 并不值得。诚然它是一个相当透明的工具，但结果取决于你的团队和公司的运作方式。
 
 ### generate()
 
-`RandomWords.java` 在 `Stream.generate()` 中使用 `Supplier<T>`。这里是第二个示例：
+参照 `RandomWords.java` 中 **Stream.**`generate()` 搭配 `Supplier<T>` 使用的例子。代码示例：
 
 ```java
 // streams/Generator.java
@@ -433,9 +435,9 @@ public class Generator implements Supplier<String> {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 YNZBRNYGCFOWZNTCQRGSEGZMMJMROE
 ```
 
@@ -455,15 +457,15 @@ public class Duplicator {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 duplicate
 duplicate
 duplicate
 ```
 
-如下是在这个章节中之前例子使用过的 `Bubble` 类。注意它包含了自己的静态生成器（*static generator*）方法。
+如下是在本章之前例子中使用过的 `Bubble` 类。**注意**它包含了自己的静态生成器（Static generator）方法。
 
 ```java
 // streams/Bubble.java
@@ -487,7 +489,7 @@ public class Bubble {
 }
 ```
 
-由于 `bubbler()` 与 `Supplier<Bubble>` 是接口兼容的，我们可以将其方法引用直接传递给 `Stream.generate()`：
+由于 `bubbler()` 与 `Supplier<Bubble>` 是接口兼容的，我们可以将其方法引用直接传递给 **Stream.**`generate()`：
 
 ```java
 // streams/Bubbles.java
@@ -501,9 +503,9 @@ public class Bubbles {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Bubble(0)
 Bubble(1)
 Bubble(2)
@@ -511,11 +513,11 @@ Bubble(3)
 Bubble(4)
 ```
 
-这是创建单独工厂类（ separate factory class）的另外一种方式。在很多方面它更加整洁，但是这代表着品味和代码组织的问题 - 你总是可以创建一个完全不同的工厂类。
+这是创建单独工厂类（Separate Factory class）的另一种方式。在很多方面它更加整洁，但是这对于代码组织和品味是个问题——你总是可以创建一个完全不同的工厂类。
 
 ### iterate()
 
-`Stream.iterate()` 以种子（第一个参数）开头，并将其传给方法（第二个参数）。方法的结果将添加到流，并存储作为第一个参数用于下次调用 `iterate()`，依次类推。我们可以使用 `iterate()` 用于生成一个 Fibonacci 序列（你在上一章中遇到）：
+**Stream.**`iterate()` 以种子（第一个参数）开头，并将其传给方法（第二个参数）。方法的结果将添加到流，并存储作为第一个参数用于下次调用 `iterate()`，依次类推。我们可以利用 `iterate()` 生成一个斐波那契数列。代码示例：
 
 ```java
 // streams/Fibonacci.java
@@ -533,16 +535,16 @@ public class Fibonacci {
     
     public static void main(String[] args) {
         new Fibonacci().numbers()
-                       .skip(20) // Don't use the first 20
-                       .limit(10) // Then take 10 of them
+                       .skip(20) // 过滤前 20 个
+                       .limit(10) // 然后取 10 个
                        .forEach(System.out::println);
     }
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 6765
 10946
 17711
@@ -555,13 +557,13 @@ public class Fibonacci {
 514229
 ```
 
-Fibonacci 序列将序列中最后两个元素进行求和以产生下一个元素。`iterate()` 只能记忆结果，因此我们需要使用一个变量 `x` 来用于追踪另外一个元素。
+斐波那契数列将数列中最后两个元素进行求和以产生下一个元素。`iterate()` 只能记忆结果，因此我们需要利用一个变量 `x` 追踪另外一个元素。
 
-在 `main()` 中，我们使用了一个你之前没有见过的 `skip()` 操作。它只是根据它的参数丢弃指定数量的流元素。在这里，我们丢弃了前 20 个元素。
+在主方法中，我们使用了一个之前没有见过的 `skip()` 操作。它根据参数丢弃指定数量的流元素。在这里，我们丢弃了前 20 个元素。
 
-### Stream Builders
+### 流的建造者模式
 
-在建造者设计模式中，首先创建一个 builder 对象，传递给它多个构造器信息，最后执行“构造”。`Stream` 库提供了这样的 `Builder`。在这里，我们重新审视读取文件并将其转换成为单词流的过程：
+在建造者设计模式（也称构造器模式）中，首先创建一个 `builder` 对象，传递给它多个构造器信息，最后执行“构造”。**Stream** 库提供了这样的 `Builder`。在这里，我们重新审视文件读取并将其转换成为单词流的过程。代码示例：
 
 ```java
 // streams/FileToWordsBuilder.java
@@ -574,7 +576,7 @@ public class FileToWordsBuilder {
     
     public FileToWordsBuilder(String filePath) throws Exception {
         Files.lines(Paths.get(filePath))
-             .skip(1) // Skip the comment line at the beginning
+             .skip(1) // 略过开头的注释行
               .forEach(line -> {
                   for (String w : line.split("[ .?,]+"))
                       builder.add(w);
@@ -595,19 +597,19 @@ public class FileToWordsBuilder {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Not much of a cheese shop really
 ```
 
-注意，构造器会添加文件中的所有单词（除了第一行，它是包含文件路径信息的注释），但是其并没有调用 `build()` 方法。这意味着，只要你不调用 `stream()` 方法，就可以继续向 `builder` 对象中添加单词。
+**注意**，构造器会添加文件中的所有单词（除了第一行，它是包含文件路径信息的注释），但是其并没有调用 `build()`。只要你不调用 `stream()` 方法，就可以继续向 `builder` 对象中添加单词。
 
-在此类的更完整的版本中，你可以添加一个标志位用于查看 `build()` 方法是否被调用，并且可能的话增加一个可以添加更多单词的方法。在 `Stream.Builder` 调用 `build()` 方法后继续尝试添加单词会产生一个异常。
+在该类的更完整版本中，你可以添加一个标志位用于查看 `build()` 是否被调用，并且可能的话增加一个可以添加更多单词的方法。在 `Stream.Builder` 调用 `build()` 方法后继续尝试添加单词会产生一个异常。
 
 ### Arrays
 
-`Arrays` 类中含有一个名为 `stream()` 的静态方法用于把数组转换成为流。我们可以重写 `interfaces/Machine.java` 中的 `main()` 方法用于创建一个流，并将 `execute()` 应用于每一个元素：
+`Arrays` 类中含有一个名为 `stream()` 的静态方法用于把数组转换成为流。我们可以重写 `interfaces/Machine.java` 中的主方法用于创建一个流，并将 `execute()` 应用于每一个元素。代码示例：
 
 ```java
 // streams/Machine2.java
@@ -625,9 +627,9 @@ public class Machine2 {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Bing
 Crack
 Twist
@@ -636,7 +638,7 @@ Pop
 
 `new Operations[]` 表达式动态创建了 `Operations` 对象的数组。
 
-`stream()` 方法同样可以产生 `IntStream`，`LongStream` 和 `DoubleStream`。
+`stream()` 同样可以产生 **IntStream**，**LongStream** 和 `**DoubleStream**。
 
 ```java
 // streams/ArrayStreams.java
@@ -657,27 +659,27 @@ public class ArrayStreams {
             .forEach(n -> System.out.format("%d ", n));
         System.out.println();
         
-        // Select a subrange:
+        // 选择一个子域:
         Arrays.stream(new int[] { 1, 3, 5, 7, 15, 28, 37 }, 3, 6)
             .forEach(n -> System.out.format("%d ", n));
     }
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 3.141590 2.718000 1.618000
 1 3 5
 11 22 44 66
 7 15 28
 ```
 
-最后一次 `stream()` 的调用有两个额外的参数。第一个参数告诉 `stream()` 从哪里开始在数组中选择元素，第二个参数用于告知在哪里停止。每种不同类型的 `stream()` 方法都有这个版本。
+最后一次 `stream()` 的调用有两个额外的参数。第一个参数告诉 `stream()` 从数组的哪个位置开始选择元素，第二个参数用于告知在哪里停止。每种不同类型的 `stream()` 都有类似的操作。
 
-### 正则表达式（Regular Expressions）
+### 正则表达式
 
-Java 的正则表达式已经在[字符串]()这一章节介绍过了。Java 8 在 `java.util.regex.Pattern` 中增加了一个新的方法 `splitAsStream()`，这个方法可以根据你所传入的公式将字符序列转化为流。但是这里有一个限制，输入只能是 `CharSequence`，因此不能将流作为 `splitAsStream()` 的参数。
+Java 的正则表达式已经在[字符串](18-Strings.md)这一章节介绍过了。Java 8 在 `java.util.regex.Pattern` 中增加了一个新的方法 `splitAsStream()`。这个方法可以根据传入的公式将字符序列转化为流。但是有一个限制，输入只能是 **CharSequence**，因此不能将流作为 `splitAsStream()` 的参数。
 
 我们再一次查看将文件处理为单词流的过程。这一次，我们使用流将文件分割为单独的字符串，接着使用正则表达式将字符串转化为单词流。
 
@@ -714,19 +716,20 @@ public class FileToWordsRegexp {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Not much of a cheese shop really is it
 ```
 
-在构造器中我们读取了文件中的所有内容（再一次跳过了第一行注释），并将其转化成为单行字符串。现在，当你调用 `stream()` 方法的时候，可以像往常一样获取一个流，但这次你可以多次调用 `stream()` 方法，在已存储的字符串中创建一个新的流。这里有个限制，整个文件必须存储在内存中；在大多数情况下这并不是什么问题，但是这损失了流中非常重要的好处：
+在构造器中我们读取了文件中的所有内容（跳过第一行注释，并将其转化成为单行字符串）。现在，当你调用 `stream()` 的时候，可以像往常一样获取一个流，但这次你可以多次调用 `stream()` 在已存储的字符串中创建一个新的流。这里有个限制，整个文件必须存储在内存中；在大多数情况下这并不是什么问题，但是这损失了流操作非常重要的优势：
 
-1. 流“不需要存储”。当然它们需要一些内部存储，但是这只是序列的一小部分，和持有整个序列所需要的并不相同。
-2. 它们是惰性评估的。幸运的是，我们将在稍晚一些的时候查看如何如解决这个问题。
+1. 流“不需要存储”。当然它们需要一些内部存储，但是这只是序列的一小部分，和持有整个序列并不相同。
+2. 它们是懒加载计算的。
+
+幸运的是，我们稍就会知道如何解决这个问题。
 
 <!-- Intermediate Operations -->
-
 ## 中间操作
 
 中间操作用于在一个流中获取元素，并将元素放入另一个流的后端用以连接不同的操作。
@@ -752,9 +755,9 @@ class Peeking {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Well WELL well it IT it s S s so SO so
 ```
 
@@ -781,9 +784,9 @@ public class SortedComparator {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 you what to the that sir leads in district And
 ```
 
@@ -823,9 +826,9 @@ public class Prime {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 2 3 5 7 11 13 17 19 23 29
 467 479 487 491 499 503 509 521 523 541
 ```
@@ -879,9 +882,9 @@ class FunctionMap {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 ---( add brackets )---
 [12]
 []
@@ -929,9 +932,9 @@ class FunctionMap2 {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Numbered(1)
 Numbered(5)
 Numbered(7)
@@ -966,9 +969,9 @@ class FunctionMap3 {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 5 7 9
 17 19 23
 17.000000 1.900000 0.230000
@@ -1005,9 +1008,9 @@ public class StreamOfStreams {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 java.util.stream.ReferencePipeline$Head
 java.util.stream.ReferencePipeline$Head
 java.util.stream.ReferencePipeline$Head
@@ -1027,9 +1030,9 @@ public class FlatMap {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Gonzo
 Fozzie
 Beaker
@@ -1060,9 +1063,9 @@ public class StreamOfRandoms {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 58 -1 55 93 -1 61 61 29 -1 68 0 22 7 -1 88 28 51 89 9 -1
 ```
 
@@ -1118,9 +1121,9 @@ public class FileToWordsTest {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Not much of a cheese shop really
 ```
 
@@ -1167,9 +1170,9 @@ class OptionalsFromEmptyStreams {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Optional.empty
 Optional.empty
 Optional.empty
@@ -1207,9 +1210,9 @@ class OptionalBasics {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Epithets
 Nothing inside!
 ```
@@ -1273,9 +1276,9 @@ public class Optionals {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 === basics ===
 Epithets
 Nothing inside!
@@ -1328,9 +1331,9 @@ class CreatingOptionals {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 === empty ===
 Null
 === of ===
@@ -1387,9 +1390,9 @@ class OptionalFilter {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 ---( true )---
 Optional[Foo]
 Optional[]
@@ -1478,9 +1481,9 @@ class OptionalMap {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 ---( Add brackets )---
 Optional[[12]]
 Optional[[]]
@@ -1558,9 +1561,9 @@ class OptionalFlatMap {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 ---( Add brackets )---
 Optional[[12]]
 Optional[[]]
@@ -1642,7 +1645,7 @@ public class StreamOfOptionals {
 }
 ```
 
-输出为：
+输出结果：
 
 ```java
 Optional[Signal(dash)]
@@ -1727,9 +1730,9 @@ public class ForEach {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 258 555 693 861 961 429 868 200 522 207 288 128 551 589
 551 861 429 589 200 522 555 693 258 128 868 288 961 207
 258 555 693 861 961 429 868 200 522 207 288 128 551 589
@@ -1767,9 +1770,9 @@ public class TreeSetOfWords {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 [Arrays, Collectors, Exception, Files, Output, Paths,
 Set, String, System, TreeSet, TreeSetOfWords, args,
 class, collect, file, filter, flatMap, get, import,
@@ -1824,9 +1827,9 @@ public class MapCollector {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 {688=W, 309=C, 293=B, 761=N, 858=N, 668=G, 622=F, 751=N}
 ```
 
@@ -1854,9 +1857,9 @@ public class SpecialCollector {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 cheese
 cheese
 ```
@@ -1900,9 +1903,9 @@ public class Reduce {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 Frobnitz(58)
 Frobnitz(55)
 Frobnitz(93)
@@ -1959,9 +1962,9 @@ public class Matching {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 1 2 3 4 5 6 7 8 9 true
 1 2 3 4 false
 1 true
@@ -1974,7 +1977,7 @@ public class Matching {
 
 `show()` 获取两个参数，**Matcher** 匹配器和用于表示谓词测试 **n < val** 中最大值的 **val**。这个方法生成一个从 1 到 9 的整数流。`peek()` 是用于像我们展示测试在短路之前的情况。你可以在输出中发现每一次短路都会发生。
 
-### 选择元素（Selecting an Element）
+### 选择元素
 
 - `findFirst()`：返回一个含有第一个流元素的 **Optional**，如果流为空返回 **Optional.empty**。
 - `findAny(`：返回含有任意流元素的 **Optional**，如果流为空返回 **Optional.empty**。
@@ -1996,9 +1999,9 @@ public class SelectElement {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 258
 258
 258
@@ -2028,9 +2031,9 @@ public class LastElement {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 19
 three
 ```
@@ -2066,9 +2069,9 @@ public class Informational {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 32
 a
 you
@@ -2098,9 +2101,9 @@ public class NumericStreamInfo {
 }
 ```
 
-输出为：
+输出结果：
 
-```java
+```
 507.94
 998
 8
@@ -2112,8 +2115,7 @@ IntSummaryStatistics{count=100, sum=50794, min=8, average=507.940000, max=998}
 
 ## 本章小结
 
-流改变了甚至极大的提升了 Java 编程的性质，并可能极大的组织了 Java 编程人员像诸如 scala 这种函数式语言的流动。在本书的剩余部分，我们将尽可能的使用流。
+流改变了甚至极大的提升了 Java 编程的性质，并可能极大的组织了 Java 编程人员像诸如 Scala 这种函数式语言的流动。在本书的剩余部分，我们将尽可能的使用流。
 
 <!-- 分页 -->
-
 <div style="page-break-after: always;"></div>
