@@ -732,11 +732,11 @@ Not much of a cheese shop really is it
 <!-- Intermediate Operations -->
 ## 中间操作
 
-中间操作用于在一个流中获取元素，并将元素放入另一个流的后端用以连接不同的操作。
+中间操作用于在一个流中获取对象，并将对象放入另一个流的从后端馈送出去，已连接到其他的操作。
 
 ### 跟踪和调试
 
-`peek()` 操作的目的是帮助调试。它允许你无修改的查看流中的元素：
+`peek()` 操作的目的是帮助调试。它允许你无修改地查看流中的元素。代码示例：
 
 ```java
 // streams/Peeking.java
@@ -761,13 +761,13 @@ class Peeking {
 Well WELL well it IT it s S s so SO so
 ```
 
-`FileToWords` 很快就被定义好了，但是它的功能就像我们之前所看到的的版本那样：产生 `String` 对象的流。之后在他们通过管道的时候使用 `peek()` 偷窥它们。
+`FileToWords` 已被快速声明，但它的功能实现貌似和之前我们看到的差不多：产生字符串对象的流。之后在其通过管道时调用 `peek()` 进行处理。
 
-因为 `peek()` 符合 没有返回值的 `Consumer` 函数式接口，所以不可能使用不同的元素来替换流中的对象。你只能观察它们。
+因为 `peek()` 符合无返回值的 **Consumer** 函数式接口。我们只能观察，无法使用不同的元素来替换流中的对象。
 
-### 排序流中元素
+### 流元素排序
 
-你已经在 `Randoms.java` 看到了使用默认比较器的 `sorted()` 函数。还有 `sorted()` 的第二种形式，需要传入一个 `Comparator` 参数：
+在 `Randoms.java` 中,我们熟识了 `sorted()` 的默认比较器实现。其实它还有另一种形式的实现：传入一个 **Comparator** 参数。代码示例：
 
 ```java
 // streams/SortedComparator.java
@@ -790,15 +790,15 @@ public class SortedComparator {
 you what to the that sir leads in district And
 ```
 
-你可以为 `sorted()` 传入一个 lambda 函数作为其参数，但是这里也有预先实现好的比较器 —— 在这里我们所使用的是反转“自然顺序”。
+`sorted()` 预设了一些默认的比较器。这里我们使用的是反转“自然排序”。当然你也可以把 Lambda 函数作为参数传递给 `sorted()`。
 
 ### 移除元素
 
-`distinct()`：在 `Randoms.java` 中，`distinct()` 去除了流中的重复元素。使用 `distinct()` 相比创建一个 `Set` 用于消除重复元素的工作量要小得多。
+* `distinct()`：在 `Randoms.java` 中 `distinct()` 用于去除流中的重复元素。相比创建一个 **Set** 集合，该方法的工作量要少得多。
 
-`filter(Predicate)`：过滤操作只会保留那些传递给参数是产生 true 的元素 - 过滤器函数。
+* `filter(Predicate)`：过滤操作只会保留那些与传递进去的过滤器函数计算结果为 `true` 元素。
 
-在这个例子中，过滤器函数是 ` isPrime()`，用于检测质数。
+在下例中，`isPrime()` 作为过滤器函数，用于检测质数。
 
 ```java
 // streams/Prime.java
