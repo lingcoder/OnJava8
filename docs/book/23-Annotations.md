@@ -443,7 +443,7 @@ CREATE TABLE MEMBER(
     REFERENCE VARCHAR(30) PRIMARY KEY);
 ```
 
-`main()` 方法会循环处理命令行传入的每一个类名。每一个类都是用 ` forName()` 方法进行加载，并使用 `getAnnotation(DBTable.class)` 来检查该类是否带有 **@DBTable** 注解。如果存在，将表名存储起来。然后读取这个类的所有字段，并使用 `getDeclaredAnnotations()` 进行检查。这个方法返回一个包含特定字段上所有注解的数组。然后使用 **instanceof** 操作符判断这些注解是否是 **@SQLInteger** 或者 **@SQLString** 类型。如果是的话，在对应的处理块中将构造出相应的数据库列的字符串片段。注意，由于注解没有继承机制，如果要获取近似多台的行为，使用 `getDeclaredAnnotations()` 似乎是唯一的方式。
+主方法会循环处理命令行传入的每一个类名。每一个类都是用 ` forName()` 方法进行加载，并使用 `getAnnotation(DBTable.class)` 来检查该类是否带有 **@DBTable** 注解。如果存在，将表名存储起来。然后读取这个类的所有字段，并使用 `getDeclaredAnnotations()` 进行检查。这个方法返回一个包含特定字段上所有注解的数组。然后使用 **instanceof** 操作符判断这些注解是否是 **@SQLInteger** 或者 **@SQLString** 类型。如果是的话，在对应的处理块中将构造出相应的数据库列的字符串片段。注意，由于注解没有继承机制，如果要获取近似多台的行为，使用 `getDeclaredAnnotations()` 似乎是唯一的方式。
 
 嵌套的 **@Constraint** 注解被传递给 `getConstraints()`方法，并用它来构造一个包含 SQL 约束的 String 对象。
 
