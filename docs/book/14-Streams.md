@@ -67,7 +67,7 @@ public class ImperativeRandoms {
 [7, 8, 9, 11, 13, 15, 18]
 ```
 
-在 `Randoms.java` 中，我们无需定义任何变量，但在这里我们定义了 3 个变量： `rand`，`rints` 和 `r`。由于 `nextInt()` 方法没有下标的原因（其内置的下标永远为 0），这段代码实现起来更复杂。所以我们要生成额外的值来过滤小于 5 的结果。
+在 `Randoms.java` 中，我们无需定义任何变量，但在这里我们定义了 3 个变量： `rand`，`rints` 和 `r`。由于 `nextInt()` 方法没有下限的原因（其内置的下限永远为 0），这段代码实现起来更复杂。所以我们要生成额外的值来过滤小于 5 的结果。
 
 **注意**，你必须要研究程序的真正意图，而在 `Randoms.java` 中，代码只是告诉了你它正在做什么。这种语义清晰性也是 Java 8 的流式编程更受推崇的重要原因。
 
@@ -189,7 +189,7 @@ public class RandomGenerators {
         show(rand.ints().boxed());
         show(rand.longs().boxed());
         show(rand.doubles().boxed());
-        // 控制上标和下标：
+        // 控制上限和下限：
         show(rand.ints(10, 20).boxed());
         show(rand.longs(50, 100).boxed());
         show(rand.doubles(20, 30).boxed());
@@ -197,7 +197,7 @@ public class RandomGenerators {
         show(rand.ints(2).boxed());
         show(rand.longs(2).boxed());
         show(rand.doubles(2).boxed());
-        // 控制流的大小和角标
+        // 控制流的大小和界限
         show(rand.ints(3, 3, 9).boxed());
         show(rand.longs(3, 12, 22).boxed());
         show(rand.doubles(3, 11.5, 12.3).boxed());
@@ -833,7 +833,7 @@ public class Prime {
 467 479 487 491 499 503 509 521 523 541
 ```
 
-`rangeClosed() ` 包含了上界值。如果余数没有产生 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 false。 `noneMatch()`  操作在第一次失败之后就会推出，而不是进行全部尝试。
+`rangeClosed() ` 包含了上限值。如果余数没有产生 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 false。 `noneMatch()`  操作在第一次失败之后就会推出，而不是进行全部尝试。
 
 ### 应用操作到所有元素
 
