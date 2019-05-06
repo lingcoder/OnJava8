@@ -837,15 +837,15 @@ public class Prime {
 
 `rangeClosed() ` 包含了上限值。如果不能整除，即余数不等于 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 false。 `noneMatch()`  操作在第一次失败之后就会退出，而不是进行全部尝试。
 
-### 应用操作到所有元素
+### 应用函数到元素
 
-`map(Function) `：将 `Function` 操作应用在输入流的每一个元素中，并将返回值传递到输出流中。
+`map(Function) `：将函数操作应用在输入流的每一个元素中，并将返回值传递到输出流中。
 
-`mapToInt(ToIntFunction)`：操作同上，但结果是 `IntStream`。
+`mapToInt(ToIntFunction)`：操作同上，但结果是 **IntStream**。
 
-`mapToLong(ToLongFunction)`：操作同上，但结果是 `LongStream`。
+`mapToLong(ToLongFunction)`：操作同上，但结果是 **LongStream**。
 
-`mapToDouble(ToDoubleFunction)` ： 操作同上，但结果是 `DoubleStream`。
+`mapToDouble(ToDoubleFunction)` ： 操作同上，但结果是 **DoubleStream**。
 
 在这里，我们使用 `map()` 映射多种函数到一个字符串流中：
 
