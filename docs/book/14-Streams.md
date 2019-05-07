@@ -835,19 +835,19 @@ public class Prime {
 467 479 487 491 499 503 509 521 523 541
 ```
 
-`rangeClosed() ` 包含了上限值。如果不能整除，即余数不等于 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 false。 `noneMatch()`  操作在第一次失败之后就会退出，而不是进行全部尝试。
+`rangeClosed()` 包含了上限值。如果不能整除，即余数不等于 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 `false`。 `noneMatch()` 操作在首次失败之后就会退出，而不是尝试匹配所有。
 
 ### 应用函数到元素
 
-`map(Function) `：将函数操作应用在输入流的每一个元素中，并将返回值传递到输出流中。
+- `map(Function)`：将函数操作应用在输入流的元素中，并将返回值传递到输出流中。
 
-`mapToInt(ToIntFunction)`：操作同上，但结果是 **IntStream**。
+- `mapToInt(ToIntFunction)`：操作同上，但结果是 **IntStream**。
 
-`mapToLong(ToLongFunction)`：操作同上，但结果是 **LongStream**。
+- `mapToLong(ToLongFunction)`：操作同上，但结果是 **LongStream**。
 
-`mapToDouble(ToDoubleFunction)` ： 操作同上，但结果是 **DoubleStream**。
+- `mapToDouble(ToDoubleFunction)`：操作同上，但结果是 **DoubleStream**。
 
-在这里，我们使用 `map()` 映射多种函数到一个字符串流中：
+在这里，我们使用 `map()` 映射多种函数到一个字符串流中。代码示例：
 
 ```java
 // streams/FunctionMap.java
@@ -906,13 +906,13 @@ class FunctionMap {
 5
 ```
 
-在“Increment”测试中，我们使用 `Integer.parseInt()` 去试图将一个字符串转化为整数。如果字符串不能转化成为整数就会抛出一个 `NumberFormatException` 异常，我们只需回过头来将原始字符串放回到输出流中。
+在“Increment”的测试中，我们使用 **Integer.**`parseInt()` 去试图将一个字符串转化为整数。如果字符串不能转化成为整数就会抛出一个 **NumberFormatException** 异常，我们只需回过头来将原始字符串放回到输出流中。
 
-在以上例子中，` map()` 将一个字符串映射为另一个字符串，但是我们完全可以产生和接收类型完全不同的类型，从而改变流的数据类型。这里是一个例子：
+在以上例子中，`map()` 将一个字符串映射为另一个字符串，但是我们完全可以产生和接收类型完全不同的类型，从而改变流的数据类型。下面代码示例：
 
 ```java
 // streams/FunctionMap2.java
-// Different input and output types
+// Different input and output types （不同的输入输出类型）
 import java.util.*;
 import java.util.stream.*;
 class Numbered {
@@ -945,13 +945,13 @@ Numbered(11)
 Numbered(13)
 ```
 
-我们获取了许多 `int` 类型整数，并通过构造器 `Numbered::new` 将它们转化成为 `Numbered` 类型。
+我们将获取到的整数通过构造器 `Numbered::new` 转化成为 `Numbered` 类型。
 
-如果使用 `Function` 产生的结果是数值类型的一种，你必须使用相似的 `mapTo`-operations 操作进行替代：
+如果使用 **Function** 返回的结果是数值类型的一种，我们必须使用合适的 `mapTo数值类型` 进行替代。代码示例：
 
 ```java
 // streams/FunctionMap3.java
-// Producing numeric output streams
+// Producing numeric output streams（ 产生数值输出流）
 import java.util.*;
 import java.util.stream.*;
 class FunctionMap3 {
@@ -979,9 +979,9 @@ class FunctionMap3 {
 17.000000 1.900000 0.230000
 ```
 
-不幸的是，Java 设计者并没有尽最大的努力来消除原始类型。
+不幸的是，Java 设计者并没有尽最大努力来消除基本类型。
 
-### 在 map() 期间组合流
+### 在 `map()` 期间组合流
 
 假如你有一个即将到来的元素流，并且你打算对流元素使用 `map()` 函数。你已经找到了那些你在其他地方找不到的可爱的函数功能，但是这里有一个问题：这个函数功能产生一个流。你想要的只是产生一个元素的流，但是你生成的是一个元素流的流。
 
