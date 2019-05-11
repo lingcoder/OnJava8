@@ -119,8 +119,6 @@ try {
 
 ## 自定义异常
 
-<!-- The Exception Specification -->
-
 不必拘泥于 Java 中已有的异常类型。Java 提供的异常体系不可能预见所有的希望加以报告的错误，所以可以自己定义异常类来表示程序中可能会遇到的特定问题。
 
 要自己定义异常类，必须从已有的异常类继承，最好是选择意思相近的异常类继承（不过这样的异常并不容易找）。建立新的异常类型最简单的方法就是让编译器为你产生默认构造器，所以这几乎不用写多少代码：
@@ -387,12 +385,538 @@ getMessage() 方法，以产生更详细的信息。对于异常类来说，getM
 
 ## 异常规范
 
+Java 鼓励人们把方法可能会抛出的异常告知使用此方法的客户端程序员。这是种优雅的做法，它使得调用者能确切知道写什么样的代码可以捕获所有潜在的异常。当然，如果提供了源代码，客户端程序员可以在源代码中查找 throw 语句来获知相关信息，然而程序库通常并不与源代码一起发布。为了预防这样的问题，Java 提供了相应的语法（并强制使用这个语法），使你能以礼貌的方式告知客户端程序员某个方法可能会抛出的异常类型，然后客户端程序员就可以进行相应的处理。这就是异常说明，它属于方法声明的一部分，紧跟在形式参数列表之后。
 
-<!-- Catching Any Exception -->
-## 任意异常捕获
+异常说明使用了附加的关键字 throws，后面接一个所有潜在异常类型的列表，所以方法定义可能看起来像这样：
 
+```java
+void f() throws TooBig, TooSmall, DivZero { // ...
+```
+
+但是，要是这样写：
+
+```java
+void f() { // ...
+```
+
+就表示此方法不会抛出任何异常（除了从 RuntimeException 继承的异常，它们可以在没有异常说明的情况下被抛出，这些将在后面进行讨论）。
+
+代码必须与异常说明保持一致。如果方法里的代码产生了异常却没有进行处理，编译器会发现这个问题并提醒你：要么处理这个异常，要么就在异常说明中表明此方法将产生异常。通过这种自顶向下强制执行的异常说明机制，Java 在编译时就可以保证一定水平的异常正确性。
+
+不过还是有个能“作弊”的地方：可以声明方法将抛出异常，实际上却不抛出。编译器相信了这个声明，并强制此方法的用户像真的抛出异常那样使用这个方法。这样做的好处是，为异常先占个位子，以后就可以抛出这种异常而不用修改已有的代码。在定义抽象基类和接口时这种能力很重要，这样派生类或接口实现就能够抛出这些预先声明的异常。
+
+这种在编译时被强制检查的异常称为被检查的异常。
+
+## 任意所有捕获
+
+可以只写一个异常处理程序来捕获所有类型的异常。通过捕获异常类型的基类 Exception，就可以做到这一点（事实上还有其他的基类，但 Exception 是所有编程行为相关的基类）：
+
+```java
+catch(Exception e) {
+    System.out.println("Caught an exception");
+}
+```
+
+这将捕获所有异常，所以最好把它放在处理程序列表的末尾，以防它抢在其他处理程序之前先把异常捕获了。
+
+因为 Exception 是与编程有关的所有异常类的基类，所以它不会含有太多具体的信息，不过可以调用它从其基类 Throwable 继承的方法：
+
+```java
+String getMessage()
+String getLocalizedMessage()
+```
+
+用来获取详细信息，或用本地语言表示的详细信息。
+
+```java
+String toString()
+```
+
+返回对 Throwable 的简单描述，要是有详细信息的话，也会把它包含在内。
+
+```java
+void printStackTrace()
+void printStackTrace(PrintStream)
+void printStackTrace(java.io.PrintWriter)
+```
+
+打印 Throwable 和 Throwable 的调用栈轨迹。调用栈显示了“把你带到异常抛出地点”的方法调用序列。其中第一个版本输出到标准错误，后两个版本允许选择要输出的流（在[附录 I/O 流 ]() 中，你将会理解为什么有两种不同的流）。
+
+```java
+Throwable fillInStackTrace()
+```
+
+用于在 Throwable 对象的内部记录栈帧的当前状态。这在程序重新抛出错误或异常（很快就会讲到）时很有用。
+
+此外，也可以使用 Throwable 从其基类 Object（也是所有类的基类）继承的方法。对于异常来说，getClass）也许是个很好用的方法，它将返回一个表示此对象类型的对象。然后可以使用 getName）方法查询这个 Class 对象包含包信息的名称，或者使用只产生类名称的 getSimple Name0 方法。
+
+下面的例子演示了如何使用 Exception 类型的方法：
+
+```java
+// exceptions/ExceptionMethods.java
+// Demonstrating the Exception Methods
+public class ExceptionMethods {
+    public static void main(String[] args) {
+        try {
+            throw new Exception("My Exception");
+        } catch(Exception e) {
+            System.out.println("Caught Exception");
+            System.out.println(
+                    "getMessage():" + e.getMessage());
+            System.out.println("getLocalizedMessage():" +
+                    e.getLocalizedMessage());
+            System.out.println("toString():" + e);
+            System.out.println("printStackTrace():");
+            e.printStackTrace(System.out);
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+Caught Exception
+getMessage():My Exception
+getLocalizedMessage():My Exception
+toString():java.lang.Exception: My Exception
+printStackTrace():
+java.lang.Exception: My Exception
+at
+ExceptionMethods.main(ExceptionMethods.java:7)
+```
+
+可以发现每个方法都比前一个提供了更多的信息一一实际上它们每一个都是前一个的超集。
+
+### 多重捕获
+
+如果有一组具有相同基类的异常，你想使用同一方式进行捕获，那你直接 catch 它们的基类型。但是，如果这些异常没有共同的基类型，在 Java 7 之前，你必须为每一个类型编写一个 catch：
+
+```java
+// exceptions/SameHandler.java
+class EBase1 extends Exception {}
+class Except1 extends EBase1 {}
+class EBase2 extends Exception {}
+class Except2 extends EBase2 {}
+class EBase3 extends Exception {}
+class Except3 extends EBase3 {}
+class EBase4 extends Exception {}
+class Except4 extends EBase4 {}
+
+public class SameHandler {
+    void x() throws Except1, Except2, Except3, Except4 {}
+    void process() {}
+    void f() {
+        try {
+            x();
+        } catch(Except1 e) {
+            process();
+        } catch(Except2 e) {
+            process();
+        } catch(Except3 e) {
+            process();
+        } catch(Except4 e) {
+            process();
+        }
+    }
+}
+```
+
+通过 Java 7 的多重捕获机制，你可以讲不同类型的异常使用“或”将它们组合起来，只在一个 catch 块中使用：
+
+```java
+// exceptions/MultiCatch.java
+public class MultiCatch {
+    void x() throws Except1, Except2, Except3, Except4 {}
+    void process() {}
+    void f() {
+        try {
+            x();
+        } catch(Except1 | Except2 | Except3 | Except4 e) {
+            process();
+        }
+    }
+}
+```
+
+或者以其他组合的方式：
+
+```java
+// exceptions/MultiCatch2.java
+public class MultiCatch2 {
+    void x() throws Except1, Except2, Except3, Except4 {}
+    void process1() {}
+    void process2() {}
+    void f() {
+        try {
+            x();
+        } catch(Except1 | Except2 e) {
+            process1();
+        } catch(Except3 | Except4 e) {
+            process2();
+        }
+    }
+}
+```
+
+这对书写更整洁的代码很有帮助
+
+### 栈轨迹
+
+printStackTrace() 方法所提供的信息可以通过 getStackTrace() 方法来直接访问，这个方法将返回一个由栈轨迹中的元素所构成的数组，其中每一个元素都表示栈中的一桢。元素 0 是栈顶元素，并且是调用序列中的最后一个方法调用（这个 Throwable 被创建和抛出之处）。数组中的最后一个元素和栈底是调用序列中的第一个方法调用。下面的程序是一个简单的演示示例：
+
+```java
+// exceptions/WhoCalled.java
+// Programmatic access to stack trace information
+public class WhoCalled {
+    static void f() {
+// Generate an exception to fill in the stack trace
+        try {
+            throw new Exception();
+        } catch(Exception e) {
+            for(StackTraceElement ste : e.getStackTrace())
+                System.out.println(ste.getMethodName());
+        }
+    }
+    static void g() { f(); }
+    static void h() { g(); }
+    public static void main(String[] args) {
+        f();
+        System.out.println("*******");
+        g();
+        System.out.println("*******");
+        h();
+    }
+}
+```
+
+输出为：
+
+```
+f
+main
+*******
+f
+g
+main
+*******
+f
+g
+h
+main
+```
+
+这里，我们只打印了方法名，但实际上还可以打印整个 StackTraceElement，它包含其他附加的信息。
+
+### 重新抛出异常
+
+有时希望把刚捕获的异常重新抛出，尤其是在使用 Exception 捕获所有异常的时候。既然已经得到了对当前异常对象的引用，可以直接把它重新抛出：
+
+```java
+catch(Exception e) {
+    System.out.println("An exception was thrown");
+    throw e;
+}
+```
+
+重抛异常会把异常抛给上一级环境中的异常处理程序，同一个 try 块的后续 catch 子句将被忽略。此外，异常对象的所有信息都得以保持，所以高一级环境中捕获此异常的处理程序可以从这个异常对象中得到所有信息。
+
+如果只是把当前异常对象重新抛出，那么 printStackTrace() 方法显示的将是原来异常抛出点的调用栈信息，而并非重新抛出点的信息。要想更新这个信息，可以调用 filInStackTrace() 方法，这将返回一个 Throwable 对象，它是通过把当前调用栈信息填入原来那个异常对象而建立的，就像这样：
+
+```java
+// exceptions/Rethrowing.java
+// Demonstrating fillInStackTrace()
+public class Rethrowing {
+    public static void f() throws Exception {
+        System.out.println(
+                "originating the exception in f()");
+        throw new Exception("thrown from f()");
+    }
+    public static void g() throws Exception {
+        try {
+            f();
+        } catch(Exception e) {
+            System.out.println(
+                    "Inside g(), e.printStackTrace()");
+            e.printStackTrace(System.out);
+            throw e;
+        }
+    }
+    public static void h() throws Exception {
+        try {
+            f();
+        } catch(Exception e) {
+            System.out.println(
+                    "Inside h(), e.printStackTrace()");
+            e.printStackTrace(System.out);
+            throw (Exception)e.fillInStackTrace();
+        }
+    }
+    public static void main(String[] args) {
+        try {
+            g();
+        } catch(Exception e) {
+            System.out.println("main: printStackTrace()");
+            e.printStackTrace(System.out);
+        }
+        try {
+            h();
+        } catch(Exception e) {
+            System.out.println("main: printStackTrace()");
+            e.printStackTrace(System.out);
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+originating the exception in f()
+Inside g(), e.printStackTrace()
+java.lang.Exception: thrown from f()
+at Rethrowing.f(Rethrowing.java:8)
+at Rethrowing.g(Rethrowing.java:12)
+at Rethrowing.main(Rethrowing.java:32)
+main: printStackTrace()
+java.lang.Exception: thrown from f()
+at Rethrowing.f(Rethrowing.java:8)
+at Rethrowing.g(Rethrowing.java:12)
+at Rethrowing.main(Rethrowing.java:32)
+originating the exception in f()
+Inside h(), e.printStackTrace()
+java.lang.Exception: thrown from f()
+at Rethrowing.f(Rethrowing.java:8)
+at Rethrowing.h(Rethrowing.java:22)
+at Rethrowing.main(Rethrowing.java:38)
+main: printStackTrace()
+java.lang.Exception: thrown from f()
+at Rethrowing.h(Rethrowing.java:27)
+at Rethrowing.main(Rethrowing.java:38)
+```
+
+调用 fillInStackTrace() 的那一行就成了异常的新发生地了。
+
+有可能在捕获异常之后抛出另一种异常。这么做的话，得到的效果类似于使用 filInStackTrace()，有关原来异常发生点的信息会丢失，剩下的是与新的抛出点有关的信息：
+
+```java
+// exceptions/RethrowNew.java
+// Rethrow a different object from the one you caught
+class OneException extends Exception {
+    OneException(String s) { super(s); }
+}
+class TwoException extends Exception {
+    TwoException(String s) { super(s); }
+}
+public class RethrowNew {
+    public static void f() throws OneException {
+        System.out.println(
+                "originating the exception in f()");
+        throw new OneException("thrown from f()");
+    }
+    public static void main(String[] args) {
+        try {
+            try {
+                f();
+            } catch(OneException e) {
+                System.out.println(
+                        "Caught in inner try, e.printStackTrace()");
+                e.printStackTrace(System.out);
+                throw new TwoException("from inner try");
+            }
+        } catch(TwoException e) {
+            System.out.println(
+                    "Caught in outer try, e.printStackTrace()");
+            e.printStackTrace(System.out);
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+originating the exception in f()
+Caught in inner try, e.printStackTrace()
+OneException: thrown from f()
+at RethrowNew.f(RethrowNew.java:16)
+at RethrowNew.main(RethrowNew.java:21)
+Caught in outer try, e.printStackTrace()
+TwoException: from inner try
+at RethrowNew.main(RethrowNew.java:26)
+```
+
+最后那个异常仅知道自己来自 main()，而对 f() 一无所知。
+
+永远不必为清理前一个异常对象而担心，或者说为异常对象的清理而担心。它们都是用 new 在堆上创建的对象，所以垃圾回收器会自动把它们清理掉。
+
+### 精准的重新抛出异常
+
+在 Java 7 之前，如果遇到异常，则只能重新抛出该类型的异常。这导致在 Java 7 中修复的代码不精确。所以在 Java 7 之前，这无法编译：
+
+```java
+class BaseException extends Exception {}
+class DerivedException extends BaseException {}
+
+public class PreciseRethrow {
+    void catcher() throws DerivedException {
+        try {
+            throw new DerivedException();
+        } catch(BaseException e) {
+            throw e;
+        }
+    }
+}
+```
+
+因为 catch 捕获了一个 BaseException，编译器强迫你声明 catcher() 抛出 BaseException，即使它实际上抛出了更具体的 DerivedException。从 Java 7 开始，这段代码就可以编译，这是一个很小但很有用的修复。
+
+### 异常链
+
+常常会想要在捕获一个异常后抛出另一个异常，并且希望把原始异常的信息保存下来，这被称为异常链。在 JDK1.4 以前，程序员必须自己编写代码来保存原始异常的信息。现在所有 Throwable 的子类在构造器中都可以接受一个 cause（因由）对象作为参数。这个 cause 就用来表示原始异常，这样通过把原始异常传递给新的异常，使得即使在当前位置创建并抛出了新的异常，也能通过这个异常链追踪到异常最初发生的位置。
+
+有趣的是，在 Throwable 的子类中，只有三种基本的异常类提供了带 cause 参数的构造器。它们是 Error（用于 Java 虚拟机报告系统错误）、Exception 以及 RuntimeException。如果要把其他类型的异常链接起来，应该使用 initCause0 方法而不是构造器。
+
+下面的例子能让你在运行时动态地向 DymamicFields 对象添加字段：
+
+```java
+// exceptions/DynamicFields.java
+// A Class that dynamically adds fields to itself to
+// demonstrate exception chaining
+class DynamicFieldsException extends Exception {}
+public class DynamicFields {
+    private Object[][] fields;
+    public DynamicFields(int initialSize) {
+        fields = new Object[initialSize][2];
+        for(int i = 0; i < initialSize; i++)
+            fields[i] = new Object[] { null, null };
+    }
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        for(Object[] obj : fields) {
+            result.append(obj[0]);
+            result.append(": ");
+            result.append(obj[1]);
+            result.append("\n");
+        }
+        return result.toString();
+    }
+    private int hasField(String id) {
+        for(int i = 0; i < fields.length; i++)
+            if(id.equals(fields[i][0]))
+                return i;
+        return -1;
+    }
+    private int getFieldNumber(String id)
+            throws NoSuchFieldException {
+        int fieldNum = hasField(id);
+        if(fieldNum == -1)
+            throw new NoSuchFieldException();
+        return fieldNum;
+    }
+    private int makeField(String id) {
+        for(int i = 0; i < fields.length; i++)
+            if(fields[i][0] == null) {
+                fields[i][0] = id;
+                return i;
+            }
+// No empty fields. Add one:
+        Object[][] tmp = new Object[fields.length + 1][2];
+        for(int i = 0; i < fields.length; i++)
+            tmp[i] = fields[i];
+        for(int i = fields.length; i < tmp.length; i++)
+            tmp[i] = new Object[] { null, null };
+        fields = tmp;
+// Recursive call with expanded fields:
+        return makeField(id);
+    }
+    public Object
+    getField(String id) throws NoSuchFieldException {
+        return fields[getFieldNumber(id)][1];
+    }
+    public Object setField(String id, Object value)
+            throws DynamicFieldsException {
+        if(value == null) {
+// Most exceptions don't have a "cause"
+// constructor. In these cases you must use
+// initCause(), available in all
+// Throwable subclasses.
+            DynamicFieldsException dfe =
+                    new DynamicFieldsException();
+            dfe.initCause(new NullPointerException());
+            throw dfe;
+        }
+        int fieldNumber = hasField(id);
+        if(fieldNumber == -1)
+            fieldNumber = makeField(id);
+        Object result = null;
+        try {
+            result = getField(id); // Get old value
+        } catch(NoSuchFieldException e) {
+// Use constructor that takes "cause":
+            throw new RuntimeException(e);
+        }
+        fields[fieldNumber][1] = value;
+        return result;
+    }
+    public static void main(String[] args) {
+        DynamicFields df = new DynamicFields(3);
+        System.out.println(df);
+        try {
+            df.setField("d", "A value for d");
+            df.setField("number", 47);
+            df.setField("number2", 48);
+            System.out.println(df);
+            df.setField("d", "A new value for d");
+            df.setField("number3", 11);
+            System.out.println("df: " + df);
+            System.out.println("df.getField(\"d\") : "
+                    + df.getField("d"));
+            Object field =
+                    df.setField("d", null); // Exception
+        } catch(NoSuchFieldException |
+                DynamicFieldsException e) {
+            e.printStackTrace(System.out);
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+null: null
+null: null
+null: null
+d: A value for d
+number: 47
+number2: 48
+df: d: A new value for d
+number: 47
+number2: 48
+number3: 11
+df.getField("d") : A new value for d
+DynamicFieldsException
+at
+DynamicFields.setField(DynamicFields.java:65)
+at DynamicFields.main(DynamicFields.java:97)
+Caused by: java.lang.NullPointerException
+at
+DynamicFields.setField(DynamicFields.java:67)
+... 1 more
+```
+
+每个 DynamicFields 对象都含有一个数组，其元素是“成对的对象”。第一个对象表示字段标识符（一个字符串），第二个表示字段值，值的类型可以是除基本类型外的任意类型。当创建对象的时候，要合理估计一下需要多少字段。当调用 setField() 方法的时候，它将试图通过标识修改已有字段值，否则就建一个新的字段，并把值放入。如果空间不够了，将建立一个更长的数组，并把原来数组的元素复制进去。如果你试图为字段设置一个空值，将抛出一个 DynamicFieldsException 异常，它是通过使用 initCause() 方法把 NullPointerException 对象插入而建立的。
+
+至于返回值，setField() 将用 getField() 方法把此位置的旧值取出，这个操作可能会抛出 NoSuchFieldException 异常。如果客户端程序员调用了 getField() 方法，那么他就有责任处理这个可能抛出的 NoSuchFieldException 异常，但如果异常是从 setField0 方法里抛出的，这种情况将被视为编程错误，所以就使用接受 cause 参数的构造器把 NoSuchFieldException 异常转换为 RuntimeException 异常。
+
+你会注意到，toString0 方法使用了一个 StringBuilder 来创建其结果。在[字符串]()这章中你将会了解到更多的关于 StringBuilder 的知识，但是只要你编写设计循环的 toString() 方法，通常都会想使用它，就像本例一样。
+
+主方法中的 catch 子句看起来不同 - 它使用相同的子句处理两种不同类型的异常，并结合“或（|）”符号。此 Java 7 功能有助于减少代码重复，并使你更容易指定要捕获的确切类型，而不是简单地捕获基本类型。您可以通过这种方式组合多种异常类型。
 
 <!-- Standard Java Exceptions -->
+
 ## Java 标准异常
 
 
