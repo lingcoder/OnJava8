@@ -55,7 +55,7 @@
 - [ ] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
 - [ ] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
 - [ ] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
-- [ ] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
+- [x] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
 - [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
 - [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
 - [ ] [附录:成为一名程序员](docs/book/Appendix-Becoming-a-Programmer.md)
