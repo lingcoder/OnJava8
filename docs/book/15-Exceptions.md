@@ -919,8 +919,23 @@ DynamicFields.setField(DynamicFields.java:67)
 
 ## Java 标准异常
 
+Throwable这个Java类被用来表示任何可以作为异常被抛出的类。Throwable对象可分为两种类型（指从Throwable继承而得到的类型）：Error用来表示编译时和系统错误（除特殊情况外，一般不用你关心）；Exception是可以被抛出的基本类型，在Java类库、用户方法以及运行时故障中都可能抛出Exception型异常。所以Java程序员关心的基类型通常是Exception。要想对异常有全面的了解，最好去浏览一下HTML格式的Java文档（可以从java.sun.com下载）。为了对不同的异常有个感性的认识，这么做是值得的。但很快你就会发现，这些异常除了名称外其实都差不多。同时，Java中异常的数目在持续增加，所以在书中简单罗列它们毫无意义。所使用的第三方类库也可能会有自己的异常。对异常来说，关键是理解概念以及如何使用。
+
+异常的基本的概念是用名称代表发生的问题，并且异常的名称应该可以望文知意。异常并非全是在java.lang包里定义的；有些异常是用来支持其他像util、net和io这样的程序包，这些异常可以通过它们的完整名称或者从它们的父类中看出端倪。比如，所有的输入/输出异常都是从java.io.IOException继承而来的。
+
+### 特例：RuntimeException
+
+在本章的第一个例子中：
+
+```java
+if(t == null)
+    throw new NullPointerException();
+```
+
+
 
 <!-- Performing Cleanup with finally -->
+
 ## finally 关键字
 
 
