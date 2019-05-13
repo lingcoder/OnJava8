@@ -89,8 +89,8 @@
 
 ## 贡献者
 
-* 主译: [LingCoder](https://github.com/LingCoder)
-* 参译: [sjsdfg](https://github.com/sjsdfg)，[LortSir](https://github.com/LortSir)
+* 主译: [LingCoder](https://github.com/LingCoder)，[sjsdfg](https://github.com/sjsdfg)
+* 参译: [LortSir](https://github.com/LortSir)
 * 校对：[LingCoder](https://github.com/LingCoder)，[nickChenyx](https://github.com/nickChenyx)
 
 
