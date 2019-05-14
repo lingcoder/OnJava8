@@ -938,10 +938,48 @@ if(t == null)
 
 RuntimeException代表的是编程错误：
 
-1. 无法预料的错误。比如从你控制范围之外传递进来的mull引用。
+1. 无法预料的错误。比如从你控制范围之外传递进来的null引用。
 2. 作为程序员，应该在代码中进行检查的错误。（比如对于ArrayIndexOutOfBoundsException，就得注意一下数组的大小了。）在一个地方发生的异常，常常会在另一个地方导致错误。
 
 在这些情况下使用异常很有好处，它们能给调试带来便利。
+
+如果不捕获这种类型的异常会发生什么事呢？因为编译器没有在这个问题上对异常说明进行强制检查，RuntimeException类型的异常也许会穿越所有的执行路径直达main()方法，而不会被捕获。要明白到底发生了什么，可以试试下面的例子：
+
+```java
+// exceptions/NeverCaught.java
+// Ignoring RuntimeExceptions
+// {ThrowsException}
+public class NeverCaught {
+    static void f() {
+        throw new RuntimeException("From f()");
+    }
+    static void g() {
+        f();
+    }
+    public static void main(String[] args) {
+        g();
+    }
+}
+```
+
+输出结果为：
+
+```java
+___[ Error Output ]___
+Exception in thread "main" java.lang.RuntimeException:
+From f()
+at NeverCaught.f(NeverCaught.java:7)
+at NeverCaught.g(NeverCaught.java:10)
+at NeverCaught.main(NeverCaught.java:13)
+```
+
+如果RuntimeException没有被捕获而直达main()，那么在程序退出前将调用异常的printStackTrace()方法。
+
+你会发现，RuntimeException（或任何从它继承的异常）是一个特例。对于这种异常类型，编译器不需要异常说明，其输出被报告给了System.err。
+
+请务必记住：只能在代码中忽略RuntimeException（及其子类）类型的异常，因为所有受检查类型异常的处理都是由编译器强制实施的。
+
+值得注意的是：不应把Java的异常处理机制当成是单一用途的工具。是的，它被设计用来处理一些烦人的运行时错误，这些错误往往是由代码控制能力之外的因素导致的；然而，它对于发现某些编译器无法检测到的编程错误，也是非常重要的。
 
 <!-- Performing Cleanup with finally -->
 
