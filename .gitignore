@@ -20,3 +20,6 @@ _book
 ._*
 */.DS_Store
 */._*
+
+# IDEA
+/.idea/*
