@@ -383,7 +383,7 @@ getMessage() 方法，以产生更详细的信息。对于异常类来说，getM
 
 既然异常也是对象的一种，所以可以继续修改这个异常类，以得到更强的功能。但要记住，使用程序包的客户端程序员可能仅仅只是查看一下抛出的异常类型，其他的就不管了（大多数 Java 库里的异常都是这么用的），所以对异常所添加的其他功能也许根本用不上。
 
-## 异常规范
+## 异常声明
 
 Java 鼓励人们把方法可能会抛出的异常告知使用此方法的客户端程序员。这是种优雅的做法，它使得调用者能确切知道写什么样的代码可以捕获所有潜在的异常。当然，如果提供了源代码，客户端程序员可以在源代码中查找 throw 语句来获知相关信息，然而程序库通常并不与源代码一起发布。为了预防这样的问题，Java 提供了相应的语法（并强制使用这个语法），使你能以礼貌的方式告知客户端程序员某个方法可能会抛出的异常类型，然后客户端程序员就可以进行相应的处理。这就是异常说明，它属于方法声明的一部分，紧跟在形式参数列表之后。
 
@@ -919,8 +919,70 @@ DynamicFields.setField(DynamicFields.java:67)
 
 ## Java 标准异常
 
+Throwable这个Java类被用来表示任何可以作为异常被抛出的类。Throwable对象可分为两种类型（指从Throwable继承而得到的类型）：Error用来表示编译时和系统错误（除特殊情况外，一般不用你关心）；Exception是可以被抛出的基本类型，在Java类库、用户方法以及运行时故障中都可能抛出Exception型异常。所以Java程序员关心的基类型通常是Exception。要想对异常有全面的了解，最好去浏览一下HTML格式的Java文档（可以从java.sun.com下载）。为了对不同的异常有个感性的认识，这么做是值得的。但很快你就会发现，这些异常除了名称外其实都差不多。同时，Java中异常的数目在持续增加，所以在书中简单罗列它们毫无意义。所使用的第三方类库也可能会有自己的异常。对异常来说，关键是理解概念以及如何使用。
+
+异常的基本的概念是用名称代表发生的问题，并且异常的名称应该可以望文知意。异常并非全是在java.lang包里定义的；有些异常是用来支持其他像util、net和io这样的程序包，这些异常可以通过它们的完整名称或者从它们的父类中看出端倪。比如，所有的输入/输出异常都是从java.io.IOException继承而来的。
+
+### 特例：RuntimeException
+
+在本章的第一个例子中：
+
+```java
+if(t == null)
+    throw new NullPointerException();
+```
+
+如果必须对传递给方法的每个引用都检查其是否为nul（因为无法确定调用者是否传入了非法引用），这听起来着实吓人。幸运的是，这不必由你亲自来做，它属于Java的标准运行时检测的一部分。如果对null引用进行调用，Java会自动抛出NullPointerException异常，所以上述代码是多余的，尽管你也许想要执行其他的检查以确保NullPointerException不会出现。
+
+属于运行时异常的类型有很多，它们会自动被lava虚拟机抛出，所以不必在异常说明中把它们列出来。这些异常都是从RuntimeException类继承而来，所以既体现了继承的优点，使用起来也很方便。这构成了一组具有相同特征和行为的异常类型。并且，也不再需要在异常说明中声明方法将抛出RuntimeException类型的异常（或者任何从RuntimeException继承的异常），它们也被称为“不受检查异常”。这种异常属于错误，将被自动捕获，就不用你亲自动手了。要是自己去检查RuntimeException的话，代码就显得太混乱了。不过尽管通常不用捕获RuntimeException异常，但还是可以在代码中抛出RuntimeException类型的异常。
+
+RuntimeException代表的是编程错误：
+
+1. 无法预料的错误。比如从你控制范围之外传递进来的null引用。
+2. 作为程序员，应该在代码中进行检查的错误。（比如对于ArrayIndexOutOfBoundsException，就得注意一下数组的大小了。）在一个地方发生的异常，常常会在另一个地方导致错误。
+
+在这些情况下使用异常很有好处，它们能给调试带来便利。
+
+如果不捕获这种类型的异常会发生什么事呢？因为编译器没有在这个问题上对异常说明进行强制检查，RuntimeException类型的异常也许会穿越所有的执行路径直达main()方法，而不会被捕获。要明白到底发生了什么，可以试试下面的例子：
+
+```java
+// exceptions/NeverCaught.java
+// Ignoring RuntimeExceptions
+// {ThrowsException}
+public class NeverCaught {
+    static void f() {
+        throw new RuntimeException("From f()");
+    }
+    static void g() {
+        f();
+    }
+    public static void main(String[] args) {
+        g();
+    }
+}
+```
+
+输出结果为：
+
+```java
+___[ Error Output ]___
+Exception in thread "main" java.lang.RuntimeException:
+From f()
+at NeverCaught.f(NeverCaught.java:7)
+at NeverCaught.g(NeverCaught.java:10)
+at NeverCaught.main(NeverCaught.java:13)
+```
+
+如果RuntimeException没有被捕获而直达main()，那么在程序退出前将调用异常的printStackTrace()方法。
+
+你会发现，RuntimeException（或任何从它继承的异常）是一个特例。对于这种异常类型，编译器不需要异常说明，其输出被报告给了System.err。
+
+请务必记住：只能在代码中忽略RuntimeException（及其子类）类型的异常，因为所有受检查类型异常的处理都是由编译器强制实施的。
+
+值得注意的是：不应把Java的异常处理机制当成是单一用途的工具。是的，它被设计用来处理一些烦人的运行时错误，这些错误往往是由代码控制能力之外的因素导致的；然而，它对于发现某些编译器无法检测到的编程错误，也是非常重要的。
 
 <!-- Performing Cleanup with finally -->
+
 ## finally 关键字
 
 
