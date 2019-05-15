@@ -911,7 +911,7 @@ DynamicFields.setField(DynamicFields.java:67)
 
 至于返回值，setField() 将用 getField() 方法把此位置的旧值取出，这个操作可能会抛出 NoSuchFieldException 异常。如果客户端程序员调用了 getField() 方法，那么他就有责任处理这个可能抛出的 NoSuchFieldException 异常，但如果异常是从 setField0 方法里抛出的，这种情况将被视为编程错误，所以就使用接受 cause 参数的构造器把 NoSuchFieldException 异常转换为 RuntimeException 异常。
 
-你会注意到，toString0 方法使用了一个 StringBuilder 来创建其结果。在[字符串]()这章中你将会了解到更多的关于 StringBuilder 的知识，但是只要你编写设计循环的 toString() 方法，通常都会想使用它，就像本例一样。
+你会注意到，toString0 方法使用了一个 StringBuilder 来创建其结果。在[字符串 ]() 这章中你将会了解到更多的关于 StringBuilder 的知识，但是只要你编写设计循环的 toString() 方法，通常都会想使用它，就像本例一样。
 
 主方法中的 catch 子句看起来不同 - 它使用相同的子句处理两种不同类型的异常，并结合“或（|）”符号。此 Java 7 功能有助于减少代码重复，并使你更容易指定要捕获的确切类型，而不是简单地捕获基本类型。您可以通过这种方式组合多种异常类型。
 
@@ -919,9 +919,9 @@ DynamicFields.setField(DynamicFields.java:67)
 
 ## Java 标准异常
 
-Throwable这个Java类被用来表示任何可以作为异常被抛出的类。Throwable对象可分为两种类型（指从Throwable继承而得到的类型）：Error用来表示编译时和系统错误（除特殊情况外，一般不用你关心）；Exception是可以被抛出的基本类型，在Java类库、用户方法以及运行时故障中都可能抛出Exception型异常。所以Java程序员关心的基类型通常是Exception。要想对异常有全面的了解，最好去浏览一下HTML格式的Java文档（可以从java.sun.com下载）。为了对不同的异常有个感性的认识，这么做是值得的。但很快你就会发现，这些异常除了名称外其实都差不多。同时，Java中异常的数目在持续增加，所以在书中简单罗列它们毫无意义。所使用的第三方类库也可能会有自己的异常。对异常来说，关键是理解概念以及如何使用。
+Throwable 这个 Java 类被用来表示任何可以作为异常被抛出的类。Throwable 对象可分为两种类型（指从 Throwable 继承而得到的类型）：Error 用来表示编译时和系统错误（除特殊情况外，一般不用你关心）；Exception 是可以被抛出的基本类型，在 Java 类库、用户方法以及运行时故障中都可能抛出 Exception 型异常。所以 Java 程序员关心的基类型通常是 Exception。要想对异常有全面的了解，最好去浏览一下 HTML 格式的 Java 文档（可以从 java.sun.com 下载）。为了对不同的异常有个感性的认识，这么做是值得的。但很快你就会发现，这些异常除了名称外其实都差不多。同时，Java 中异常的数目在持续增加，所以在书中简单罗列它们毫无意义。所使用的第三方类库也可能会有自己的异常。对异常来说，关键是理解概念以及如何使用。
 
-异常的基本的概念是用名称代表发生的问题，并且异常的名称应该可以望文知意。异常并非全是在java.lang包里定义的；有些异常是用来支持其他像util、net和io这样的程序包，这些异常可以通过它们的完整名称或者从它们的父类中看出端倪。比如，所有的输入/输出异常都是从java.io.IOException继承而来的。
+异常的基本的概念是用名称代表发生的问题，并且异常的名称应该可以望文知意。异常并非全是在 java.lang 包里定义的；有些异常是用来支持其他像 util、net 和 io 这样的程序包，这些异常可以通过它们的完整名称或者从它们的父类中看出端倪。比如，所有的输入/输出异常都是从 java.io.IOException 继承而来的。
 
 ### 特例：RuntimeException
 
@@ -932,18 +932,18 @@ if(t == null)
     throw new NullPointerException();
 ```
 
-如果必须对传递给方法的每个引用都检查其是否为nul（因为无法确定调用者是否传入了非法引用），这听起来着实吓人。幸运的是，这不必由你亲自来做，它属于Java的标准运行时检测的一部分。如果对null引用进行调用，Java会自动抛出NullPointerException异常，所以上述代码是多余的，尽管你也许想要执行其他的检查以确保NullPointerException不会出现。
+如果必须对传递给方法的每个引用都检查其是否为 nul（因为无法确定调用者是否传入了非法引用），这听起来着实吓人。幸运的是，这不必由你亲自来做，它属于 Java 的标准运行时检测的一部分。如果对 null 引用进行调用，Java 会自动抛出 NullPointerException 异常，所以上述代码是多余的，尽管你也许想要执行其他的检查以确保 NullPointerException 不会出现。
 
-属于运行时异常的类型有很多，它们会自动被lava虚拟机抛出，所以不必在异常说明中把它们列出来。这些异常都是从RuntimeException类继承而来，所以既体现了继承的优点，使用起来也很方便。这构成了一组具有相同特征和行为的异常类型。并且，也不再需要在异常说明中声明方法将抛出RuntimeException类型的异常（或者任何从RuntimeException继承的异常），它们也被称为“不受检查异常”。这种异常属于错误，将被自动捕获，就不用你亲自动手了。要是自己去检查RuntimeException的话，代码就显得太混乱了。不过尽管通常不用捕获RuntimeException异常，但还是可以在代码中抛出RuntimeException类型的异常。
+属于运行时异常的类型有很多，它们会自动被 lava 虚拟机抛出，所以不必在异常说明中把它们列出来。这些异常都是从 RuntimeException 类继承而来，所以既体现了继承的优点，使用起来也很方便。这构成了一组具有相同特征和行为的异常类型。并且，也不再需要在异常说明中声明方法将抛出 RuntimeException 类型的异常（或者任何从 RuntimeException 继承的异常），它们也被称为“不受检查异常”。这种异常属于错误，将被自动捕获，就不用你亲自动手了。要是自己去检查 RuntimeException 的话，代码就显得太混乱了。不过尽管通常不用捕获 RuntimeException 异常，但还是可以在代码中抛出 RuntimeException 类型的异常。
 
-RuntimeException代表的是编程错误：
+RuntimeException 代表的是编程错误：
 
-1. 无法预料的错误。比如从你控制范围之外传递进来的null引用。
-2. 作为程序员，应该在代码中进行检查的错误。（比如对于ArrayIndexOutOfBoundsException，就得注意一下数组的大小了。）在一个地方发生的异常，常常会在另一个地方导致错误。
+1. 无法预料的错误。比如从你控制范围之外传递进来的 null 引用。
+2. 作为程序员，应该在代码中进行检查的错误。（比如对于 ArrayIndexOutOfBoundsException，就得注意一下数组的大小了。）在一个地方发生的异常，常常会在另一个地方导致错误。
 
 在这些情况下使用异常很有好处，它们能给调试带来便利。
 
-如果不捕获这种类型的异常会发生什么事呢？因为编译器没有在这个问题上对异常说明进行强制检查，RuntimeException类型的异常也许会穿越所有的执行路径直达main()方法，而不会被捕获。要明白到底发生了什么，可以试试下面的例子：
+如果不捕获这种类型的异常会发生什么事呢？因为编译器没有在这个问题上对异常说明进行强制检查，RuntimeException 类型的异常也许会穿越所有的执行路径直达 main() 方法，而不会被捕获。要明白到底发生了什么，可以试试下面的例子：
 
 ```java
 // exceptions/NeverCaught.java
@@ -973,20 +973,325 @@ at NeverCaught.g(NeverCaught.java:10)
 at NeverCaught.main(NeverCaught.java:13)
 ```
 
-如果RuntimeException没有被捕获而直达main()，那么在程序退出前将调用异常的printStackTrace()方法。
+如果 RuntimeException 没有被捕获而直达 main()，那么在程序退出前将调用异常的 printStackTrace() 方法。
 
-你会发现，RuntimeException（或任何从它继承的异常）是一个特例。对于这种异常类型，编译器不需要异常说明，其输出被报告给了System.err。
+你会发现，RuntimeException（或任何从它继承的异常）是一个特例。对于这种异常类型，编译器不需要异常说明，其输出被报告给了 System.err。
 
-请务必记住：只能在代码中忽略RuntimeException（及其子类）类型的异常，因为所有受检查类型异常的处理都是由编译器强制实施的。
+请务必记住：只能在代码中忽略 RuntimeException（及其子类）类型的异常，因为所有受检查类型异常的处理都是由编译器强制实施的。
 
-值得注意的是：不应把Java的异常处理机制当成是单一用途的工具。是的，它被设计用来处理一些烦人的运行时错误，这些错误往往是由代码控制能力之外的因素导致的；然而，它对于发现某些编译器无法检测到的编程错误，也是非常重要的。
+值得注意的是：不应把 Java 的异常处理机制当成是单一用途的工具。是的，它被设计用来处理一些烦人的运行时错误，这些错误往往是由代码控制能力之外的因素导致的；然而，它对于发现某些编译器无法检测到的编程错误，也是非常重要的。
 
 <!-- Performing Cleanup with finally -->
 
-## finally 关键字
+## 使用 finally 进行清理
 
+有一些代码片段，可能会希望无论 try 块中的异常是否抛出，它们都能得到执行。这通常适用于内存回收之外的情况（因为回收由垃圾回收器完成），为了达到这个效果，可以在异常处理程序后面加上 finally 子句。完整的异常处理程序看起来像这样：
+
+```java
+try {
+// The guarded region: Dangerous activities
+// that might throw A, B, or C
+} catch(A a1) {
+// Handler for situation A
+} catch(B b1) {
+// Handler for situation B
+} catch(C c1) {
+// Handler for situation C
+} finally {
+// Activities that happen every time
+}
+```
+
+为了证明 finally 子句总能运行，可以试试下面这个程序：
+
+```java
+// exceptions/FinallyWorks.java
+// The finally clause is always executed
+class ThreeException extends Exception {}
+public class FinallyWorks {
+    static int count = 0;
+    public static void main(String[] args) {
+        while(true) {
+            try {
+				// Post-increment is zero first time:
+                if(count++ == 0)
+                    throw new ThreeException();
+                System.out.println("No exception");
+            } catch(ThreeException e) {
+                System.out.println("ThreeException");
+            } finally {
+                System.out.println("In finally clause");
+                if(count == 2) break; // out of "while"
+            }
+        }
+    }
+}
+```
+
+输出为：
+
+```
+ThreeException
+In finally clause
+No exception
+In finally clause
+```
+
+可以从输出中发现，无论异常是否被抛出，finally 子句总能被执行。这个程序也给了我们一些思路，当 Java 中的异常不允许我们回到异常抛出的地点时，那么该如何应对呢？如果把 try 块放在循环里，就建立了一个“程序继续执行之前必须要达到”的条件。还可以加入一个 static 类型的计数器或者别的装置，使循环在放弃以前能尝试一定的次数。这将使程序的健壮性更上一个台阶。
+
+### finally 用来做什么？
+
+对于没有垃圾回收和析构函数自动调用机制的语言来说，finally 非常重要。它能使程序员保证：无论 try 块里发生了什么，内存总能得到释放。但 Java 有垃圾回收机制，所以内存释放不再是问题。而且，Java 也没有析构函数可供调用。那么，Java 在什么情况下才能用到 finally 呢？
+
+当要把除内存之外的资源恢复到它们的初始状态时，就要用到 finally 子句。这种需要清理的资源包括：已经打开的文件或网络连接，在屏幕上画的图形，甚至可以是外部世界的某个开关，如下面例子所示：
+
+```java
+// exceptions/Switch.java
+public class Switch {
+    private boolean state = false;
+    public boolean read() { return state; }
+    public void on() {
+        state = true;
+        System.out.println(this);
+    }
+    public void off() {
+        state = false;
+        System.out.println(this);
+    }
+    @Override
+    public String toString() {
+        return state ? "on" : "off";
+    }
+}
+// exceptions/OnOffException1.java
+public class OnOffException1 extends Exception {}
+// exceptions/OnOffException2.java
+public class OnOffException2 extends Exception {}
+// exceptions/OnOffSwitch.java
+// Why use finally?
+public class OnOffSwitch {
+    private static Switch sw = new Switch();
+    public static void f()
+            throws OnOffException1, OnOffException2 {}
+    public static void main(String[] args) {
+        try {
+            sw.on();
+			// Code that can throw exceptions...
+            f();
+            sw.off();
+        } catch(OnOffException1 e) {
+            System.out.println("OnOffException1");
+            sw.off();
+        } catch(OnOffException2 e) {
+            System.out.println("OnOffException2");
+            sw.off();
+        }
+    }
+}
+```
+
+输出为：
+
+```
+on
+off
+```
+
+程序的目的是要确保 main() 结束的时候开关必须是关闭的，所以在每个 try 块和异常处理程序的末尾都加入了对 sw.offo 方法的调用。但也可能有这种情况：异常被抛出，但没被处理程序捕获，这时 sw.off() 就得不到调用。但是有了 finally，只要把 try 块中的清理代码移放在一处即可：
+
+```java
+// exceptions/WithFinally.java
+// Finally Guarantees cleanup
+public class WithFinally {
+    static Switch sw = new Switch();
+    public static void main(String[] args) {
+        try {
+            sw.on();
+			// Code that can throw exceptions...
+            OnOffSwitch.f();
+        } catch(OnOffException1 e) {
+            System.out.println("OnOffException1");
+        } catch(OnOffException2 e) {
+            System.out.println("OnOffException2");
+        } finally {
+            sw.off();
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+on
+off
+```
+
+这里 sw.off() 被移到一处，并且保证在任何情况下都能得到执行。
+
+甚至在异常没有被当前的异常处理程序捕获的情况下，异常处理机制也会在跳到更高一层的异常处理程序之前，执行 finally 子句：
+
+```java
+// exceptions/AlwaysFinally.java
+// Finally is always executed
+class FourException extends Exception {}
+public class AlwaysFinally {
+    public static void main(String[] args) {
+        System.out.println("Entering first try block");
+        try {
+            System.out.println("Entering second try block");
+            try {
+                throw new FourException();
+            } finally {
+                System.out.println("finally in 2nd try block");
+            }
+        } catch(FourException e) {
+            System.out.println(
+                    "Caught FourException in 1st try block");
+        } finally {
+            System.out.println("finally in 1st try block");
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+Entering first try block
+Entering second try block
+finally in 2nd try block
+Caught FourException in 1st try block
+finally in 1st try block
+```
+
+当涉及 break 和 continue 语句的时候，finally 子句也会得到执行。请注意，如果把 finally 子句和带标签的 break 及 continue 配合使用，在 Java 里就没必要使用 goto 语句了。
+
+### 在 return 中使用 finally
+
+因为 finally 子句，总是会执行的，所以在一个方法中，可以从多个点返回，并且可以保证重要的清理工作仍旧会执行：
+
+```java
+// exceptions/MultipleReturns.java
+public class MultipleReturns {
+    public static void f(int i) {
+        System.out.println(
+                "Initialization that requires cleanup");
+        try {
+            System.out.println("Point 1");
+            if(i == 1) return;
+            System.out.println("Point 2");
+            if(i == 2) return;
+            System.out.println("Point 3");
+            if(i == 3) return;
+            System.out.println("End");
+            return;
+        } finally {
+            System.out.println("Performing cleanup");
+        }
+    }
+    public static void main(String[] args) {
+        for(int i = 1; i <= 4; i++)
+            f(i);
+    }
+}
+```
+
+输出为：
+
+```java
+Initialization that requires cleanup
+Point 1
+Performing cleanup
+Initialization that requires cleanup
+Point 1
+Point 2
+Performing cleanup
+Initialization that requires cleanup
+Point 1
+Point 2
+Point 3
+Performing cleanup
+Initialization that requires cleanup
+Point 1
+Point 2
+Point 3
+End
+Performing cleanup
+```
+
+从输出中可以看出，从何处返回无关紧要，finally 子句永远会执行。
+
+### 缺憾：异常丢失
+
+遗憾的是，Java 的异常实现也有瑕疵。异常作为程序出错的标志，决不应该被忽略，但它还是有可能被轻易地忽略。用某些特殊的方式使用 finally 子句，就会发生这种情况：
+
+```java
+// exceptions/LostMessage.java
+// How an exception can be lost
+class VeryImportantException extends Exception {
+    @Override
+    public String toString() {
+        return "A very important exception!";
+    }
+}
+class HoHumException extends Exception {
+    @Override
+    public String toString() {
+        return "A trivial exception";
+    }
+}
+public class LostMessage {
+    void f() throws VeryImportantException {
+        throw new VeryImportantException();
+    }
+    void dispose() throws HoHumException {
+        throw new HoHumException();
+    }
+    public static void main(String[] args) {
+        try {
+            LostMessage lm = new LostMessage();
+            try {
+                lm.f();
+            } finally {
+                lm.dispose();
+            }
+        } catch(VeryImportantException | HoHumException e) {
+            System.out.println(e);
+        }
+    }
+}
+```
+
+输出为：
+
+```
+A trivial exception
+```
+
+从输出中可以看到，VeryImportantException 不见了，它被 finally 子句里的 HoHumException 所取代。这是相当严重的缺陷，因为异常可能会以一种比前面例子所示更微妙和难以察党的方式完全丢失。相比之下，C++把“前一个异常还没处理就抛出下一个异常”的情形看成是糟糕的编程错误。也许在 Java 的未来版本中会修正这个问题（另一方面，要把所有抛出异常的方法，如上例中的 dispose() 方法，全部打包放到 try-catch 子句里面）。
+
+一种更加简单的丢失异常的方式是从 finally 子句中返回：
+
+```java
+// exceptions/ExceptionSilencer.java
+public class ExceptionSilencer {
+    public static void main(String[] args) {
+        try {
+            throw new RuntimeException();
+        } finally {
+// Using 'return' inside the finally block
+// will silence any thrown exception.
+            return;
+        }
+    }
+}
+```
+
+如果运行这个程序，就会看到即使抛出了异常，它也不会产生任何输出。
 
 <!-- Exception Restrictions -->
+
 ## 异常限制
 
 
@@ -1022,3 +1327,6 @@ at NeverCaught.main(NeverCaught.java:13)
 <!-- 分页 -->
 
 <div style="page-break-after: always;"></div>
+```
+
+```
