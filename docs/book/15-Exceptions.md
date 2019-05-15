@@ -983,10 +983,315 @@ at NeverCaught.main(NeverCaught.java:13)
 
 <!-- Performing Cleanup with finally -->
 
-## finally 关键字
+## 使用 finally 进行清理
 
+有一些代码片段，可能会希望无论try块中的异常是否抛出，它们都能得到执行。这通常适用于内存回收之外的情况（因为回收由垃圾回收器完成），为了达到这个效果，可以在异常处理程序后面加上finally子句。完整的异常处理程序看起来像这样：
+
+```java
+try {
+// The guarded region: Dangerous activities
+// that might throw A, B, or C
+} catch(A a1) {
+// Handler for situation A
+} catch(B b1) {
+// Handler for situation B
+} catch(C c1) {
+// Handler for situation C
+} finally {
+// Activities that happen every time
+}
+```
+
+为了证明finally子句总能运行，可以试试下面这个程序：
+
+```java
+// exceptions/FinallyWorks.java
+// The finally clause is always executed
+class ThreeException extends Exception {}
+public class FinallyWorks {
+    static int count = 0;
+    public static void main(String[] args) {
+        while(true) {
+            try {
+				// Post-increment is zero first time:
+                if(count++ == 0)
+                    throw new ThreeException();
+                System.out.println("No exception");
+            } catch(ThreeException e) {
+                System.out.println("ThreeException");
+            } finally {
+                System.out.println("In finally clause");
+                if(count == 2) break; // out of "while"
+            }
+        }
+    }
+}
+```
+
+输出为：
+
+```
+ThreeException
+In finally clause
+No exception
+In finally clause
+```
+
+可以从输出中发现，无论异常是否被抛出，finally子句总能被执行。这个程序也给了我们一些思路，当Java中的异常不允许我们回到异常抛出的地点时，那么该如何应对呢？如果把try块放在循环里，就建立了一个“程序继续执行之前必须要达到”的条件。还可以加入一个static类型的计数器或者别的装置，使循环在放弃以前能尝试一定的次数。这将使程序的健壮性更上一个台阶。
+
+### finally用来做什么？
+
+对于没有垃圾回收和析构函数自动调用机制的语言来说，finally非常重要。它能使程序员保证：无论try块里发生了什么，内存总能得到释放。但Java有垃圾回收机制，所以内存释放不再是问题。而且，Java也没有析构函数可供调用。那么，Java在什么情况下才能用到finally呢？
+
+当要把除内存之外的资源恢复到它们的初始状态时，就要用到finally子句。这种需要清理的资源包括：已经打开的文件或网络连接，在屏幕上画的图形，甚至可以是外部世界的某个开关，如下面例子所示：
+
+```java
+// exceptions/Switch.java
+public class Switch {
+    private boolean state = false;
+    public boolean read() { return state; }
+    public void on() {
+        state = true;
+        System.out.println(this);
+    }
+    public void off() {
+        state = false;
+        System.out.println(this);
+    }
+    @Override
+    public String toString() {
+        return state ? "on" : "off";
+    }
+}
+// exceptions/OnOffException1.java
+public class OnOffException1 extends Exception {}
+// exceptions/OnOffException2.java
+public class OnOffException2 extends Exception {}
+// exceptions/OnOffSwitch.java
+// Why use finally?
+public class OnOffSwitch {
+    private static Switch sw = new Switch();
+    public static void f()
+            throws OnOffException1, OnOffException2 {}
+    public static void main(String[] args) {
+        try {
+            sw.on();
+			// Code that can throw exceptions...
+            f();
+            sw.off();
+        } catch(OnOffException1 e) {
+            System.out.println("OnOffException1");
+            sw.off();
+        } catch(OnOffException2 e) {
+            System.out.println("OnOffException2");
+            sw.off();
+        }
+    }
+}
+```
+
+输出为：
+
+```
+on
+off
+```
+
+程序的目的是要确保main()结束的时候开关必须是关闭的，所以在每个try块和异常处理程序的末尾都加入了对sw.offo方法的调用。但也可能有这种情况：异常被抛出，但没被处理程序捕获，这时sw.off()就得不到调用。但是有了finally，只要把try块中的清理代码移放在一处即可：
+
+```java
+// exceptions/WithFinally.java
+// Finally Guarantees cleanup
+public class WithFinally {
+    static Switch sw = new Switch();
+    public static void main(String[] args) {
+        try {
+            sw.on();
+			// Code that can throw exceptions...
+            OnOffSwitch.f();
+        } catch(OnOffException1 e) {
+            System.out.println("OnOffException1");
+        } catch(OnOffException2 e) {
+            System.out.println("OnOffException2");
+        } finally {
+            sw.off();
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+on
+off
+```
+
+这里sw.off()被移到一处，并且保证在任何情况下都能得到执行。
+
+甚至在异常没有被当前的异常处理程序捕获的情况下，异常处理机制也会在跳到更高一层的异常处理程序之前，执行finally子句：
+
+```java
+// exceptions/AlwaysFinally.java
+// Finally is always executed
+class FourException extends Exception {}
+public class AlwaysFinally {
+    public static void main(String[] args) {
+        System.out.println("Entering first try block");
+        try {
+            System.out.println("Entering second try block");
+            try {
+                throw new FourException();
+            } finally {
+                System.out.println("finally in 2nd try block");
+            }
+        } catch(FourException e) {
+            System.out.println(
+                    "Caught FourException in 1st try block");
+        } finally {
+            System.out.println("finally in 1st try block");
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+Entering first try block
+Entering second try block
+finally in 2nd try block
+Caught FourException in 1st try block
+finally in 1st try block
+```
+
+当涉及break和continue语句的时候，finally子句也会得到执行。请注意，如果把finally子句和带标签的break及continue配合使用，在Java里就没必要使用goto语句了。
+
+### 在 return 中使用 finally
+
+因为finally子句，总是会执行的，所以在一个方法中，可以从多个点返回，并且可以保证重要的清理工作仍旧会执行：
+
+```java
+// exceptions/MultipleReturns.java
+public class MultipleReturns {
+    public static void f(int i) {
+        System.out.println(
+                "Initialization that requires cleanup");
+        try {
+            System.out.println("Point 1");
+            if(i == 1) return;
+            System.out.println("Point 2");
+            if(i == 2) return;
+            System.out.println("Point 3");
+            if(i == 3) return;
+            System.out.println("End");
+            return;
+        } finally {
+            System.out.println("Performing cleanup");
+        }
+    }
+    public static void main(String[] args) {
+        for(int i = 1; i <= 4; i++)
+            f(i);
+    }
+}
+```
+
+输出为：
+
+```java
+Initialization that requires cleanup
+Point 1
+Performing cleanup
+Initialization that requires cleanup
+Point 1
+Point 2
+Performing cleanup
+Initialization that requires cleanup
+Point 1
+Point 2
+Point 3
+Performing cleanup
+Initialization that requires cleanup
+Point 1
+Point 2
+Point 3
+End
+Performing cleanup
+```
+
+从输出中可以看出，从何处返回无关紧要，finally 子句永远会执行。
+
+### 缺憾：异常丢失
+
+遗憾的是，Java的异常实现也有瑕疵。异常作为程序出错的标志，决不应该被忽略，但它还是有可能被轻易地忽略。用某些特殊的方式使用finally子句，就会发生这种情况：
+
+```java
+// exceptions/LostMessage.java
+// How an exception can be lost
+class VeryImportantException extends Exception {
+    @Override
+    public String toString() {
+        return "A very important exception!";
+    }
+}
+class HoHumException extends Exception {
+    @Override
+    public String toString() {
+        return "A trivial exception";
+    }
+}
+public class LostMessage {
+    void f() throws VeryImportantException {
+        throw new VeryImportantException();
+    }
+    void dispose() throws HoHumException {
+        throw new HoHumException();
+    }
+    public static void main(String[] args) {
+        try {
+            LostMessage lm = new LostMessage();
+            try {
+                lm.f();
+            } finally {
+                lm.dispose();
+            }
+        } catch(VeryImportantException | HoHumException e) {
+            System.out.println(e);
+        }
+    }
+}
+```
+
+输出为：
+
+```
+A trivial exception
+```
+
+从输出中可以看到，VeryImportantException不见了，它被finally子句里的HoHumException所取代。这是相当严重的缺陷，因为异常可能会以一种比前面例子所示更微妙和难以察党的方式完全丢失。相比之下，C++把“前一个异常还没处理就抛出下一个异常”的情形看成是糟糕的编程错误。也许在Java的未来版本中会修正这个问题（另一方面，要把所有抛出异常的方法，如上例中的dispose()方法，全部打包放到try-catch子句里面）。
+
+一种更加简单的丢失异常的方式是从finally子句中返回：
+
+```java
+// exceptions/ExceptionSilencer.java
+public class ExceptionSilencer {
+    public static void main(String[] args) {
+        try {
+            throw new RuntimeException();
+        } finally {
+// Using 'return' inside the finally block
+// will silence any thrown exception.
+            return;
+        }
+    }
+}
+```
+
+如果运行这个程序，就会看到即使抛出了异常，它也不会产生任何输出。
 
 <!-- Exception Restrictions -->
+
 ## 异常限制
 
 
@@ -1022,3 +1327,6 @@ at NeverCaught.main(NeverCaught.java:13)
 <!-- 分页 -->
 
 <div style="page-break-after: always;"></div>
+```
+
+```
