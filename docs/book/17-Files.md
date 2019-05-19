@@ -323,13 +323,192 @@ ExtractedExamples\files\nonexistent
 
 <!-- Directories -->
 ## 目录
+**Files**工具类类包含大部分我们需要的目录操作和文件操作方法。出于某种原因，它们没有包含删除目录树相关的方法，因此我们将实现并将其添加到**onjava**库中。
+```java
+// onjava/RmDir.java
+package onjava;
+
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.io.IOException;
+
+public class RmDir {
+    public static void rmdir(Path dir) throws IOException {
+        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+            
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+}
+```
+删除目录树的方法实现依赖于**Files.walkFileTree()**，"walking"意味着遍历整个子目录和文件。*Visitor*设计模式提供了一种标准机制来访问集合中的某个对象，然后你需要提供在每个对象上执行的操作。
+此操作的定义取决于实现的**FileVisitor**的四个抽象方法，包括：    
+    1.  **preVisitDirectory()**：在访问目录中条目之前在目录上运行。  
+    2.  **visitFile()**：运行目录中的每一个文件。  
+    3.  **visitFileFailed()**：调用无法访问的文件。   
+    4.  **postVisitDirectory()**：在访问目录中条目之后在目录上运行，包括所有的子目录。
+    
+为了简化，**java.nio.file.SimpleFileVisitor** 提供了所有方法的默认实现。这样，在我们的匿名内部类中，我们只需要重写非标准行为的方法：**visitFile()** 和**postVisitDirectory()** 实现删除文件和删除目录。两者都应该返回标志位决定是否继续访问(这样就可以继续访问，直到找到所需要的)。
+    
+作为探索目录操作的一部分，现在我们可以有条件地删除已存在的目录。在以下例子中，**makeVariant()** 接受基本目录测试，并通过旋转部件列表生成不同的子目录路径。这些旋转与路径分隔符粘**sep** 使用**String.join()**贴在一起，然后返回一个**Path**对象。
+
+```java
+// files/Directories.java
+import java.util.*;
+import java.nio.file.*;
+import onjava.RmDir;
+
+public class Directories {
+    static Path test = Paths.get("test");
+    static String sep = FileSystems.getDefault().getSeparator();
+    static List<String> parts = Arrays.asList("foo", "bar", "baz", "bag");
+    
+    static Path makeVariant() {
+        Collections.rotate(parts, 1);
+        return Paths.get("test", String.join(sep, parts));
+    }
+    
+    static void refreshTestDir() throws Exception {
+        if(Files.exists(test))
+        RmDir.rmdir(test);
+        if(!Files.exists(test))
+        Files.createDirectory(test);
+    }
+    
+    public static void main(String[] args) throws Exception {
+        refreshTestDir();
+        Files.createFile(test.resolve("Hello.txt"));
+        Path variant = makeVariant();
+        // Throws exception (too many levels):
+        try {
+            Files.createDirectory(variant);
+        } catch(Exception e) {
+            System.out.println("Nope, that doesn't work.");
+        }
+        populateTestDir();
+        Path tempdir = Files.createTempDirectory(test, "DIR_");
+        Files.createTempFile(tempdir, "pre", ".non");
+        Files.newDirectoryStream(test).forEach(System.out::println);
+        System.out.println("*********");
+        Files.walk(test).forEach(System.out::println);
+    }
+    
+    static void populateTestDir() throws Exception  {
+        for(int i = 0; i < parts.size(); i++) {
+            Path variant = makeVariant();
+            if(!Files.exists(variant)) {
+                Files.createDirectories(variant);
+                Files.copy(Paths.get("Directories.java"),
+                    variant.resolve("File.txt"));
+                Files.createTempFile(variant, null, null);
+            }
+        }
+    }
+}
+
+/* 输出:
+Nope, that doesn't work.
+test\bag
+test\bar
+test\baz
+test\DIR_5142667942049986036
+test\foo
+test\Hello.txt
+*********
+test
+test\bag
+test\bag\foo
+test\bag\foo\bar
+test\bag\foo\bar\baz
+test\bag\foo\bar\baz\8279660869874696036.tmp
+test\bag\foo\bar\baz\File.txt
+test\bar
+test\bar\baz
+test\bar\baz\bag
+test\bar\baz\bag\foo
+test\bar\baz\bag\foo\1274043134240426261.tmp
+test\bar\baz\bag\foo\File.txt
+test\baz
+test\baz\bag
+test\baz\bag\foo
+test\baz\bag\foo\bar
+test\baz\bag\foo\bar\6130572530014544105.tmp
+test\baz\bag\foo\bar\File.txt
+test\DIR_5142667942049986036
+test\DIR_5142667942049986036\pre7704286843227113253.non
+test\foo
+test\foo\bar
+test\foo\bar\baz
+test\foo\bar\baz\bag
+test\foo\bar\baz\bag\5412864507741775436.tmp
+test\foo\bar\baz\bag\File.txt
+test\Hello.txt
+*/
+```
+首先，**refreshTestDir()**用于检测**test**目录是否已经存在。果是这样，则使用我们新工具类**rmdir()** 删除其整个目录。检查是否**exists**是多余的，但我想说明一点，因为如果你对于已经存在的目录调用**createDirectory()** 将会抛出异常。**createFile()** 使用参数**Path** 创建一个空文件; **resolve()** 将文件名添加到测试路径的末尾。
+
+我们尝试使用**createDirectory()** 来创建多级路径，但是这样会抛出异常，因为这个方法只能创建单级路劲。我已经将**populateTestDir()**作为一个单独的方法，因为它将在后面的例子中被重用。对于每一个变量**variant**，我们都能使用**createDirectories()** 创建完整的目录路径，然后使用此文件的副本以不同的目标名称填充该终端目录。然后我们使用**createTempFile()** 生成一个临时文件。
+
+在调用**populateTestDir()** 之后，我们在**test**目录下面下面创建一个临时目录。请注意，**createTempDirectory()** 只有名称的前缀选项。与**createTempFile()** 不同，我们再次使用它将临时文件放入新的临时目录中。你可以从输出中看到，如果未指定后缀，将默认使用".tmp"作为后缀。
+
+为了展示结果，我们首先使用看起来很有可能的**newDirectoryStream()**，但事实证明这个方法只是返回**test** 目录内容的Stream流，并没有更多的内容。要获取目录树的全部内容的流，请使用**Files.walk()**。
 
 ## 文件系统
+为了完整起见，我们需要一种方法查找有关文件系统的其他信息。在这里，我们使用ileSystems工具类获取"默认"文件系统，但你同样也可以在**Path**对象上调用**getFileSystem()** 以获取创建该**Path** 的文件系统。你可以获得给定*URI*的文件系统，还可以构建新的文件系统(对于支持它的操作系统)。
+```java
+// files/FileSystemDemo.java
+import java.nio.file.*;
 
+public class FileSystemDemo {
+    static void show(String id, Object o) {
+        System.out.println(id + ": " + o);
+    }
+    
+    public static void main(String[] args) {
+        System.out.println(System.getProperty("os.name"));
+        FileSystem fsys = FileSystems.getDefault();
+        for(FileStore fs : fsys.getFileStores())
+            show("File Store", fs);
+        for(Path rd : fsys.getRootDirectories())
+            show("Root Directory", rd);
+        show("Separator", fsys.getSeparator());
+        show("UserPrincipalLookupService",
+            fsys.getUserPrincipalLookupService());
+        show("isOpen", fsys.isOpen());
+        show("isReadOnly", fsys.isReadOnly());
+        show("FileSystemProvider", fsys.provider());
+        show("File Attribute Views",
+        fsys.supportedFileAttributeViews());
+    }
+}
+/* 输出:
+Windows 10
+File Store: SSD (C:)
+Root Directory: C:\
+Root Directory: D:\
+Separator: \
+UserPrincipalLookupService:
+sun.nio.fs.WindowsFileSystem$LookupService$1@15db9742
+isOpen: true
+isReadOnly: false
+FileSystemProvider:
+sun.nio.fs.WindowsFileSystemProvider@6d06d69c
+File Attribute Views: [owner, dos, acl, basic, user]
+*/
+```
+一个**FileSystem**对象也能生成**WatchService** 和**WatchService** 对象，将会在接下来两章中详细讲解。
 
 <!-- Watching a Path -->
 ## 路径监听
-
 
 <!-- Finding Files -->
 ## 文件查找
