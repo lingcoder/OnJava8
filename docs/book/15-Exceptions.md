@@ -1294,12 +1294,286 @@ public class ExceptionSilencer {
 
 ## 异常限制
 
+当覆盖方法的时候，只能抛出在基类方法的异常说明里列出的那些异常。这个限制很有用，因为这意味若，当基类使用的代码应用到其派生类对象的时候，一样能够工作（当然，这是面向对象的基本概念），异常也不例外。
+
+下面例子演示了这种（在编译时）施加在异常上面的限制：
+
+```java
+// exceptions/StormyInning.java
+// Overridden methods can throw only the exceptions
+// specified in their base-class versions, or exceptions
+// derived from the base-class exceptions
+class BaseballException extends Exception {}
+class Foul extends BaseballException {}
+class Strike extends BaseballException {}
+abstract class Inning {
+    Inning() throws BaseballException {}
+    public void event() throws BaseballException {
+// Doesn't actually have to throw anything
+    }
+    public abstract void atBat() throws Strike, Foul;
+    public void walk() {} // Throws no checked exceptions
+}
+class StormException extends Exception {}
+class RainedOut extends StormException {}
+class PopFoul extends Foul {}
+interface Storm {
+    void event() throws RainedOut;
+    void rainHard() throws RainedOut;
+}
+public class StormyInning extends Inning implements Storm {
+    // OK to add new exceptions for constructors, but you
+// must deal with the base constructor exceptions:
+    public StormyInning()
+            throws RainedOut, BaseballException {}
+    public StormyInning(String s)
+            throws BaseballException {}
+    // Regular methods must conform to base class:
+//- void walk() throws PopFoul {} //Compile error
+// Interface CANNOT add exceptions to existing
+// methods from the base class:
+//- public void event() throws RainedOut {}
+// If the method doesn't already exist in the
+// base class, the exception is OK:
+    @Override
+    public void rainHard() throws RainedOut {}
+    // You can choose to not throw any exceptions,
+// even if the base version does:
+    @Override
+    public void event() {}
+    // Overridden methods can throw inherited exceptions:
+    @Override
+    public void atBat() throws PopFoul {}
+    public static void main(String[] args) {
+        try {
+            StormyInning si = new StormyInning();
+            si.atBat();
+        } catch(PopFoul e) {
+            System.out.println("Pop foul");
+        } catch(RainedOut e) {
+            System.out.println("Rained out");
+        } catch(BaseballException e) {
+            System.out.println("Generic baseball exception");
+        }
+// Strike not thrown in derived version.
+        try {
+// What happens if you upcast?
+            Inning i = new StormyInning();
+            i.atBat();
+// You must catch the exceptions from the
+// base-class version of the method:
+        } catch(Strike e) {
+            System.out.println("Strike");
+        } catch(Foul e) {
+            System.out.println("Foul");
+        } catch(RainedOut e) {
+            System.out.println("Rained out");
+        } catch(BaseballException e) {
+            System.out.println("Generic baseball exception");
+        }
+    }
+}
+```
+
+在 Inning 类中，可以看到构造器和 event() 方法都声明将抛出异常，但实际上没有抛出。这种方式使你能强制用户去捕获可能在覆盖后的 event() 版本中增加的异常，所以它很合理。这对于抽象方法同样成立，比如 atBat()。
+
+接口 Storm 包含了一个在 Inning 中定义的方法 event() 和一个不在 Inning 中定义的方法 rainHard（）。这两个方法都抛出新的异常 RainedOut，如果 StormyInning 类在扩展 Inning 类的同时又实现了 Storm 接口，那么 Storm 里的 event（）方法就不能改变在 Inning 中的 event（方法的异常接口。否则的话，在使用基类的时候就不能判断是否捕获了正确的异常，所以这也很合理。当然，如果接口里定义的方法不是来自于基类，比如 rainHardO，那么此方法抛出什么样的异常都没有问题。
+
+异常限制对构造器不起作用。你会发现 StormyInning 的构造器可以抛出任何异常，而不必理会基类构造器所抛出的异常。然而，因为基类构造器必须以这样或那样的方式被调用（这里默认构造器将自动被调用），派生类构造器的异常说明必须包含基类构造器的异常说明。
+
+派生类构造器不能捕获基类构造器抛出的异常。
+
+StormyInning.walk() 不能通过编译的原因是因为：它抛出了异常，而 Inning.walk()) 并没有声明此异常。如果编译器允许这么做的话，就可以在调用 Inning.walk() 的时候不用做异常处理了，而且当把它替换成 Inning 的派生类的对象时，这个方法就有可能会抛出异常，于是程序就失灵了。通过强制派生类遵守基类方法的异常说明，对象的可替换性得到了保证。
+
+覆盖后的 event（）方法表明，派生类方法可以不抛出任何异常，即使它是基类所定义的异常。同样这是因为，假使基类的方法会抛出异常，这样做也不会破坏已有的程序，所以也没有问题。类似的情况出现在 atBat() 身上，它抛出的是 PopFoul，这个异常是继承自“会被基类的 atBat() 抛出”的 Foul，这样，如果你写的代码是同 Inning 打交道，并且调用了它的 atBat() 的话，那么肯定能捕获 Foul，而 PopFoul 是由 Foul 派生出来的，因此异常处理程序也能捕获 PopFoul。
+
+最后一个值得注意的地方是 main()。这里可以看到，如果处理的刚好是 Stormylnning 对象的话，编译器只会强制要求你捕获这个类所抛出的异常。但是如果将它向上转型成基类型，那么编译器就会（正确地）要求你捕获基类的异常。所有这些限制都是为了能产生更为强壮的异常处理代码。
+
+尽管在继承过程中，编译器会对异常说明做强制要求，但异常说明本身并不属于方法类型的一部分，方法类型是由方法的名字与参数的类型组成的。因此，不能基于异常说明来重载方法。此外，一个出现在基类方法的异常说明中的异常，不一定会出现在派生类方法的异常说明里。这点同继承的规则明显不同，在继承中，基类的方法必须出现在派生类里，换句话说，在继承和覆盖的过程中，某个特定方法的“异常说明的接口”不是变大了而是变小了——这恰好和类接口在继承时的情形相反。
+
 
 <!-- Constructors -->
-## 异常构造
+## 构造器
 
+有一点很重要，即你要时刻询问自己“如果异常发生了，所有东西能被正确的清理吗？"尽管大多数情况下是非常安全的，但涉及构造器时，问题就出现了。构造器会把对象设置成安全的初始状态，但还会有别的动作，比如打开一个文件，这样的动作只有在对象使用完毕并且用户调用了特殊的清理方法之后才能得以清理。如果在构造器内抛出了异常，这些清理行为也许就不能正常工作了。这意味着在编写构造器时要格外细心。
+
+你也许会认为使用 finally 就可以解决问题。但问题并非如此简单，因为 finally 会每次都执行清理代码。如果构造器在其执行过程中半途而废，也许该对象的某些部分还没有被成功创建，而这些部分在 finaly 子句中却是要被清理的。
+
+在下面的例子中，建立了一个 InputFile 类，它能打开一个文件并且每次读取其中的一行。这里使用了 Java 标准输入/输出库中的 FileReader 和 BufferedReader 类（将在 [附录：I/O 流 ]() 中讨论），这些类的基本用法很简单，你应该很容易明白：
+
+```java
+// exceptions/InputFile.java
+// Paying attention to exceptions in constructors
+import java.io.*;
+public class InputFile {
+    private BufferedReader in;
+    public InputFile(String fname) throws Exception {
+        try {
+            in = new BufferedReader(new FileReader(fname));
+// Other code that might throw exceptions
+        } catch(FileNotFoundException e) {
+            System.out.println("Could not open " + fname);
+// Wasn't open, so don't close it
+            throw e;
+        } catch(Exception e) {
+// All other exceptions must close it
+            try {
+                in.close();
+            } catch(IOException e2) {
+                System.out.println("in.close() unsuccessful");
+            }
+            throw e; // Rethrow
+        } finally {
+// Don't close it here!!!
+        }
+    }
+    public String getLine() {
+        String s;
+        try {
+            s = in.readLine();
+        } catch(IOException e) {
+            throw new RuntimeException("readLine() failed");
+        }
+        return s;
+    }
+    public void dispose() {
+        try {
+            in.close();
+            System.out.println("dispose() successful");
+        } catch(IOException e2) {
+            throw new RuntimeException("in.close() failed");
+        }
+    }
+}
+```
+
+InputFile 的构造器接受字符串作为参数，该字符串表示所要打开的文件名。在 try 块中，会使用此文件名建立了 FlleReader 对象。FileReader 对象本身用处并不大，但可以用它来建立 BufferedReader 对象。注意，使用 InputFile 的好处就能是把两步操作合而为一。
+
+如果 FileReader 的构造器失败了，将抛出 FileNotFoundException 异常。对于这个异常，并不需要关闭文件，因为这个文件还没有被打开。而任何其他捕获异常的 catch 子句必须关闭文件，因为在它们捕获到异常之时，文件已经打开了（当然，如果还有其他方法能抛出 FlleNotFoundException，这个方法就显得有些投机取巧了。这时，通常必须把这些方法分别放到各自的 try 块里），close() 方法也可能会抛出异常，所以尽管它已经在另一个 catch 子句块里了，还是要再用一层 try-catch 对 Java 编译器而言，这只不过是又多了一对花括号。在本地做完处理之后，异常被重新抛出，对于构造器而言这么做是很合适的，因为你总不希望去误导调用方，让他认为“这个对象已经创建完毕，可以使用了”。
+
+在本例中，由于 finally 会在每次完成构造器之后都执行一遍，因此它实在不该是调用 close() 关闭文件的地方。我们希望文件在 InputFlle 对象的整个生命周期内都处于打开状态。
+
+getLine() 方法会返回表示文件下一行内容的字符串。它调用了能抛出异常的 readLine()，但是这个异常已经在方法内得到处理，因此 getLine() 不会抛出任何异常。在设计异常时有一个问题：应该把异常全部放在这一层处理；还是先处理一部分，然后再向上层抛出相同的（或新的）异常；又或者是不做任何处理直接向上层抛出。如果用法恰当的话，直接向上层抛出的确能简化编程。在这里，getLine() 方法将异常转换为 RuntimeException，表示一个编程错误。
+
+用户在不再需要 InputFile 对象时，就必须调用 dispose() 方法，这将释放 BufferedReader 和/或 FileReader 对象所占用的系统资源（比如文件句柄），在使用完 InputFile 对象之前是不会调用它的。可能你会考虑把上述功能放到 finalize() 里面，但我在 [封装 ]() 讲过，你不知道 finalize() 会不会被调用（即使能确定它将被调用，也不知道在什么时候调用），这也是 Java 的缺陷：除了内存的清理之外，所有的清理都不会自动发生。所以必须告诉客户端程序员，这是他们的责任。
+
+对于在构造阶段可能会抛出异常，并且要求清理的类，最安全的使用方式是使用嵌套的 try 子句：
+
+```java
+// exceptions/Cleanup.java
+// Guaranteeing proper cleanup of a resource
+public class Cleanup {
+    public static void main(String[] args) {
+        try {
+            InputFile in = new InputFile("Cleanup.java");
+            try {
+                String s;
+                int i = 1;
+                while((s = in.getLine()) != null)
+                    ; // Perform line-by-line processing here...
+            } catch(Exception e) {
+                System.out.println("Caught Exception in main");
+                e.printStackTrace(System.out);
+            } finally {
+                in.dispose();
+            }
+        } catch(Exception e) {
+            System.out.println(
+                    "InputFile construction failed");
+        }
+    }
+}
+```
+
+输出为：
+
+```
+dispose() successful
+```
+
+请仔细观察这里的逻辑：对 InputFile 对象的构造在其自己的 try 语句块中有效，如果构造失败，将进入外部的 catch 子句，而 dispose() 方法不会被调用。但是，如果构造成功，我们肯定想确保对象能够被清理，因此在构造之后立即创建了一个新的 try 语句块。执行清理的 finally 与内部的 try 语句块相关联。在这种方式中，finally 子句在构造失败时是不会执行的，而在构成成功时将总是执行。
+
+这种通用的清理惯用法在构造器不抛出任何异常时也应该运用，其基本规则是：在创建需要清理的对象之后，立即进入一个 try-finally 语句块：
+
+```java
+// exceptions/CleanupIdiom.java
+// Disposable objects must be followed by a try-finally
+class NeedsCleanup { // Construction can't fail
+    private static long counter = 1;
+    private final long id = counter++;
+    public void dispose() {
+        System.out.println(
+                "NeedsCleanup " + id + " disposed");
+    }
+}
+class ConstructionException extends Exception {}
+class NeedsCleanup2 extends NeedsCleanup {
+    // Construction can fail:
+    NeedsCleanup2() throws ConstructionException {}
+}
+public class CleanupIdiom {
+    public static void main(String[] args) {
+// [1]:
+        NeedsCleanup nc1 = new NeedsCleanup();
+        try {
+// ...
+        } finally {
+            nc1.dispose();
+        }
+// [2]:
+// If construction cannot fail,
+// you can group objects:
+        NeedsCleanup nc2 = new NeedsCleanup();
+        NeedsCleanup nc3 = new NeedsCleanup();
+        try {
+// ...
+        } finally {
+            nc3.dispose(); // Reverse order of construction
+            nc2.dispose();
+        }
+// [3]:
+// If construction can fail you must guard each one:
+        try {
+            NeedsCleanup2 nc4 = new NeedsCleanup2();
+            try {
+                NeedsCleanup2 nc5 = new NeedsCleanup2();
+                try {
+// ...
+                } finally {
+                    nc5.dispose();
+                }
+            } catch(ConstructionException e) { // nc5 const.
+                System.out.println(e);
+            } finally {
+                nc4.dispose();
+            }
+        } catch(ConstructionException e) { // nc4 const.
+            System.out.println(e);
+        }
+    }
+}
+```
+
+输出为：
+
+```
+NeedsCleanup 1 disposed
+NeedsCleanup 3 disposed
+NeedsCleanup 2 disposed
+NeedsCleanup 5 disposed
+NeedsCleanup 4 disposed
+```
+
+- [1] 相当简单，遵循了在可去除对象之后紧跟 try-finally 的原则。如果对象构造不会失败，就不需要任何 catch。
+- [2] 为了构造和清理，可以看到将具有不能失败的构造器的对象分组在一起。
+- [3] 展示了如何处理那些具有可以失败的构造器，且需要清理的对象。为了正确处理这种情况，事情变得很棘手，因为对于每一个构造，都必须包含在其自己的 try-finally 语句块中，并且每一个对象构造必须都跟随一个 try-finally 语句块以确保清理。
+
+本例中的异常处理的棘手程度，对于应该创建不能失败的构造器是一个有力的论据，尽管这么做并非总是可行。
+
+注意，如果 dispose() 可以抛出异常，那么你可能需要额外的 try 语句块。基本上，你应该仔细考虑所有的可能性，并确保正确处理每一种情况。
 
 <!-- Try-With-Resources -->
+
 ## Try-With-Resources 用法
 
 
