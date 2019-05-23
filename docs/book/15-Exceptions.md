@@ -1576,25 +1576,599 @@ NeedsCleanup 4 disposed
 
 ## Try-With-Resources 用法
 
+上一节的内容可能让你有些头疼。在考虑所有可能失败的方法时，找出放置所有 try-catch-finally 块的位置变得令人生畏。确保没有任何故障路径，使系统远离不稳定状态，这非常具有挑战性。
+
+InputFile.java 是一个特别棘手的情况，因为文件被打开（包含所有可能的异常），然后它在对象的生命周期中保持打开状态。每次调用 getLine() 都会导致异常，因此可以调用 dispose() 方法。这是一个很好的例子，因为它显示了事物的混乱程度。它还表明你应该尝试最好不要那样设计代码（当然，当你不选择代码的设计方式时，你经常会遇到这种情况，因此你必须仍然理解它）。
+
+InputFile.java 一个更好的实现方式是如果构造函数读取文件并在内部缓冲它 —— 这样，文件的打开，读取和关闭都发生在构造函数中。或者，如果读取和存储文件不切实际，你可以改为生成 Stream。理想情况下，你可以设计成如下的样子：
+
+```java
+// exceptions/InputFile2.java
+import java.io.*;
+import java.nio.file.*;
+import java.util.stream.*;
+public class InputFile2 {
+    private String fname;
+
+    public InputFile2(String fname) {
+        this.fname = fname;
+    }
+
+    public Stream<String> getLines() throws IOException {
+        return Files.lines(Paths.get(fname));
+    }
+
+    public static void
+    main(String[] args) throws IOException {
+        new InputFile2("InputFile2.java").getLines()
+                .skip(15)
+                .limit(1)
+                .forEach(System.out::println);
+    }
+}
+```
+
+输出为：
+
+```
+main(String[] args) throws IOException {
+```
+
+现在，getLines() 全权负责打开文件并创建 Stream。
+
+你不能总是轻易地回避这个问题。有时会有以下问题：
+
+1. 需要资源清理
+2. 需要在特定的时刻进行资源清理，比如你离开作用域的时候（在通常情况下意味着通过异常进行清理）。
+
+一个常见的例子是 jav.io.FileInputstream（将会在[附录：I/O 流 ]() 中提到）。要正确使用它，你必须编写一些棘手的样板代码：
+
+```java
+// exceptions/MessyExceptions.java
+import java.io.*;
+public class MessyExceptions {
+    public static void main(String[] args) {
+        InputStream in = null;
+        try {
+            in = new FileInputStream(
+                    new File("MessyExceptions.java"));
+            int contents = in.read();
+            // Process contents
+        } catch(IOException e) {
+            // Handle the error
+        } finally {
+            if(in != null) {
+                try {
+                    in.close();
+                } catch(IOException e) {
+                    // Handle the close() error
+                }
+            }
+        }
+    }
+}
+```
+
+当 finally 子句有自己的 try 块时，感觉事情变得过于复杂。
+
+幸运的是，Java 7 引入了 try-with-resources 语法，它可以非常清楚地简化上面的代码：
+
+```java
+// exceptions/TryWithResources.java
+import java.io.*;
+public class TryWithResources {
+    public static void main(String[] args) {
+        try(
+                InputStream in = new FileInputStream(
+                        new File("TryWithResources.java"))
+        ) {
+            int contents = in.read();
+            // Process contents
+        } catch(IOException e) {
+            // Handle the error
+        }
+    }
+}
+```
+
+在 Java 7 之前，try 总是后面跟着一个 {，但是现在可以跟一个带括号的定义 - 这里是我们创建的 FileInputStream 对象。括号内的部分称为资源规范头（resource specification header）。现在可用于整个 try 块的其余部分。更重要的是，无论你如何退出 try 块（通常或通过异常），都会执行前一个 finally 子句的等价物，但不会编写那些杂乱而棘手的代码。这是一项重要的改进。
+
+它是如何工作的？在 try-with-resources 定义子句中创建的对象（在括号内）必须实现 java.lang.Autocloseable 接口，这个接口有一个方法，close()。当在 Java 7 中引入 AutoCloseable 时，许多接口和类被修改以实现它；查看 Javadocs 中的 AutoCloseable，可以找到所有实现该接口的类列表，其中包括 Stream 对象：
+
+```java
+// exceptions/StreamsAreAutoCloseable.java
+import java.io.*;
+import java.nio.file.*;
+import java.util.stream.*;
+public class StreamsAreAutoCloseable {
+    public static void
+    main(String[] args) throws IOException{
+        try(
+                Stream<String> in = Files.lines(
+                        Paths.get("StreamsAreAutoCloseable.java"));
+                PrintWriter outfile = new PrintWriter(
+                        "Results.txt"); // [1]
+        ) {
+            in.skip(5)
+                    .limit(1)
+                    .map(String::toLowerCase)
+                    .forEachOrdered(outfile::println);
+        } // [2]
+    }
+}
+```
+
+- [1] 你在这里可以看到其他的特性：资源规范头中可以包含多个定义，并且通过分号进行分割（最后一个分号是可选的）。规范头中定义的每个对象都会在 try 语句块运行结束之后调用 close() 方法。
+- [2] try-with-resources 里面的 try 语句块可以不包含 catch 或者 finally 语句而独立存在。在这里，IOException 被 main() 方法抛出，所以这里并不需要在 try 后面跟着一个 catch 语句块。
+
+Java 5 中的 Closeable 已经被修改，修改之后的接口继承了 AutoCloseable 接口。所以所有实现了 Closeable 接口的对象，都支持了  try-with-resources 特性。
+
+### 揭示细节
+
+为了研究 try-with-resources 的基本机制，我们将创建自己的 AutoCloseable 类：
+
+```java
+// exceptions/AutoCloseableDetails.java
+class Reporter implements AutoCloseable {
+    String name = getClass().getSimpleName();
+    Reporter() {
+        System.out.println("Creating " + name);
+    }
+    public void close() {
+        System.out.println("Closing " + name);
+    }
+}
+class First extends Reporter {}
+class Second extends Reporter {}
+public class AutoCloseableDetails {
+    public static void main(String[] args) {
+        try(
+                First f = new First();
+                Second s = new Second()
+        ) {
+        }
+    }
+}
+```
+
+输出为：
+
+```
+Creating First
+Creating Second
+Closing Second
+Closing First
+```
+
+退出 try 块会调用两个对象的 close() 方法，并以与创建顺序相反的顺序关闭它们。顺序很重要，因为在此配置中，Second 对象可能依赖于 First 对象，因此如果 First 在第 Second 关闭时已经关闭。 Second 的 close() 方法可能会尝试访问 First 中不再可用的某些功能。
+
+假设我们在资源规范头中定义了一个不是 AutoCloseable 的对象
+
+```java
+// exceptions/TryAnything.java
+// {WillNotCompile}
+class Anything {}
+public class TryAnything {
+    public static void main(String[] args) {
+        try(
+                Anything a = new Anything()
+        ) {
+        }
+    }
+}
+```
+
+正如我们所希望和期望的那样，Java 不会让我们这样做，并且出现编译时错误。
+
+如果其中一个构造函数抛出异常怎么办？
+
+```java
+// exceptions/ConstructorException.java
+class CE extends Exception {}
+class SecondExcept extends Reporter {
+    SecondExcept() throws CE {
+        super();
+        throw new CE();
+    }
+}
+public class ConstructorException {
+    public static void main(String[] args) {
+        try(
+                First f = new First();
+                SecondExcept s = new SecondExcept();
+                Second s2 = new Second()
+        ) {
+            System.out.println("In body");
+        } catch(CE e) {
+            System.out.println("Caught: " + e);
+        }
+    }
+}
+```
+
+输出为：
+
+```
+Creating First
+Creating SecondExcept
+Closing First
+Caught: CE
+```
+
+现在资源规范头中定义了 3 个对象，中间的对象抛出异常。因此，编译器强制我们使用 catch 子句来捕获构造函数异常。这意味着资源规范头实际上被 try 块包围。
+
+正如预期的那样，First 创建时没有发生意外，SecondExcept 在创建期间抛出异常。请注意，不会为 SecondExcept 调用 close()，因为如果构造函数失败，则无法假设你可以安全地对该对象执行任何操作，包括关闭它。由于 SecondExcept 的异常，Second 对象实例 s2 不会被创建，因此也不会有清除事件发生。
+
+如果没有构造函数抛出异常，但你可能会在 try 的主体中获取它们，则再次强制你实现 catch 子句：
+
+```java
+// exceptions/BodyException.java
+class Third extends Reporter {}
+public class BodyException {
+    public static void main(String[] args) {
+        try(
+                First f = new First();
+                Second s2 = new Second()
+        ) {
+            System.out.println("In body");
+            Third t = new Third();
+            new SecondExcept();
+            System.out.println("End of body");
+        } catch(CE e) {
+            System.out.println("Caught: " + e);
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+Creating First
+Creating Second
+In body
+Creating Third
+Creating SecondExcept
+Closing Second
+Closing First
+Caught: CE
+```
+
+请注意，第 3 个对象永远不会被清除。那是因为它不是在资源规范头中创建的，所以它没有被保护。这很重要，因为 Java 在这里没有以警告或错误的形式提供指导，因此像这样的错误很容易漏掉。实际上，如果依赖某些集成开发环境来自动重写代码，以使用 try-with-resources 特性，那么它们（在撰写本文时）通常只会保护它们遇到的第一个对象，而忽略其余的对象。
+
+最后，让我们看一下抛出异常的 close() 方法：
+
+```java
+// exceptions/CloseExceptions.java
+class CloseException extends Exception {}
+class Reporter2 implements AutoCloseable {
+    String name = getClass().getSimpleName();
+    Reporter2() {
+        System.out.println("Creating " + name);
+    }
+    public void close() throws CloseException {
+        System.out.println("Closing " + name);
+    }
+}
+class Closer extends Reporter2 {
+    @Override
+    public void close() throws CloseException {
+        super.close();
+        throw new CloseException();
+    }
+}
+public class CloseExceptions {
+    public static void main(String[] args) {
+        try(
+                First f = new First();
+                Closer c = new Closer();
+                Second s = new Second()
+        ) {
+            System.out.println("In body");
+        } catch(CloseException e) {
+            System.out.println("Caught: " + e);
+        }
+    }
+}
+```
+
+输出为：
+
+```
+Creating First
+Creating Closer
+Creating Second
+In body
+Closing Second
+Closing Closer
+Closing First
+Caught: CloseException
+```
+
+从技术上讲，我们并没有被迫在这里提供一个 catch 子句；你可以通过 **main() throws CloseException** 的方式来报告异常。但 catch 子句是放置错误处理代码的典型位置。
+
+请注意，因为所有三个对象都已创建，所以它们都以相反的顺序关闭 - 即使 Closer 也是如此。 close() 抛出异常。当你想到它时，这就是你想要发生的事情，但是如果你必须自己编写所有这些逻辑，那么你可能会错过一些错误。想象一下所有代码都在那里，程序员没有考虑清理的所有含义，并且做错了。因此，应始终尽可能使用 try-with-resources。它有助于实现该功能，使得生成的代码更清晰，更易于理解。
 
 <!-- Exception Matching -->
+
 ## 异常匹配
 
+抛出异常的时候，异常处理系统会按照代码的书写顺序找出“最近”的处理程序。找到匹配的处理程序之后，它就认为异常将得到处理，然后就不再继续查找。
+
+查找的时候并不要求抛出的异常同处理程序所声明的异常完全匹配。派生类的对象也可以匹配其基类的处理程序，就像这样：
+
+```java
+// exceptions/Human.java
+// Catching exception hierarchies
+class Annoyance extends Exception {}
+class Sneeze extends Annoyance {}
+public class Human {
+    public static void main(String[] args) {
+        // Catch the exact type:
+        try {
+            throw new Sneeze();
+        } catch(Sneeze s) {
+            System.out.println("Caught Sneeze");
+        } catch(Annoyance a) {
+            System.out.println("Caught Annoyance");
+        }
+        // Catch the base type:
+        try {
+            throw new Sneeze();
+        } catch(Annoyance a) {
+            System.out.println("Caught Annoyance");
+        }
+    }
+}
+```
+
+输出为：
+
+```java
+Caught Sneeze
+Caught Annoyance
+```
+
+Sneeze 异常会被第一个匹配的 catch 子句捕获，也就是程序里的第一个。然而如果将这个 catch 子句删掉，只留下 Annoyance 的 catch 子句，该程序仍然能运行，因为这次捕获的是 Sneeze 的基类。换句话说，catch（Annoyance e）会捕获 Annoyance 以及所有从它派生的异常。这一点非常有用，因为如果决定在方法里加上更多派生异常的话，只要客户程序员捕获的是基类异常，那么它们的代码就无需更改。
+
+如果把捕获基类的 catch 子句放在最前面，以此想把派生类的异常全给“屏蔽”掉，就像这样：
+
+```java
+try {
+    throw new Sneeze();
+} catch(Annoyance a) {
+    // ...
+} catch(Sneeze s) {
+    // ...
+}
+```
+
+输出为：
+
+这样编译器就会发现 Sneeze 的 catch 子句永远也得不到执行，因此它会向你报告错误。
 
 <!-- Alternative Approaches -->
-## 异常准则
+
+## 其他可选方式
+
+|异常处理系统就像一个活门（trap door），使你能放弃程序的正常执行序列。当“异常情形”
+发生的时候，正常的执行已变得不可能或者不需要了，这时就要用到这个“活门"。异常代表了当前方法不能继续执行的情形。开发异常处理系统的原因是，如果为每个方法所有可能发生的错误都进行处理的话，任务就显得过于繁重了，程序员也不愿意这么做。结果常常是将错误忽格。应该注意到，开发异常处理的初衷是为了方便程序员处理错误。
+
+异常处理的一个重要原则是“只有在你知道如何处理的情况下才捕获异常"。实际上，异常处理的一个重要目标就是把错误处理的代码同错误发生的地点相分离。这使你能在一段代码中专注于要完成的事情，至于如何处理错误，则放在另一段代码中完成。这样以来，主于代码就不会与错误处理逻辑混在一起，也更容易理解和维护。通过允许一个处理程序去处理多个出错点，异常处理还使得错误处理代码的数量趋向于减少。
+
+“被检查的异常”使这个问题变得有些复杂，因为它们强制你在可能还没准备好处理错误的时候被迫加上 catch 子句，这就导致了吞食则有害（harmful if swallowed）的问题：
+
+```java
+try {
+    // ... to do something useful
+} catch(ObligatoryException e) {} // Gulp!
+```
+
+程序员们只做最简单的事情（包括我自己，在本书第 1 版中也有这个问题），常常是无意中"吞食”了异常，然而一旦这么做，虽然能通过编译，但除非你记得复查并改正代码，否则异常将会丢失。异常确实发生了，但“吞食”后它却完全消失了。因为编译器强迫你立刻写代码来处理异常，所以这种看起来最简单的方法，却可能是最糟糕的做法。
+
+当我意识到犯了这么大一个错误时，简直吓了一大跳，在本书第 2 版中，我在处理程序里通过打印栈轨迹的方法“修补”了这个问题（本章中的很多例子还是使用了这种方法，看起来还是比较合适的），虽然这样可以跟踪异常的行为，但是仍旧不知道该如何处理异常。这一节，我们来研究一下“被检查的异常”及其并发症，以及采用什么方法来解决这些问题。
+
+这个话题看起来简单，但实际上它不仅复杂，更重要的是还非常多变。总有人会顽固地坚持自己的立场，声称正确答案（也是他们的答案）是显而易见的。我觉得之所以会有这种观点，是因为我们使用的工具已经不是 ANS1 标准出台前的像 C 那样的弱类型语言，而是像 C++和 Java 这样的“强静态类型语言”（也就是编译时就做类型检查的语言），这是前者所无法比拟的。当刚开始这种转变的时候（就像我一样），会觉得它带来的好处是那样明显，好像类型检查总能解决所有的问题。在此，我想结合我自己的认识过程，告诉读者我是怎样从对类型检查的绝对迷信变成持怀疑态度的，当然，很多时候它还是非常有用的，但是当它挡住我们的去路并成为障碍的时候，我们就得跨过去。只是这条界限往往并不是很清晰（我最喜欢的一句格言是：所有模型都是错误的，但有些是能用的）。
+
+### 历史
+
+异常处理起源于 PL/1 和 Mesa 之类的系统中，后来又出现在 CLU、Smalltalk、Modula-3、Ada、Eiffel、C++、Python、Java 以及后 Java 语言 Ruby 和 C#中。Java 的设计和 C++很相似，只是 Java 的设计者去掉了一些他们认为 C++设计得不好的东西。
+
+为了能向程序员提供一个他们更愿意使用的错误处理和恢复的框架，异常处理机制很晚才被加入 C++标准化过程中，这是由 C++的设计者 Bjarne Stroustrup 所倡议。C++的异常模型主要借鉴了 CLU 的做法。然而，当时其他语言已经支持异常处理了：包括 Ada、Smalltalk（两者都有异常处理，但是都没有异常说明），以及 Modula-3（它既有异常处理也有异常说明）。
+
+Liskov 和 Snyder 在他们的一篇讨论该主题的独创性论文。中指出，用瞬时风格（transient fashion）报告错误的语言（如 C 中）有一个主要缺陷，那就是：
+
+> “....每次调用的时候都必须执行条件测试，以确定会产生何种结果。这使程序难以阅读并且有可能降低运行效率，因此程序员们既不愿意指出，也不愿意处理异常。”
+
+因此，异常处理的初衷是要消除这种限制，但是我们又从 Java 的“被检查的异常”中看到了这种代码。他们继续写道：
+
+> “....要求程序员把异常处理程序的代码文本附接到会引发异常的调用上，这会降低程序的可读性，使得程序的正常思路被异常处理给破坏了。”
+
+C++中异常的设计参考了 CLU 方式.Stroustrup 声称其目标是减少恢复错误所需的代码。我想他这话是说给那些通常情况下都不写 C 的错误处理的程序员们听的，因为要把那么多代码放到那么多地方实在不是什么好差事。所以他们写 C 程序的习惯是，忽略所有的错误，然后使用调试器来跟踪错误。这些程序员知道，使用异常就意味着他们要写一些通常不用写的、“多出来的”代码。因此，要把他们拉到“使用错误处理”的正轨上，“多出来的”代码决不能太多。我认为，评价 Java 的“被检查的异常”的时候，这一点是很重要的。
+
+C++从 CLU 那里还带来另一种思想：异常说明。这样，就可以用编程的方式在方法的特征签名中，声明这个方法将会抛出异常。异常说明可能有两种意思。一个是“我的代码会产生这种异常，这由你来处理”。另一个是“我的代码忽略了这些异常，这由你来处理”。学习异常处理的机制和语法的时候，我们一直在关注“你来处理”部分，但这里特别值得注意的事实是，我们通常都忽略了异常说明所表达的完整含义。
+
+C++的异常说明不属于函数的类型信息。编译时唯一要检查的是异常说明是不是前后一致；比如，如果函数或方法会抛出某些异常，那么它的重载版本或者派生版本也必须抛出同样的异常。与 Java 不同，C++不会在编译时进行检查以确定函数或方法是不是真的抛出异常，或者异常说明是不是完整（也就是说，异常说明有没有精确描述所有可能被抛出的异常）。这样的检查只发生在运行期间。如果抛出的异常与异常说明不符，C++会调用标准类库的 unexpected() 函数。
+
+值得注意的是，由于使用了模板，C++的标准类库实现里根本没有使用异常说明。在 Java 中，对于范型用于异常说明的方式存在着一些限制。
+
+### 观点
+
+首先，Java 无谓地发明了“被检查的异常”（很明显是受 C++异常说明的启发，以及受 C++程序员们一般对此无动于衷的事实的影响），但是，这还只是一次尝试，目前为止还没有别的语言采用这种做法。
+
+其次，仅从示意性的例子和小程序来看，“被检查的异常”的好处很明显。但是当程序开始变大的时候，就会带来一些微妙的问题。当然，程序不是一下就变大的，这有个过程。如果把不适用于大项目的语言用于小项目，当这些项目不断膨胀时，突然有一天你会发现，原来可以管理的东西，现在已经变得无法管理了。这就是我所说的过多的类型检查，特别是“被检查的异常"所造成的问题。
+
+看来程序的规模是个重要因素。由于很多讨论都用小程序来做演示，因此这并不足以说明问题。一名 C#的设计人员发现：
+
+> “仅从小程序来看，会认为异常说明能增加开发人员的效率，并提高代码的质量；但考察大项目的时候，结论就不同了-开发效率下降了，而代码质量只有微不足道的提高，甚至毫无提高”。
+
+谈到未被捕获的异常的时候，CLU 的设计师们认为：
+
+> “我们觉得强迫程序员在不知道该采取什么措施的时候提供处理程序，是不现实的。”
+
+在解释为什么“函数没有异常说明就表示可以抛出任何异常”的时候，Stroustrup 这样认为：
+
+> “但是，这样一来几乎所有的函数都得提供异常说明了，也就都得重新编译，而且还会妨碍它同其他语言的交互。这样会迫使程序员违反异常处理机制的约束，他们会写欺骗程序来掩盖异常。这将给没有注意到这些异常的人造成一种虚假的安全感。”
+>
+
+我们已经看到这种破坏异常机制的行为了-就在 Java 的“被检查的异常”里。
+
+Martin Fowler（UML Distilled，Refactoring 和 Analysis Patterns 的作者）给我写了下面这段话：
+
+> “...总体来说，我觉得异常很不错，但是 Java 的”被检查的异常“带来的麻烦比好处要多。”
+
+过去，我曾坚定地认为“被检查的异常”和强静态类型检查对开发健壮的程序是非常必要的。但是，我看到的以及我使用一些动态（类型检查）语言的亲身经历告诉我，这些好处实际上是来自于：
+
+1. 不在于编译器是否会强制程序员去处理错误，而是要有一致的、使用异常来报告错误的模型。
+2. 不在于什么时候进行检查，而是一定要有类型检查。也就是说，必须强制程序使用正确的类型，至于这种强制施加于编译时还是运行时，那倒没关系。
+
+此外，减少编译时施加的约束能显著提高程序员的编程效率。事实上，反射和泛型就是用来补偿静态类型检查所带来的过多限制，在本书很多例子中都会见到这种情形。
+
+我已经听到有人在指责了，他们认为这种言论会令我名誉扫地，会让文明堕落，会导致更高比例的项目失败。他们的信念是应该在编译时指出所有错误，这样才能挽救项目，这种信念可以说是无比坚定的；其实更重要的是要理解编译器的能力限制。在 http://MindView.net/Books/BetterJava 上的补充材料中，我强调了自动构建过程和单元测试的重要性，比起把所有的东西都说成是语法错误，它们的效果可以说是事半功倍。下面这段话是至理名言：
+
+> 好的程序设计语言能帮助程序员写出好程序，但无论哪种语言都避免不了程序员用它写出了坏程序。
+
+不管怎么说，要让 Java 把“被检查的异常”从语言中去除，这种可能性看来非常渺茫。对语言来说，这个变化可能太激进了点，况且 Sun 的支持者们也非常强大。Sun 有完全向后兼容的历史和策略，实际上所有 Sun 的软件都能在 Sun 的硬件上运行，无论它们有多么古老。然而，如果发现有些“被检查的异常”挡住了路，尤其是发现你不得不去对付那些不知道该如何处理的异常，还是有些办法的。
+
+### 把异常传递给控制台
+
+对于简单的程序，比如本书中的许多例子，最简单而又不用写多少代码就能保护异常信息的方法，就是把它们从 main() 传递到控制台。例如，为了读取信息而打开一个文件（在第 12 章将详细介绍），必须对 FilelnputStream 进行打开和关闭操作，这就可能会产生异常。对于简单的程序，可以像这样做（本书中很多地方采用了这种方法）：
+
+```java
+// exceptions/MainException.java
+import java.util.*;
+import java.nio.file.*;
+public class MainException {
+    // Pass exceptions to the console:
+    public static void main(String[] args) throws Exception {
+        // Open the file:
+        List<String> lines = Files.readAllLines(
+                Paths.get("MainException.java"));
+        // Use the file ...
+    }
+}
+```
+
+注意，main() 作为一个方法也可以有异常说明，这里异常的类型是 Exception，它也是所有“被检查的异常”的基类。通过把它传递到控制台，就不必在 main() 里写 try-catch 子句了。（不过，实际的文件输人输出操作比这个例子要复杂得多。你将会在[文件 ]() 和[附录：I/O 流 ]() 章节中学到更多）
+
+### 把“被检查的异常”转换为“不检查的异常”
+
+在编写你自己使用的简单程序时，从 main() 中抛出异常是很方便的，但这不是通用的方法。
+
+问题的实质是，当在一个普通方法里调用别的方法时，要考虑到“我不知道该这样处理这个异常，但是也不想把它‘吞’了，或若打印一些无用的消息”。异常链提供了一种新的思路来解决这个问题。可以直接把“被检查的异常”包装进 RuntimeException 里面，就像这样：
+
+```java
+try {
+    // ... to do something useful
+} catch(IDontKnowWhatToDoWithThisCheckedException e) {
+    throw new RuntimeException(e);
+}
+```
+
+如果想把“被检查的异常”这种功能“屏蔽”掉的话，这看上去像是一个好办法。不用“吞下”异常，也不必把它放到方法的异常说明里面，而异常链还能保证你不会丢失任何原始异常的信息。
+
+这种技巧给了你一种选择，你可以不写 try-catch 子句和/或异常说明，直接忽路异常，让它自己沿着调用栈往上“冒泡”，同时，还可以用 getCause() 捕获并处理特定的异常，就像这样：
+
+```java
+// exceptions/TurnOffChecking.java
+// "Turning off" Checked exceptions
+import java.io.*;
+class WrapCheckedException {
+    void throwRuntimeException(int type) {
+        try {
+            switch(type) {
+                case 0: throw new FileNotFoundException();
+                case 1: throw new IOException();
+                case 2: throw new
+                        RuntimeException("Where am I?");
+                default: return;
+            }
+        } catch(IOException | RuntimeException e) {
+            // Adapt to unchecked:
+            throw new RuntimeException(e);
+        }
+    }
+}
+class SomeOtherException extends Exception {}
+public class TurnOffChecking {
+    public static void main(String[] args) {
+        WrapCheckedException wce =
+                new WrapCheckedException();
+        // You can call throwRuntimeException() without
+        // a try block, and let RuntimeExceptions
+        // leave the method:
+        wce.throwRuntimeException(3);
+        // Or you can choose to catch exceptions:
+        for(int i = 0; i < 4; i++)
+            try {
+                if(i < 3)
+                    wce.throwRuntimeException(i);
+                else
+                    throw new SomeOtherException();
+            } catch(SomeOtherException e) {
+                System.out.println(
+                        "SomeOtherException: " + e);
+            } catch(RuntimeException re) {
+                try {
+                    throw re.getCause();
+                } catch(FileNotFoundException e) {
+                    System.out.println(
+                            "FileNotFoundException: " + e);
+                } catch(IOException e) {
+                    System.out.println("IOException: " + e);
+                } catch(Throwable e) {
+                    System.out.println("Throwable: " + e);
+                }
+            }
+    }
+}
+```
+
+输出为：
+
+```
+FileNotFoundException: java.io.FileNotFoundException
+IOException: java.io.IOException
+Throwable: java.lang.RuntimeException: Where am I?
+SomeOtherException: SomeOtherException
+```
+
+WrapCheckedException.throwRuntimeException() 的代码可以生成不同类型的异常。这些异常被捕获并包装进了 RuntimeException 对象，所以它们成了这些运行时异常的"cause"了。
+
+在 TurnOfChecking 里，可以不用 try 块就调用 throwRuntimeException()，因为它没有抛出“被检查的异常”。但是，当你准备好去捕获异常的时候，还是可以用 try 块来捕获任何你想捕获的异常的。应该捕获 try 块肯定会抛出的异常，这里就是 SomeOtherException，RuntimeException 要放到最后去捕获。然后把 getCause() 的结果（也就是被包装的那个原始异常）抛出来。这样就把原先的那个异常给提取出来了，然后就可以用它们自己的 catch 子句进行处理。
+
+本书余下部分将会在合适的时候使用这种“用 RuntimeException 来包装，被检查的异常”的技术。另一种解决方案是创建自己的 RuntimeException 的子类。在这种方式中，不必捕获它，但是希望得到它的其他代码都可以捕获它。
+
 
 
 <!-- Exception Guidelines -->
+
 ## 异常指南
 
 
+
+应该在下列情况下使用异常：
+
+1. 尽可能使用 try-with-resource。
+2. 在恰当的级别处理问题。（在知道该如何处理的情况下才捕获异常。）
+3. 解决问题并且重新调用产生异常的方法。
+4. 进行少许修补，然后绕过异常发生的地方继续执行。
+5. 用别的数据进行计算，以代替方法预计会返回的值。
+6. 把当前运行环境下能做的事情尽量做完，然后把相同的异常重抛到更高层。
+7. 把当前运行环境下能做的事情尽量做完，然后把不同的异常抛到更高层。
+8. 终止程序。
+9. 进行简化。（如果你的异常模式使问题变得太复杂，那用起来会非常痛苦也很烦人。）
+10. 让类库和程序更安全。（这既是在为调试做短期投资，也是在为程序的健壮性做长期投资。）
+
 <!-- Summary -->
+
 ## 本章小结
 
+异常是 Java 程序设计不可分割的一部分，如果不了解如何使用它们，那你只能完成很有限的工作。正因为如此，本书专门在此介绍了异常——对于许多类库（例如提到过的 I/O 库），如果不处理异常，你就无法使用它们。
 
+异常处理的优点之一就是它使得你可以在某处集中精力处理你要解决的问题，而在另一处处理你编写的这段代码中产生的错误。尽管异常通常被认为是一种工具，使得你可以在运行时报告错误并从错误中恢复，但是我一直怀疑到底有多少时候“恢复”真正得以实现了，或者能够得以实现。我认为这种情况少于 10%，并且即便是这 10%，也只是将栈展开到某个已知的稳定状态，而并没有实际执行任何种类的恢复性行为。无论这是否正确，我一直相信“报告”功能是异常的精髓所在.Java 坚定地强调将所有的错误都以异常形式报告的这一事实，正是它远远超过语如 C++这类语言的长处之一，因为在 C++这类语言中，需要以大量不同的方式来报告错误，或者根本就没有提供错误报告功能。一致的错误报告系统意味着，你再也不必对所写的每一段代码，都质问自己“错误是否正在成为漏网之鱼？”（只要你没有“吞咽”异常，这是关键所在！）。
 
-
+就像你将要在后续章节中看到的，通过将这个问题甩给其他代码-即使你是通过抛出 RuntimeException 来实现这一点的--你在设计和实现时，便可以专注于更加有趣和富有挑战性的问题了。
 
 
 
