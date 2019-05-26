@@ -97,7 +97,7 @@ public class Strategize {
 
 ```
 hello there?
-HELLO THERE!'
+HELLO THERE!
 Hello
 Hello there Hello there
 ```
