@@ -34,7 +34,7 @@
 - [ ] [第十二章 集合](docs/book/12-Collections.md)
 - [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
 - [x] [第十四章 流式编程](docs/book/14-Streams.md) 
-- [ ] [第十五章 异常](docs/book/15-Exceptions.md)
+- [x] [第十五章 异常](docs/book/15-Exceptions.md)
 - [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
 - [ ] [第十七章 文件](docs/book/17-Files.md)
 - [ ] [第十八章 字符串](docs/book/18-Strings.md)
