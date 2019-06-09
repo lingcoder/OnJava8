@@ -13,7 +13,7 @@
 
 相比一些重量级的 IDE（Integrated Development Environments，集成开发环境），如Eclipse、NetBeans和IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种更纯粹的文本编辑器。如果你已经有了一个用着顺手的 IDE，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](https://atom.io) 上下载。
 
-Atom 是一个免费开源、易于安装且跨平台（支持 Window、Mac和Linux）的文本编辑器。内置支持 Java 文件。相比 IDE 的厚重，它比较轻量级，是学习本书的理想工具。Atom 包含了许多方便的编辑功能,相信你一定会爱上它！更多关于 Atom 使用的细节问题可以到它的网站上寻找。
+Atom 是一个免费开源、易于安装且跨平台（支持 Window、Mac和Linux）的文本编辑器。内置支持 Java 文件。相比 IDE 的厚重，它比较轻量级，是学习本书的理想工具。Atom 包含了许多方便的编辑功能，相信你一定会爱上它！更多关于 Atom 使用的细节问题可以到它的网站上寻找。
 
 还有很多其他的编辑器。有一种亚文化的群体，他们热衷于争论哪个更好用！如果你找到一个你更喜欢的编辑器，换一种使用也没什么难度。重要的是，你要找一个用着舒服的。
 
@@ -29,13 +29,13 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入 `ter
 windows：首先，通过目录打开 windows 资源管理器：
 
 - Windows 7: 单击屏幕左下角的“开始”图标，输入“explorer”后按回车键。
-- Windows 8: 按 Windows+Q, 输入 “explorer” 后按回车键。
+- Windows 8: 按 Windows+Q，输入 “explorer” 后按回车键。
 - Windows 10: 按 Windows+E 打开资源管理器，导航到所需目录，单击窗口左上角的“文件“选项卡，选择“打开 Window PowerShell”启动 Shell。
 
 Linux: 在 home 目录打开 Shell。
 
 - Debian: 按 Alt+F2， 在弹出的对话框中输入“gnome-terminal”
-- Ubuntu: 在屏幕中鼠标右击，选择 “打开终端”, 或者按住 Ctrl+Alt+T
+- Ubuntu: 在屏幕中鼠标右击，选择 “打开终端”，或者按住 Ctrl+Alt+T
 - Redhat: 在屏幕中鼠标右击，选择 “打开终端”
 - Fedora: 按 Alt+F2，在弹出的对话框中输入“gnome-terminal”
 
@@ -50,7 +50,7 @@ Linux: 在 home 目录打开 Shell。
 ```bash
 更改目录： cd <路径> 
           cd .. 移动到上级目录 
-          pushd <路径> 记住来源的同时移动到其他目录,popd 返回来源
+          pushd <路径> 记住来源的同时移动到其他目录，popd 返回来源
 
 目录列举： ls 列举出当前目录下所有的文件和子目录名（不包含隐藏文件），
              可以选择使用通配符 * 来缩小搜索范围。
