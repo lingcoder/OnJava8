@@ -4,16 +4,16 @@
 
 现在，我们来为这次阅读之旅做些准备吧！
 
-在开始学习 Java 之前，你必须要先安装好 Java 和本书的源代码示例。因为考虑到可能有“专门的初学者”从本书开始学习编程，所以我会仔细解释计算机命令行 Shell 的这个过程。 如果你已经有此方面的经验了，可以跳过这段安装说明。如果你对此处描述的任何术语或过程仍不清楚，还可以通过 Google 搜索找到答案。具体的问题或困难请试着在 StackOverflow 上提问。或者去 YouTube 看有没有相关的安装说明。
+在开始学习 Java 之前，你必须要先安装好 Java 和本书的源代码示例。因为考虑到可能有“专门的初学者”从本书开始学习编程，所以我会详细地教你如何使用命令行。 如果你已经有此方面的经验了，可以跳过这段安装说明。如果你对此处描述的任何术语或过程仍不清楚，还可以通过 [Google](https://google.com/) 搜索找到答案。具体的问题或困难请试着在 [StackOverflow](https://stackoverflow.com/) 上提问。或者去 [YouTube](https://youtube.com) 看有没有相关的安装说明。
 
 
 ## 编辑器
 
-首先你需要安装一个编辑器来创建和修改本书用例里的 Java 代码。有可能你还需要一个编辑器来更改系统配置文件。
+首先你需要安装一个编辑器来创建和修改本书用例里的 Java 代码。有可能你还需要使用编辑器来更改系统配置文件。
 
-相比一些重量级的 IDE（Integrated Development Environments，开发集成环境）软件，如Eclipse、NetBeans和IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种基础的运行程序的文本编辑器。如果你已经有了一个 IDE 用着还顺手，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](http://atom.io) 网站下载。
+相比一些重量级的 IDE（Integrated Development Environments，集成开发环境），如Eclipse、NetBeans和IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种更纯粹的文本编辑器。如果你已经有了一个用着顺手的 IDE，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](https://atom.io) 上下载。
 
- Atom 是一个免费开源、易于安装且跨平台（支持 Window、Mac和Linux）的文本编辑器。内置支持 Java 文件。相比 IDE 的厚重，她比较轻量级，是学习本书的理想工具。Atom 包含了许多方便的编辑功能,相信你一定会爱上她！更多关于 Atom 使用的细节问题可以到她们的网站上。
+Atom 是一个免费开源、易于安装且跨平台（支持 Window、Mac和Linux）的文本编辑器。内置支持 Java 文件。相比 IDE 的厚重，它比较轻量级，是学习本书的理想工具。Atom 包含了许多方便的编辑功能，相信你一定会爱上它！更多关于 Atom 使用的细节问题可以到它的网站上寻找。
 
 还有很多其他的编辑器。有一种亚文化的群体，他们热衷于争论哪个更好用！如果你找到一个你更喜欢的编辑器，换一种使用也没什么难度。重要的是，你要找一个用着舒服的。
 
@@ -26,15 +26,18 @@
 
 Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入 `terminal`。单击看起来像小电视屏幕的应用程序（你也可以单击“return”）。这就启动了你的用户下的 shell 窗口。
 
-    windows：首先，通过目录打开 windows 资源管理器：
-    Windows 7: 单击屏幕左下角的“开始”图标，输入“explorer”后按回车键。
-    Windows 8: 按 Windows+Q, 输入 “explorer” 后按回车键。
-    Windows 10: 按 Windows+E 打开资源管理器，导航到所需目录，单击窗口左上角的“文件“选项卡，选择“打开 Window PowerShell”启动 Shell。
-    Linux: 在 home 目录打开 Shell。
-    Debian: 按 Alt+F2， 在弹出的对话框中输入“gnome-terminal”
-    Ubuntu: 在屏幕中鼠标右击，选择 “打开终端”, 或者按住 Ctrl+Alt+T
-    Redhat: 在屏幕中鼠标右击，选择 “打开终端”
-    Fedora: 按 Alt+F2，在弹出的对话框中输入“gnome-terminal”
+windows：首先，通过目录打开 windows 资源管理器：
+
+- Windows 7: 单击屏幕左下角的“开始”图标，输入“explorer”后按回车键。
+- Windows 8: 按 Windows+Q，输入 “explorer” 后按回车键。
+- Windows 10: 按 Windows+E 打开资源管理器，导航到所需目录，单击窗口左上角的“文件“选项卡，选择“打开 Window PowerShell”启动 Shell。
+
+Linux: 在 home 目录打开 Shell。
+
+- Debian: 按 Alt+F2， 在弹出的对话框中输入“gnome-terminal”
+- Ubuntu: 在屏幕中鼠标右击，选择 “打开终端”，或者按住 Ctrl+Alt+T
+- Redhat: 在屏幕中鼠标右击，选择 “打开终端”
+- Fedora: 按 Alt+F2，在弹出的对话框中输入“gnome-terminal”
 
 **目录**
 
@@ -47,7 +50,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入 `ter
 ```bash
 更改目录： cd <路径> 
           cd .. 移动到上级目录 
-          pushd <路径> 记住来源的同时移动到其他目录,popd 返回来源
+          pushd <路径> 记住来源的同时移动到其他目录，popd 返回来源
 
 目录列举： ls 列举出当前目录下所有的文件和子目录名（不包含隐藏文件），
              可以选择使用通配符 * 来缩小搜索范围。
@@ -80,8 +83,8 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入 `ter
     Windows   系统：按 F7 键
 
 文件解压：
-    Linux/Mac 都有命令行解压程序unzip，你可以通过互联网为Windows安装命令行解压程序unzip。
-    图形界面下（Windows 资源管理器、Mac Finder ，Linux Nautilus 或其他等效软件）右键单击该文件，
+    Linux/Mac 都有命令行解压程序 unzip，你可以通过互联网为 Windows 安装命令行解压程序 unzip。
+    图形界面下（Windows 资源管理器，Mac Finder，Linux Nautilus 或其他等效软件）右键单击该文件，
     在 Mac 上选择“open”，在 Linux 上选择“extract here”，或在 Windows 上选择“extract all…”。
     要了解关于 shell 的更多信息，请在维基百科中搜索 Windows shell，Mac/Linux用户可搜索 bash shell。
 
@@ -90,7 +93,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入 `ter
 
 ## Java安装
 
-为了编译和运行代码示例，首先你必须安装 JDK。本书中采用的是 JDK 8版本。(注：JDK 全称是 Java Development Kit，是用于支持Java程序开发的最小环境)
+为了编译和运行代码示例，首先你必须安装 JDK（Java Development Kit，JAVA 软件开发工具包）。本书中采用的是 JDK 8。
 
 
 **Windows**
@@ -105,6 +108,7 @@ Mac：单击聚光灯（屏幕右上角的放大镜图标），然后键入 `ter
 **Macintosh**
 
 Mac 系统自带的 Java 版本太老，为了确保本书的代码示例能被正确执行，你必须将它先更新到 Java 8。我们需要管理员权限来运行下面的步骤：
+
 1. 以下为 HomeBrew 的[安装说明](https://brew.sh/)。安装完成后执行命令 `brew update` 更新到最新版本
 2. 在命令行下执行下面的命令来安装 Java。
 
@@ -153,7 +157,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
 
 1. 从 [GitHub 仓库](https://github.com/BruceEckel/OnJava8-Examples/archive/master.zip)中下载本书代码示例
 2. 解压到你所选目录里。
-3. 使用 Windows 资源管理器, Mac Finder, or Linux 的 Nautilus 或其他等效工具浏览，在该目录下打开 Shell。
+3. 使用 Windows 资源管理器，Mac Finder，Linux 的 Nautilus 或其他等效工具浏览，在该目录下打开 Shell。
 4. 如果你在正确的目录中，你应该看到该目录中名为 gradlew 和 gradlew.bat 的文件，以及许多其他文件和目录。目录与书中的章节相对应。
 5. 在shell中输入下面的命令运行：
 
@@ -171,7 +175,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
 
 **Gradle基础任务**
 
-本书构建的大量 Gradle 任务都可以自动运行。Gradle 使用约定大于配置的方式，简单设置即可具备高可用性。本书中“一起去骑行”的某些任务不适用于此或无法执行成功。以下是你通常会使用上的分级任务列表：
+本书构建的大量 Gradle 任务都可以自动运行。Gradle 使用约定大于配置的方式，简单设置即可具备高可用性。本书中“一起去骑行”的某些任务不适用于此或无法执行成功。以下是你通常会使用上的 Gradle 任务列表：
 
 ```bash
     编译本书中的所有 java 文件，除了部分错误示范的
