@@ -788,9 +788,269 @@ reference null
 
 怎么给一个变量赋初值呢？一种很直接的方法是在定义类成员变量的地方为其赋值。以下代码修改了 InitialValues 类成员变量的定义，直接提供了初值：
 
+```java
+// housekeeping/InitialValues2.java
+// Providing explicit initial values
+
+public class InitialValues2 {
+    boolean bool = true;
+    char ch = 'x';
+    byte b = 47;
+    short s = 0xff;
+    int i = 999;
+    long lng = 1;
+    float f = 3.14f;
+    double d = 3.14159;
+}
+```
+
+你也可以用同样的方式初始化非基本类型的对象。如果 **Depth** 是一个类，那么可以像下面这样创建一个对象并初始化它：
+
+```java
+// housekeeping/Measurement.java
+
+class Depth {}
+
+public class Measurement {
+    Depth d = new Depth();
+    // ...
+}
+```
+
+如果没有为 **d** 赋予初值就尝试使用它，就会出现运行时错误，告诉你产生了一个异常（详细见"异常"章节）。
+
+你也可以通过调用某个方法来提供初值：
+
+```java
+// housekeeping/MethodInit.java
+
+public class MethodInit {
+    int i = f();
+    
+    int f() {
+        return 11;
+    }
+    
+}
+```
+
+这个方法可以带有参数，但这些参数不能是未初始化的类成员变量。因此，可以这么写：
+
+```java
+// housekeeping/MethodInit2.java
+
+public class MethodInit2 {
+    int i = f();
+    int j = g(i);
+    
+    int f() {
+        return 11;
+    }
+    
+    int g(int n) {
+        return n * 10;
+    }
+}
+```
+
+但是你不能这么写：
+
+```java
+// housekeeping/MethodInit3.java
+
+public class MethodInit3 {
+    //- int j = g(i); // Illegal forward reference
+    int i = f();
+
+    int f() {
+        return 11;
+    }
+
+    int g(int n) {
+        return n * 10;
+    }
+}
+```
+
+显然，上述程序的正确性取决于初始化的顺序，而与其编译方式无关。所以，编译器恰当地对"向前引用"发出了警告。
+
+这种初始化方式简单直观，但有个限制：类 **InitialValues** 的每个对象都有相同的初值，有时这的确是我们需要的，但有时却需要更大的灵活性。
+
 <!-- Constructor Initialization -->
 
 ## 构造器初始化
+
+可以用构造器进行初始化，这种方式给了你更大的灵活性，因为你可以在运行时调用方法进行初始化。但是，这无法阻止自动初始化的进行，他会在构造器被调用之前发生。因此，如果使用如下代码：
+
+```java
+// housekeeping/Counter.java
+
+public class Counter {
+    int i;
+    
+    Counter() {
+        i = 7;
+    }
+    // ...
+}
+```
+
+**i** 首先会被初始化为 **0**，然后变为 **7**。对于所有的基本类型和引用，包括在定义时已明确指定初值的变量，这种情况都是成立的。因此，编译器不会强制你一定要在构造器的某个地方或在使用它们之前初始化元素——初始化早已得到了保证。, 
+
+### 初始化的顺序
+
+在类中变量定义的顺序决定了它们初始化的顺序。即使变量定义散布在方法定义之间，它们仍会在任何方法（包括构造器）被调用之前得到初始化。例如：
+
+```java
+// housekeeping/OrderOfInitialization.java
+// Demonstrates initialization order
+// When the constructor is called to create a
+// Window object, you'll see a message:
+
+class Window {
+    Window(int marker) {
+        System.out.println("Window(" + marker + ")");
+    }
+}
+
+class House {
+    Window w1 = new Window(1); // Before constructor
+
+    House() {
+        // Show that we're in the constructor:
+        System.out.println("House()");
+        w3 = new Window(33); // Reinitialize w3
+    }
+
+    Window w2 = new Window(2); // After constructor
+
+    void f() {
+        System.out.println("f()");
+    }
+
+    Window w3 = new Window(3); // At end
+}
+
+public class OrderOfInitialization {
+    public static void main(String[] args) {
+        House h = new House();
+        h.f(); // Shows that construction is done
+    }
+}
+```
+
+输出：
+
+```
+Window(1)
+Window(2)
+Window(3)
+House()
+Window(33)
+f()
+```
+
+在 **House** 类中，故意把几个 **Window** 对象的定义散布在各处，以证明它们全都会在调用构造器或其他方法之前得到初始化。此外，**w3** 在构造器中被再次赋值。
+
+由输出可见，引用 **w3** 被初始化了两次：一次在调用构造器前，一次在构造器调用期间（第一次引用的对象将被丢弃，并作为垃圾回收）。这乍一看可能觉得效率不高，但保证了正确的初始化。试想，如果定义了一个重载构造器，在其中没有初始化 **w3**，同时在定义 **w3** 时没有赋予初值，那会产生怎样的后果呢？
+
+### 静态数据的初始化
+
+无论创建多少个对象，静态数据都只占用一份存储区域。**static** 关键字不能应用于局部变量，所以只能作用于属性（字段、域）。如果一个字段是静态的基本类型，你没有初始化它，那么它就会获得基本类型的标准初值。如果它是对象引用，那么它的默认初值就是 **null**。
+
+如果在定义时进行初始化，那么静态变量看起来就跟非静态变量一样。
+
+下面例子显示了静态存储区是何时初始化的：
+
+```java
+// housekeeping/StaticInitialization.java
+// Specifying initial values in a class definition
+
+class Bowl {
+    Bowl(int marker) {
+        System.out.println("Bowl(" + marker + ")");
+    }
+    
+    void f1(int marker) {
+        System.out.println("f1(" + marker + ")");
+    }
+}
+
+class Table {
+    static Bowl bowl1 = new Bowl(1);
+    
+    Table() {
+        System.out.println("Table()");
+        bowl2.f1(1);
+    }
+    
+    void f2(int marker) {
+        System.out.println("f2(" + marker + ")");
+    }
+    
+    static Bowl bowl2 = new Bowl(2);
+}
+
+class Cupboard {
+    Bowl bowl3 = new Bowl(3);
+    static Bowl bowl4 = new Bowl(4);
+    
+    Cupboard() {
+        System.out.println("Cupboard()");
+        bowl4.f1(2);
+    }
+    
+    void f3(int marker) {
+        System.out.println("f3(" + marker + ")");
+    }
+    
+    static Bowl bowl5 = new Bowl(5);
+}
+
+public class StaticInitialization {
+    public static void main(String[] args) {
+        System.out.println("main creating new Cupboard()");
+        new Cupboard();
+        System.out.println("main creating new Cupboard()");
+        new Cupboard();
+        table.f2(1);
+        cupboard.f3(1);
+    }
+    
+    static Table table = new Table();
+    static Cupboard cupboard = new Cupboard();
+}
+```
+
+输出：
+
+```
+Bowl(1)
+Bowl(2)
+Table()
+f1(1)
+Bowl(4)
+Bowl(5)
+Bowl(3)
+Cupboard()
+f1(2)
+main creating new Cupboard()
+Bowl(3)
+Cupboard()
+f1(2)
+main creating new Cupboard()
+Bowl(3)
+Cupboard()
+f1(2)
+f2(1)
+f3(1)
+```
+
+**Bowl** 类展示类的创建，而 **Table** 和 **Cupboard** 在它们的类定义中包含 **Bowl** 类型的静态数据成员。注意，在静态数据成员定义之前，**Cupboard** 类中先定义了一个 **Bowl** 类型的非静态成员 **b3**。
+
+由输出可见，静态初始化只有在必要时刻才会进行。如果不创建 **Table** 对象，也不引用 **Table.bowl1** 或 **Table.bowl2**，那么静态的 **Bowl** 类对象 **bowl1** 和 **bowl2** 永远不会被创建。
+
+
 
 <!-- Array Initialization -->
 
