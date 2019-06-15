@@ -1,6 +1,7 @@
 [TOC]
 
 <!-- Inner Classes -->
+
 # 第十一章 内部类
 
 > 一个类的定义在另一个类的定义内部，这就是内部类。
@@ -386,8 +387,190 @@ TrackingSlip 类被嵌入在 if 语句的作用域内，这并不是说该类的
 
 ## 匿名内部类
 
+下面的例子看起来有点奇怪：
+
+```java
+// innerclasses/Parcel7.java
+// Returning an instance of an anonymous inner class
+public class Parcel7 {
+    public Contents contents() {
+        return new Contents() { // Insert class definition
+            private int i = 11;
+            @Override
+            public int value() { return i; }
+        }; // Semicolon required
+    }
+    public static void main(String[] args) {
+        Parcel7 p = new Parcel7();
+        Contents c = p.contents();
+    }
+}
+```
+
+contents()方法将返回值的生成与表示这个返回值的类的定义结合在一起！另外，这个类是匿名的，它没有名字。更糟的是，看起来似乎是你正要创建一个Contents对象。但是然后（在到达语句结束的分号之前）你却说：“等一等，我想在这里插入一个类的定义。
+
+这种奇怪的语法指的是：“创建一个继承自Contents的匿名类的对象。”通过new表达式返回的引用被自动向上转型为对Contents的引用。上述匿名内部类的语法是下述形式的简化形式：
+
+```java
+// innerclasses/Parcel7b.java
+// Expanded version of Parcel7.java
+public class Parcel7b {
+    class MyContents implements Contents {
+        private int i = 11;
+        @Override
+        public int value() { return i; }
+    }
+    public Contents contents() {
+        return new MyContents();
+    }
+    public static void main(String[] args) {
+        Parcel7b p = new Parcel7b();
+        Contents c = p.contents();
+    }
+}
+```
+
+在这个匿名内部类中，使用了默认的构造器来生成Contents。下面的代码展示的是，如果你的基类需要一个有参数的构造器，应该怎么办：
+
+```java
+// innerclasses/Parcel8.java
+// Calling the base-class constructor
+public class Parcel8 {
+    public Wrapping wrapping(int x) {
+// Base constructor call:
+        return new Wrapping(x) { // [1]
+            @Override
+            public int value() {
+                return super.value() * 47;
+            }
+        }; // [2]
+    }
+    public static void main(String[] args) {
+        Parcel8 p = new Parcel8();
+        Wrapping w = p.wrapping(10);
+    }
+}
+```
+
+- \[1\] 将合适的参数传递给基类的构造器。
+- \[2\] 在匿名内部类末尾的分号，并不是用来标记此内部类结束的。实际上，它标记的是表达式的结束，只不过这个表达式正巧包含了匿名内部类罢了。因此，这与别的地方使用的分号是一致的。
+
+尽管Wrapping只是一个具有具体实现的普通类，但它还是被共导出类当作公共“接口”来使用。
+
+```java
+// innerclasses/Wrapping.java
+public class Wrapping {
+    private int i;
+    public Wrapping(int x) { i = x; }
+    public int value() { return i; }
+}
+```
+
+为了多样性，Wrapping拥有一个要求传递一个参数的构造器。
+
+在匿名类中定义字段时，还能够对其执行初始化操作：
+
+```java
+// innerclasses/Parcel9.java
+public class Parcel9 {
+    // Argument must be final or "effectively final"
+// to use within the anonymous inner class:
+    public Destination destination(final String dest) {
+        return new Destination() {
+            private String label = dest;
+            @Override
+            public String readLabel() { return label; }
+        };
+    }
+    public static void main(String[] args) {
+        Parcel9 p = new Parcel9();
+        Destination d = p.destination("Tasmania");
+    }
+}
+```
+
+如果定义一个匿名内部类，并且希望它使用一个在其外部定义的对象，那么编译器会要求其参数引用是final的，就像你在destination()的参数中看到的那样。如果你忘记了，将会得到一个编译时错误消息。
+
+如果只是简单地给一个字段赋值，那么此例中的方法是很好的。但是，如果想做一些类似勾造器的行为，该怎么办呢？在匿名类中不可能有命名构造器（因为它根本没名字！），但通过实例初始化，就能够达到为匿名内部类创建一个构造器的效果，就像这样：
+
+```java
+// innerclasses/AnonymousConstructor.java
+// Creating a constructor for an anonymous inner class
+abstract class Base {
+    Base(int i) {
+        System.out.println("Base constructor, i = " + i);
+    }
+    public abstract void f();
+}
+public class AnonymousConstructor {
+    public static Base getBase(int i) {
+        return new Base(i) {
+            { System.out.println(
+                    "Inside instance initializer"); }
+            @Override
+            public void f() {
+                System.out.println("In anonymous f()");
+            }
+        };
+    }
+    public static void main(String[] args) {
+        Base base = getBase(47);
+        base.f();
+    }
+}
+```
+
+输出为：
+
+```
+Base constructor, i = 47
+Inside instance initializer
+In anonymous f()
+```
+
+在此例中，不要求变量一定是final的。因为被传递给匿名类的基类的构造器，它并不会在匿名类内部被直接使用。
+
+下例是带实例初始化的"parcel"形式。注意destination() 的参数必须是 final 的，因为它们是在匿名类内部使用的。
+
+```java
+// innerclasses/Parcel10.java
+// Using "instance initialization" to perform
+// construction on an anonymous inner class
+public class Parcel10 {
+    public Destination
+    destination(final String dest, final float price) {
+        return new Destination() {
+            private int cost;
+            // Instance initialization for each object:
+            {
+                cost = Math.round(price);
+                if(cost > 100)
+                    System.out.println("Over budget!");
+            }
+            private String label = dest;
+            @Override
+            public String readLabel() { return label; }
+        };
+    }
+    public static void main(String[] args) {
+        Parcel10 p = new Parcel10();
+        Destination d = p.destination("Tasmania", 101.395F);
+    }
+}
+```
+
+输出为：
+
+```
+Over budget!
+```
+
+在实例初始化操作的内部，可以看到有一段代码，它们不能作为字段初始化动作的一部分来执行（就是if语句）。所以对于匿名类而言，实例初始化的实际效果就是构造器。当然它受到了限制-你不能重载实例初始化方法，所以你仅有一个这样的构造器。
+
+匿名内部类与正规的继承相比有些受限，因为匿名内部类既可以扩展类，也可以实现接口，但是不能两者兼备。而且如果是实现接口，也只能实现一个接口。
 
 <!-- Nested Classes -->
+
 ## 嵌套类
 
 
