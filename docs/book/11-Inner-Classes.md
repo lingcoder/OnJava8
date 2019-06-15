@@ -1163,9 +1163,37 @@ Terminating
 
 ## 继承内部类
 
+因为内部类的构造器必须连接到指向其外围类对象的引用，所以在继承内部类的时候，事情会变得有点复杂。问题在干，那个指向外围类对象的“秘密的”引用必须被初始化，而在导出类中不再存在可连接的默认对象。要解决这个问题，必须使用特殊的语法来明确说清它们之间的关联：
+
+```java
+// innerclasses/InheritInner.java
+// Inheriting an inner class
+class WithInner {
+    class Inner {}
+}
+public class InheritInner extends WithInner.Inner {
+    //- InheritInner() {} // Won't compile
+    InheritInner(WithInner wi) {
+        wi.super();
+    }
+    public static void main(String[] args) {
+        WithInner wi = new WithInner();
+        InheritInner ii = new InheritInner(wi);
+    }
+}
+```
+
+可以看到，InheritInner只继承自内部类，而不是外围类。但是当要生成一个构造器时，默认的构造器并不算好，而且不能只是传递一个指向外围类对象的引用。此外，必须在构造器内使用如下语法：
+
+```java
+enclosingClassReference.super();
+```
+
+这样才提供了必要的引用，然后程序才能编译通过。
+
 <!-- Can Inner Classes Be Overridden? -->
 
-## 重写内部类
+## 内部类可以被重写么？
 
 <!-- Local Inner Classes -->
 
