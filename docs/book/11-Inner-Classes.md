@@ -708,18 +708,467 @@ public class MultiNestingAccess {
 
 <!-- Why Inner Classes? -->
 
-## 内部类应用场景
+## 为什么需要内部类
 
+至此，我们已经看到了许多描述内部类的语法和语义，但是这并不能同答“为什么需要内部类”这个问题。那么，Sun公司为什么会如此费心地增加这项基本的语言特性呢？
+
+一般说来，内部类继承自某个类或实现某个接口，内部类的代码操作创建它的外围类的对象。所以可以认为内部类提供了某种进入其外围类的窗口。
+
+内部类必须要回答的一个问题是：如果只是需要一个对接口的引用，为什么不通过外围类实现那个接口呢？答案是：“如果这能满足需求，那么就应该这样做。”那么内部类实现一个接口与外围类实现这个接口有什么区别呢？答案是：后者不是总能享用到接口带来的方便，有时需要用到接口的实现。所以，使用内部类最吸引人的原因是：
+
+> 每个内部类都能独立地继承自一个（接口的）实现，所以无论外围类是否已经继承了某个（接口的）实现，对于内部类都没有影响。
+
+如果没有内部类提供的、可以继承多个具体的或抽象的类的能力，一些设计与编程问题就很难解决。从这个角度看，内部类使得多重继承的解决方案变得完整。接口解决了部分问题，而内部类有效地实现了“多重继承”。也就是说，内部类允许继承多个非接口类型（译注：类或抽象类）。
+
+为了看到更多的细节，让我们考虑这样一种情形：即必须在一个类中以某种方式实现两个接口。由于接口的灵活性，你有两种选择；使用单一类，或者使用内部类：
+
+```java
+// innerclasses/mui/MultiInterfaces.java
+// Two ways a class can implement multiple interfaces
+// {java innerclasses.mui.MultiInterfaces}
+package innerclasses.mui;
+interface A {}
+interface B {}
+class X implements A, B {}
+class Y implements A {
+    B makeB() {
+// Anonymous inner class:
+        return new B() {};
+    }
+}
+public class MultiInterfaces {
+    static void takesA(A a) {}
+    static void takesB(B b) {}
+    public static void main(String[] args) {
+        X x = new X();
+        Y y = new Y();
+        takesA(x);
+        takesA(y);
+        takesB(x);
+        takesB(y.makeB());
+    }
+}
+```
+
+当然，这里假设在两种方式下的代码结构都确实有逻辑意义。然而遇到问题的时候，通常问题本身就能给出某些指引，告诉你是应该使用单一类，还是使用内部类。但如果没有任何其他限制，从实现的观点来看，前面的例子并没有什么区别，它们都能正常运作。
+
+如果拥有的是抽象的类或具体的类，而不是接口，那就只能使用内部类才能实现多重继承。
+
+如果不需要解决“多重继承”的问题，那么自然可以用别的方式编码，而不需要使用内部类。但如果使用内部类，还可以获得其他一些特性：
+
+1. 内部类可以有多个实例，每个实例都有自己的状态信息，并且与其外围类对象的信息相互独立。
+2. 在单个外围类中，可以让多个内部类以不同的方式实现同一个接口，或继承同一个类。
+稍后就会展示一个这样的例子。
+3. 创建内部类对象的时刻并不依赖于外围类对象的创建
+4. 内部类并没有令人迷惑的"is-a”关系，它就是一个独立的实体。
+
+举个例子，如果Sequence.java不使用内部类，就必须声明"Sequence是一个Selector"，对于某个特定的Sequence只能有一个Selector，然而使用内部类很容易就能拥有另一个方法reverseSelector()，用它来生成一个反方向遍历序列的Selector，只有内部类才有这种灵活性。
+
+### 闭包与回调
+
+闭包（closure）是一个可调用的对象，它记录了一些信息，这些信息来自于创建它的作用域。通过这个定义，可以看出内部类是面向对象的闭包，因为它不仅包含外围类对象（创建内部类的作用域）的信息，还自动拥有一个指向此外围类对象的引用，在此作用域内，内部类有权操作所有的成员，包括private成员。
+
+在 Java 8 之前，生成闭包行为的唯一方式就是内部类。在 Java 8 之后，我们可以使用 lambda  来生成闭包行为，并且语法更加精细和简洁；你将会在 [函数式编程]() 这一章节中学习相关细节。即使应该优先使用 lambda 表达式用于内部类闭包，你依旧会看到那些 Java 8 以前的代码，即使用内部类来表示闭包的方式，所以非常有必要来理解这种形式。
+
+Java最引人争议的问题之一就是，人们认为Java应该包含某种类似指针的机制，以允许回调（callback）。通过回调，对象能够携带一些信息，这些信息允许它在稍后的某个时刻调用初始的对象。稍后将会看到这是一个非常有用的概念。如果回调是通过指针实现的，那么就只能寄希望于程序员不会误用该指针。然而，读者应该已经了解到，Java更小心仔细，所以没有在语言中包括指针。
+
+通过内部类提供闭包的功能是优良的解决方案，它比指针更灵活、更安全。见下例：
+
+```java
+// innerclasses/Callbacks.java
+// Using inner classes for callbacks
+// {java innerclasses.Callbacks}
+package innerclasses;
+interface Incrementable {
+    void increment();
+}
+// Very simple to just implement the interface:
+class Callee1 implements Incrementable {
+    private int i = 0;
+    @Override
+    public void increment() {
+        i++;
+        System.out.println(i);
+    }
+}
+class MyIncrement {
+    public void increment() {
+        System.out.println("Other operation");
+    }
+    static void f(MyIncrement mi) { mi.increment(); }
+}
+// If your class must implement increment() in
+// some other way, you must use an inner class:
+class Callee2 extends MyIncrement {
+    private int i = 0;
+    @Override
+    public void increment() {
+        super.increment();
+        i++;
+        System.out.println(i);
+    }
+    private class Closure implements Incrementable {
+        @Override
+        public void increment() {
+// Specify outer-class method, otherwise
+// you'll get an infinite recursion:
+            Callee2.this.increment();
+        }
+    }
+    Incrementable getCallbackReference() {
+        return new Closure();
+    }
+}
+class Caller {
+    private Incrementable callbackReference;
+    Caller(Incrementable cbh) {
+        callbackReference = cbh;
+    }
+    void go() { callbackReference.increment(); }
+}
+public class Callbacks {
+    public static void main(String[] args) {
+        Callee1 c1 = new Callee1();
+        Callee2 c2 = new Callee2();
+        MyIncrement.f(c2);
+        Caller caller1 = new Caller(c1);
+        Caller caller2 =
+                new Caller(c2.getCallbackReference());
+        caller1.go();
+        caller1.go();
+        caller2.go();
+        caller2.go();
+    }
+}
+```
+
+输出为：
+
+```java
+Other operation
+1
+1
+2
+Other operation
+2
+Other operation
+3
+```
+
+这个例子进一步展示了外围类实现一个接口与内部类实现此接口之间的区别。就代码而言，Calleel是简单的解决方式。Callee2继承自MyIncrement，后者已经有了一个不同的increment()方法，并且与Incrementable接口期望的increment()方法完全不相关。所以如果Callee2继承了MyIncrement，就不能为了Incrementable的用途而覆盖increment()方法，于是只能使用内部类独立地实现Incrementable，还要注意，当创建了一个内部类时，并没有在外围类的接口中添加东西，也没有修改外围类的接口。
+
+注意，在Callee2中除了getCallbackReference()以外，其他成员都是private的。要想建立与外部世界的任何连接，interface Incrementable都是必需的。在这里可以看到，interface是如何允许接口与接口的实现完全独立的。
+内部类Closure实现了Incrementable，以提供一个返回Callee2的“钩子”（hook）-而且是一个安全的钩子。无论谁获得此Incrementable的引用，都只能调用increment()，除此之外没有其他功能（不像指针那样，允许你做很多事情）。
+
+Caller的构造器需要一个Incrementable的引用作为参数（虽然可以在任意时刻捕获回调引用），然后在以后的某个时刻，Caller对象可以使用此引用回调Callee类。
+
+回调的价值在于它的灵活性-可以在运行时动态地决定需要调用什么方法。这样做的好处在第22章可以看得更明显，在那里实现GUI功能的时候，到处都用到了回调。
+
+### 内部类与控制框架
+
+在将要介绍的控制框架（control framework）中，可以看到更多使用内部类的具体例子。
+
+应用程序框架（application framework）就是被设计用以解决某类特定问题的一个类或一组类。要运用某个应用程序框架，通常是继承一个或多个类，并覆盖某些方法。在覆盖后的方法中，编写代码定制应用程序框架提供的通用解决方案，以解决你的特定问题。这是设计模式中模板方法的一个例子，模板方法包含算法的基本结构，并且会调用一个或多个可覆盖的方法，以完成算法的动作。设计模式总是将变化的事物与保持不变的事物分离开，在这个模式中，模板方法是保持不变的事物，而可覆盖的方法就是变化的事物。
+
+控制框架是一类特殊的应用程序框架，它用来解决响应事件的需求。主要用来响应事件的系统被称作事件驱动系统。应用程序设计中常见的问题之一是图形用户接口（GUI），它几乎完全是事件驱动的系统。在第22章将会看到，Java Swing库就是一个控制框架，它优雅地解决了GUI的问题，并使用了大量的内部类。
+
+要理解内部类是如何允许简单的创建过程以及如何使用控制框架的，请考虑这样一个控制框架，它的工作就是在事件“就绪”的时候执行事件。虽然“就绪”可以指任何事，但在本例中是指基于时间触发的事件。接下来的问题就是，对于要控制什么，控制框架并不包含任何具体的信息。那些信息是在实现算法的action()部分时，通过继承来提供的。
+
+首先，接口描述了要控制的事件。因为其默认的行为是基于时间去执行控制，所以使用抽象类代替实际的接口。下面的例子包含了某些实现：
+
+```java
+// innerclasses/controller/Event.java
+// The common methods for any control event
+package innerclasses.controller;
+import java.time.*; // Java 8 time classes
+public abstract class Event {
+    private Instant eventTime;
+    protected final Duration delayTime;
+    public Event(long millisecondDelay) {
+        delayTime = Duration.ofMillis(millisecondDelay);
+        start();
+    }
+    public void start() { // Allows restarting
+        eventTime = Instant.now().plus(delayTime);
+    }
+    public boolean ready() {
+        return Instant.now().isAfter(eventTime);
+    }
+    public abstract void action();
+}
+```
+
+当希望运行Event并随后调用start()时，那么构造器就会捕获（从对象创建的时刻开始的）时间，此时间是这样得来的：start()获取当前时间，然后加上一个延迟时间，这样生成触发事件的时间。start()是一个独立的方法，而没有包含在构造器内，因为这样就可以在事件运行以后重新启动计时器，也就是能够重复使用Event对象。例如，如果想要重复一个事件，只需简单地在action()中调用start()方法。
+
+ready()告诉你何时可以运行action()方法了。当然，可以在导出类中覆盖ready()方法，使得Event能够基于时间以外的其他因素而触发。
+
+下面的文件包含了一个用来管理并触发事件的实际控制框架。Event对象被保存在List\<Event\>类型（读作“Event的列表”）的容器对象中，容器会在 [集合]() 中详细介绍。目前读者只需要知道add()方法用来将一个Object添加到List的尾端，size()方法用来得到List中元素的个数，foreach语法用来连续获联List中的Event，remove()方法用来从List中移除指定的Event。
+
+```java
+// innerclasses/controller/Controller.java
+// The reusable framework for control systems
+package innerclasses.controller;
+import java.util.*;
+public class Controller {
+    // A class from java.util to hold Event objects:
+    private List<Event> eventList = new ArrayList<>();
+    public void addEvent(Event c) { eventList.add(c); }
+    public void run() {
+        while(eventList.size() > 0)
+            // Make a copy so you're not modifying the list
+            // while you're selecting the elements in it:
+            for(Event e : new ArrayList<>(eventList))
+                if(e.ready()) {
+                    System.out.println(e);
+                    e.action();
+                    eventList.remove(e);
+                }
+    }
+}
+```
+
+run() 方法循环遍历eventList，寻找就绪的（ready()）、要运行的Event对象。对找到的每一个就绪的（ready()）事件，使用对象的toString()打印其信息，调用其action()方法，然后从队列中移除此Event。
+
+注意，在目前的设计中你并不知道Event到底做了什么。这正是此设计的关键所在，"使变化的事物与不变的事物相互分离”。用我的话说，“变化向量”就是各种不同的Event对象所具有的不同行为，而你通过创建不同的Event子类来表现不同的行为。
+
+这正是内部类要做的事情，内部类允许：
+
+1. 控制框架的完整实现是由单个的类创建的，从而使得实现的细节被封装了起来。内部类用来表示解决问题所必需的各种不同的action()。
+2. 内部类能够很容易地访问外围类的任意成员，所以可以避免这种实现变得笨拙。如果没有这种能力，代码将变得令人讨厌，以至于你肯定会选择别的方法。
+
+考虑此控制框架的一个特定实现，如控制温室的运作：控制灯光、水、温度调节器的开关，以及响铃和重新启动系统，每个行为都是完全不同的。控制框架的设计使得分离这些不同的代码变得非常容易。使用内部类，可以在单一的类里面产生对同一个基类Event的多种导出版本。对于温室系统的每一种行为，都继承一个新的Event内部类，并在要实现的action() 中编写控制代码。
+
+作为典型的应用程序框架，GreenhouseControls类继承自Controller：
+
+```java
+// innerclasses/GreenhouseControls.java
+// This produces a specific application of the
+// control system, all in a single class. Inner
+// classes allow you to encapsulate different
+// functionality for each type of event.
+import innerclasses.controller.*;
+public class GreenhouseControls extends Controller {
+    private boolean light = false;
+    public class LightOn extends Event {
+        public LightOn(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() {
+// Put hardware control code here to
+// physically turn on the light.
+            light = true;
+        }
+        @Override
+        public String toString() {
+            return "Light is on";
+        }
+    }
+    public class LightOff extends Event {
+        public LightOff(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() {
+// Put hardware control code here to
+// physically turn off the light.
+            light = false;
+        }
+        @Override
+        public String toString() {
+            return "Light is off";
+        }
+    }
+    private boolean water = false;
+    public class WaterOn extends Event {
+        public WaterOn(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() {
+// Put hardware control code here.
+            water = true;
+        }
+        @Override
+        public String toString() {
+            return "Greenhouse water is on";
+        }
+    }
+    public class WaterOff extends Event {
+        public WaterOff(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() {
+// Put hardware control code here.
+            water = false;
+        }
+        @Override
+        public String toString() {
+            return "Greenhouse water is off";
+        }
+    }
+    private String thermostat = "Day";
+    public class ThermostatNight extends Event {
+        public ThermostatNight(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() {
+// Put hardware control code here.
+            thermostat = "Night";
+        }
+        @Override
+        public String toString() {
+            return "Thermostat on night setting";
+        }
+    }
+    public class ThermostatDay extends Event {
+        public ThermostatDay(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() {
+// Put hardware control code here.
+            thermostat = "Day";
+        }
+        @Override
+        public String toString() {
+            return "Thermostat on day setting";
+        }
+    }
+    // An example of an action() that inserts a
+// new one of itself into the event list:
+    public class Bell extends Event {
+        public Bell(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() {
+            addEvent(new Bell(delayTime.toMillis()));
+        }
+        @Override
+        public String toString() {
+            return "Bing!";
+        }
+    }
+    public class Restart extends Event {
+        private Event[] eventList;
+        public
+        Restart(long delayTime, Event[] eventList) {
+            super(delayTime);
+            this.eventList = eventList;
+            for(Event e : eventList)
+                addEvent(e);
+        }
+        @Override
+        public void action() {
+            for(Event e : eventList) {
+                e.start(); // Rerun each event
+                addEvent(e);
+            }
+            start(); // Rerun this Event
+            addEvent(this);
+        }
+        @Override
+        public String toString() {
+            return "Restarting system";
+        }
+    }
+    public static class Terminate extends Event {
+        public Terminate(long delayTime) {
+            super(delayTime);
+        }
+        @Override
+        public void action() { System.exit(0); }
+        @Override
+        public String toString() {
+            return "Terminating";
+        }
+    }
+}
+```
+
+注意，light，water和thermostat都属于外围类GreenhouseControls，而这些内部类能够自由地访问那些字段，无需限定条件或特殊许可。而且，action0方法通常都涉及对某种硬件的控制。
+
+大多数Event类看起来都很相似，但是Bell和Restart则比较特别。Bell控制响铃，然后在事件列表中增加一个Bell对象，于是过一会儿它可以再次响铃。读者可能注意到了内部类是多么像多重继承：Bell和Restart有Event的所有方法，并且似乎也拥有外围类GreenhouseContrlos的所有方法。
+
+一个由Event对象组成的数组被递交给Restart，该数组要加到控制器上。由于Restart0也是一个Event对象，所以同样可以将Restart对象添加到Restart.action0中，以使系统能够有规律地重新启动自己。
+
+下面的类通过创建一个GreenhouseControls对象，并添加各种不同的Event对象来配置该系统，这是命令设计模式的一个例子在eventList中的每一个被封装成对象的请求：
+
+```java
+// innerclasses/GreenhouseController.java
+// Configure and execute the greenhouse system
+import innerclasses.controller.*;
+public class GreenhouseController {
+    public static void main(String[] args) {
+        GreenhouseControls gc = new GreenhouseControls();
+// Instead of using code, you could parse
+// configuration information from a text file:
+        gc.addEvent(gc.new Bell(900));
+        Event[] eventList = {
+                gc.new ThermostatNight(0),
+                gc.new LightOn(200),
+                gc.new LightOff(400),
+                gc.new WaterOn(600),
+                gc.new WaterOff(800),
+                gc.new ThermostatDay(1400)
+        };
+        gc.addEvent(gc.new Restart(2000, eventList));
+        gc.addEvent(
+                new GreenhouseControls.Terminate(5000));
+        gc.run();
+    }
+}
+```
+
+输出为：
+
+```
+Thermostat on night setting
+Light is on
+Light is off
+Greenhouse water is on
+Greenhouse water is off
+Bing!
+Thermostat on day setting
+Bing!
+Restarting system
+Thermostat on night setting
+Light is on
+Light is off
+Greenhouse water is on
+Bing!
+Greenhouse water is off
+Thermostat on day setting
+Bing!
+Restarting system
+Thermostat on night setting
+Light is on
+Light is off
+Bing!
+Greenhouse water is on
+Greenhouse water is off
+Terminating
+```
+
+这个类的作用是初始化系统，所以它添加了所有相应的事件。Restart事件反复运行，而且它每次都会将eventList加载到GreenhouseControls对象中。如果提供了命令行参数，系统会以它作为毫秒数，决定什么时候终止程序（这是测试程序时使用的）。
+
+当然，更灵活的方法是避免对事件进行硬编码。
+
+这个例子应该使读者更了解内部类的价值了，特别是在控制框架中使用内部类的时候。
 
 <!-- Inheriting from Inner Classes -->
+
 ## 继承内部类
 
-
 <!-- Can Inner Classes Be Overridden? -->
+
 ## 重写内部类
 
-
 <!-- Local Inner Classes -->
+
 ## 内部类局部变量
 
 
