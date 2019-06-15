@@ -573,8 +573,141 @@ Over budget!
 
 ## 嵌套类
 
+如果不需要内部类对象与其外围类对象之间有联系，那么可以将内部类声明为static，这通常称为嵌套类。想要理解static应用于内部类时的含义，就必须记住，普通的内部类对象隐式地保存了一个引用，指向创建它的外围类对象。然而，当内部类是static的时，就不是这样了。嵌套类意味着：
+
+1. 要创建嵌套类的对象，并不需要其外围类的对象。
+2. 不能从嵌套类的对象中访问非静态的外围类对象。
+
+嵌套类与普通的内部类还有一个区别。普通内部类的字段与方法，只能放在类的外部层次上，所以普通的内部类不能有static数据和static字段，也不能包含嵌套类。但是嵌套类类可以包含所有这些东西：
+
+```java
+// innerclasses/Parcel11.java
+// Nested classes (static inner classes)
+public class Parcel11 {
+    private static class ParcelContents implements Contents {
+        private int i = 11;
+        @Override
+        public int value() { return i; }
+    }
+    protected static final class ParcelDestination
+            implements Destination {
+        private String label;
+        private ParcelDestination(String whereTo) {
+            label = whereTo;
+        }
+        @Override
+        public String readLabel() { return label; }
+        // Nested classes can contain other static elements:
+        public static void f() {}
+        static int x = 10;
+        static class AnotherLevel {
+            public static void f() {}
+            static int x = 10;
+        }
+    }
+    public static Destination destination(String s) {
+        return new ParcelDestination(s);
+    }
+    public static Contents contents() {
+        return new ParcelContents();
+    }
+    public static void main(String[] args) {
+        Contents c = contents();
+        Destination d = destination("Tasmania");
+    }
+}
+```
+
+在main()中，没有任何Parcell1的对象是必需的；而是使用选取static成员的普通语法来调用方法-这些方法返回对Contents和Destination的引用。
+
+就像你在本章前面看到的那样，在一个普通的（非static）内部类中，通过一个特殊的this引用可以链接到其外围类对象。嵌套类就没有这个特殊的this引用，这使得它类似于一个static方法。
+
+### 接口内部的类
+
+嵌套类可以作为接口的一部分。你放到接口中的任何类都自动地是public和static的。因为类是static的，只是将嵌套类置于接口的命名空间内，这并不违反接口的规则。你甚至可以在内部类中实现其外围接口，就像下面这样：
+
+```java
+// innerclasses/ClassInInterface.java
+// {java ClassInInterface$Test}
+public interface ClassInInterface {
+    void howdy();
+    class Test implements ClassInInterface {
+        @Override
+        public void howdy() {
+            System.out.println("Howdy!");
+        }
+        public static void main(String[] args) {
+            new Test().howdy();
+        }
+    }
+}
+```
+
+输出为：
+
+```
+Howdy!
+```
+
+如果你想要创建某些公共代码，使得它们可以被某个接口的所有不同实现所共用，那么使用接口内部的铁套类会显得很方便。
+
+我曾在本书中建议过，在每个类中都写一个main()方法，用来测试这个类。这样做有一个缺点，那就是必须带着那些已编译过的额外代码。如果这对你是个麻烦，那就可以使用嵌套类来放置测试代码。
+
+```java
+// innerclasses/TestBed.java
+// Putting test code in a nested class
+// {java TestBed$Tester}
+public class TestBed {
+    public void f() { System.out.println("f()"); }
+    public static class Tester {
+        public static void main(String[] args) {
+            TestBed t = new TestBed();
+            t.f();
+        }
+    }
+}
+```
+
+输出为：
+
+```
+f()
+```
+
+### 从多层嵌套类中访问外部类的成员
+
+一个内部类被嵌套多少层并不重要——它能透明地访问所有它所嵌入的外围类的所有成员，如下所示：
+
+```java
+// innerclasses/MultiNestingAccess.java
+// Nested classes can access all members of all
+// levels of the classes they are nested within
+class MNA {
+    private void f() {}
+    class A {
+        private void g() {}
+        public class B {
+            void h() {
+                g();
+                f();
+            }
+        }
+    }
+}
+public class MultiNestingAccess {
+    public static void main(String[] args) {
+        MNA mna = new MNA();
+        MNA.A mnaa = mna.new A();
+        MNA.A.B mnaab = mnaa.new B();
+        mnaab.h();
+    }
+}
+```
+
+可以看到在MNA.A.B中，调用方法g()和f()不需要任何条件（即使它们被定义为private）。这个例子同时展示了如何从不同的类里创建多层嵌套的内部类对象的基本语法。".new"语法能产生正确的作用域，所以不必在调用构造器时限定类名。
 
 <!-- Why Inner Classes? -->
+
 ## 内部类应用场景
 
 
