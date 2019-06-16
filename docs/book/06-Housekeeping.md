@@ -1048,21 +1048,767 @@ f3(1)
 
 **Bowl** 类展示类的创建，而 **Table** 和 **Cupboard** 在它们的类定义中包含 **Bowl** 类型的静态数据成员。注意，在静态数据成员定义之前，**Cupboard** 类中先定义了一个 **Bowl** 类型的非静态成员 **b3**。
 
-由输出可见，静态初始化只有在必要时刻才会进行。如果不创建 **Table** 对象，也不引用 **Table.bowl1** 或 **Table.bowl2**，那么静态的 **Bowl** 类对象 **bowl1** 和 **bowl2** 永远不会被创建。
+由输出可见，静态初始化只有在必要时刻才会进行。如果不创建 **Table** 对象，也不引用 **Table.bowl1** 或 **Table.bowl2**，那么静态的 **Bowl** 类对象 **bowl1** 和 **bowl2** 永远不会被创建。只有在第一个 Table 对象被创建（或被访问）时，它们才会被初始化。此后，静态对象不会再次被初始化。
 
+初始化的顺序先是静态对象（如果它们之前没有被初始化的话），然后是非静态对象，从输出中可以看出。要执行 `main()` 方法，必须加载 **StaticInitialization** 类，它的静态属性 **table** 和 **cupboard** 随后被初始化，这会导致它们对应的类也被加载，而由于它们都包含静态的 **Bowl** 对象，所以 **Bowl** 类也会被加载。因此，在这个特殊的程序中，所有的类都会在 `main()` 方法之前被加载。实际情况通常并非如此，因为在典型的程序中，不会像本例中所示的那样，将所有事物通过 **static** 联系起来。
 
+概括一下创建对象的过程，假设有个名为 **Dog** 的类：
+
+1. 即使没有显式地使用 **static** 关键字，构造器实际上也是静态方法。所以，当首次创建 **Dog** 类型的对象时，或是首次访问 **Dog** 类的静态方法或属性，Java 解释器必须在类路径中查找，以定位 **Dog.class**。
+2. 当加载完 **Dog.class** 后（后面会学到，这将创建一个 **Class** 对象），有关静态初始化的所有动作都会执行。因此，静态初始化只会在首次加载 **Class** 对象时初始化一次。
+3. 当用 `new Dog()` 创建对象时，首先会在堆上为 **Dog** 对象分配足够的存储空间。
+4. 分配的存储空间首先会被清零，即会将 **Dog** 对象中的所有基本类型数据设置为默认值（数字会被置为 0，布尔型和字符型也相同），引用被置为 **null**。
+5. 执行所有出现在字段定义处的初始化动作。
+6. 执行构造器。你将会在"复用"这一章看到，这可能会牵涉到很多动作，尤其当涉及继承的时候。
+
+### 显式的静态初始化
+
+你可以将一组静态初始化动作放在类里面一个特殊的"静态子句"（有时叫做静态块）中。像下面这样：
+
+```java
+// housekeeping/Spoon.java
+
+public class Spoon {
+    static int i;
+    
+    static {
+        i = 47;
+    }
+}
+```
+
+这看起来像个方法，但实际上它只是一段跟在 **static** 关键字后面的代码块。与其他静态初始化动作一样，这段代码仅执行一次：当首次创建这个类的对象或首次访问这个类的静态成员（甚至不需要创建该类的对象）时。例如：
+
+```java
+// housekeeping/ExplicitStatic.java
+// Explicit static initialization with "static" clause
+
+class Cup {
+    Cup(int marker) {
+        System.out.println("Cup(" + marker + ")");
+    }
+    
+    void f(int marker) {
+        System.out.println("f(" + marker + ")");
+    }
+}
+
+class Cups {
+    static Cup cup1;
+    static Cup cup2;
+    
+    static {
+        cup1 = new Cup(1);
+        cup2 = new Cup(2);
+    }
+    
+    Cups() {
+        System.out.println("Cups()");
+    }
+}
+
+public class ExplicitStatic {
+    public static void main(String[] args) {
+        System.out.println("Inside main()");
+        Cups.cup1.f(99); // [1]
+    }
+    
+    // static Cups cups1 = new Cups(); // [2]
+    // static Cups cups2 = new Cups(); // [2]
+}
+```
+
+输出：
+
+```
+Inside main
+Cup(1)
+Cup(2)
+f(99)
+```
+
+无论是通过标为 [1] 的行访问静态的 **cup1** 对象，还是把标为 [1] 的行去掉，让它去运行标为 [2] 的那行代码（去掉  [2] 的注释），**Cups** 的静态初始化动作都会执行。如果同时注释 [1] 和 [2] 处，那么 **Cups** 的静态初始化就不会进行。此外，把标为 [2] 处的注释都去掉还是只去掉一个，静态初始化只会执行一次。
+
+### 非静态实例初始化
+
+Java 提供了被称为*实例初始化*的类似语法，用来初始化每个对象的非静态变量，例如：
+
+```java
+// housekeeping/Mugs.java
+// Instance initialization
+
+class Mug {
+    Mug(int marker) {
+        System.out.println("Mug(" + marker + ")");
+    }
+}
+
+public class Mugs {
+    Mug mug1;
+    Mug mug2;
+    { // [1]
+        mug1 = new Mug(1);
+        mug2 = new Mug(2);
+        System.out.println("mug1 & mug2 initialized");
+    }
+    
+    Mugs() {
+        System.out.println("Mugs()");
+    }
+    
+    Mugs(int i) {
+        System.out.println("Mugs(int)");
+    }
+    
+    public static void main(String[] args) {
+        System.out.println("Inside main()");
+        new Mugs();
+        System.out.println("new Mugs() completed");
+        new Mugs(1);
+        System.out.println("new Mugs(1) completed");
+    }
+}
+```
+
+输出：
+
+```
+Inside main
+Mug(1)
+Mug(2)
+mug1 & mug2 initialized
+Mugs()
+new Mugs() completed
+Mug(1)
+Mug(2)
+mug1 & mug2 initialized
+Mugs(int)
+new Mugs(1) completed
+```
+
+看起来它很像静态代码块，只不过少了 **static** 关键字。这种语法对于支持"匿名内部类"（参见"内部类"一章）的初始化是必须的，但是你也可以使用它保证某些操作一定会发生，而不管哪个构造器被调用。从输出看出，示例初始化子句是在两个构造器之前执行的。
 
 <!-- Array Initialization -->
 
 ## 数组初始化
 
+数组是相同类型的、用一个标识符名称封装到一起的一个对象序列或基本类型数据序列。数组是通过方括号下标操作符 [] 来定义和使用的。要定义一个数组引用，只需要在类型名加上方括号：
+
+```java
+int[] a1;
+```
+
+方括号也可放在标识符的后面，两者的含义是一样的：
+
+```java
+int a1[];
+```
+
+这种格式符合 C 和 C++ 程序员的习惯。不过前一种格式或许更合理，毕竟它表明类型是"一个 **int** 型数组"。本书中采用这种格式。
+
+编译器不允许指定数组的大小。这又把我们带回有关"引用"的问题上。你所拥有的只是对数组的一个引用（你已经为该引用分配了足够的存储空间），但是还没有给数组对象本身分配任何空间。为了给数组创建相应的存储空间，必须写初始化表达式。对于数组，初始化动作可以出现在代码的任何地方，但是也可以使用一种特殊的初始化表达式，它必须在创建数组的地方出现。这种特殊的初始化是由一对花括号括起来的值组成。这种情况下，存储空间的分配（相当于使用 **new**） 将由编译器负责。例如：
+
+```java
+int[] a1 = {1, 2, 3, 4, 5};
+```
+
+那么为什么在还没有数组的时候定义一个数组引用呢？
+
+```java
+int[] a2;
+```
+
+在 Java 中可以将一个数组赋值给另一个数组，所以可以这样：
+
+```java
+a2 = a1;
+```
+
+其实真正做的只是复制了一个引用，就像下面演示的这样：
+
+```java
+// housekeeping/ArraysOfPrimitives.java
+
+public class ArraysOfPrimitives {
+    public static void main(String[] args) {
+        int[] a1 = {1, 2, 3, 4, 5};
+        int[] a2;
+        a2 = a1;
+        for (int i = 0; i < a2.length; i++) {
+            a2[i] += 1;
+        }
+        for (int i = 0; i < a1.length; i++) {
+            System.out.println("a1[" + i + "] = " + a1[i]);
+        }
+    }
+}
+```
+
+输出：
+
+```
+a1[0] = 2;
+a1[1] = 3;
+a1[2] = 4;
+a1[3] = 5;
+a1[4] = 6;
+```
+
+**a1** 初始化了，但是 **a2** 没有；这里，**a2** 在后面被赋给另一个数组。由于 **a1** 和 **a2** 是相同数组的别名，因此通过 **a2** 所做的修改在 **a1** 中也能看到。
+
+所有的数组（无论是对象数组还是基本类型数组）都有一个固定成员 **length**，告诉你这个数组有多少个元素，你不能对其修改。与 C 和 C++ 类似，Java 数组计数也是从 0 开始的，所能使用的最大下标数是 **length - 1**。超过这个边界，C 和 C++ 会默认接受，允许你访问所有内存，许多声名狼藉的 bug 都是由此而生。但是 Java 在你访问超出这个边界时，会报运行时错误（异常），从而避免此类问题。
+
+### 动态数组创建
+
+如果在编写程序时，不确定数组中需要多少个元素，那么该怎么办呢？你可以直接使用 **new** 在数组中创建元素。下面例子中，尽管创建的是基本类型数组，**new** 仍然可以工作（不能用 **new** 创建单个的基本类型数组）：
+
+```java
+// housekeeping/ArrayNew.java
+// Creating arrays with new
+import java.util.*;
+
+public class ArrayNew {
+    public static void main(String[] args) {
+        int[] a;
+        Random rand = new Random(47);
+        a = new int[rand.nextInt(20)];
+        System.out.println("length of a = " + a.length);
+        System.out.println(Arrays.toString(a));
+    } 
+}
+```
+
+输出：
+
+```
+length of a = 18
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+```
+
+数组的大小是通过 `Random.nextInt()` 随机确定的，这个方法会返回 0 到输入参数之间的一个值。 由于随机性，很明显数组的创建确实是在运行时进行的。此外，程序输出表明，数组元素中的基本数据类型值会自动初始化为空值（对于数字和字符是 0；对于布尔型是 **false**）。`Arrays.toString()` 是 **java.util** 标准类库中的方法，会产生一维数组的可打印版本。
+
+本例中，数组也可以在定义的同时进行初始化：
+
+```java
+int[] a = new int[rand.nextInt(20)];
+```
+
+如果可能的话，应该尽量这么做。
+
+如果你创建了一个非基本类型的数组，那么你创建的是一个引用数组。以整型的包装类型 **Integer** 为例，它是一个类而非基本类型：
+
+```java
+// housekeeping/ArrayClassObj.java
+// Creating an array of nonprimitive objects
+
+import java.util.*;
+
+public class ArrayClassObj {
+    public static void main(String[] args) {
+        Random rand = new Random(47);
+        Integer[] a = new Integer[rand.nextInt(20)];
+        System.out.println("length of a = " + a.length);
+        for (int i = 0; i < a.length; i++) {
+            a[i] = rand.nextInt(500); // Autoboxing
+        }
+        System.out.println(Arrays.toString(a));
+    }
+}
+```
+
+输出：
+
+```
+length of a = 18
+[55, 193, 361, 461, 429, 368, 200, 22, 207, 288, 128, 51, 89, 309, 278, 498, 361, 20]
+```
+
+这里，即使使用 new 创建数组之后：
+
+```java
+Integer[] a = new Integer[rand.nextInt(20)];	
+```
+
+它只是一个引用数组，直到通过创建新的 **Integer** 对象（通过自动装箱），并把对象赋值给引用，初始化才算结束：
+
+```java
+a[i] = rand.nextInt(500);
+```
+
+如果忘记了创建对象，但试图使用数组中的空引用，就会在运行时产生异常。
+
+也可以用花括号括起来的列表来初始化数组，有两种形式：
+
+```java
+// housekeeping/ArrayInit.java
+// Array initialization
+import java.util.*;
+
+public class ArrayInit {
+    public static void main(String[] args) {
+        Integer[] a = {
+                1, 2,
+                3, // Autoboxing
+        };
+        Integer[] b = new Integer[] {
+                1, 2,
+                3, // Autoboxing
+        };
+        System.out.println(Arrays.toString(a));
+        System.out.println(Arrays.toString(a));
+
+    }
+}
+```
+
+输出：
+
+```
+[1, 2, 3]
+[1, 2, 3]
+```
+
+在这两种形式中，初始化列表的最后一个逗号是可选的（这一特性使维护长列表变得更容易）。
+
+尽管第一种形式很有用，但是它更加受限，因为它只能用于数组定义处。第二种和第三种形式可以用在任何地方，甚至用在方法的内部。例如，你创建了一个 **String** 数组，将其传递给另一个类的 `main()` 方法，如下：
+
+```java
+// housekeeping/DynamicArray.java
+// Array initialization
+
+public class DynamicArray {
+    public static void main(String[] args) {
+        Other.main(new String[] {"fiddle", "de", "dum"});
+    }
+}
+
+class Other {
+    public static void main(String[] args) {
+        for (String s: args) {
+            System.out.print(s + " ");
+        }
+    }
+}
+```
+
+输出：
+
+```
+fiddle de dum 
+```
+
+`Other.main()` 的参数是在调用处创建的，因此你甚至可以在方法调用处提供可替换的参数。
+
+### 可变参数列表
+
+你可以以一种类似 C 语言中的可变参数列表（C 通常把它称为"varargs"）来创建和调用方法。这可以应用在参数个数或类型未知的场合。由于所有的类都最后继承于 **Object** 类（随着本书的进展，你会对此有更深的认识），所以你可以创建一个以 Object 数组为参数的方法，并像下面这样调用：
+
+```java
+// housekeeping/VarArgs.java
+// Using array syntax to create variable argument lists
+
+class A {}
+
+public class VarArgs {
+    static void printArray(Object[] args) {
+        for (Object obj: args) {
+            System.out.print(obj + " ");
+            System.out.println();
+        }
+    }
+    
+    public static void main(String[] args) {
+        printArray(new Object[] {47, (float) 3.14, 11.11});
+        printArray(new Object[] {"one", "two", "three"});
+        printArray(new Object[] {new A(), new A(), new A()});
+    }
+}
+```
+
+输出：
+
+```
+47 3.14 11.11 
+one two three 
+A@15db9742 A@6d06d69c A@7852e922
+```
+
+`printArray()` 的参数是 **Object** 数组，使用 for-in 语法遍历和打印数组的每一项。标准 Java 库能输出有意义的内容，但这里创建的是类的对象，打印出的内容是类名，后面跟着一个 **@** 符号以及多个十六进制数字。因而，默认行为（如果没有定义 `toString()` 方法的话，后面会讲这个方法）就是打印类名和对象的地址。
+
+你可能看到像上面这样编写的 Java 5 之前的代码，它们可以产生可变的参数列表。在 Java 5 中，这种期盼已久的特性终于添加了进来，就像在 `printArray()` 中看到的那样：
+
+```java
+// housekeeping/NewVarArgs.java
+// Using array syntax to create variable argument lists
+
+public class NewVarArgs {
+    static void printArray(Object... args) {
+        for (Object obj: args) {
+            System.out.print(obj + " ");
+        }
+        System.out.println();
+    }
+    
+    public static void main(String[] args) {
+        // Can take individual elements:
+        printArray(47, (float) 3.14, 11.11);
+        printArray(47, 3.14F, 11.11);
+        printArray("one", "two", "three");
+        printArray(new A(), new A(), new A());
+        // Or an array:
+        printArray((Object[]) new Integer[] {1, 2, 3, 4});
+        printArray(); // Empty list is OK
+    }
+}
+```
+
+输出：
+
+```
+47 3.14 11.11 
+47 3.14 11.11 
+one two three 
+A@15db9742 A@6d06d69c A@7852e922 
+1 2 3 4 
+```
+
+有了可变参数，你就再也不用显式地编写数组语法了，当你指定参数时，编译器实际上会为你填充数组。你获取的仍然是一个数组，这就是为什么 `printArray()` 可以使用 for-in 迭代数组的原因。但是，这不仅仅只是从元素列表到数组的自动转换。注意程序的倒数第二行，一个 **Integer** 数组（通过自动装箱创建）被转型为一个 **Object** 数组（为了移除编译器的警告），并且传递给了 `printArray()`。显然，编译器会发现这是一个数组，不会执行转换。因此，如果你有一组事物，可以把它们当作列表传递，而如果你已经有了一个数组，该方法会把它们当作可变参数列表来接受。
+
+程序的最后一行表明，可变参数的个数可以为 0。当具有可选的尾随参数时，这一特性会有帮助：
+
+```java
+// housekeeping/OptionalTrailingArguments.java
+
+public class OptionalTrailingArguments {
+    static void f(int required, String... trailing) {
+        System.out.print("required: " + required + " ");
+        for (String s: trailing) {
+            System.out.print(s + " ");
+        }
+        System.out.println();
+    }
+    
+    public static void main(String[] args) {
+        f(1, "one");
+        f(2, "two", "three");
+        f(0);
+    }
+}
+```
+
+输出：
+
+```
+required: 1 one 
+required: 2 two three 
+required: 0 
+```
+
+这段程序展示了如何使用除了 **Object** 类之外类型的可变参数列表。这里，所有的可变参数都是 **String** 对象。可变参数列表中可以使用任何类型的参数，包括基本类型。下面例子展示了可变参数列表变为数组的情形，并且如果列表中没有任何元素，那么转变为大小为 0 的数组：
+
+```java
+// housekeeping/VarargType.java
+
+public class VarargType {
+    static void f(Character... args) {
+        System.out.print(args.getClass());
+        System.out.println(" length " + args.length);
+    }
+    
+    static void g(int... args) {
+        System.out.print(args.getClass());
+        System.out.println(" length " + args.length)
+    }
+    
+    public static void main(String[] args) {
+        f('a');
+        f();
+        g(1);
+        g();
+        System.out.println("int[]: "+ new int[0].getClass());
+    }
+}
+```
+
+输出：
+
+```
+class [Ljava.lang.Character; length 1
+class [Ljava.lang.Character; length 0
+class [I length 1
+class [I length 0
+int[]: class [I
+```
+
+`getClass()` 方法属于 Object 类，将在"类型信息"一章中全面介绍。它会产生对象的类，并在打印该类时，看到表示该类类型的编码字符串。前导的 **[** 代表这是一个后面紧随的类型的数组，**I** 表示基本类型 **int**；为了进行双重检查，我在最后一行创建了一个 **int** 数组，打印了其类型。这样也验证了使用可变参数列表不依赖于自动装箱，而使用的是基本类型。
+
+然而，可变参数列表与自动装箱可以和谐共处，如下：
+
+```java
+// housekeeping/AutoboxingVarargs.java
+
+public class AutoboxingVarargs {
+    public static void f(Integer... args) {
+        for (Integer i: args) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
+    }
+    
+    public static void main(String[] args) {
+        f(1, 2);
+        f(4, 5, 6, 7, 8, 9);
+        f(10, 11, 12);
+        
+    }
+}
+```
+
+输出：
+
+```
+1 2
+4 5 6 7 8 9
+10 11 12
+```
+
+注意吗，你可以在单个参数列表中将类型混合在一起，自动装箱机制会有选择地把 **int** 类型的参数提升为 **Integer**。
+
+可变参数列表使得方法重载更加复杂了，尽管乍看之下似乎足够安全：
+
+```java
+// housekeeping/OverloadingVarargs.java
+
+public class OverloadingVarargs {
+    static void f(Character... args) {
+        System.out.print("first");
+        for (Character c: args) {
+            System.out.print(" " + c);
+        }
+        System.out.println();
+    }
+    
+    static void f(Integer... args) {
+        System.out.print("second");
+        for (Integer i: args) {
+            System.out.print(" " + i);
+        }
+        System.out.println();
+    }
+    
+    static void f(Long... args) {
+        System.out.println("third");
+    }
+    
+    public static void main(String[] args) {
+        f('a', 'b', 'c');
+        f(1);
+        f(2, 1);
+        f(0);
+        f(0L);
+        //- f(); // Won's compile -- ambiguous
+    }
+}
+```
+
+输出：
+
+```
+first a b c
+second 1
+second 2 1
+second 0
+third
+```
+
+在每种情况下，编译器都会使用自动装箱来匹配重载的方法，然后调用最明确匹配的方法。
+
+但是如果调用不含参数的 `f()`，编译器就无法知道应该调用哪个方法了。尽管这个错误可以弄清楚，但是它可能会使客户端程序员感到意外。
+
+你可能会通过在某个方法中增加一个非可变参数解决这个问题：
+
+```java
+// housekeeping/OverloadingVarargs2.java
+// {WillNotCompile}
+
+public class OverloadingVarargs2 {
+    static void f(float i, Character... args) {
+        System.out.println("first");
+    }
+    
+    static void f(Character... args) {
+        System.out.println("second");
+    }
+    
+    public static void main(String[] args) {
+        f(1, 'a');
+        f('a', 'b');
+    }
+}
+```
+
+**{WillNotCompile}** 注释把该文件排除在了本书的 Gradle 构建之外。如果你手动编译它，会得到下面的错误信息：
+
+```
+OverloadingVarargs2.java:14:error:reference to f is ambiguous f('a', 'b');
+\^
+both method f(float, Character...) in OverloadingVarargs2 and method f(Character...) in OverloadingVarargs2 match 1 error
+```
+
+如果你给这两个方法都添加一个非可变参数，就可以解决问题了：
+
+```java
+// housekeeping/OverloadingVarargs3
+
+public class OverloadingVarargs3 {
+    static void f(float i, Character... args) {
+        System.out.println("first");
+    }
+    
+    static void f(char c, Character... args) {
+        System.out.println("second");
+    }
+    
+    public static void main(String[] args) {
+        f(1, 'a');
+        f('a', 'b');
+    }
+}
+```
+
+输出：
+
+```
+first
+second
+```
+
+你应该总是在重载方法的一个版本上使用可变参数列表，或者压根不用它。
+
 <!-- Enumerated Types -->
 
 ## 枚举类型
 
+Java 5 中添加了一个看似很小的特性 **enum** 关键字，它使得我们在需要群组并使用枚举类型集时，可以很方便地处理。以前，你需要创建一个整数常量集，但是这些值并不会将自身限制在这个常量集的范围内，因此使用它们更有风险，而且更难使用。枚举类型属于非常普遍的需求，C、C++ 和其他许多语言都已经拥有它了。在 Java 5 之前，Java 程序员必须了解许多细节并格外仔细地去达成 **enum** 的效果。现在 Java 也有了 **enum**，并且它的功能比 C/C++ 中的完备得多。下面是个简单的例子：
+
+```java
+// housekeeping/Spiciness.java
+
+public enum Spiciness {
+    NOT, MILD, MEDIUM, HOT, FLAMING
+}
+```
+
+这里创建了一个名为 **Spiciness** 的枚举类型，它有5个值。由于枚举类型的实例是常量，因此按照命名惯例，它们都用大写字母表示（如果名称中含有多个单词，使用下划线分隔）。
+
+要使用 **enum**，需要创建一个该类型的引用，然后将其赋值给某个实例：
+
+```java
+// housekeeping/SimpleEnumUse.java
+
+public class SimpleEnumUse {
+    public static void main(String[] args) {
+        Spiciness howHot = Spiciness.MEDIUM;
+        System.out.println(howHot);
+    }
+}
+```
+
+输出：
+
+```
+MEDIUM
+```
+
+在你创建 **enum** 时，编译器会自动添加一些有用的特性。例如，它会创建 `toString()` 方法，以便你方便地显示某个 **enum** 实例的名称，这从上面例子中的输出可以看出。编译器还会创建 `ordinal()` 方法表示某个特定 **enum** 常量的声明顺序，`static values()` 方法按照 enum 常量的声明顺序，生成这些常量值构成的数组：
+
+```java
+// housekeeping/EnumOrder.java
+
+public class EnumOrder {
+    public static void main(String[] args) {
+        for (Spiciness s: Spiciness.values()) {
+            System.out.println(s + ", ordinal " + s.ordinal());
+        }
+    }
+}
+```
+
+输出：
+
+```
+NOT, ordinal 0
+MILD, ordinal 1
+MEDIUM, ordinal 2
+HOT, ordinal 3
+FLAMING, ordinal 4
+```
+
+尽管 **enum** 看起来像是一种新的数据类型，但是这个关键字只是在生成 **enum** 的类时，产生了某些编译器行为，因此在很大程度上你可以将 **enum** 当作其他任何类。事实上，**enum** 确实是类，并且具有自己的方法。
+
+**enum** 有一个很实用的特性，就是在 **switch** 语句中使用：
+
+```java
+// housekeeping/Burrito.java
+
+public class Burrito {
+    Spiciness degree;
+    
+    public Burrito(Spiciness degree) {
+        this.degree = degree;
+    }
+    
+    public void describe() {
+        System.out.print("This burrito is ");
+        switch(degree) {
+            case NOT:
+                System.out.println("not spicy at all.");
+                break;
+            case MILD:
+            case MEDIUM:
+                System.out.println("a little hot.");
+                break;
+            case HOT:
+            case FLAMING:
+            default:
+                System.out.println("maybe too hot");
+        }
+    }
+    
+    public static void main(String[] args) {
+        Burrito plain = new Burrito(Spiciness.NOT),
+        greenChile = new Burrito(Spiciness.MEDIUM),
+        jalapeno = new Burrito(Spiciness.HOT);
+        plain.describe();
+        greenChile.describe();
+        jalapeno.describe();
+    }
+}
+```
+
+输出：
+
+```
+This burrito is not spicy at all.
+This burrito is a little hot.
+This burrito is maybe too hot.
+```
+
+由于 **switch** 是在有限的可能值集合中选择，因此它与 **enum** 是绝佳的组合。注意，enum 的名称是如何能够倍加清楚地表明程序的目的的。
+
+通常，你可以将 **enum** 用作另一种创建数据类型的方式，然后使用所得到的类型。这正是关键所在，所以你不用过多地考虑它们。在 **enum** 被引入之前，你必须花费大量的精力去创建一个等同的枚举类型，并是安全可用的。
+
+这些介绍对于你理解和使用基本的 **enum** 已经足够了，我们会在"枚举"一章中进行更深入的探讨。
 
 <!-- Summary -->
+
 ## 本章小结
+
+构造器，这种看起来精巧的初始化机制，应该给了你很强的暗示：初始化在编程语言中的重要地位。C++ 的发明者 Bjarne Stroustrup 在设计 C++ 期间，在针对 C 语言的生产效率进行的最初调查中发现，错误的初始化会导致大量编程错误。这些错误很难被发现，同样，不合理的清理也会如此。因为构造器能保证进行正确的初始化和清理（没有正确的构造器调用，编译器就不允许创建对象），所以你就有了完全的控制和安全。
+
+在 C++ 中，析构器很重要，因为用 **new** 创建的对象必须被明确地销毁。在 Java 中，垃圾回收器会自动地释放所有对象的内存，所以很多时候类似的清理方法就不太需要了（但是当要用到的时候，你得自己动手）。在不需要类似析构器行为的时候，Java 的垃圾回收器极大地简化了编程，并加强了内存管理上的安全性。一些垃圾回收器甚至能清理其他资源，如图形和文件句柄。然而，垃圾回收器确实增加了运行时开销，由于 Java 解释器从一开始就很慢，所以这种开销到底造成多大的影响很难看出来。随着时间的推移，Java 在性能方面提升了很多，但是速度问题仍然是它涉足某些特定编程领域的障碍。
+
+由于要保证所有对象被创建，实际上构造器比这里讨论得更加复杂。特别是当通过*组合*或*继承*创建新类的时候，这种保证仍然成立，并且需要一些额外的语法来支持。在后面的章节中，你会学习组合，继承以及它们如何影响构造器。
 
 <!-- 分页 -->
 
