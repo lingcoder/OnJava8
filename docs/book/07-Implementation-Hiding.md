@@ -58,7 +58,63 @@ import java.util.*
 
 到目前为止的大部分示例都只存在单个文件，并为本地使用的，所以尚未收到包名的干扰。但是，这些示例其实已经位于包中了，叫做"未命名"包或默认包。这当然是一种选择，为了简单起见，本书其余部分会尽可能采用这种方式。但是，如果你打算为相同机器上的其他 Java 程序创建友好的类库或程序时，就必须仔细考虑以防类名冲突。
 
-一个 Java 源代码文件称为一个*编译单元*（有时也称*翻译单元*）。每个编译单元的文件名后缀必须是 **.java**。在编译单元中可以有一个 **public** 类，它的类名必须与文件名相同（包括大小写，但不包括后缀名 **.java**）。
+一个 Java 源代码文件称为一个*编译单元*（有时也称*翻译单元*）。每个编译单元的文件名后缀必须是 **.java**。在编译单元中可以有一个 **public** 类，它的类名必须与文件名相同（包括大小写，但不包括后缀名 **.java**）。每个编译单元中只能有一个 **public** 类，否则编译器不接受。如果这个编译单元中还有其他类，那么在包之外是无法访问到这些类的，因为它们不是 **public** 类，此时它们支持主 **public** 类。
+
+### 代码组织
+
+当编译一个 **.java** 文件时，**.java** 文件的每个类都会有一个输出文件。每个输出的文件名和 **.java** 文件中每个类的类名相同，只是后缀名是 **.class**。因此，在编译少量的 **.java** 文件后，会得到大量的 **.class** 文件。如果你使用过编译型语言，那么你可能习惯编译后产生一个中间文件（通常称为"obj"文件），然后与使用链接器（创建可执行文件）或类库生成器（创建类库）产生的其他同类文件打包到一起的情况。这不是 Java 工作的方式。在 Java 中，可运行程序是一组 **.class** 文件，它们可以打包压缩成一个 Java 文档文件（JAR，使用 **jar** 文档生成器）。Java 解释器负责查找、加载和解释这些文件。
+
+类库是一组类文件。每个源文件通常都含有一个 **public** 类和任意数量的非 **public** 类，因此每个文件都有一个构件。如果把这些组件集中在一起，就需要使用关键字 **package**。
+
+如果你使用了 **package** 语句，它必须是文件中除了注释之外的第一行代码。当你如下这样写：
+
+```java
+package hiding;
+```
+
+意味着这个编译单元是一个名为 **hiding** 类库的一部分。换句话说，你正在声明的编译单元中的 **public** 类名称位于名为 **hiding** 的保护伞下。任何人想要使用该名称，必须指明完整的类名或者使用 **import** 关键字导入 **hiding**。（注意，Java 包名按惯例一律小写，即使中间的单词也需要小写，与驼峰命名不同）
+
+例如，假设文件名是 **MyClass.java**，这意味着文件中只能有一个 **public** 类，且类名必须是 MyClass（大小写也与文件名相同）：
+
+```java
+// hiding/mypackage/MyClass.java
+package hiding.mypackage
+
+public class MyClass {
+    // ...
+}
+```
+
+现在，如果有人想使用 **MyClass** 或 **hiding.mypackage** 中的其他 **public** 类，就必须使用关键字 **import** 来使 **hiding.mypackage** 中的名称可用。还有一种选择是使用完整的名称：
+
+```java
+// hiding/QualifiedMyClass.java
+
+public class QualifiedMyClass {
+    public static void main(String[] args) {
+        hiding.mypackage.MyClass m = new hiding.mypackage.MyClass();
+    }
+}
+```
+
+关键字 **import** 使之更简洁：
+
+```java
+// hiding/ImportedMyClass.java
+import hiding.mypackage.*;
+
+public class ImportedMyClass {
+    public static void main(String[] args) {
+        MyClass m = new MyClass();
+    }
+}	
+```
+
+**package** 和 **import** 这两个关键字将单一的全局命名空间分隔开，从而避免名称冲突。
+
+### 创建独一无二的包名
+
+你可能注意到，一个包从未真正被打包成单一的文件，而它可以由很多 .**class** 文件构成，因而事情就变得有点复杂了。
 
 <!-- Java Access Specifiers -->
 
