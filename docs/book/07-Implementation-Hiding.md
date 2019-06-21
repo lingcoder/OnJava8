@@ -114,7 +114,87 @@ public class ImportedMyClass {
 
 ### 创建独一无二的包名
 
-你可能注意到，一个包从未真正被打包成单一的文件，而它可以由很多 .**class** 文件构成，因而事情就变得有点复杂了。
+你可能注意到，一个包从未真正被打包成单一的文件，它可以由很多 **.class** 文件构成，因而事情就变得有点复杂了。为了避免这种情况，一种合乎逻辑的做法是将特定包下的所有 **.class** 文件都放在一个目录下。也就是说，利用操作系统的文件结构的层次性。这是 Java 解决解决混乱问题的一种方式；稍后你还会在我们介绍 **jar** 工具时看到另一种方式。
+
+将所有的文件放在一个子目录还解决了其他的两个问题：创建独一无二的包名和查找可能隐藏于目录结构某处的类。这是通过将 **.class** 文件所在的路径位置编码成 **package** 名称来实现的。按照惯例，**package** 名称是类的创建者的反顺序的 Internet 域名。如果你遵循惯例，因为 Internet 域名是独一无二的，所以你的 **package** 名称也应该是独一无二的，不会发生名称冲突。如果你没有自己的域名，你就得构造一组不大可能与他人重复的组合（比如你的姓名），来创建独一无二的 package 名称。如果你打算发布 Java 程序代码，那么花些力气去获取一个域名是值得的。
+
+此技巧的第二部分是把 **package** 名称分解成你机器上的一个目录，所以当 Java 解释器必须要加载一个 .class 文件时，它能定位到 **.class** 文件所在的位置。首先，它找出环境变量 **CLASSPATH**（通过操作系统设置，有时也能通过 Java 的安装程序或基于 Java 的工具设置）。**CLASSPATH** 包含一个或多个目录，用作查找 .**class** 文件的根目录。从根目录开始，Java 解释器获取包名并将每个句点替换成反斜杠，生成一个基于根目录的路径名（包名 foo.bar.baz 变成 foo\bar\baz 或 foo/bar/baz 或其它，取决于你的操作系统）。然后这个路径与 **CLASSPATH** 的不同项连接，解释器就在这些目录中查找与你所创建的类名称相关的 **.class** 文件（解释器还会查找某些涉及 Java 解释器所在位置的标准目录）。
+
+为了理解这点，比如说我的域名 **MindviewInc.com**，将之反转并全部改为小写后就是 **com.mindviewinc**，这将作为我创建的类的独一无二的全局名称。（com、edu、org等扩展名之前在 Java 包中都是大写，但是 Java 2 之后都统一用小写。）我决定再创建一个名为 **simple** 的类库，从而细分名称：
+
+```java
+package com.mindviewinc.simple;
+```
+
+这个包名可以用作下面两个文件的命名空间保护伞：
+
+```java
+// com/mindviewinc/simple/Vector.java
+// Creating a package
+package com.mindviewinc.simple;
+
+public class Vector {
+    public Vector() {
+        System.out.println("com.mindviewinc.simple.Vector");
+    }
+}
+```
+
+如前所述，**package** 语句必须是文件的第一行非注释代码。第二个文件看上去差不多：
+
+```java
+// com/mindviewinc/simple/List.java
+// Creating a package
+package com.mindviewinc.simple;
+
+public class List {
+    System.out.println("com.mindview.simple.List");
+}
+```
+
+这两个文件都位于我机器上的子目录中，如下：
+
+```
+C:\DOC\Java\com\mindviewinc\simple
+```
+
+（注意，本书的每个文件的第一行注释都指明了文件在源代码目录树中的位置——供本书的自动代码提取工具使用。）
+
+如果你回头看这个路径，会看到包名 **com.mindviewinc.simple**，但是路径的第一部分呢？CLASSPATH 环境变量会处理它。我机器上的环境变量部分如下：
+
+```
+CLASSPATH=.;D:\JAVA\LIB;C:\DOC\Java
+```
+
+CLASSPATH 可以包含多个不同的搜索路径。
+
+但是在使用 JAR 文件时，有点不一样。你必须在类路径写清楚 JAR 文件的实际名称，不能仅仅是 JAR 文件所在的目录。因此，对于一个名为 **grape.jar** 的 JAR 文件，类路径应包括：
+
+```
+CLASSPATH=.;D\JAVA\LIB;C:\flavors\grape.jar
+```
+
+一旦设置好类路径，下面的文件就可以放在任意目录：
+
+```java
+// hiding/LibTest.java
+// Uses the library
+import com.mindviewinc.simple.*;
+
+public class LibTest {
+    public static void main(String[] args) {
+        Vector v = new Vector();
+        List l = new List();
+    }
+}
+```
+
+输出：
+
+```
+com.mindviewinc.simple.Vector
+com.mindviewinc.simple.List
+```
 
 <!-- Java Access Specifiers -->
 
