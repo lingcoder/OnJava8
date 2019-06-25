@@ -583,8 +583,6 @@ public class Person extends Individual {
 }
 ```
 
-\
-
 ```java
 // typeinfo/pets/Pet.java
 package typeinfo.pets;
@@ -594,8 +592,6 @@ public class Pet extends Individual {
   public Pet() { super(); }
 }
 ```
-
-\
 
 ```java
 // typeinfo/pets/Dog.java
@@ -607,8 +603,6 @@ public class Dog extends Pet {
 }
 ```
 
-\
-
 ```java
 // typeinfo/pets/Mutt.java
 package typeinfo.pets;
@@ -618,8 +612,6 @@ public class Mutt extends Dog {
   public Mutt() { super(); }
 }
 ```
-
-\
 
 
 ```java
@@ -632,8 +624,6 @@ public class Pug extends Dog {
 }
 ```
 
-\
-
 ```java
 // typeinfo/pets/Cat.java
 package typeinfo.pets;
@@ -643,8 +633,6 @@ public class Cat extends Pet {
   public Cat() { super(); }
 }
 ```
-
-\
 
 ```java
 // typeinfo/pets/EgyptianMau.java
@@ -656,8 +644,6 @@ public class EgyptianMau extends Cat {
 }
 ```
 
-\
-
 ```java
 // typeinfo/pets/Manx.java
 package typeinfo.pets;
@@ -667,8 +653,6 @@ public class Manx extends Cat {
   public Manx() { super(); }
 }
 ```
-
-\
 
 ```java
 // typeinfo/pets/Cymric.java
@@ -680,8 +664,6 @@ public class Cymric extends Manx {
 }
 ```
 
-\
-
 ```java
 // typeinfo/pets/Rodent.java
 package typeinfo.pets;
@@ -691,8 +673,6 @@ public class Rodent extends Pet {
   public Rodent() { super(); }
 }
 ```
-
-\
 
 ```java
 // typeinfo/pets/Rat.java
@@ -704,8 +684,6 @@ public class Rat extends Rodent {
 }
 ```
 
-\
-
 ```java
 // typeinfo/pets/Mouse.java
 package typeinfo.pets;
@@ -715,8 +693,6 @@ public class Mouse extends Rodent {
   public Mouse() { super(); }
 }
 ```
-
-\
 
 ```java
 // typeinfo/pets/Hamster.java
