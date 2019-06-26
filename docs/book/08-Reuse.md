@@ -715,29 +715,80 @@ class Lisa extends Homer {
 
 ## 组合与继承的选择
 
+组合和继承都允许在新类中放置子对象（组合是显式的，而继承是隐式的）。你或许想知道这二者之间的区别，以及怎样在二者间做选择。
 
+当你想在新类中包含一个已有类的功能时，使用组合，而非继承。也就是说，在新类中嵌入一个对象（通常是私有的），以实现其功能。新类的使用者看到的是你所定义的新类的接口，而非嵌入对象的接口。
 
+有时让类的用户直接访问到新类中的组合成分是有意义的。只需将成员对象声明为 **public** 即可（可以把这当作“半委托”的一种）。成员对象隐藏了具体实现，所以这是安全的。当用户知道你正在组装一组部件时，会使得接口更加容易理解。下面的 car 对象是个很好的例子：
+
+```java
+// reuse/Car.java
+// Composition with public objects
+class Engine {
+    public void start() {}
+    public void rev() {}
+    public void stop() {}
+}
+
+class Wheel {
+    public void inflate(int psi) {}
+}
+
+class Window {
+    public void rollup() {}
+    pubilc void rolldown() {}
+}
+
+class Door {
+    public Window window = new Window();
+    
+    public void open() {}
+    public void close() {}
+}
+
+public class Car {
+    public Engine engine = new Engine();
+    public Wheel[] wheel = new Wheel[4];
+    public Door left = new Door(), right = new Door(); // 2-door
+    
+    public Car() {
+        for (int i = 0; i < 4; i++) {
+            wheel[i] = new Wheel();
+        }
+    }
+    
+    public static void main(String[] args) {
+        Car car = new Car();
+        car.left.window.rollup();
+        car.wheel[0].inflate(72);
+    }
+}
+```
+
+因为在这个例子中 car 的组合也是问题分析的一部分（不是底层设计的部分），所以声明成员为 **public** 有助于客户端程序员理解如何使用类，且降低了类创建者面临的代码复杂度。但是，记住这是一个特例。通常来说，属性还是应该声明为 **private**。
+
+当使用继承时，使用一个现有类并开发出它的新版本。通常这意味着使用一个通用类，并为了某个特殊需求将其特殊化。稍微思考下，你就会发现，用一个交通工具对象来组成一部车是毫无意义的——车不包含交通工具，它就是交通工具。这种“是一个”的关系是用继承来表达的，而“有一个“的关系则用组合来表达。
 
 <!-- protected -->
+
 ## protected
 
 
 <!-- Upcasting -->
 ## 向上转型
 
-
 <!-- The final Keyword -->
+
 ## final关键字
 
 
 <!-- Initialization and Class Loading -->
 ## 类初始化和加载
 
-
 <!-- Summary -->
+
 ## 本章小结
 
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
-
