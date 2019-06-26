@@ -25,16 +25,16 @@
 - [x] [第三章 万物皆对象](docs/book/03-Objects-Everywhere.md)
 - [x] [第四章 运算符](docs/book/04-Operators.md)
 - [x] [第五章 控制流](docs/book/05-Control-Flow.md)
-- [ ] [第六章 初始化和清理](docs/book/06-Housekeeping.md) 
-- [ ] [第七章 封装](docs/book/07-Implementation-Hiding.md) 
+- [x] [第六章 初始化和清理](docs/book/06-Housekeeping.md) 
+- [x] [第七章 封装](docs/book/07-Implementation-Hiding.md) 
 - [ ] [第八章 复用](docs/book/08-Reuse.md)
 - [ ] [第九章 多态](docs/book/09-Polymorphism.md)
 - [ ] [第十章 接口](docs/book/10-Interfaces.md)
-- [ ] [第十一章 内部类](docs/book/11-Inner-Classes.md)
+- [x] [第十一章 内部类](docs/book/11-Inner-Classes.md)
 - [ ] [第十二章 集合](docs/book/12-Collections.md)
 - [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
 - [x] [第十四章 流式编程](docs/book/14-Streams.md) 
-- [ ] [第十五章 异常](docs/book/15-Exceptions.md)
+- [x] [第十五章 异常](docs/book/15-Exceptions.md)
 - [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
 - [ ] [第十七章 文件](docs/book/17-Files.md)
 - [ ] [第十八章 字符串](docs/book/18-Strings.md)
@@ -55,7 +55,7 @@
 - [ ] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
 - [ ] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
 - [ ] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
-- [ ] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
+- [x] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
 - [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
 - [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
 - [ ] [附录:成为一名程序员](docs/book/Appendix-Becoming-a-Programmer.md)
@@ -89,9 +89,9 @@
 
 ## 贡献者
 
-* 主译: [LingCoder](https://github.com/LingCoder)
-* 参译: [sjsdfg](https://github.com/sjsdfg)，[LortSir](https://github.com/LortSir)
-* 校对：[LingCoder](https://github.com/LingCoder)，[nickChenyx](https://github.com/nickChenyx)
+* 主译：[LingCoder](https://github.com/LingCoder)，[sjsdfg](https://github.com/sjsdfg)
+* 参译：[xiangflight](https://github.com/xiangflight)，[LortSir](https://github.com/LortSir)
+* 校对：[LingCoder](https://github.com/LingCoder)，[xiangflight](https://github.com/xiangflight)，[nickChenyx](https://github.com/nickChenyx)
 
 
 ## 翻译说明

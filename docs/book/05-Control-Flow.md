@@ -2,9 +2,9 @@
 
 # 第五章 控制流
 
-> 程序必须在执行过程中控制它的世界并做出选择。 在 Java 中，你需要使用执行控制语句来做出选择。
+> 程序必须在执行过程中控制它的世界并做出选择。 在 Java 中，你需要执行控制语句来做出选择。
 
-Java 使用了 C 的所有执行控制语句，因此对于熟悉 C/C++ 编程的人来说，这部分内容轻车熟路。 大多数面向过程编程语言都有共通的某种控制语句。在 Java 中，涉及的关键字包括 **if-else，while，do-while，for，return，break** 和选择语句 **switch**。 Java 并不支持备受诟病的 **goto**（尽管它在某些特殊场景中依然是最行之有效的方法）。 尽管如此，在 Java 中我们仍旧可以进行类似的逻辑跳转,但较之典型的 **goto** 用法限制更多。
+Java 使用了 C 的所有执行控制语句，因此对于熟悉 C/C++ 编程的人来说，这部分内容轻车熟路。大多数面向过程编程语言都有共通的某种控制语句。在 Java 中，涉及的关键字包括 **if-else，while，do-while，for，return，break** 和选择语句 **switch**。 Java 并不支持备受诟病的 **goto**（尽管它在某些特殊场景中依然是最行之有效的方法）。 尽管如此，在 Java 中我们仍旧可以进行类似的逻辑跳转，但较之典型的 **goto** 用法限制更多。
 
 
 ## true和flase
@@ -48,7 +48,7 @@ else
   “statement”
 ```
 
-布尔表达式（Boolean-expression）必须生成 **boolean** 类型的结果，执行语句 `statement` 既可以是只包含单个分号 `;` 的简单语句，也可以是包含大括号 `{}` 的复合语句 —— 封闭在大括号内的一组简单语句。 凡本书中提及的“statement”一词，皆表示类似的执行语句。
+布尔表达式（Boolean-expression）必须生成 **boolean** 类型的结果，执行语句 `statement` 既可以是以分号 `;` 结尾的一条简单语句，也可以是包含在大括号 `{}` 内的的复合语句 —— 封闭在大括号内的一组简单语句。 凡本书中提及“statement”一词，皆表示类似的执行语句。
 
 下面是一个有关 **if-else** 语句的例子。`test()` 方法可以告知你两个数值之间的大小关系。代码示例：
 
@@ -86,12 +86,12 @@ public class IfElse {
 
 <sub>**注解**：`else if` 并非新关键字，它仅是 `else` 后紧跟的一条新 `if` 语句。</sub>
 
-Java 和 C/C++ 同属“自由格式”的编程语言，但通常我们会在 Java 控制流程语句中采用首尾缩进的规范，以便代码更具可读性。
+Java 和 C/C++ 同属“自由格式”的编程语言，但通常我们会在 Java 控制流程语句中采用首部缩进的规范，以便代码更具可读性。
 
 <!--Iteration Statements-->
 ## 迭代语句
 
-**while**，**do-while** 和 **for** 用来控制循环语句（有时也称迭代语句）。 只有控制循环的布尔表达式计算结果为 `false`，循环语句才会停止。 
+**while**，**do-while** 和 **for** 用来控制循环语句（有时也称迭代语句）。只有控制循环的布尔表达式计算结果为 `false`，循环语句才会停止。 
 
 
 ### while
@@ -138,12 +138,9 @@ true, Inside 'while'
 false, Exited 'while'
 ```
 
-
 `condition()` 方法使用到了 **Math** 库的**静态**方法 `random()`。该方法的作用是产生 0 和 1 之间 (包括 0，但不包括 1) 的一个 **double** 值。
 
-`result` 的值是通过判断
-
-**result** 的值是通过比较运算符 `<` 来产生的 **boolean** 类型的结果。当控制台输出 **boolean** 型值时，会自动将其转换未对应的文字形式 `true` 或 `false`。此处 `while` 条件表达式代表：“仅在 `condition()` 返回 `false` 时停止循环”。
+**result** 的值是通过比较运算符 `<` 产生的 **boolean** 类型的结果。当控制台输出 **boolean** 型值时，会自动将其转换为对应的文字形式 `true` 或 `false`。此处 `while` 条件表达式代表：“仅在 `condition()` 返回 `false` 时停止循环”。
 
 
 ### do-while
@@ -206,12 +203,13 @@ value: 106 character: j
 
 传统的面向过程语言如 C 需要先在代码块（block）前定义好所有变量才能够使用。这样编译器才能在创建块时，为这些变量分配内存空间。在 Java 和 C++ 中，我们可以在整个块使用变量声明，并且可以在需要时才定义变量。 这种自然的编码风格使我们的代码更容易被人理解 [^1]。
 
-上例使用了 **java.lang.Character** 包装类，该类不仅包含了基本类型 `char` 的值，还封装了一些有用的方法。例如这里就用到了静态方法 `isLowerCase()` 来判断字符否为小写。
+上例使用了 **java.lang.Character** 包装类，该类不仅包含了基本类型 `char` 的值，还封装了一些有用的方法。例如这里就用到了静态方法 `isLowerCase()` 来判断字符是否为小写。
 
 <!--The Comma Operator-->
+
 #### 逗号操作符
 
-在 Java 中逗号运算符（这里并非指我们平常用于分隔定义和方法参数的逗号分隔符）仅有一种用法：在 **for** 循环的初始化和步进控制中定义多个变量。我们可以使用逗号分隔多个语句，并按顺序计算这些语句。**注意**：哟啊求定义的变量类型相同。代码示例：
+在 Java 中逗号运算符（这里并非指我们平常用于分隔定义和方法参数的逗号分隔符）仅有一种用法：在 **for** 循环的初始化和步进控制中定义多个变量。我们可以使用逗号分隔多个语句，并按顺序计算这些语句。**注意**：要求定义的变量类型相同。代码示例：
 
 ```java
 // control/CommaOperator.java
@@ -239,7 +237,7 @@ i = 4 j = 8
 
 ## for-in语法 
 
-Java 5 引入了更为简洁的“增强版 **for** 循环”语法来操纵数组和集合。（更多细节，可参考 [数组](./21-Arrays.md) 和 [集合](./12-Collections.md) 章节内容）。，大部分文档也称其为 **for-each** 语法，但因为了不与 Java 8 新添的 `forEach()` 产生混淆，因此我称之为 **for-in** 循环。 （Python 已有类似的先例，如：**for x in sequence**）。**注意**：你可能会在其他地方看到不同叫法。
+Java 5 引入了更为简洁的“增强版 **for** 循环”语法来操纵数组和集合。（更多细节，可参考 [数组](./21-Arrays.md) 和 [集合](./12-Collections.md) 章节内容）。大部分文档也称其为 **for-each** 语法，但因为了不与 Java 8 新添的 `forEach()` 产生混淆，因此我称之为 **for-in** 循环。 （Python 已有类似的先例，如：**for x in sequence**）。**注意**：你可能会在其他地方看到不同叫法。
 
 **for-in** 无需你去创建 **int** 变量和步进来控制循环计数。 下面我们来遍历获取 **float** 数组中的元素。代码示例：
 
@@ -290,7 +288,7 @@ for(float x : f) {
 
 public class ForInString {
   public static void main(String[] args) {
-    for(char c : "An African Swallow".toCharArray())
+    for(char c: "An African Swallow".toCharArray())
       System.out.print(c + " ");
   }
 }
@@ -302,10 +300,9 @@ public class ForInString {
 A n   A f r i c a n   S w a l l o w
 ```
 
-很快我们能在 [集合](./12-Collections.md) 章节里学习到，
- **for-in** 循环适用于任何可迭代（*iterable*）的 对象。
+很快我们能在 [集合](./12-Collections.md) 章节里学习到，**for-in** 循环适用于任何可迭代（*iterable*）的 对象。
 
-通常， **for** 循环语句都会在一个整型数值序列中步进。代码示例：
+通常，**for** 循环语句都会在一个整型数值序列中步进。代码示例：
 
 ```java
 for(int i = 0; i < 100; i++)
@@ -324,7 +321,7 @@ public class ForInInt {
   public static void main(String[] args) {
     for(int i : range(10)) // 0..9
       System.out.print(i + " ");
-     System.out.println();
+    System.out.println();
     for(int i : range(5, 10)) // 5..9
       System.out.print(i + " ");
     System.out.println();
@@ -346,7 +343,6 @@ public class ForInInt {
 20 17 14 11 8
 ```
 
-
 `range()` 方法已被 [重载](./06-Housekeeping.md#方法重载)（重载：同名方法，参数列表或类型不同）。上例中 `range()` 方法有多种重载形式：第一种产生从 0 至范围上限（不包含）的值；第二种产生参数一至参数二（不包含）范围内的整数值；第三种形式有一个步进值，因此它每次的增量为该值；第四种 `range()` 表明还可以递减。`range()` 无参方法是该生成器最简单的版本。有关内容会在本书稍后介绍。
 
 `range()` 的使用提高了代码可读性，让 **for-in** 循环在本书中适应更多的代码示例场景。
@@ -359,7 +355,7 @@ public class ForInInt {
 
 在 Java 中有几个关键字代表无条件分支，这意味无需任何测试即可发生。这些关键字包括 **return**，**break**，**continue** 和跳转到带标签语句的方法，类似于其他语言中的 **goto**。
 
-**return** 关键字有两方面的作用：1.指定一个方法返回值(在方法返回类型非 **void** 的情况下)；2.退出当前方法，并返回作用 1 中值。我们可以利用 `return` 的这些特点来改写上例 `IfElse.java` 文件朱姑中的 `test()` 方法。代码示例：
+**return** 关键字有两方面的作用：1.指定一个方法返回值(在方法返回类型非 **void** 的情况下)；2.退出当前方法，并返回作用 1 中值。我们可以利用 `return` 的这些特点来改写上例 `IfElse.java` 文件中的 `test()` 方法。代码示例：
 
 ```java
 // control/TestWithReturn.java
@@ -395,9 +391,9 @@ public class TestWithReturn {
 
 ## break和continue
 
-在任何迭代语句的主体内，都可以使用 **break** 和 **continue** 来控制循环的流程。 其中，**break** 表示跳出当前循环体。 而 **continue** 表示停止本次循环，开始下一次循环。
+在任何迭代语句的主体内，都可以使用 **break** 和 **continue** 来控制循环的流程。 其中，**break** 表示跳出当前循环体。而 **continue** 表示停止本次循环，开始下一次循环。
 
-下例向大家展示 **break** 和 **continue** 在 **for**、**while** 循环中的使运用。代码示例：
+下例向大家展示 **break** 和 **continue** 在 **for**、**while** 循环中的使用。代码示例：
 
 ```java
 // control/BreakAndContinue.java
@@ -443,10 +439,7 @@ public class BreakAndContinue {
 
   <sub>**[1]** 在这个 **for** 循环中，`i` 的值永远不会达到 100，因为一旦 `i` 等于 74，**break** 语句就会中断循环。通常，只有在不知道中断条件何时满足时，才需要 **break**。因为 `i` 不能被 9 整除，**continue** 语句就会使循环从头开始。这使 **i** 递增)。如果能够整除，则将值显示出来。</sub>
   <sub>**[2]** 使用 **for-in** 语法，结果相同。</sub>
-  <sub>**[3]** 无限 **while** 循环。循环内的 **break** 语句可中止循环。**注意**，**continue** 语句可将控制权移回循环的顶部，而不会执行 **continue** 之后的任何操作。 因此，只有当 `i` 的值可被 10 整除时才会输出。在输出中，显示值 0，因为 `0％9` 产生 0。</sub>
-
-
-还有一种无限循环的形式： `for(;;)`。 在编译器看来，它与 `while(true)` 无异，使用哪种完全取决于你的编程品味。
+  <sub>**[3]** 无限 **while** 循环。循环内的 **break** 语句可中止循环。**注意**，**continue** 语句可将控制权移回循环的顶部，而不会执行 **continue** 之后的任何操作。 因此，只有当 `i` 的值可被 10 整除时才会输出。在输出中，显示值 0，因为 `0％9` 产生 0。还有一种无限循环的形式： `for(;;)`。 在编译器看来，它与 `while(true)` 无异，使用哪种完全取决于你的编程品味。</sub>
 
 <!--The Infamous “Goto”-->
 ## 臭名昭著的goto
@@ -457,7 +450,7 @@ public class BreakAndContinue {
 
 正如上述提及的经典情况，我们不应走向两个极端。问题不在 **goto**，而在于过度使用 **goto**。在极少数情况下，**goto** 实际上是控制流程的最佳方式。
 
-尽管 **goto** 仍是 Java 的一个保留字，但其并未被到正式启用。可以说， Java 中并不支持 **goto**。然而，在 **break** 和 **continue** 这两个关键字的身上，我们仍能看出一些 **goto** 的影子。它们并不属于一次跳转，而是中断循环语句的一种方法。之所以把它们纳入 **goto** 问题中一起讨论，是由于它们使用了相同的机制：标签。
+尽管 **goto** 仍是 Java 的一个保留字，但其并未被正式启用。可以说， Java 中并不支持 **goto**。然而，在 **break** 和 **continue** 这两个关键字的身上，我们仍能看出一些 **goto** 的影子。它们并不属于一次跳转，而是中断循环语句的一种方法。之所以把它们纳入 **goto** 问题中一起讨论，是由于它们使用了相同的机制：标签。
 
 “标签”是后面跟一个冒号的标识符。代码示例：
 
@@ -708,7 +701,7 @@ z, 122: consonant
   ...
 ```
 
-由于 `Random.nextInt(26)` 会产生 0 到 26 之间的一个值，所以在其上加上一个偏移量 `a`，即可产生小写字母。在 **case** 语句中，使用单引号引起的字符也会产生用于比较的整数值。
+由于 `Random.nextInt(26)` 会产生 0 到 25 之间的一个值，所以在其上加上一个偏移量 `a`，即可产生小写字母。在 **case** 语句中，使用单引号引起的字符也会产生用于比较的整数值。
 
 请注意 **case** 语句能够堆叠在一起，为一段代码形成多重匹配，即只要符合多种条件中的一种，就执行那段特别的代码。这时也应该注意将 **break** 语句置于特定 **case** 的末尾，否则控制流程会继续往下执行，处理后面的 **case**。在下面的语句中：
 
@@ -718,8 +711,8 @@ int c = rand.nextInt(26) + 'a';
 
 此处 `Random.nextInt()` 将产生 0~25 之间的一个随机 **int** 值，它将被加到 `a` 上。这表示 `a` 将自动被转换为 **int** 以执行加法。为了把 `c` 当作字符打印，必须将其转型为 **char**；否则，将会输出整数。
 
-
 <!-- Switching on Strings -->
+
 ## switch字符串
 
 Java 7 增加了在字符串上 **switch** 的用法。 下例展示了从一组 **String** 中选择可能值的传统方法，以及新式方法：
@@ -830,4 +823,5 @@ java RandomBounds upper
 [^2]: **注意**，此处观点似乎难以让人信服，很可能只是一个因认知偏差而造成的[因果关系谬误](https://en.wikipedia.org/wiki/Correlation_does_not_imply_causation)的例子。</sup>
 
 <!-- 分页 -->
+
 <div style="page-break-after: always;"></div>

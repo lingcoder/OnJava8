@@ -87,7 +87,7 @@ Java 设计者面临着这样一个难题：现存的大量类库不仅为 Java 
 
 问题是，接口部分怎么改造呢？特别是涉及集合类接口的部分。如果你想把一个集合转换为流，直接向接口添加新方法会破坏所有老的接口实现类。
 
-Java 8 采用的解决方案是：在[接口](10-Interfaces.md)中添加被 `default`（`默认`）修饰的方法。通过这种方案，设计者们可以将流式（*stream*）方法平滑地嵌入到现有类中。流方法预置的操作几乎已满足了我们平常所有的需求。流操作的类型有三种：创建流，修改流元素（中间操作, Intermediate Operations），消费流元素（终端操作, Terminal Operations）。最后一种类型通常意味着收集流元素（通常是到集合中）。
+Java 8 采用的解决方案是：在[接口](10-Interfaces.md)中添加被 `default`（`默认`）修饰的方法。通过这种方案，设计者们可以将流式（*stream*）方法平滑地嵌入到现有类中。流方法预置的操作几乎已满足了我们平常所有的需求。流操作的类型有三种：创建流，修改流元素（中间操作， Intermediate Operations），消费流元素（终端操作， Terminal Operations）。最后一种类型通常意味着收集流元素（通常是到集合中）。
 
 下面我们来看下每种类型的流操作。
 
@@ -769,7 +769,7 @@ Well WELL well it IT it s S s so SO so
 
 ### 流元素排序
 
-在 `Randoms.java` 中,我们熟识了 `sorted()` 的默认比较器实现。其实它还有另一种形式的实现：传入一个 **Comparator** 参数。代码示例：
+在 `Randoms.java` 中，我们熟识了 `sorted()` 的默认比较器实现。其实它还有另一种形式的实现：传入一个 **Comparator** 参数。代码示例：
 
 ```java
 // streams/SortedComparator.java
@@ -835,19 +835,19 @@ public class Prime {
 467 479 487 491 499 503 509 521 523 541
 ```
 
-`rangeClosed() ` 包含了上限值。如果不能整除，即余数不等于 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 false。 `noneMatch()`  操作在第一次失败之后就会退出，而不是进行全部尝试。
+`rangeClosed()` 包含了上限值。如果不能整除，即余数不等于 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 `false`。 `noneMatch()` 操作在首次失败之后就会退出，而不是尝试匹配所有。
 
-### 应用操作到所有元素
+### 应用函数到元素
 
-`map(Function) `：将 `Function` 操作应用在输入流的每一个元素中，并将返回值传递到输出流中。
+- `map(Function)`：将函数操作应用在输入流的元素中，并将返回值传递到输出流中。
 
-`mapToInt(ToIntFunction)`：操作同上，但结果是 `IntStream`。
+- `mapToInt(ToIntFunction)`：操作同上，但结果是 **IntStream**。
 
-`mapToLong(ToLongFunction)`：操作同上，但结果是 `LongStream`。
+- `mapToLong(ToLongFunction)`：操作同上，但结果是 **LongStream**。
 
-`mapToDouble(ToDoubleFunction)` ： 操作同上，但结果是 `DoubleStream`。
+- `mapToDouble(ToDoubleFunction)`：操作同上，但结果是 **DoubleStream**。
 
-在这里，我们使用 `map()` 映射多种函数到一个字符串流中：
+在这里，我们使用 `map()` 映射多种函数到一个字符串流中。代码示例：
 
 ```java
 // streams/FunctionMap.java
@@ -906,13 +906,13 @@ class FunctionMap {
 5
 ```
 
-在“Increment”测试中，我们使用 `Integer.parseInt()` 去试图将一个字符串转化为整数。如果字符串不能转化成为整数就会抛出一个 `NumberFormatException` 异常，我们只需回过头来将原始字符串放回到输出流中。
+在“Increment”的测试中，我们使用 **Integer.**`parseInt()` 去试图将一个字符串转化为整数。如果字符串不能转化成为整数就会抛出一个 **NumberFormatException** 异常，我们只需回过头来将原始字符串放回到输出流中。
 
-在以上例子中，` map()` 将一个字符串映射为另一个字符串，但是我们完全可以产生和接收类型完全不同的类型，从而改变流的数据类型。这里是一个例子：
+在以上例子中，`map()` 将一个字符串映射为另一个字符串，但是我们完全可以产生和接收类型完全不同的类型，从而改变流的数据类型。下面代码示例：
 
 ```java
 // streams/FunctionMap2.java
-// Different input and output types
+// Different input and output types （不同的输入输出类型）
 import java.util.*;
 import java.util.stream.*;
 class Numbered {
@@ -945,13 +945,13 @@ Numbered(11)
 Numbered(13)
 ```
 
-我们获取了许多 `int` 类型整数，并通过构造器 `Numbered::new` 将它们转化成为 `Numbered` 类型。
+我们将获取到的整数通过构造器 `Numbered::new` 转化成为 `Numbered` 类型。
 
-如果使用 `Function` 产生的结果是数值类型的一种，你必须使用相似的 `mapTo`-operations 操作进行替代：
+如果使用 **Function** 返回的结果是数值类型的一种，我们必须使用合适的 `mapTo数值类型` 进行替代。代码示例：
 
 ```java
 // streams/FunctionMap3.java
-// Producing numeric output streams
+// Producing numeric output streams（ 产生数值输出流）
 import java.util.*;
 import java.util.stream.*;
 class FunctionMap3 {
@@ -979,11 +979,11 @@ class FunctionMap3 {
 17.000000 1.900000 0.230000
 ```
 
-不幸的是，Java 设计者并没有尽最大的努力来消除原始类型。
+不幸的是，Java 设计者并没有尽最大努力来消除基本类型。
 
-### 在 map() 期间组合流
+### 在 `map()` 期间组合流
 
-假如你有一个即将到来的元素流，并且你打算对流元素使用 `map()` 函数。你已经找到了那些你在其他地方找不到的可爱的函数功能，但是这里有一个问题：这个函数功能产生一个流。你想要的只是产生一个元素的流，但是你生成的是一个元素流的流。
+假设你有一个传入的元素流，并且你打算对流元素使用 `map()` 函数。现在你已经找到了一些可爱并独一无二的函数功能，但是问题来了：这个函数功能是产生一个流。你想要的只是产生流的元素，但是你生成的是一个元素流的流。
 
 `flatMap()` 做了两件事情：它获取你的流产生（ stream-producing）函数，并将其应用于新到的元素（正如 `map()` 所做的），然后获取每一个流并将其“展平”为元素。所以它的输出只是元素。
 
@@ -1357,7 +1357,7 @@ Null
 - `map(Function)`：如果 **Optional** 不为空，则将 **Function**  应用于 **Optional** 的内容，并将结果返回。否则，直接返回 **Optional.empty**。
 - `flatMap(Function)`：如同 `map()` ， 但是提供的映射函数将结果包装在 **Optional** 对象中，因此 `flatMap()` 不会在最后进行任何包装。
 
-如上方法都不适用于数值型 **Optional**。普通流过滤器会在 **Predicate** 返回 false 时删除流元素。`Optional.filter()` 当 **Predicate** 失败时不会删除 **Optional**——而是把它留保留下来, 但将其转化为空：
+如上方法都不适用于数值型 **Optional**。普通流过滤器会在 **Predicate** 返回 false 时删除流元素。`Optional.filter()` 当 **Predicate** 失败时不会删除 **Optional**——而是把它留保留下来，但将其转化为空：
 
 ```java
 // streams/OptionalFilter.java
@@ -1835,11 +1835,11 @@ public class MapCollector {
 {688=W, 309=C, 293=B, 761=N, 858=N, 668=G, 622=F, 751=N}
 ```
 
-**Pair** 只是一个基础的数据对象。**RandomPair** 创建了随机生成的 **Pair** 对象流。如果我们能以某种方式组合两个流, 那就再好不过了, 但 Java 在这个问题上与我们斗争。所以我创建了一个整数流，并且使用 `mapToObj()` 将其转化成为 **Pair** 流。 **capChars** 随机生成的大写字母迭代器从流开始，然后 `iterator()` 方法允许我们在 `stream()` 方法中使用它。就我所知, 这是组合多个流以生成新的对象流的唯一方法。
+**Pair** 只是一个基础的数据对象。**RandomPair** 创建了随机生成的 **Pair** 对象流。如果我们能以某种方式组合两个流，那就再好不过了，但 Java 在这个问题上与我们斗争。所以我创建了一个整数流，并且使用 `mapToObj()` 将其转化成为 **Pair** 流。 **capChars** 随机生成的大写字母迭代器从流开始，然后 `iterator()` 方法允许我们在 `stream()` 方法中使用它。就我所知，这是组合多个流以生成新的对象流的唯一方法。
 
 在这里，我们只使用最简单形式的 `Collectors.toMap()`，这个方法值需要一个可以从流中获取键值对的函数。还有其他重载形式，其中一种形式是在遇到键值冲突时，需要一个函数来处理这种情况。
 
-在大多数情况下，你可以在 `java.util.stream.Collectors`寻找到你想要的预先定义好的 **Collector**。在少数情况下当你找不到想要的时候，你可以使用第二种形式的 ` collect()`。 我基本上把它留作更高级的练习, 但是这里有一个例子给出了基本想法：
+在大多数情况下，你可以在 `java.util.stream.Collectors`寻找到你想要的预先定义好的 **Collector**。在少数情况下当你找不到想要的时候，你可以使用第二种形式的 ` collect()`。 我基本上把它留作更高级的练习，但是这里有一个例子给出了基本想法：
 
 ```java
 // streams/SpecialCollector.java
@@ -1933,7 +1933,7 @@ Lambda 表达式中的第一个参数 `fr0` 是上一次调用 `reduce()` 的结
 - `anyMatch(Predicate)`：如果流中的一个元素根据提供的 **Predicate** 返回 true 时，结果返回为 true。这个操作将会在第一个 true 之后短路；也就是不会在发生 true 之后继续执行计算。
 - `noneMatch(Predicate)`：如果流的每个元素根据提供的 **Predicate** 都返回 false 时，结果返回为 true。这个操作将会在第一个 true 之后短路；也就是不会在发生 true 之后继续执行计算。
 
-你已经在 `Prime.java` 中看到了 `noneMatch()` 的示例；` allMatch()` 和 `anyMatch()` 的用法基本上是等同的。让我们探究短路行为。为了创建消除冗余代码的 ` show()` 方法，我们必须首先发现如何概括地描述所有三个匹配器操作, 然后将其转换为称为 **Matcher** 的接口：
+你已经在 `Prime.java` 中看到了 `noneMatch()` 的示例；` allMatch()` 和 `anyMatch()` 的用法基本上是等同的。让我们探究短路行为。为了创建消除冗余代码的 ` show()` 方法，我们必须首先发现如何概括地描述所有三个匹配器操作，然后将其转换为称为 **Matcher** 的接口：
 
 ```java
 // streams/Matching.java
@@ -2086,7 +2086,7 @@ you
 - `average()` ：求取流元素平均值。
 - `max()` 和 `min()`：因为这些操作在数字流上面，所以不需要 **Comparator**。
 - `sum()`：对所有流元素进行求和。
-- `summaryStatistics()`：生成可能有用的数据。目前还不太清楚他们为什么觉得有必要这样做, 但是你可以直接使用方法产生所有的数据。
+- `summaryStatistics()`：生成可能有用的数据。目前还不太清楚他们为什么觉得有必要这样做，但是你可以直接使用方法产生所有的数据。
 
 ```java
 // streams/NumericStreamInfo.java

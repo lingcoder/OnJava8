@@ -70,7 +70,7 @@ Triangle.draw()
 
 基类中包含 `draw()` 方法，它通过传递 `this` 参数传递给 `System.out.println()`，间接地使用 `toString()` 打印类标识符(注意：这里将 `toString()` 声明为了 `abstract`，以此强制继承者覆盖改方法，并防止对 `Shape` 的实例化)。如果某个对象出现在字符串表达式中(涉及"+"和字符串对象的表达式)，`toString()` 方法就会被自动调用，以生成表示该对象的 `String`。每个派生类都要覆盖（从 `Object` 继承来的）`toString()` 方法，这样 `draw()` 在不同情况下就打印出不同的消息(多态)。
 
-这个例子中，在把 `Shape` 对象放入 `Stream<Shape>` 中时就会进行向上转型(隐式)，但在向上转型的时候也丢失了这些对象的具体类型。对 `steam` 而言，它们只是 `Shape` 对象。
+这个例子中，在把 `Shape` 对象放入 `Stream<Shape>` 中时就会进行向上转型(隐式)，但在向上转型的时候也丢失了这些对象的具体类型。对 `stream` 而言，它们只是 `Shape` 对象。
 
 严格来说，`Stream<Shape>` 实际上是把放入其中的所有对象都当做 `Object` 对象来持有，只是取元素时会自动将其类型转为 `Shape`。这也是 RTTI 最基本的使用形式，因为在 Java 中，所有类型转换的正确性检查都是在运行时进行的。这也正是 RTTI 的含义所在：在运行时，识别一个对象的类型。
 
@@ -551,7 +551,305 @@ public class ClassCasts {
 
 Java类库中另一个没有任何用处的特性就是 `Class.asSubclass()`，该方法允许你将一个 `Class` 对象转型为更加具体的类型。
 
-<!-- Checking Before a Cast -->
+## 类型转换前先做检查
+
+直到现在，我们已知的RTTI类型包括:
+
+1.  传统的类型转换，如 “`(Shape)`”，由RTTI确保转换的正确性，如果执行了一个错误的类型转换，就会抛出一个 `ClassCastException` 异常。
+
+2.  代表对象类型的 `Class` 对象. 通过查询 `Class` 对象可以获取运行时所需的信息.
+
+在C++中，经典的类型转换 “`(Shape)`” 并不使用 RTTI. 它只是简单地告诉编译器将这个对象作为新的类型对待. 而 Java 会进行类型检查，这种类型转换一般被称作“类型安全的向下转型”。之所以称作“向下转型”，是因为传统上类继承图是这么画的。将 `Circle` 转换为 `Shape` 是一次向上转型, 将 `Shape` 转换为 `Circle` 是一次向下转型。但是, 因为我们知道 `Circle` 肯定是一个 `Shape`，所以编译器允许我们自由地做向上转型的赋值操作，且不需要任何显示的转型操作。当你给编译器一个 `Shape` 的时候，编译器并不知道它到底是什么类型的 `Shape`——它可能是 `Shape`，也可能是 `Shape` 的子类型，例如 `Circle`、`Square`、`Triangle` 或某种其他的类型。在编译期，编译器只能知道它是 `Shape`。因此，你需要使用显式的类型转换，以告知编译器你想转换的特定类型，否则编译器就不允许你执行向下转型赋值。 （编译器将会检查向下转型是否合理，因此它不允许向下转型到实际上不是待转型类型的子类的类型上）。
+
+RTTI 在 Java 中还有第三种形式，那就是关键字 `instanceof`。它返回一个布尔值，告诉我们对象是不是某个特定类型的实例，可以用提问的方式使用它，就像这个样子：
+
+```java
+if(x instanceof Dog)
+  ((Dog)x).bark();
+```
+
+在将 `x` 转型为 `Dog` 之前，`if` 语句会先检查 `x` 是否是 `Dog` 类型的对象。进行向下转型前，如果没有其他信息可以告诉你这个对象是什么类型，那么使用 `instanceof` 是非常重要的，否则会得到一个 `ClassCastException` 异常。
+
+一般，可能想要查找某种类型（比如要找三角形，并填充为紫色），这时可以轻松地使用 `instanceof` 来计数所有对象。举个例子，假如你有一个类的继承体系，描述了 `Pet`（以及它们的主人，在后面一个例子中会用到这个特性）。在这个继承体系中的每个 `Individual` 都有一个 `id` 和一个可选的名字。尽管下面的类都继承自 `Individual`，但是 `Individual` 类复杂性较高，因此其代码将放在[附录：容器](./Appendix-Collection-Topics)中进行解释说明。正如你所看到的，此处并不需要去了解 `Individual` 的代码——你只需了解你可以创建其具名或不具名的对象，并且每个 `Individual` 都有一个 `id()` 方法，如果你没有为 `Individual` 提供名字，`toString()` 方法只产生类型名。
+
+下面是继承自 `Individual` 的类的继承体系：
+
+```java
+// typeinfo/pets/Person.java
+package typeinfo.pets;
+
+public class Person extends Individual {
+  public Person(String name) { super(name); }
+}
+```
+
+```java
+// typeinfo/pets/Pet.java
+package typeinfo.pets;
+
+public class Pet extends Individual {
+  public Pet(String name) { super(name); }
+  public Pet() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Dog.java
+package typeinfo.pets;
+
+public class Dog extends Pet {
+  public Dog(String name) { super(name); }
+  public Dog() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Mutt.java
+package typeinfo.pets;
+
+public class Mutt extends Dog {
+  public Mutt(String name) { super(name); }
+  public Mutt() { super(); }
+}
+```
+
+
+```java
+// typeinfo/pets/Pug.java
+package typeinfo.pets;
+
+public class Pug extends Dog {
+  public Pug(String name) { super(name); }
+  public Pug() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Cat.java
+package typeinfo.pets;
+
+public class Cat extends Pet {
+  public Cat(String name) { super(name); }
+  public Cat() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/EgyptianMau.java
+package typeinfo.pets;
+
+public class EgyptianMau extends Cat {
+  public EgyptianMau(String name) { super(name); }
+  public EgyptianMau() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Manx.java
+package typeinfo.pets;
+
+public class Manx extends Cat {
+  public Manx(String name) { super(name); }
+  public Manx() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Cymric.java
+package typeinfo.pets;
+
+public class Cymric extends Manx {
+  public Cymric(String name) { super(name); }
+  public Cymric() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Rodent.java
+package typeinfo.pets;
+
+public class Rodent extends Pet {
+  public Rodent(String name) { super(name); }
+  public Rodent() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Rat.java
+package typeinfo.pets;
+
+public class Rat extends Rodent {
+  public Rat(String name) { super(name); }
+  public Rat() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Mouse.java
+package typeinfo.pets;
+
+public class Mouse extends Rodent {
+  public Mouse(String name) { super(name); }
+  public Mouse() { super(); }
+}
+```
+
+```java
+// typeinfo/pets/Hamster.java
+package typeinfo.pets;
+
+public class Hamster extends Rodent {
+  public Hamster(String name) { super(name); }
+  public Hamster() { super(); }
+}
+```
+
+我们必须显式地为每一个子类编写无参构造器。因为我们有一个带一个参数的构造器，所以编译器不会自动地为我们加上无参构造器。
+
+接下来，我们需要一个类，它可以随机地创建不同类型的宠物，同时，它还可以创建宠物数组和持有宠物的 `List`。为了这个类更加普遍适用，我们将其定义为抽象类：
+
+```java
+// typeinfo/pets/PetCreator.java
+// Creates random sequences of Pets
+package typeinfo.pets;
+import java.util.*;
+import java.util.function.*;
+
+public abstract
+class PetCreator implements Supplier<Pet> {
+  private Random rand = new Random(47);
+  // The List of the different types of Pet to create:
+  public abstract List<Class<? extends Pet>> types();
+  public Pet get() { // Create one random Pet
+    int n = rand.nextInt(types().size());
+    try {
+      return types().get(n).newInstance();
+    } catch(InstantiationException |
+            IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+}
+```
+
+抽象的 `types()` 方法需要子类来实现，以此来获取 `Class` 对象构成的 `List`（这是模板方法设计模式的一种变体）。注意，其中类的类型被定义为“任何从 `Pet` 导出的类型”，因此 `newInstance()` 不需要转型就可以产生 `Pet`。`get()` 随机的选取出一个 `Class` 对象，然后可以通过 `Class.newInstance()` 来生成该类的新实例。
+
+在调用 `newInstance()` 时，可能会出现两种异常。在紧跟 `try` 语句块后面的 `catch` 子句中可以看到对它们的处理。异常的名字再次成为了一种对错误类型相对比较有用的解释（`IllegalAccessException` 违反了 Java 安全机制，在本例中，表示默认构造器为 `private` 的情况）。
+
+当你导出 `PetCreator` 的子类时，你需要为 `get()` 方法提供 `Pet` 类型的 `List`。`types()` 方法会简单地返回一个静态 `List` 的引用。下面是使用 `forName()` 的一个具体实现：
+
+```java
+// typeinfo/pets/ForNameCreator.java
+package typeinfo.pets;
+import java.util.*;
+
+public class ForNameCreator extends PetCreator {
+  private static List<Class<? extends Pet>> types =
+    new ArrayList<>();
+  // Types you want randomly created:
+  private static String[] typeNames = {
+    "typeinfo.pets.Mutt",
+    "typeinfo.pets.Pug",
+    "typeinfo.pets.EgyptianMau",
+    "typeinfo.pets.Manx",
+    "typeinfo.pets.Cymric",
+    "typeinfo.pets.Rat",
+    "typeinfo.pets.Mouse",
+    "typeinfo.pets.Hamster"
+  };
+  @SuppressWarnings("unchecked")
+  private static void loader() {
+    try {
+      for(String name : typeNames)
+        types.add(
+          (Class<? extends Pet>)Class.forName(name));
+    } catch(ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  static { loader(); }
+  @Override
+  public List<Class<? extends Pet>> types() {
+    return types;
+  }
+}
+```
+
+`loader()` 方法使用 `Class.forName()` 创建了 `Class` 对象的 `List`。这可能会导致 `ClassNotFoundException`，因为你传入的是一个 `String`，它不能再编译期间被确认是否合理。由于 `Pet` 相关的文件在 `typeinfo` 包里面，所以使用它们的时候需要填写完整的包名。
+
+为了使得 `List` 装入的是具体的 `Class` 对象，转型是必须的，它会产生一个编译时警告。`loader()` 方法是分开编写的，然后它被放入到一个静态代码块里，因为 `@SuppressWarning` 注解不能够直接放置在静态代码块之上。
+
+为了对 `Pet` 进行计数，我们需要一个能跟踪不同类型的 `Pet` 的工具。`Map` 的是这个需求的首选，我们将 `Pet` 类型名作为键，将保存 `Pet` 数量的 `Integer` 作为值。通过这种方式，你就看可以询问：“有多少个 `Hamster` 对象？”我们可以使用 `instanceof` 来对 `Pet` 进行计数：
+
+```java
+// typeinfo/PetCount.java
+// Using instanceof
+import typeinfo.pets.*;
+import java.util.*;
+
+public class PetCount {
+  static class Counter extends HashMap<String,Integer> {
+    public void count(String type) {
+      Integer quantity = get(type);
+      if(quantity == null)
+        put(type, 1);
+      else
+        put(type, quantity + 1);
+    }
+  }
+  public static void
+  countPets(PetCreator creator) {
+    Counter counter = new Counter();
+    for(Pet pet : Pets.array(20)) {
+      // List each individual pet:
+      System.out.print(
+        pet.getClass().getSimpleName() + " ");
+      if(pet instanceof Pet)
+        counter.count("Pet");
+      if(pet instanceof Dog)
+        counter.count("Dog");
+      if(pet instanceof Mutt)
+        counter.count("Mutt");
+      if(pet instanceof Pug)
+        counter.count("Pug");
+      if(pet instanceof Cat)
+        counter.count("Cat");
+      if(pet instanceof EgyptianMau)
+        counter.count("EgyptianMau");
+      if(pet instanceof Manx)
+        counter.count("Manx");
+      if(pet instanceof Cymric)
+        counter.count("Cymric");
+      if(pet instanceof Rodent)
+        counter.count("Rodent");
+      if(pet instanceof Rat)
+        counter.count("Rat");
+      if(pet instanceof Mouse)
+        counter.count("Mouse");
+      if(pet instanceof Hamster)
+        counter.count("Hamster");
+    }
+    // Show the counts:
+    System.out.println();
+    System.out.println(counter);
+  }
+  public static void main(String[] args) {
+    countPets(new ForNameCreator());
+  }
+}
+/* Output:
+Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
+EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
+Pug Mouse Cymric
+{EgyptianMau=2, Pug=3, Rat=2, Cymric=5, Mouse=2, Cat=9,
+Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
+*/
+```
+
+在 `countPets()` 中，一个简短的静态方法 `Pets.array()` 生产出了一个随机动物的集合。每个 `Pet` 都被 `instanceof` 检测到并数了一遍。
+
+`instanceof` 有一个严格的限制：只可以将它与命名类型进行比较，而不能与 `Class` 对象作比较。在前面的例子中，你可能会觉得写出一大堆 `instanceof` 表达式很乏味，事实也是如此。但是，也没有办法让 `instanceof` 聪明起来，让它能够自动地创建一个 `Class` 对象的数组，然后将目标与这个数组中的对象逐一进行比较（稍后会看到一种替代方案）。其实这并不是那么大的限制，如果你在程序中写了大量的 `instanceof`，那就说明你的设计可能存在瑕疵。
+
 
 ## 类型转换检测
 
