@@ -469,6 +469,7 @@ Total                      49.39
 正如你所见，通过相当简洁的语法，`Formatter`提供了对空格与对齐的强大控制能力。在该程序中，为了恰当地控制间隔，格式化字符串被重复利用了多遍。
 ### `Formatter`转换
 下面的表格展示了最常用的类型转换：
+
 | 类型 | 含义 |
 | :----: | :---- |
 | `d` | 整型（十进制） |
@@ -480,7 +481,9 @@ Total                      49.39
 | `x` | 整型（十六进制） |
 | `h` | 散列码（十六进制） |
 | `%` | 字面值“%” |
+
 下面的程序演示了这些转换是如何工作的：
+
 ```java
 // strings/Conversion.java 
 import java.math.*;
@@ -669,6 +672,8 @@ public class Hex {
 */
 ```
 为了打开及读入二进制文件，我们用到了另一个工具`Files.readAllBytes()`，这已经在[Files章节](#)介绍过了。这里的`readAllBytes()`方法将整个文件以`byte`数组的形式返回。
+
+
 <!-- Regular Expressions -->
 ## 正则表达式
 很久之前，*正则表达式*就已经整合到标准Unix工具集之中，例如sed、awk和程序语言之中了，如Python和Perl（有些人认为正是正则表达式促成了Perl的成功）。而在Java中，字符串操作还主要集中于`String`、`StringBuffer`和`StringTokenizer`类。与正则表达式相比较，它们只能提供相当简单的功能。
@@ -807,9 +812,9 @@ the mightiest banana in the forest...with... a banana!
 这里只列出了部分常用的表达式，你应该将JDK文档中`java.util.regex.Pattern`那一页加入浏览器书签中，以便在需要的时候方便查询。
 
 | 逻辑操作符 | 含义 |
-| :---- :| :---- |
+| :----: | :---- |
 | `XY` | `Y`跟在`X`后面 |
-| `X|Y` | `X`或`Y` |
+| `X\|Y` | `X`或`Y` |
 | `(X)` | 捕获组（capturing group）。可以在表达式中用`\i`引用第i个捕获组 |
 
 下面是不同的边界匹配符：
@@ -1515,13 +1520,18 @@ But I'm not dead yet! I feel happy!
 
 [^1]: C++允许编程人员任意重载操作符。这通常是很复杂的过程（参见Prentice Hall于2000年编写的《Thinking in C++（第2版）》第10章），因此Java设计者认为这是很糟糕的功能，不应该纳入到Java中。起始重载操作符并没有糟糕到只能自己去重载的地步，但具有讽刺意味的是，与C++相比，在Java中使用操作符重载要容易得多。这一点可以在Python(参见[www.Python.org](http://www.python.org))和C#中看到，它们都有垃圾回收机制，操作符重载也简单易懂。
 
+
 [^2]: Java并非在一开始就支持正则表达式，因此这个令人费解的语法是硬塞进来的。
+
 
 [^3]: 网上还有很多实用并且成熟的正则表达式工具。
 
+
 [^4]: input来自于[Galaxy Quest](https://en.wikipedia.org/wiki/Galaxy_Quest)中Taggart司令的一篇演讲。
 
+
 [^5]: 我不知道他们是如何想出这个方法名的，或者它到底指的什么。这只是代码审查很重要的原因之一。
+
 
 <!-- 分页 -->
 
