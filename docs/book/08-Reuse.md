@@ -769,19 +769,214 @@ public class Car {
 
 当使用继承时，使用一个现有类并开发出它的新版本。通常这意味着使用一个通用类，并为了某个特殊需求将其特殊化。稍微思考下，你就会发现，用一个交通工具对象来组成一部车是毫无意义的——车不包含交通工具，它就是交通工具。这种“是一个”的关系是用继承来表达的，而“有一个“的关系则用组合来表达。
 
-
-
 <!-- protected -->
 
 ## protected
+
+即然你已经接触到继承，关键字 **protected** 就变得有意义了。在理想世界中，仅靠关键字 **private** 就足够了。在实际项目中，却经常想把一个事物尽量对外界隐藏，而允许派生类的成员访问。
+
+关键字 **protected** 就起这个作用。它表示“就类的用户而言，这是 **private** 的。但对于任何继承它的子类或在同一包中的类，它是可访问的。”（**protected** 也提供了包访问权限）
+
+尽管可以创建 **protected** 属性，但是最好的方式是将属性声明为 **private** 以一直保留更改底层实现的权利。然后通过 **protected** 控制类的继承者的访问权限。
+
+```java
+// reuse/Orc.java
+// The protected keyword
+class Villain {
+    private String name;
+    
+    protected void set(String nm) {
+        name = nm;
+    }
+    
+    Villain(String name) {
+        this.name = name;
+    }
+    
+    @Override
+    public String toString() {
+        return "I'm a Villain and my name is " + name;
+    }
+}
+
+public class Orc extends Villain {
+    private int orcNumber;
+    
+    public Orc(String name, int orcNumber) {
+        super(name);
+        this.orcNumber = orcNumber;
+    }
+    
+    public void change(String name, int orcNumber) {
+        set(name); // Available because it's protected
+        this.orcNumber = orcNumber;
+    }
+    
+    @Override
+    public String toString() {
+        return "Orc " + orcNumber + ": " + super.toString();
+    }
+    
+    public static void main(String[] args) {
+        Orc orc = new Orc("Limburger", 12);
+        System.out.println(orc);
+        orc.change("Bob", 19);
+        System.out.println(orc);
+    }
+}
+```
+
+输出：
+
+```
+Orc 12: I'm a Villain and my name is Limburger
+Orc 19: I'm a Villain and my name is Bob
+```
+
+`change()` 方法可以访问 `set()` 方法，因为 `set()` 方法是 **protected**。注意到，类 **Orc** 的  `toString()` 方法也使用了基类的版本。
 
 
 <!-- Upcasting -->
 ## 向上转型
 
+继承最重要的方面不是为新类提供方法。它是新类与基类的一种关系。简而言之，这种关系可以表述为“新类是已有类的一种类型”。
+
+这种描述并非是解释继承的一种花哨方式，这是直接由语言支持的。例如，假设有一个基类 **Instrument** 代表音乐乐器和一个派生类 **Wind**。 因为继承保证了基类的所有方法在派生类中也是可用的，所以任意发送给该基类的消息也能发送给派生类。如果 **Instrument** 有一个 `play()` 方法，那么 **Wind** 也有该方法。这意味着你可以准确地说 **Wind** 对象也是一种类型的 **Instrument**。下面例子展示了编译器是如何支持这一概念的：
+
+```java
+// reuse/Wind.java
+// Inheritance & upcasting
+class Instrument {
+    public void play() {}
+    
+    static void tune(Instrument i) {
+        // ...
+        i.play();
+    }
+}
+
+// Wind objects are instruments
+// because they have the same interface:
+public class Wind extends Instrument {
+    public static void main(String[] args) {
+        Wind flute = new Wind();
+        Instrument.tune(flute); // Upcasting
+    }
+}
+```
+
+`tune()` 方法接受了一个 **Instrument** 类型的引用。但是，在 **Wind** 的 `main()` 方法里，`tune()` 方法却传入了一个 **Wind** 引用。鉴于 Java 对类型检查十分严格，一个接收一种类型的方法接受了另一种类型看起来很奇怪，除非你意识到 **Wind** 对象同时也是一个 **Instrument** 对象，而且 **Instrument** 的 `tune` 方法一定会存在于 **Wind** 中。在 `tune()` 中，代码对 **Instrument** 和 所有 **Instrument** 的派生类起作用，这种把 **Wind** 引用转换为 **Instrument** 引用的行为称作*向上转型*。
+
+该术语是基于传统的类继承图：图最上面是根，然后向下铺展。（当然你可以以任意方式画你认为有帮助的类图。）于是，**Wind.java** 的类图是：
+
+![Wind 类图](../images/1561774164644.png)
+
+继承图中派生类转型为基类是向上的，所以通常称作*向上转型*。因为是从一个更具体的类转化为一个更一般的类，所以向上转型永远是安全的。也就是说，派生类是基类的一个超集。它可能比基类包含更多的方法，但它必须至少具有与基类一样的方法。在向上转型期间，类接口只可能失去方法，不会增加方法。这就是为什么编译器在没有任何明确转型或其他特殊标记的情况下，仍然允许向上转型的原因。
+
+也可以执行与向上转型相反的向下转型，但是会有问题，对于该问题会放在下一章和“类型信息”一章进行更深入的探讨。
+
+### 再论组合和继承
+
+在面向对象编程中，创建和使用代码最有可能的方法是将数据和方法一起打包到类中，然后使用该类的对象。也可以使用已有的类通过组合来创建新类。继承其实不太常用。因此尽管在教授 OOP 的过程中我们多次强调继承，但这并不意味着要尽可能使用它。恰恰相反，尽量少使用它，除非确实使用继承是有帮助的。一种判断使用组合还是继承的最清晰的方法是问一问自己是否需要把新类向上转型为基类。如果必须向上转型，那么继承就是必要的，但如果不需要，则要进一步考虑是否该采用继承。“多态”一章提出了一个使用向上转型的最有力的理由，但是只要记住问一问“我需要向上转型吗？”，就能在这两者中作出较好的选择。
+
 <!-- The final Keyword -->
 
 ## final关键字
+
+根据上下文环境，Java 的关键字 **final** 的含义有些微的不同，但通常它指的是“这是不能被改变的”。防止改变有两个原因：设计或效率。因为这两个原因相差很远，所以有可能误用关键字 **final**。
+
+以下几节讨论了可能使用 **final** 的三个地方：数据、方法和类。
+
+### final 数据
+
+许多编程语言都有某种方法告诉编译器有一块数据是恒定不变的。恒定是有用的，如：
+
+1. 一个永不改变的编译时常量。
+2. 一个在运行时初始化就不会改变的值。
+
+对于编译时常量这种情况，编译器可以把常量带入计算中；也就是说，可以在编译时计算，减少了一些运行时的负担。在 Java 中，这类常量必须是基本类型，而且用关键字 **final** 修饰。你必须在定义常量的时候进行赋值。
+
+一个被 **static** 和 **final** 同时修饰的属性只会占用一段不能改变的存储空间。
+
+当用 **final** 修饰对象引用而非基本类型时，其含义会有一点令人困惑。对于基本类型，**final** 使数值恒定不变，而对于对象引用，**final** 使引用恒定不变。一旦引用被初始化指向了某个对象，它就不能改为指向其他对象。但是，对象本身是可以修改的，Java 没有提供使任何对象恒定不变的方法。（你可以自己编写类达到使对象恒定不变的效果）这一限制同样适用数组，数组也是对象。
+
+下面例子展示了 **final** 属性的使用：
+
+```java
+// reuse/FinalData.java
+// The effect of final on fields
+import java.util.*;
+
+class Value {
+    int i; // package access
+    
+    Value(int i) {
+        this.i = i;
+    }
+}
+
+public class FinalData {
+    private static Random rand = new Random(47);
+    private String id;
+    
+    public FinalData(String id) {
+        this.id = id;
+    }
+    // Can be compile-time constants:
+    private final int valueOne = 9;
+    private static final int VALUE_TWO = 99;
+    // Typical public constant:
+    public static final int VALUE_THREE = 39;
+    // Cannot be compile-time constants:
+    private final int i4 = rand.nextInt(20);
+    static final int INT_5 = rand.nextInt(20);
+    private Value v1 = new Value(11);
+    private final Value v2 = new Value(22);
+    private static final Value VAL_3 = new Value(33);
+    // Arrays:
+    private final int[] a = {1, 2, 3, 4, 5, 6};
+    
+    @Override
+    public String toString() {
+        return id + ": " + "i4 = " + i4 + ", INT_5 = " + INT_5;
+    }
+    
+    public static void main(String[] args) {
+        FinalData fd1 = new FinalData("fd1");
+        //- fd1.valueOne++; // Error: can't change value
+        fd1.v2.i++; // Object isn't constant
+        fd1.v1 = new Value(9); // OK -- not final
+        for (int i = 0; i < fd1.a.length; i++) {
+            fd1.a[i]++; // Object isn't constant
+        }
+        //- fd1.v2 = new Value(0); // Error: Can't
+        //- fd1.VAL_3 = new Value(1); // change reference
+        //- fd1.a = new int[3];
+        System.out.println(fd1);
+        System.out.println("Creating new FinalData");
+        FinalData fd2 = new FinalData("fd2");
+        System.out.println(fd1);
+        System.out.println(fd2);
+    }
+}
+```
+
+输出：
+
+```
+fd1: i4 = 15, INT_5 = 18
+Creating new FinalData
+fd1: i4 = 15, INT_5 = 18
+fd2: i4 = 13, INT_5 = 18
+```
+
+因为 **valueOne** 和 **VALUE_TWO** 都是带有编译时值的 **final** 基本类型，它们都可用作编译时常量，没有多大区别。
+
+### final 方法
+
+
+
+### final 类
 
 
 <!-- Initialization and Class Loading -->
