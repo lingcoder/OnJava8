@@ -970,16 +970,203 @@ fd1: i4 = 15, INT_5 = 18
 fd2: i4 = 13, INT_5 = 18
 ```
 
-因为 **valueOne** 和 **VALUE_TWO** 都是带有编译时值的 **final** 基本类型，它们都可用作编译时常量，没有多大区别。
+因为 **valueOne** 和 **VALUE_TWO** 都是带有编译时值的 **final** 基本类型，它们都可用作编译时常量，没有多大区别。**VALUE_THREE** 是一种更加典型的常量定义的方式：**public** 意味着可以在包外访问，**static** 强调只有一个，**final** 说明是一个常量。
+
+按照惯例，带有恒定初始值的 **final** **static** 基本变量（即编译时常量）命名全部使用大写，单词之间用下划线分隔。（源于 C 语言中定义常量的方式。）
+
+我们不能因为某数据被 **final** 修饰就认为在编译时可以知道它的值。由上例中的 **i4** 和 **INT_5** 可以看出，它们在运行时才会赋值随机数。示例部分也展示了将 **final** 值定义为 **static** 和非 **static** 的区别。此区别只有当值在运行时被初始化时才会显现，因为编译器对编译时数值一视同仁。（而且编译时数值可能因优化而消失。）当运行程序时就能看到这个区别。注意到 **fd1** 和 **fd2** 的 **i4** 值不同，但 **INT_5** 的值并没有因为创建了第二个 **FinalData** 对象而改变，这是因为它是 **static** 的，在加载时已经被初始化，并不是每次创建新对象时都初始化。
+
+**v1** 到 **VAL_3** 变量说明了 **final** 引用的意义。正如你在 `main()` 中所见，**v2** 是 **final** 的并不意味着你不能修改它的值。因为它是引用，所以只是说明它不能指向一个新的对象。这对于数组具有同样的意义，数组只不过是另一种引用。（我不知道有什么方法能使数组引用本身成为 **final**。）看起来，声明引用为 **final** 没有声明基本类型 **final** 有用。
+
+### 空白 final
+
+空白 final 指的是没有初始化值的 **final** 属性。编译器确保空白 final 在使用前必须被初始化。这样既能使一个类的每个对象的 **final** 属性值不同，也能保持它的不变性。
+
+```java
+// reuse/BlankFinal.java
+// "Blank" final fields
+class Poppet {
+    private int i;
+    
+    Poppet(int ii) {
+        i = ii;
+    }
+}
+
+public class BlankFinal {
+    private final int i = 0; // Initialized final
+    private final int j; // Blank final
+    private final Poppet p; // Blank final reference
+    // Blank finals MUST be initialized in constructor
+    public BlankFinal() {
+        j = 1; // Initialize blank final
+        p = new Poppet(1); // Init blank final reference
+    }
+    
+    public BlankFinal(int x) {
+        j = x; // Initialize blank final
+        p = new Poppet(x); // Init blank final reference
+    }
+    
+    public static void main(String[] args) {
+        new BlankFinal();
+        new BlankFinal(47);
+    }
+}
+```
+
+你必须在定义时或在每个构造器中执行 final 变量的赋值操作。这保证了 final 属性在使用前已经被初始化过。
+
+### final 参数
+
+在参数列表中，将参数声明为 final 意味着在方法中不能改变参数指向的对象或基本变量：
+
+```java
+// reuse/FinalArguments.java
+// Using "final" with method arguments
+class Gizmo {
+    public void spin() {
+        
+    }
+}
+
+public class FinalArguments {
+    void with(final Gizmo g) {
+        //-g = new Gizmo(); // Illegal -- g is final
+    }
+    
+    void without(Gizmo g) {
+        g = new Gizmo(); // OK -- g is not final
+        g.spin();
+    }
+    
+    //void f(final int i) { i++; } // Can't change
+    // You can only read from a final primitive
+    int g(final int i) {
+        return i + 1;
+    }
+    
+    public static void main(String[] args) {
+        FinalArguments bf = new FinalArguments();
+        bf.without(null);
+        bf.with(null);
+    }
+}
+```
+
+方法 `f()` 和 `g()` 展示了 **final** 基本类型参数的使用情况。你只能读取而不能修改参数。这个特性主要用于传递数据给匿名内部类。这将在”内部类“章节中详解。
 
 ### final 方法
 
+使用 **final** 方法的原因有两个。第一个原因是给方法上锁，防止子类通过覆写改变方法的行为。这是出于继承的考虑，确保方法的行为不会因继承而改变。
 
+过去建议使用 **final** 方法的第二个原因是效率。在早期的 Java 实现中，如果将一个方法指明为 **final**，就是同意编译器把对该方法的调用转化为内嵌调用。当编译器遇到 **final** 方法的调用时，就会很小心地跳过普通的插入代码以执行方法的调用机制（将参数压栈，跳至方法代码处执行，然后跳回并清理栈中的参数，最终处理返回值），而用方法体内实际代码的副本替代方法调用。这消除了方法调用的开销。但是如果一个方法很大代码膨胀，你也许就看不到内嵌带来的性能提升，因为内嵌调用带来的性能提高被花费在方法里的时间抵消了。
+
+在最近的 Java 版本中，虚拟机可以探测到这些情况（尤其是 *hotspot* 技术），并优化去掉这些效率反而降低的内嵌调用方法。有很长一段时间，使用 **final** 来提高效率都被阻止。你应该让编译器和 JVM 处理效率问题，只有在防止方法ß覆写时才使用 **final**。
+
+### final 和 private
+
+类中所有的 **private** 方法都隐式地指定为 **final**。因为不能访问 **private** 方法，所以不能覆写它。可以给 **private** 方法添加 **final** 修饰，但是并不能给方法带来额外的含义。
+
+以下情况会令人困惑，当你试图覆写一个 **private** 方法（隐式是 **final** 的）时，看上去奏效，而且编译器不会给出错误信息：
+
+```java
+// reuse/FinalOverridingIllusion.java
+// It only looks like you can override
+// a private or private final method
+class WithFinals {
+    // Identical to "private" alone:
+    private final void f() {
+        System.out.println("WithFinals.f()");
+    }
+    // Also automatically "final":
+    private void g() {
+        System.out.println("WithFinals.g()");
+    }
+}
+
+class OverridingPrivate extends WithFinals {
+    private final void f() {
+        System.out.println("OverridingPrivate.f()");
+    }
+    
+    private void g() {
+        System.out.println("OverridingPrivate.g()");
+    }
+}
+
+class OverridingPrivate2 extends OverridingPrivate {
+    public final void f() {
+        System.out.println("OverridingPrivate2.f()");
+    } 
+    
+    public void g() {
+        System.out.println("OverridingPrivate2.g()");
+    }
+}
+
+public class FinalOverridingIllusion {
+    public static void main(String[] args) {
+        OverridingPrivate2 op2 = new OverridingPrivate2();
+        op2.f();
+        op2.g();
+        // You can upcast:
+        OverridingPrivate op = op2;
+        // But you can't call the methods:
+        //- op.f();
+        //- op.g();
+        // Same here:
+        WithFinals wf = op2;
+        //- wf.f();
+        //- wf.g();
+    }
+}
+```
+
+输出：
+
+```
+OverridingPrivate2.f()
+OverridingPrivate2.g()
+```
+
+"覆写"只发生在方法是基类的接口时。也就是说，必须能将一个对象向上转型为基类并调用相同的方法（这一点在下一章阐明）。如果一个方法是 **private** 的，它就不是基类接口的一部分。它只是隐藏在类内部的代码，且恰好有相同的命名而已。但是如果你在派生类中以相同的命名创建了 **public**，**protected** 或包访问权限的方法，这些方法与基类中的方法没有联系，你没有覆写方法，只是在创建新的方法而已。由于 **private** 方法无法触及且能有效隐藏，除了把它看作类中的一部分，其他任何事物都不需要考虑到它。
 
 ### final 类
 
+当说一个类是 **final** （**final** 关键字在类定义之前），就意味着它不能被继承。之所以这么做，是因为类的设计就是永远不需要改动，或者是出于安全考虑不希望它有子类。
+
+```java
+// reuse/Jurassic.java
+// Making an entire class final
+class SmallBrain {}
+
+final class Dinosaur {
+    int i = 7;
+    int j = 1;
+    SmallBrain x = new SmallBrain();
+    
+    void f() {}
+}
+
+//- class Further extends Dinosaur {}
+// error: Cannot extend final class 'Dinosaur'
+public class Jurassic {
+    public static void main(String[] args) {
+        Dinosaur n = new Dinosaur();
+        n.f();
+        n.i = 40;
+        n.j++;
+    }
+}
+```
+
+**final** 类的属性可以根据个人选择是或不是 **final**。这同样适用于不管类是否是 **final** 的内部 **final** 属性。然而，由于 **final** 类禁止继承，类中所有的方法都被隐式地指定为 **final**，所以没有办法覆写它们。你可以在 final 类中的方法加上 **final** 修饰符，但不会增加任何意义。
+
+### final 忠告
 
 <!-- Initialization and Class Loading -->
+
 ## 类初始化和加载
 
 <!-- Summary -->
