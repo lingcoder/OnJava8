@@ -27,7 +27,7 @@
 - [x] [第五章 控制流](docs/book/05-Control-Flow.md)
 - [x] [第六章 初始化和清理](docs/book/06-Housekeeping.md) 
 - [x] [第七章 封装](docs/book/07-Implementation-Hiding.md) 
-- [ ] [第八章 复用](docs/book/08-Reuse.md)
+- [x] [第八章 复用](docs/book/08-Reuse.md)
 - [ ] [第九章 多态](docs/book/09-Polymorphism.md)
 - [ ] [第十章 接口](docs/book/10-Interfaces.md)
 - [x] [第十一章 内部类](docs/book/11-Inner-Classes.md)
