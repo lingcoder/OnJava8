@@ -471,11 +471,408 @@ Woodwind.play() MIDDLE_C
 
 ### 陷阱：”覆写“私有方法
 
+你可能天真地试图像下面这样做：
 
+```java
+// polymorphism/PrivateOverride.java
+// Trying to override a private method
+// {java polymorphism.PrivateOverride}
+package polymorphism;
+
+public class PrivateOverride {
+    private void f() {
+        System.out.println("private f()");
+    }
+    
+    public static void main(String[] args) {
+        PrivateOverride po = new Derived();
+        po.f();
+    }
+}
+
+public Derived extends PrivateOverride {
+    public void f() {
+        System.out.println("public f()");
+    }
+}
+```
+
+输出：
+
+```
+private f()
+```
+
+你可能期望输出是 **public f()**，然而 **private** 方法也是 **final** 的，对于派生类来说是隐蔽的。因此，这里 **Derived** 的 `f()` 是一个全新的方法；因为基类版本的 `f()` 屏蔽了 **Derived** ，因此它都不算是重载方法。
+
+结论是只有非 **private** 方法才能被覆写，但是得小心覆写 **private** 方法的现象，编译器不报错，但不会按我们所预期的执行。为了清晰起见，派生类中的方法名采用与基类中 **private** 方法名不同的命名。
+
+如果使用了 `@Override` 注解，就能检测出问题：
+
+```java
+// polymorphism/PrivateOverride2.java
+// Detecting a mistaken override using @Override
+// {WillNotCompile}
+package polymorphism;
+
+public class PrivateOverride2 {
+    private void f() {
+        System.out.println("private f()");
+    }
+    
+    public static void main(String[] args) {
+        PrivateOverride2 po = new Derived2();
+        po.f();
+    }
+}
+
+class Derived2 extends PrivateOverride2 {
+    @Override
+    public void f() {
+        System.out.println("public f()");
+    }
+}
+```
+
+编译器报错信息是：
+
+```
+error: method does not override or
+implement a method from a supertype
+```
+
+### 陷阱：属性与静态方法
+
+一旦学会了多态，就可以以多态的思维方式考虑每件事。然而，只有普通的方法调用可以是多态的。例如，如果你直接访问一个属性，该访问会在编译时解析：
+
+```java
+// polymorphism/FieldAccess.java
+// Direct field access is determined at compile time
+class Super {
+    public int field = 0;
+    
+    public int getField() {
+        return field;
+    }
+}
+
+class Sub extends Super {
+    public int field = 1;
+    
+    @Override
+    public int getField() {
+        return field;
+    }
+    
+    public int getSuperField() {
+        return super.field;
+    }
+}
+
+public class FieldAccess {
+    public static void main(String[] args) {
+        Super sup = new Sub(); // Upcast
+        System.out.println("sup.field = " + sup.field + 
+                          ", sup.getField() = " + sup.getField());
+        Sub sub = new Sub();
+        System.out.println("sub.field = " + sub.field + 
+                          ", sub.getField() = " + sub.getField()
+                          + ", sub.getSuperField() = " + sub.getSuperField())
+    }
+}
+```
+
+输出：
+
+```
+sup.field = 0, super.getField() = 1
+sub.field = 1, sub.getField() = 1, sub.getSuperField() = 0
+```
+
+当 **Sub** 对象向上转型为 **Super** 引用时，任何属性访问都被编译器解析，因此不是多态的。在这个例子中，**Super.field** 和 **Sub.field** 被分配了不同的存储空间，因此，**Sub** 实际上包含了两个称为 **field** 的属性：它自己的和来自 **Super** 的。然而，在引用 **Sub** 的 **field** 时，默认的 **field** 属性并不是 **Super** 版本的 **field** 属性。为了获取 **Super** 的 **field** 属性，需要显式地指明 **super.field**。
+
+尽管这看起来是个令人困惑的问题，实际上基本不会发生。首先，通常会将所有的属性都指明为 **private**，因此不能直接访问它们，只能通过方法来访问。此外，你可能也不会给基类属性和派生类属性起相同的名字，这样做会令人困惑。
+
+如果一个方法是静态(**static**)的，它的行为就不具有多态性：
+
+```java
+// polymorphism/StaticPolymorphism.java
+// static methods are not polymorphic
+class StaticSuper {
+    public static String staticGet() {
+        return "Base staticGet()";
+    }
+    
+    public String dynamicGet() {
+        return "Base dynamicGet()";
+    }
+}
+
+class StaticSub extends StaticSuper {
+    public static String staticGet() {
+        return "Derived staticGet()";
+    }
+    @Override
+    public String dynamicGet() {
+        return "Derived dynamicGet()";
+    }
+}
+
+public class StaticPolymorphism {
+    public static void main(String[] args) {
+        StaticSuper sup = new StaticSub(); // Upcast
+        System.out.println(StaticSuper.staticGet());
+        System.out.println(sup.dynamicGet());
+    }
+}
+```
+
+输出：
+
+```
+Base staticGet()
+Derived dynamicGet()
+```
+
+静态的方法只与类关联，与单个的对象无关。
 
 <!-- Constructors and Polymorphism -->
 
 ## 构造器和多态
+
+通常，构造器不同于其他类型的方法。在涉及多态时也是如此。尽管构造器不具有多态性（它们实际上是静态方法，但是隐式声明的），但是理解构造器在复杂层次结构中运作多态还是非常重要的。这个理解可以帮助你避免一些不愉快的困扰。
+
+### 构造器调用顺序
+
+在“初始化和清理”和“复用”两章中已经简单地介绍过构造器的调用顺序，但那时还没有介绍多态。
+
+在派生类的构造过程中总会调用基类的构造器。初始化会自动按继承层次结构上移，因此每个基类的构造器都会被调用到。这么做是有意义的，因为构造器有着特殊的任务：检查对象是否被正确地构造。由于属性通常声明为 **private**，你必须假定派生类只能访问自己的成员而不能访问基类的成员。只有基类的构造器拥有恰当的知识和权限来初始化自身的元素。因此，必须得调用所有构造器；否则就不能构造完整的对象。这就是编译器强制每个派生类部分必须调用构造器的原因。如果在派生类的构造器主体中没有显式地调用基类构造器，编译器就会默默地调用无参构造器。如果没有无参构造器，编译器就会报错（当类中不含构造器时，编译器会自动合成一个无参构造器）。
+
+下面的例子展示了组合、继承和多态在构建顺序上的作用：
+
+```java
+// polymorphism/Sandwich.java
+// Order of constructor calls
+// {java polymorphism.Sandwich}
+package polymorphism;
+
+class Meal {
+    Meal() {
+        System.out.println("Meal()");
+    }
+}
+
+class Bread {
+    Bread() {
+        System.out.println("Bread()");
+    }
+}
+
+class Cheese {
+    Cheese() {
+        System.out.println("Cheese()");
+    }
+}
+
+class Lettuce {
+    Lettuce() {
+        System.out.println("Lettuce()");
+    }
+}
+
+class Lunch extends Meal {
+    Lunch() {
+        System.out.println("Lunch()");
+    }
+}
+
+class PortableLunch extends Lunch {
+    PortableLunch() {
+        System.out.println("PortableLunch()");
+    }
+}
+
+public class Sandwich extends PortableLunch {
+    private Bread b = new Bread();
+    private Cheese c = new Cheese();
+    private Lettuce l = new Lettuce();
+    
+    public Sandwich() {
+        System.out.println("Sandwich()");
+    }
+    
+    public static void main(String[] args) {
+        new Sandwich();
+    }
+}
+```
+
+输出：
+
+```
+Meal()
+Lunch()
+PortableLunch()
+Bread()
+Cheese()
+Lettuce()
+Sandwich()
+```
+
+这个例子用其他类创建了一个复杂的类。每个类都在构造器中声明自己。重要的类是 **Sandwich**，它反映了三层继承（如果算上 **Object** 的话，就是四层），包含了三个成员对象。
+
+从创建 **Sandwich** 对象的输出中可以看出对象的构造器调用顺序如下：
+
+1. 基类构造器被调用。这个步骤重复递归，直到根基类的构造器被调用，然后是它的派生类，以此类推，直到最底层的派生类构造器被调用。
+2. 按声明顺序初始化成员。
+3. 最终调用派生类的构造器。
+
+构造器的调用顺序很重要。当使用继承时，就已经知道了基类的一切，并可以访问基类中任意 **public** 和 **protected** 的成员。这意味着在派生类中可以假定所有的基类成员都是有效的。在一个标准方法中，构造动作已经发生过，对象其他部分的所有成员都已经创建好。
+
+在构造器中必须确保所有的成员都已经构建完。唯一能保证这点的方法就是首先调用基类的构造器。接着，在派生类的构造器中，所有你可以访问的基类成员都已经初始化。另一个在构造器中能知道所有成员都是有效的理由是：无论何时有可能的话，你应该在所有成员对象（通过组合将对象置于类中）定义处初始化它们（例如，例子中的 **b**、**c** 和 **l**）。如果遵循这条实践，就可以帮助确保所有的基类成员和当前对象的成员对象都已经初始化。
+
+不幸的是，这不能处理所有情况，在下一节会看到。
+
+### 继承和清理
+
+在使用组合和继承创建新类时，大部分时候你无需关心清理。子对象通常会留给垃圾收集器处理。如果你存在清理问题，那么必须用心地为新类创建一个 `dispose()` 方法（这里用的是我选择的名称，你可以使用更好的名称）。由于继承，如果有其他特殊的清理工作的话，就必须在派生类中覆写 `dispose()` 方法。当覆写 `dispose()` 方法时，记得调用基类的 `dispose()` 方法，否则基类的清理工作不会发生：
+
+```java
+// polymorphism/Frog.java
+// Cleanup and inheritance
+// {java polymorphism.Frog}
+package polymorphism;
+
+class Characteristic {
+    private String s;
+    
+    Characteristic(String s) {
+        this.s = s;
+        System.out.println("Creating Characteristic " + s);
+    }
+    
+    protected void dispose() {
+        System.out.println("disposing Characteristic " + s);
+    }
+}
+
+class Description {
+    private String s;
+    
+    Description(String s) {
+        this.s = s;
+        System.out.println("Creating Description " + s);
+    }
+    
+    protected void dispose() {
+        System.out.println("disposing Description " + s);
+    }
+}
+
+class LivingCreature {
+    private Characteristic p = new Characteristic("is alive");
+    private Description t = new Description("Basic Living Creature");
+    
+    LivingCreature() {
+        System.out.println("LivingCreature()");
+    }
+    
+    protected void dispose() {
+        System.out.println("LivingCreature dispose");
+        t.dispose();
+        p.dispose();
+    }
+}
+
+class Animal extends LivingCreature {
+    private Characteristic p = new Characteristic("has heart");
+    private Description t = new Description("Animal not Vegetable");
+    
+    Animal() {
+        System.out.println("Animal()");
+    }
+    
+    @Override
+    protected void dispose() {
+        System.out.println("Animal dispose");
+        t.dispose();
+        p.dispose();
+        super.dispose();
+    }
+}
+
+class Amphibian extends Animal {
+    private Characteristic p = new Characteristic("can live in water");
+    private Description t = new Description("Both water and land");
+    
+    Amphibian() {
+        System.out.println("Amphibian()");
+    }
+    
+    @Override
+    protected void dispose() {
+        System.out.println("Amphibian dispose");
+        t.dispose();
+        p.dispose();
+        super.dispose();
+    }
+}
+
+public class Frog extends Amphibian {
+    private Characteristic = = new Characteristic("Croaks");
+    private Description t = new Description("Eats Bugs");
+    
+    public Frog() {
+        System.out.println("Frog()");
+    }
+    
+    @Override
+    protected void dispose() {
+        System.out.println("Frog dispose");
+        t.dispose();
+        p.dispose();
+        super.dispose();
+    }
+    
+    public static void main(String[] args) {
+        Frog frog = new Frog();
+        System.out.println("Bye!");
+        frog.dispose();
+    }
+}
+```
+
+输出：
+
+```
+Creating Characteristic is alive
+Creating Description Basic Living Creature
+LivingCreature()
+Creating Characteristiv has heart
+Creating Description Animal not Vegetable
+Animal()
+Creating Characteristic can live in water
+Creating Description Both water and land
+Amphibian()
+Creating Characteristic Croaks
+Creating Description Eats Bugs
+Frog()
+Bye!
+Frog dispose
+disposing Description Eats Bugs
+disposing Characteristic Croaks
+Amphibian dispose
+disposing Description Both wanter and land
+disposing Characteristic can live in water
+Animal dispose
+disposing Description Animal not Vegetable
+disposing Characteristic has heart
+LivingCreature dispose
+disposing Description Basic Living Creature
+disposing Characteristic is alive
+```
+
+层级结构中的每个类都有 Characteristic 和 Description 两个类型的成员对象，它们必须得被销毁。销毁的顺序应该与初始化的顺序相反，以防一个对象依赖另一个对象。
 
 <!-- Covariant Return Types -->
 
