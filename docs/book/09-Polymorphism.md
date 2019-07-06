@@ -872,19 +872,383 @@ disposing Description Basic Living Creature
 disposing Characteristic is alive
 ```
 
-层级结构中的每个类都有 Characteristic 和 Description 两个类型的成员对象，它们必须得被销毁。销毁的顺序应该与初始化的顺序相反，以防一个对象依赖另一个对象。
+层级结构中的每个类都有 **Characteristic** 和 **Description** 两个类型的成员对象，它们必须得被销毁。销毁的顺序应该与初始化的顺序相反，以防一个对象依赖另一个对象。对于属性来说，就意味着与声明的顺序相反（因为属性是按照声明顺序初始化的）。对于基类（遵循 C++ 析构函数的形式），首先进行派生类的清理工作，然后才是基类的清理。这是因为派生类的清理可能调用基类的一些方法，所以基类组件这时得存活，不能过早地被销毁。输出显示了，**Frog** 对象的所有部分都是按照创建的逆序销毁的。
+
+尽管通常不必进行清理工作，但万一需要时，就得谨慎小心地执行。
+
+**Frog** 对象拥有自己的成员对象，它创建了这些成员对象，并且知道它们能存活多久，所以它知道何时调用 `dispose()` 方法。然而，一旦某个成员对象被其它一个或多个对象共享时，问题就变得复杂了，不能只是简单地调用 `dispose()`。这里，也许就必须使用*引用计数*来跟踪仍然访问着共享对象的对象数量，如下：
+
+```java
+// polymorphism/ReferenceCounting.java
+// Cleaning up shared member objects
+class Shared {
+    private int refcount = 0;
+    private static long counter = 0;
+    private final long id = counter++;
+    
+    Shared() {
+        System.out.println("Creating " + this);
+    }
+    
+    public void addRef() {
+        refcount++;
+    }
+    
+    protected void dispose() {
+        if (--refcount == 0) {
+            System.out.println("Disposing " + this);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return "Shared " + id;
+    }
+}
+
+class Composing {
+    private Shared shared;
+    private static long counter = 0;
+    private final long id = counter++;
+    
+    Composing(Shared shared) {
+        System.out.println("Creating " + this);
+        this.shared = shared;
+        this.shared.addRef();
+    }
+    
+    protected void dispose() {
+        System.out.println("disposing " + this);
+        shared.dispose();
+    }
+    
+    @Override
+    public String toString() {
+        return "Composing " + id;
+    }
+}
+
+public class ReferenceCounting {
+    public static void main(String[] args) {
+        Shared shared = new Shared();
+        Composing[] composing = {
+            new Composing(shared),
+            new Composing(shared),
+            new Composing(shared),
+            new Composing(shared),
+            new Composing(shared),
+        };
+        for (Composing c: composing) {
+            c.dispose();
+        }
+    }
+}
+```
+
+输出：
+
+```
+Creating Shared 0
+Creating Composing 0
+Creating Composing 1
+Creating Composing 2
+Creating Composing 3
+Creating Composing 4
+disposing Composing 0
+disposing Composing 1
+disposing Composing 2
+disposing Composing 3
+disposing Composing 4
+Disposing Shared 0
+```
+
+**static long counter** 跟踪所创建的 **Shared** 实例数量，还提供了 **id** 的值。**counter** 的类型是 **long** 而不是 **int**，以防溢出（这只是个良好实践，对于本书的所有示例，**counter** 不会溢出）。**id** 是 **final** 的，因为它的值在初始化时确定后不应该变化。
+
+在将一个 **shared** 对象附着在类上时，必须记住调用 `addRef()`，而 `dispose()` 方法会跟踪引用数，以确定在何时真正地执行清理工作。使用这种技巧需要加倍细心，但是如果正在共享需要被清理的对象，就没有太多选择了。
+
+### 构造器内部多态方法的行为
+
+构造器调用的层次结构带来了一个困境。如果在构造器中调用了正在构造的对象的动态绑定方法，会发生什么呢？
+
+在普通的方法中，动态绑定的调用是在运行时解析的，因为对象不知道它属于方法所在的类还是类的派生类。
+
+如果在构造器中调用了动态绑定方法，就会用到那个方法的覆写定义。然而，调用的结果难以预料因为被覆写的方法在对象被完全构造出来之前已经被调用，这使得一些 bug 很隐蔽，难以发现。
+
+从概念上讲，构造器的工作就是创建对象（这并非是平常的工作）。在构造器内部，整个对象可能只是部分形成——只知道基类对象已经初始化。如果构造器只是构造对象过程中的一个步骤，且构造的对象所属的类是从构造器所属的类派生出的，那么派生部分在当前构造器被调用时还没有初始化。然而，一个动态绑定的方法调用向外深入到继承层次结构中，它可以调用派生类的方法。如果你在构造器中这么做，就可能调用一个方法，该方法操纵的成员可能还没有初始化——这肯定会带来灾难。
+
+下面例子展示了这个问题：
+
+```java
+// polymorphism/PolyConstructors.java
+// Constructors and polymorphism
+// don't produce what you might expect
+class Glyph {
+    void draw() {
+        System.out.println("Glyph.draw()");
+    }
+
+    Glyph() {
+        System.out.println("Glyph() before draw()");
+        draw();
+        System.out.println("Glyph() after draw()");
+    }
+}
+
+class RoundGlyph extends Glyph {
+    private int radius = 1;
+
+    RoundGlyph(int r) {
+        radius = r;
+        System.out.println("RoundGlyph.RoundGlyph(), radius = " + radius);
+    }
+
+    @Override
+    void draw() {
+        System.out.println("RoundGlyph.draw(), radius = " + radius);
+    }
+}
+
+public class PolyConstructors {
+    public static void main(String[] args) {
+        new RoundGlyph(5);
+    }
+}
+```
+
+输出：
+
+```
+Glyph() before draw()
+RoundGlyph.draw(), radius = 0
+Glyph() after draw()
+RoundGlyph.RoundGlyph(), radius = 5
+```
+
+**Glyph** 的 `draw()` 被设计为可覆写，在 **RoundGlyph** 这个方法被覆写。但是 **Glyph** 的构造器里调用了这个方法，结果调用了 **RoundGlyph** 的 `draw()` 方法，这看起来正是我们的目的。输出结果表明，当 **Glyph** 构造器调用了 `draw()` 时，**radius** 的值不是默认初始值 1 而是 0。这可能会导致在屏幕上只画了一个点或干脆什么都不画，于是我们只能干瞪眼，试图找到程序不工作的原因。
+
+前一小节描述的初始化顺序并不十分完整，而这正是解决谜团的关键所在。初始化的实际过程是：
+
+1. 在所有事发生前，分配给对象的存储空间会被初始化为二进制 0。
+2. 如前所述调用基类构造器。此时调用覆写后的 `draw()` 方法（是的，在调用 **RoundGraph** 构造器之前调用），由步骤 1 可知，**radius** 的值为 0。
+3. 按声明顺序初始化成员。
+4. 最终调用派生类的构造器。
+
+这么做有个优点：所有事物至少初始化为 0（或某些特殊数据类型与 0 等价的值），而不是仅仅留作垃圾。这包括了通过组合嵌入类中的对象引用，被赋予 **null**。如果忘记初始化该引用，就会在运行时出现异常。观察输出结果，就会发现所有事物都是 0。
+
+另一方面，应该震惊于输出结果。逻辑方面我们已经做得非常完美，然而行为仍不可思议的错了，编译器也没有报错（C++ 在这种情况下会产生更加合理的行为）。像这样的 bug 很容易被忽略，需要花很长时间才能发现。
+
+因此，编写构造器有一条良好规范：做尽量少的事让对象进入良好状态。如果有可能的话，尽量不要调用类中的任何方法。在构造器中唯一能安全调用的只有基类的 **final** 方法（包括 **private** 方法，它们自动属于 **final**）。这些方法不能被覆写，因此不会产生意想不到的结果。你可能无法永远遵循这条规范，但应该朝着它努力。
 
 <!-- Covariant Return Types -->
 
-## 返回类型协变
+## 协变返回类型
+
+Java 5 中引入了协变返回类型，这表示派生类的被覆写方法可以返回基类方法返回类型的派生类型：
+
+```java
+// polymorphism/CovariantReturn.java
+class Grain {
+    @Override
+    public String toString() {
+        return "Grain";
+    }
+}
+
+class Wheat extends Grain {
+    @Override
+    public String toString() {
+        return "Wheat";
+    }
+}
+
+class Mill {
+    Grain process() {
+        return new Grain();
+    }
+}
+
+class WheatMill extends Mill {
+    @Override
+    Wheat process() {
+        return new Wheat();
+    }
+}
+
+public class CovariantReturn {
+    public static void main(String[] args) {
+        Mill m = new Mill();
+        Grain g = m.process();
+        System.out.println(g);
+        m = new WheatMill();
+        g = m.process();
+        System.out.println(g);
+    }
+}
+```
+
+输出：
+
+```
+Grain
+Wheat
+```
+
+关键区别在于 Java 5 之前的版本强制要求被覆写的 `process()` 方法必须返回 **Grain** 而不是 **Wheat**，即使 **Wheat** 派生自 **Grain**，因而也应该是一种合法的返回类型。协变返回类型允许返回更具体的 **Wheat** 类型。
 
 
 <!-- Designing with Inheritance -->
 ## 使用继承设计
 
+学习过多态之后，一切看似都可以被继承，因为多态是如此巧妙的工具。这会给设计带来负担。事实上，如果利用已有类创建新类首先选择继承的话，事情会变得莫名的复杂。
+
+更好的方法是首先选择组合，特别是不知道该使用哪种方法时。组合不会强制设计是继承层次结构，而且组合更加灵活，因为可以动态地选择类型（因而选择相应的行为），而继承要求必须在编译时知道确切类型。下面例子说明了这点：
+
+```java
+// polymorphism/Transmogrify.java
+// Dynamically changing the behavior of an object
+// via composition (the "State" design pattern)
+class Actor {
+    public void act() {}
+}
+
+class HappyActor extends Actor {
+    @Override
+    public void act() {
+        System.out.println("HappyActor");
+    }
+}
+
+class SadActor extends Actor {
+    @Override
+    public void act() {
+        System.out.println("SadActor");
+    }
+}
+
+class Stage {
+    private Actor actor = new HappyActor();
+    
+    public void change() {
+        actor = new SadActor();
+    }
+    
+    public void performPlay() {
+        actor.act();
+    }
+}
+
+public class Transmogrify {
+    public static void main(String[] args) {
+        Stage stage = new Stage();
+        stage.performPlay();
+        stage.change();
+        stage.performPlay();
+    }
+}
+```
+
+输出：
+
+```
+HappyActor
+SadActor
+```
+
+**Stage** 对象中包含了 **Actor** 引用，该引用被初始化为指向一个 **HappyActor** 对象，这意味着 `performPlay()` 会产生一个特殊行为。但是既然引用可以在运行时与其他不同的对象绑定，那么它就可以被替换成对 **SadActor** 的引用，`performPlay()` 的行为随之改变。这样你就获得了运行时的动态灵活性（这被称为状态模式）。与之相反，我们不能在运行时决定继承不同的对象，那在编译时就完全确定下来了。
+
+有一条通用准则：使用继承表达行为的差异，使用属性表达状态的变化。在上个例子中，两者都用到了。通过继承的到的两个不同类在 `act()` 方法中表达了不同的行为，**Stage** 通过组合使自己的状态发生变化。这里状态的改变产生了行为的改变。
+
+### 替代 vs 扩展
+
+采用“纯粹”的方式创建继承层次结构看上去是最清晰的方法。即只有基类的方法才能在派生类中被覆写，就像下图这样：
+
+![类图](../images/1562406479787.png)
+
+这被称作纯粹的“is - a"关系，因为类的接口已经确定了它是什么。继承可以确保任何派生类都拥有基类的接口，绝对不会少。如果按图上这么做，派生类的接口就与基类一样多，也不会多。
+
+纯粹的替代意味着派生类可以完美地替代基类，当使用它们时，完全不需要知道这些子类的信息。也就是说，基类可以接收任意发送给派生类的消息，因为它们具有完全相同的接口。只需将派生类向上转型，不要关注对象的具体类型。所有一切都可以通过多态处理。
+
+按这种方式思考，似乎只有纯粹的“is - a”关系才是唯一明智的做法，其他任何设计只会导致混乱且注定失败。这其实也是个陷阱。一旦按这种方式开始思考，就会转而发现继承扩展接口（遗憾的是，extends 关键字似乎怂恿我们这么做）才是解决特定问题的完美方案。这可以称为“is - like - a” 关系，因为派生类就像是基类——它有着相同的基本接口，但还具有需要额外方法实现的其他特性：
+
+![](../images/1562409366637.png)
+
+虽然这是一种有用且明智的方法（依赖具体情况），但是也存在缺点。派生类中接口的扩展部分在基类中不存在（不能通过基类访问到这些扩展接口），因此一旦向上转型，就不能通过基类调用这些新方法：
+
+![](../images/1562409926765.png)
+
+如果不向上转型，就不会遇到这个问题。但是通常情况下，我们需要重新查明对象的确切类型，从而能够访问该类型中的扩展方法。下一节说明如何做到这点。
+
+### 向下转型与运行时类型信息
+
+由于向上转型（在继承层次中向上移动）会丢失具体的类型信息，那么为了重新获取类型信息，就需要在继承层次中向下移动，使用*向下转型*。
+
+向上转型永远是安全的，因为基类不会具有比派生类更多的接口。因此，每条发送给基类接口的消息都能被接收。但是对于向下转型，你无法知道一个形状是圆，它有可能是三角形、正方形或其他一些类型。
+
+为了解决这个问题，必须得有某种方法确保向下转型是正确的，防止意外转型到一个错误类型，进而发送对象无法接收的消息。这么做是不安全的。
+
+在某些语言中（如 C++），必须执行一个特殊的操作来获得安全的向下转型，但是在 Java 中，每次转型都会被检查！所以即使只是进行一次普通的加括号形式的类型转换，在运行时这个转换仍会被检查，以确保它的确是希望的那种类型。如果不是，就会得到 ClassCastException （类转型异常）。这种在运行时检查类型的行为称作运行时类型信息。下面例子展示了 RTTI 的行为：
+
+```java
+// polymorphism/RTTI.java
+// Downcasting & Runtime type information (RTTI)
+// {ThrowsException}
+class Useful {
+    public void f() {}
+    public void g() {}
+}
+
+class MoreUseful extends Useful {
+    @Override
+    public void f() {}
+    @Override
+    public void g() {}
+    public void u() {}
+    public void v() {}
+    public void w() {}
+}
+
+public class RTTI {
+    public static void main(String[] args) {
+        Useful[] x = {
+            new Useful(),
+            new MoreUseful()
+        };
+        x[0].f();
+        x[1].g();
+        // Compile time: method not found in Useful:
+        //- x[1].u();
+        ((MoreUseful) x[1]).u(); // Downcast/RTTI
+        ((MoreUseful) x[0]).u(); // Exception thrown
+    }
+}
+```
+
+输出：
+
+```
+Exception in thread "main"
+java.lang.ClassCastException: Useful cannot be cast to
+MoreUseful
+at RTTI.main
+```
+
+正如前面类图所示，**MoreUseful** 扩展了 **Useful** 的接口。而 **MoreUseful** 也继承了 **Useful**，所以它可以向上转型为 **Useful**。在 `main()` 方法中可以看到这种情况的发生。因为两个对象都是 **Useful** 类型，所以对它们都可以调用 `f()` 和 `g()` 方法。如果试图调用 `u()` 方法（只存在于 **MoreUseful** 中），就会得到编译时错误信息。
+
+为了访问 **MoreUseful** 对象的扩展接口，就得尝试向下转型。如果转型为正确的类型，就转型成功。否则，就会得到 ClassCastException 异常。你不必为这个异常编写任何特殊代码，因为它指出了程序员在程序的任何地方都可能犯的错误。**{ThrowsException}** 注释标签告知本书的构建系统：在运行程序时，预期抛出一个异常。
+
+RTTI 不仅仅包括简单的转型。例如，它还提供了一种方法，使你可以在试图向下转型前检查所要处理的类型。“类型信息”一章中会详细阐述运行时类型信息的方方面面。
 
 <!-- Summary -->
+
 ## 本章小结
+
+多态意味着“不同的形式”。在面向对象编程中，我们持有从基类继承而来的相同接口和使用该接口的不同形式：不同版本的动态绑定方法。
+
+在本章中，你可以看到，如果不使用数据抽象和继承，就不可能理解甚至创建多态的例子。多态是一种不能单独看待的特性（比如像 **switch** 语句那样），它只能作为类关系全景中的一部分，与其他特性协同工作。
+
+为了在程序中有效地使用多态乃至面向对象的技术，就必须扩展自己的编程视野，不能只看到单一类中的成员和消息，而要看到类之间的共同特性和它们之间的关系。尽管这需要很大的努力，但是这么做是值得的。它能带来更快的程序开发、更好的代码组织、扩展性更好的程序和更易维护的代码。
+
+但是记住，多态可能被滥用。仔细分析代码以确保多态确实能带来好处。
 
 <!-- 分页 -->
 
