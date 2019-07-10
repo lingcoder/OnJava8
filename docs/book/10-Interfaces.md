@@ -646,11 +646,121 @@ Crack
 Twist
 ```
 
+这里展示了创建 **Operations** 的不同方式：一个外部类(Bing)，一个匿名类，一个方法引用和 lambda 表达式——毫无疑问用在这里是最好的解决方法。
 
+这个特性是一项改善，因为它允许把静态方法放在更合适的地方。
+
+### Instrument 作为接口
+
+回顾下乐器的例子，使用接口的话：
+
+![类图](../images/1562737974623.png)
+
+类 **Woodwind** 和 **Brass** 说明一旦实现了某个接口，那么其实现就变成一个普通类，可以按常规方式扩展它。
+
+接口的工作方式使得我们不需要显式声明其中的方法为 **public**，它们自动就是 **public** 的。`play()` 和 `adjust()` 使用 **default** 关键字定义实现。在 Java 8 之前，这些定义要在每个实现中重复实现，显得多余且令人烦恼：
+
+```java
+// interfaces/music5/Music5.java
+// {java interfaces.music5.Music5}
+package interfaces.music5;
+import polymorphism.music.Note;
+
+interface Instrument {
+    // Compile-time constant:
+    int VALUE = 5; // static & final
+    
+    default void play(Note n)  // Automatically public 
+        System.out.println(this + ".play() " + n);
+    }
+    
+    default void adjust() {
+        System.out.println("Adjusting " + this);
+    }
+}
+
+class Wind implements Instrument {
+    @Override
+    public String toString() {
+        return "Wind";
+    }
+}
+
+class Percussion implements Instrument {
+    @Override
+    public String toString() {
+        return "Percussion";
+    }
+}
+
+class Stringed implements Instrument {
+    @Override
+    public String toString() {
+        return "Stringed";
+    }
+}
+
+class Brass extends Wind {
+    @Override
+    public String toString() {
+        return "Brass";
+    }
+}
+
+class Woodwind extends Wind {
+    @Override
+    public String toString() {
+        return "Woodwind";
+    }
+}
+
+public class Music5 {
+    // Doesn't care about type, so new types
+    // added to the system still work right:
+    static void tune(Instrument i) {
+        // ...
+        i.play(Note.MIDDLE_C);
+    }
+    
+    static void tuneAll(Instrument[] e) {
+        for (Instrument i: e) {
+            tune(i);
+        }
+    }
+    
+    public static void main(String[] args) {
+        // Upcasting during addition to the array:
+        Instrument[] orchestra = {
+            new Wind(),
+            new Percussion(),
+            new Stringed(),
+            new Brass(),
+            new Woodwind()
+        }
+        tuneAll(orchestra);
+    }
+}
+```
+
+输出：
+
+```
+Wind.play() MIDDLE_C
+Percussion.play() MIDDLE_C
+Stringed.play() MIDDLE_C
+Brass.play() MIDDLE_C
+Woodwind.play() MIDDLE_C
+```
+
+这个版本的例子的另一个变化是：`what()` 被修改为 `toString()` 方法，因为 `toString()` 实现的正是 `what()` 方法要实现的逻辑。因为 `toString()` 是根基类 **Object** 的方法，所以它不需要出现在接口中。
+
+注意到，无论是将其向上转型为称作 **Instrument** 的普通类，或称作 **Instrument** 的抽象类，还是叫作 **Instrument** 的接口，其行为都是相同的。事实上，从 `tune()` 方法上看不出来 **Instrument** 到底是一个普通类、抽象类，还是一个接口。
 
 <!-- Abstract Classes vs. Interfaces -->
 
 ## 抽象类和接口
+
+
 
 
 <!-- Complete Decoupling -->
