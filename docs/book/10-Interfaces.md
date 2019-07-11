@@ -760,22 +760,265 @@ Woodwind.play() MIDDLE_C
 
 ## 抽象类和接口
 
+尤其是在 Java 8 引入 **default** 方法之后，区分何时抽象类还是接口是最好的选择变得更加令人困惑。下表做了明确的区分：
 
+|         特性         |                            接口                            |                  抽象类                  |
+| :------------------: | :--------------------------------------------------------: | :--------------------------------------: |
+|         组合         |                    新类可以组合多个接口                    |            只能继承单一抽象类            |
+|         状态         |        不能包含属性（除了静态属性，不支持对象状态）        | 可以包含属性，非抽象方法可能引用这些属性 |
+| 默认方法 和 抽象方法 | 不需要在子类中实现默认方法。默认方法可以引用其他接口的方法 |         必须在子类中实现抽象方法         |
+|        构造器        |                         没有构造器                         |               可以有构造器               |
+|        可见性        |                      隐式 **public**                       |       可以是 **protected** 或友元        |
 
+抽象类仍然是一个类，在创建新类时只能继承它一个。而创建类的过程中可以实现多个接口。
+
+有一条实际经验：尽可能地抽象。因此，更倾向使用接口而不是抽象类。只有当必要时才使用抽象类。除非必须使用，否则不要用接口和抽象类。大多数时候，普通类已经做得很好，如果不行的话，再移动到接口或抽象类中。
 
 <!-- Complete Decoupling -->
+
 ## 完全解耦
 
+当方法操纵的是一个类而非接口时，它就只能作用于那个类或其子类。如果想把方法应用于那个继承层级结构之外的类，就会触霉头。接口在很大程度上放宽了这个限制，因而使用接口可以编写复用性更好的代码。
+
+例如有一个类 **Process** 有两个方法 `name()` 和 `process()`。`process()` 方法接受输入，修改并输出。把这个类作为基类用来创建各种不同类型的 **Processor**。下例中，**Processor** 的各个子类修改 String 对象（注意，返回类型可能是协变类型而非参数类型）：
+
+```java
+// interfaces/Applicator.java
+import java.util.*;
+
+class Processor {
+    public String name() {
+        return getClass().getSimpleName();
+    }
+    
+    public Object process(Object input) {
+        return input;
+    }
+}
+
+class Upcase extends Processor {
+    // 返回协变类型
+    @Override 
+    public String process(Object input) {
+        return ((String) input).toUpperCase();
+    }
+}
+
+class Downcase extends Processor {
+    @Override
+    public String process(Object input) {
+        return ((String) input).toLowerCase();
+    }
+}
+
+class Splitter extends Processor {
+    @Override
+    public String process(Object input) {
+        // split() divides a String into pieces:
+        return Arrays.toString(((String) input).split(" "));
+    }
+}
+
+public class Applicator {
+    public static void apply(Processor p, Object s) {
+        System.out.println("Using Processor " + p.name());
+        System.out.println(p.process(s));
+    }
+    
+    public static void main(String[] args) {
+        String s = "We are such stuff as dreams are made on";
+        apply(new Upcase(), s);
+        apply(new Downcase(), s);
+        apply(new Splitter(), s);
+    }
+}
+```
+
+输出：
+
+```
+Using Processor Upcase
+WE ARE SUCH STUFF AS DREAMS ARE MADE ON
+Using Processor Downcase
+we are such stuff as dreams are made on
+Using Processor Splitter
+[We, are, such, stuff, as, dreams, are, made, on]
+```
+
+**Applicator** 的 `apply()` 方法可以接受任何类型的 **Processor**，并将其应用到一个 **Object** 对象上输出结果。像本例中这样，创建一个能根据传入的参数类型从而具备不同行为的方法称为*策略*设计模式。方法包含算法中不变的部分，策略包含变化的部分。策略就是传入的对象，它包含要执行的代码。在这里，**Processor** 对象是策略，`main()` 方法展示了三种不同的应用于 **String s** 上的策略。
+
+`split()` 是 **String** 类中的方法，它接受 **String** 类型的对象并以传入的参数作为分割界限，返回一个数组 **String[]**。在这里用它是为了更快地创建 **String** 数组。
+
+假设现在发现了一组电子滤波器，它们看起来好像能使用 **Applicator** 的 `apply()` 方法：
+
+```java
+// interfaces/filters/Waveform.java
+package interfaces.filters;
+
+public class Waveform {
+    private static long counter;
+    private final long id = count++;
+    
+    @Override
+    public String toString() {
+        return "Waveform " + id;
+    }
+}
+
+// interfaces/filters/Filter.java
+package interfaces.filters;
+
+public class Filter {
+    public String name() {
+        return getClass().getSimpleName();
+    }
+    
+    public Waveform process(Waveform input) {
+        return input;
+    }
+}
+
+// interfaces/filters/LowPass.java
+package interfaces.filters;
+
+public class LowPass extends Filter {
+    double cutoff;
+    
+    public LowPass(double cutoff) {
+        this.cutoff = cutoff;
+    }
+    
+    @Override
+    public Waveform process(Waveform input) {
+        return input; // Dummy processing 哑处理
+    }
+}
+
+// interfaces/filters/HighPass.java
+package interfaces.filters;
+
+public class HighPass extends Filter {
+    double cutoff;
+    
+    public HighPass(double cutoff) {
+        this.cutoff = cutoff;
+    }
+    
+    @Override
+    public Waveform process(Waveform input) {
+        return input;
+    }
+}
+
+// interfaces/filters/BandPass.java
+package interfaces.filters;
+
+public class BandPass extends Filter {
+    double lowCutoff, highCutoff;
+    
+    public BandPass(double lowCut, double highCut) {
+        lowCutoff = lowCut;
+        highCutoff = highCut;
+    }
+    
+    @Override
+    public Waveform process(Waveform input) {
+        return input;
+    }
+}
+```
+
+**Filter** 类与 **Processor** 类具有相同的接口元素，但是因为它不是继承自 **Processor** —— 因为 **Filter** 类的创建者根本不知道你想将它当作 **Processor** 使用 —— 因此你不能将 **Applicator** 的 `apply()` 方法应用在 **Filter** 类上，即使这样做也能正常运行。主要是因为 **Applicator** 的 `apply()` 方法和 **Processor** 过于耦合，这阻止了 **Applicator** 的 `apply()` 方法被复用。另外要注意的一点是 Filter 类中 `process()` 方法的输入输出都是 **Waveform**。
+
+但如果 **Processor** 是一个接口，那么限制就会变得松动到足以复用 **Applicator** 的 `apply()` 方法，用来接受那个接口参数。下面是修改后的 **Processor** 和 **Applicator** 版本：
+
+```java
+// interfaces/interfaceprocessor/Processor.java
+package interfaces.interfaceprocessor;
+
+public interface Processor {
+    default String name() {
+        return getClass().getSimpleName();
+    }
+    
+    Object process(Object input);
+}
+
+// interfaces/interfaceprocessor/Applicator.java
+package interfaces.interfaceprocessor;
+
+public class Applicator {
+    public static void apply(Processor p, Object s) {
+        System.out.println("Using Processor " + p.name());
+        System.out.println(p.process(s));
+    }
+}
+```
+
+复用代码的第一种方式是客户端程序员遵循接口编写类，像这样：
+
+```java
+// interfaces/interfaceprocessor/StringProcessor.java
+// {java interfaces.interfaceprocessor.StringProcessor}
+package interfaces.interfaceprocessor;
+import java.util.*;
+
+interface StringProcessor extends Processor {
+    @Override
+    String process(Object input); // [1]
+    String S = "If she weighs the same as a duck, " + "she's made of wood"; // [2]
+    
+    static void main(String[] args) { // [3]
+        Applicator.apply(new Upcase(), S);
+        Applicator.apply(new Downcase(), S);
+        Applicator.apply(new Splitter(), S);
+    }
+}
+
+class Upcase implements StringProcessor {
+    // 返回协变类型
+    @Override
+    public String process(Object input) {
+        return ((String) input).toUpperCase();
+    }
+}
+
+class Downcase implements StringProcessor {
+    @Override
+    public String process(Object input) {
+        return ((String) input).toLowerCase();
+    }
+}
+
+class Splitter implements StringProcessor {
+    @Override
+    public String process(Object input) {
+        return Arrays.toString(((String) input).split(" "));
+    }
+}
+```
+
+输出：
+
+```
+Using Processor Upcase
+IF SHE WEIGHS THE SAME AS A DUCK, SHE'S MADE OF WOOD
+Using Processor Downcase
+if she weighs the same as a duck, she's made of wood
+Using Processor Splitter
+[If, she, weighs, the, same, as, a, duck,, she's, made, of, wood]
+```
 
 <!-- Combining Multiple Interfaces -->
+
 ## 多接口结合
 
 
 <!-- Extending an Interface with Inheritance -->
 ## 使用继承扩展接口
 
-
 <!-- Adapting to an Interface -->
+
 ## 接口适配
 
 
