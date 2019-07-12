@@ -331,18 +331,498 @@ public class PrintingCollections {
 <!-- List -->
 ## 列表List
 
+**List**s承诺以特定顺序保存元素。 **List** 接口在 **Collection** 的基础上添加了许多方法，允许在 **List** 的中间插入和删除元素。
+
+有两种类型的 **List** ：
+
+- 基本的 **ArrayList** ，擅长随机访问元素，但在 **List** 中间插入和删除元素时速度较慢。
+- **LinkedList** ，它通过代价较低的在 **List** 中间进行的插入和删除操作，提供了优化的顺序访问。 **LinkedList** 对于随机访问来说相对较慢，但它具有比 **ArrayList** 更大的特征集。
+
+下面的示例导入 **typeinfo.pets** ，超前使用了[类型信息]()一章中的类库。这个类库包含了 **Pet** 类层次结构，以及用于随机生成 **Pet** 对象的一些工具类。此时不需要了解完整的详细信息，只需要知道两点：
+
+1. 有一个 **Pet** 类，以及 **Pet** 的各种子类型。
+2. 静态的 **Pets.arrayList()** 方法返回一个填充了随机选取的 **Pet** 对象的 **ArrayList**：
+
+```java
+// collections/ListFeatures.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class ListFeatures {
+  public static void main(String[] args) {
+    Random rand = new Random(47);
+    List<Pet> pets = Pets.list(7);
+    System.out.println("1: " + pets);
+    Hamster h = new Hamster();
+    pets.add(h); // Automatically resizes
+    System.out.println("2: " + pets);
+    System.out.println("3: " + pets.contains(h));
+    pets.remove(h); // Remove by object
+    Pet p = pets.get(2);
+    System.out.println(
+      "4: " +  p + " " + pets.indexOf(p));
+    Pet cymric = new Cymric();
+    System.out.println("5: " + pets.indexOf(cymric));
+    System.out.println("6: " + pets.remove(cymric));
+    // Must be the exact object:
+    System.out.println("7: " + pets.remove(p));
+    System.out.println("8: " + pets);
+    pets.add(3, new Mouse()); // Insert at an index
+    System.out.println("9: " + pets);
+    List<Pet> sub = pets.subList(1, 4);
+    System.out.println("subList: " + sub);
+    System.out.println("10: " + pets.containsAll(sub));
+    Collections.sort(sub); // In-place sort
+    System.out.println("sorted subList: " + sub);
+    // Order is not important in containsAll():
+    System.out.println("11: " + pets.containsAll(sub));
+    Collections.shuffle(sub, rand); // Mix it up
+    System.out.println("shuffled subList: " + sub);
+    System.out.println("12: " + pets.containsAll(sub));
+    List<Pet> copy = new ArrayList<>(pets);
+    sub = Arrays.asList(pets.get(1), pets.get(4));
+    System.out.println("sub: " + sub);
+    copy.retainAll(sub);
+    System.out.println("13: " + copy);
+    copy = new ArrayList<>(pets); // Get a fresh copy
+    copy.remove(2); // Remove by index
+    System.out.println("14: " + copy);
+    copy.removeAll(sub); // Only removes exact objects
+    System.out.println("15: " + copy);
+    copy.set(1, new Mouse()); // Replace an element
+    System.out.println("16: " + copy);
+    copy.addAll(2, sub); // Insert a list in the middle
+    System.out.println("17: " + copy);
+    System.out.println("18: " + pets.isEmpty());
+    pets.clear(); // Remove all elements
+    System.out.println("19: " + pets);
+    System.out.println("20: " + pets.isEmpty());
+    pets.addAll(Pets.list(4));
+    System.out.println("21: " + pets);
+    Object[] o = pets.toArray();
+    System.out.println("22: " + o[3]);
+    Pet[] pa = pets.toArray(new Pet[0]);
+    System.out.println("23: " + pa[3].id());
+  }
+}
+/* Output:
+1: [Rat, Manx, Cymric, Mutt, Pug, Cymric, Pug]
+2: [Rat, Manx, Cymric, Mutt, Pug, Cymric, Pug, Hamster]
+3: true
+4: Cymric 2
+5: -1
+6: false
+7: true
+8: [Rat, Manx, Mutt, Pug, Cymric, Pug]
+9: [Rat, Manx, Mutt, Mouse, Pug, Cymric, Pug]
+subList: [Manx, Mutt, Mouse]
+10: true
+sorted subList: [Manx, Mouse, Mutt]
+11: true
+shuffled subList: [Mouse, Manx, Mutt]
+12: true
+sub: [Mouse, Pug]
+13: [Mouse, Pug]
+14: [Rat, Mouse, Mutt, Pug, Cymric, Pug]
+15: [Rat, Mutt, Cymric, Pug]
+16: [Rat, Mouse, Cymric, Pug]
+17: [Rat, Mouse, Mouse, Pug, Cymric, Pug]
+18: false
+19: []
+20: true
+21: [Manx, Cymric, Rat, EgyptianMau]
+22: EgyptianMau
+23: 14
+*/
+```
+
+打印行都编了号，因此输出可以与源代码相关。 第1行输出展示了原始的由 **Pet** 组成的 **List** 。 与数组不同， **List** 可以在创建后添加或删除元素，并自行调整大小。这正是它的重要价值：一种可修改的序列。在第2行输出中可以看到添加一个 **Hamster** 的结果，该对象将被追加到列表的末尾。
+
+可以使用 **contains()** 方法确定对象是否在列表中。如果要删除一个对象，可以将该对象的引用传递给 **remove()** 方法。同样，如果有一个对象的引用，可以使用 **indexOf()** 在 **List** 中找到该对象所在位置的下标号，如第4行输出所示中所示。
+
+当确定元素是否是属于某个 **List** ，寻找某个元素的索引，以及通过引用从 **List** 中删除元素时，都会用到 **equals()** 方法（根类 **Object** 的一个方法）。每个 **Pet** 被定义为一个唯一的对象，所以即使列表中已经有两个 **Cymrics** ，如果再创建一个新的 **Cymric** 对象并将其传递给 **indexOf()** 方法，结果仍为 **-1** （表示未找到），并且尝试调用 **remove()** 方法来删除这个对象将返回 **false** 。对于其他类， **equals()** 的定义可能有所不同。例如，如果两个 **String** 的内容相同，则这两个 **String** 相等。因此，为了防止出现意外，请务必注意 **List** 行为会根据 **equals()** 行为而发生变化。
+
+第7、8行输出展示了删除与 **List** 中的对象完全匹配的对象是成功的。
+
+可以在 **List** 的中间插入一个元素，就像在第9行输出和它之前的代码那样。但这会带来一个问题：对于 **LinkedList** ，在列表中间插入和删除都是廉价操作（在本例中，除了对列表中间进行的真正的随机访问），但对于 **ArrayList** ，这可是代价高昂的操作。这是否意味着永远不应该在 **ArrayList** 的中间插入元素，并最好是转换为 **LinkedList** ？不，它只是意味着你应该意识到这个问题，如果你开始在某个 **ArrayList** 中间进执行很多插入操作，并且程序开始变慢，那么你应该看看你的 **List** 实现有可能就是罪魁祸首（发现此类瓶颈的最佳方式是使用仿真器）。优化是一个很棘手的问题，最好的策略就是置之不顾，直到发现必须要去担心它了（尽管去理解这些问题总是一个很好的主意）。
+
+**subList()** 方法可以轻松地从更大的列表中创建切片，当将切片结果传递给原来这个较大的列表的 **containsAll()** 方法时，很自然地会得到 **true**。请注意，顺序并不重要，在第11、12行输出中可以看到，在 **sub** 上调用直观命名的 **Collections.sort()** 和 **Collections.shuffle()** 方法，不会影响 **containsAll()** 的结果。 **subList()** 所产生的列表的幕后支持就是原始列表。因此，对所返回列表的更改都将会反映在原始列表中，反之亦然。
+
+**retainAll()** 方法实际上是一个“集合交集”操作，在本例中，它保留了同时在 **copy** 和 **sub** 中的所有元素。请再次注意，所产生的结果行为依赖于 **equals()** 方法。
+
+第14行输出展示了使用索引号来删除元素的结果，与通过对象引用来删除元素相比，它显得更加直观，因为在使用索引时，不必担心 **equals()** 的行为。
+
+**removeAll()** 方法也是基于 **equals()** 方法运行的。 顾名思义，它会从 **List** 中删除在参数 **List** 中的所有元素。
+
+**set()** 方法的命名显得很不合时宜，因为它与 **Set** 类存在潜在的冲突。在这里使用“replace”可能更适合，因为它的功能是用第二个参数替换索引处的元素（第一个参数）。
+
+第17行输出表明，对于 **List** ，有一个重载的 **addAll()** 方法可以将新列表插入到原始列表的中间，而不仅仅只能用 **Collection** 的 **addAll()** 方法将追加到列表末尾。
+
+第18-20行输出展示了 **isEmpty()** 和 **clear()** 方法的效果。
+
+第22、23行输出展示了如何使用 **toArray()** 方法将任意的 **Collection** 转换为数组。这是一个重载方法，其无参版本返回一个 **Object** 数组，但是如果将目标类型的数组传递给这个重载版本，那么它会生成一个指定类型的数组（假设它通过了类型检查）。如果参数数组太小而无法容纳 **List** 中的所有元素（就像本例一样），则 **toArray()** 会创建一个具有合适尺寸的新数组。 **Pet** 对象有一个 **id()** 方法，可以在所产生的数组中的对象上调用这个方法。
 
 <!-- Iterators -->
 ## 迭代器Iterators
 
+在任何集合中，都必须有某种方式可以插入元素并再次获取它们。毕竟，保存事物是集合最基本的工作。对于 **List** ， **add()** 是插入元素的一种方式， **get()** 是获取元素的一种方式。
+
+如果从更高层次的角度考虑，会发现这里有个缺点：要使用集合，必须对集合的确切类型编程。这一开始可能看起来不是很糟糕，但是考虑下面的情况：如果原本是对 **List** 编码的，但是后来发现如果能够将相同的代码应用于 **Set** 会更方便，此时应该怎么做？或者假设想从一开始就编写一段通用代码，它不知道或不关心它正在使用什么类型的集合，因此它可以用于不同类型的集合，那么如何才能不重写代码就可以应用于不同类型的集合？
+
+*迭代器*（也是一种设计模式）的概念实现了这种抽象。迭代器是一个对象，它在一个序列中移动并选择该序列中的每个对象，而客户端程序员不知道或不关心该序列的底层结构。另外，迭代器通常被称为*轻量级对象*（lightweight object）：创建它的代价小。因此，经常可以看到一些对迭代器有些奇怪的约束。例如，Java的 **Iterator** 只能单向移动。这个 **Iterator** 只能用来：
+1. 使用 **iterator()** 方法要求集合返回一个 **Iterator**。 **Iterator** 将准备好返回序列中的第一个元素。
+2. 使用 **next()** 方法获得序列中的下一个元素。
+3. 使用 **hasNext()** 方法检查序列中是否还有元素。
+4. 使用 **remove()** 方法将迭代器最近返回的那个元素删除。
+
+为了观察它的工作方式，这里再次使用[类型信息]()章节中的 **Pet** 工具：
+
+```java
+// collections/SimpleIteration.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class SimpleIteration {
+  public static void main(String[] args) {
+    List<Pet> pets = Pets.list(12);
+    Iterator<Pet> it = pets.iterator();
+    while(it.hasNext()) {
+      Pet p = it.next();
+      System.out.print(p.id() + ":" + p + " ");
+    }
+    System.out.println();
+    // A simpler approach, when possible:
+    for(Pet p : pets)
+      System.out.print(p.id() + ":" + p + " ");
+    System.out.println();
+    // An Iterator can also remove elements:
+    it = pets.iterator();
+    for(int i = 0; i < 6; i++) {
+      it.next();
+      it.remove();
+    }
+    System.out.println(pets);
+  }
+}
+/* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx 8:Cymric 9:Rat 10:EgyptianMau 11:Hamster
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx 8:Cymric 9:Rat 10:EgyptianMau 11:Hamster
+[Pug, Manx, Cymric, Rat, EgyptianMau, Hamster]
+*/
+```
+
+有了 **Iterator** ，就不必再为集合中元素的数量操心了。这是由 **hasNext()** 和 **next()** 关心的事情。
+
+如果只是想向前遍历 **List** ，并不打算修改 **List** 对象本身，那么使用 *for-in* 语法更加简洁。
+
+**Iterator** 还可以删除由 **next()** 生成的最后一个元素，这意味着在调用 **remove()** 之前必须先调用 **next()** 。
+
+在集合中的每个对象上执行操作，这种思想十分强大，并且贯穿于本书。
+
+现在考虑创建一个 **display()** 方法，它不必知晓集合的确切类型：
+
+```java
+// collections/CrossCollectionIteration.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class CrossCollectionIteration {
+  public static void display(Iterator<Pet> it) {
+    while(it.hasNext()) {
+      Pet p = it.next();
+      System.out.print(p.id() + ":" + p + " ");
+    }
+    System.out.println();
+  }
+  public static void main(String[] args) {
+    List<Pet> pets = Pets.list(8);
+    LinkedList<Pet> petsLL = new LinkedList<>(pets);
+    HashSet<Pet> petsHS = new HashSet<>(pets);
+    TreeSet<Pet> petsTS = new TreeSet<>(pets);
+    display(pets.iterator());
+    display(petsLL.iterator());
+    display(petsHS.iterator());
+    display(petsTS.iterator());
+  }
+}
+/* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+5:Cymric 2:Cymric 7:Manx 1:Manx 3:Mutt 6:Pug 4:Pug
+0:Rat
+*/
+```
+
+**display()** 方法不包含任何有关它所遍历的序列的类型信息。这也展示了 **Iterator** 的真正威力：能够将遍历序列的操作与该序列的底层结构分离。出于这个原因，我们有时会说：迭代器统一了对集合的访问方式。
+
+我们可以使用 **Iterable** 接口生成上一个示例的更简洁版本，该接口描述了“可以产生 **Iterator** 的任何东西”：
+
+```java
+// collections/CrossCollectionIteration2.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class CrossCollectionIteration2 {
+  public static void display(Iterable<Pet> ip) {
+    Iterator<Pet> it = ip.iterator();
+    while(it.hasNext()) {
+      Pet p = it.next();
+      System.out.print(p.id() + ":" + p + " ");
+    }
+    System.out.println();
+  }
+  public static void main(String[] args) {
+    List<Pet> pets = Pets.list(8);
+    LinkedList<Pet> petsLL = new LinkedList<>(pets);
+    HashSet<Pet> petsHS = new HashSet<>(pets);
+    TreeSet<Pet> petsTS = new TreeSet<>(pets);
+    display(pets);
+    display(petsLL);
+    display(petsHS);
+    display(petsTS);
+  }
+}
+/* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+5:Cymric 2:Cymric 7:Manx 1:Manx 3:Mutt 6:Pug 4:Pug
+0:Rat
+*/
+```
+
+这里所有的类都是 **Iterable** ，所以现在对 **display()** 的调用显然更简单。
+
+<!-- ListIterator -->
+### ListIterator
+
+**ListIterator** 是一个更强大的 **Iterator**子类型，它只能由各种 **List** 类生成。虽然 **Iterator** 只能向前移动，但 **ListIterator** 可以双向移动。它还可以生成相对于迭代器在列表中指向的当前位置的后一个和前一个元素的索引，并且可以使用 **set()** 方法替换它访问过的最后一个元素。可以通过调用 **listIterator()** 方法来生成指向 **List** 开头处的 **ListIterator** ，还可以通过调用** listIterator(n)** 创建一个一开始就指向列表索引号为 **n** 的元素处的 **ListIterator** 。 下面的示例演示了所有这些能力：
+
+```java
+// collections/ListIteration.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class ListIteration {
+  public static void main(String[] args) {
+    List<Pet> pets = Pets.list(8);
+    ListIterator<Pet> it = pets.listIterator();
+    while(it.hasNext())
+      System.out.print(it.next() +
+        ", " + it.nextIndex() +
+        ", " + it.previousIndex() + "; ");
+    System.out.println();
+    // Backwards:
+    while(it.hasPrevious())
+      System.out.print(it.previous().id() + " ");
+    System.out.println();
+    System.out.println(pets);
+    it = pets.listIterator(3);
+    while(it.hasNext()) {
+      it.next();
+      it.set(Pets.get());
+    }
+    System.out.println(pets);
+  }
+}
+/* Output:
+Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug,
+5, 4; Cymric, 6, 5; Pug, 7, 6; Manx, 8, 7;
+7 6 5 4 3 2 1 0
+[Rat, Manx, Cymric, Mutt, Pug, Cymric, Pug, Manx]
+[Rat, Manx, Cymric, Cymric, Rat, EgyptianMau, Hamster,
+EgyptianMau]
+*/
+```
+
+**Pets.get()** 方法用来从位置3开始替换 **List** 中的所有Pet对象。
 
 <!-- LinkedList -->
 ## 链表LinkedList
 
+**LinkedList** 也像 **ArrayList** 一样实现了基本的 **List** 接口，但它在 **List** 中间执行插入和删除操作时，比 **ArrayList** 更高效。但在随机访问操作效率方面却要逊色一些。
 
+**LinkedList还添加了一些方法，使其可以被用作栈、队列或双端队列（deque）** 。在这些方法中，有些彼此之间可能只是名称有些差异，或者只存在些许差异，以使得这些名字在特定用法的上下文环境中更加适用（特别是在 **Queue** 中）。例如：
+
+- **getFirst()** 和 **element()** 是相同的，它们都返回列表的头部（第一个元素）而并不删除它，如果 **List** 为空，则抛出 **NoSuchElementException** 异常。 **peek()** 方法与这两个方法只是稍有差异，它在列表为空时返回 **null** 。
+- **removeFirst()** 和 **remove()** 也是相同的，它们删除并返回列表的头部元素，并在列表为空时抛出 **NoSuchElementException** 异常。 **poll()** 稍有差异，它在列表为空时返回 **null** 。
+- **addFirst()** 在列表的开头插入一个元素。
+- **offer()** 与 **add()** 和 **addLast()** 相同。 它们都在列表的尾部（末尾）添加一个元素。
+- **removeLast()** 删除并返回列表的最后一个元素。
+
+下面的示例展示了这些功能之间基本的相似性和差异性。它并不是重复执行 **ListFeatures.java** 中所示的行为：
+
+```java
+// collections/LinkedListFeatures.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class LinkedListFeatures {
+  public static void main(String[] args) {
+    LinkedList<Pet> pets =
+      new LinkedList<>(Pets.list(5));
+    System.out.println(pets);
+    // Identical:
+    System.out.println(
+      "pets.getFirst(): " + pets.getFirst());
+    System.out.println(
+      "pets.element(): " + pets.element());
+    // Only differs in empty-list behavior:
+    System.out.println("pets.peek(): " + pets.peek());
+    // Identical; remove and return the first element:
+    System.out.println(
+      "pets.remove(): " + pets.remove());
+    System.out.println(
+      "pets.removeFirst(): " + pets.removeFirst());
+    // Only differs in empty-list behavior:
+    System.out.println("pets.poll(): " + pets.poll());
+    System.out.println(pets);
+    pets.addFirst(new Rat());
+    System.out.println("After addFirst(): " + pets);
+    pets.offer(Pets.get());
+    System.out.println("After offer(): " + pets);
+    pets.add(Pets.get());
+    System.out.println("After add(): " + pets);
+    pets.addLast(new Hamster());
+    System.out.println("After addLast(): " + pets);
+    System.out.println(
+      "pets.removeLast(): " + pets.removeLast());
+  }
+}
+/* Output:
+[Rat, Manx, Cymric, Mutt, Pug]
+pets.getFirst(): Rat
+pets.element(): Rat
+pets.peek(): Rat
+pets.remove(): Rat
+pets.removeFirst(): Manx
+pets.poll(): Cymric
+[Mutt, Pug]
+After addFirst(): [Rat, Mutt, Pug]
+After offer(): [Rat, Mutt, Pug, Cymric]
+After add(): [Rat, Mutt, Pug, Cymric, Pug]
+After addLast(): [Rat, Mutt, Pug, Cymric, Pug, Hamster]
+pets.removeLast(): Hamster
+*/
+```
+
+**Pets.list()** 的结果被传递给 **LinkedList** 的构造器，以便使用它来填充 **LinkedList** 。如果查看 **Queue** 接口就会发现，它在 **LinkedList** 的基础上添加了 **element()** ， **offer()** ， **peek()** ， **poll()** 和 **remove()** 方法，以使其可以成为一个 **Queue** 的实现。 **Queue** 的完整示例将在本章稍后给出。
+ 
 <!-- Stack -->
 ## 堆栈Stack
 
+堆栈是“后进先出”（LIFO）集合。它有时被称为*叠加栈*（pushdown stack），因为最后“压入”（push）栈的元素，第一个被“弹出”（pop）栈。经常用来类比栈的事物是带有弹簧支架的自助餐厅托盘。最后装入的托盘总是最先拿出来使用的。
+
+Java 1.0中附带了一个 **Stack** 类，结果设计得很糟糕（为了向后兼容，我们永远坚持Java中的旧设计错误）。Java 6添加了 **ArrayDeque** ，其中包含直接实现堆栈功能的方法：
+
+```java
+// collections/StackTest.java
+import java.util.*;
+
+public class StackTest {
+  public static void main(String[] args) {
+    Deque<String> stack = new ArrayDeque<>();
+    for(String s : "My dog has fleas".split(" "))
+      stack.push(s);
+    while(!stack.isEmpty())
+      System.out.print(stack.pop() + " ");
+  }
+}
+/* Output:
+fleas has dog My
+*/
+```
+
+即使它是作为一个堆栈在使用，我们仍然必须将其声明为 **Deque** 。有时一个名为 **Stack** 的类更能把事情讲清楚：
+
+```java
+// onjava/Stack.java
+// A Stack class built with an ArrayDeque
+package onjava;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
+public class Stack<T> {
+  private Deque<T> storage = new ArrayDeque<>();
+  public void push(T v) { storage.push(v); }
+  public T peek() { return storage.peek(); }
+  public T pop() { return storage.pop(); }
+  public boolean isEmpty() { return storage.isEmpty(); }
+  @Override
+  public String toString() {
+    return storage.toString();
+  }
+}
+```
+
+这里引入了使用泛型的类定义的最简单的可能示例。类名称后面的 **<T>** 告诉编译器这是一个参数化类型，而其中的类型参数，即在类被使用时将会被实际类型替换的参数，就是 **T** 。基本上，这个类是在声明“我们在定义一个可以持有 **T** 类型对象的 **Stack** 。” **Stack** 是使用 **ArrayDeque** 实现的，而 **ArrayDeque** 也被告知它将持有 **T** 类型对象。注意， **push()** 接受类型为 **T** 的对象，而 **peek()** 和 **pop()** 返回类型为 **T** 的对象。 **peek()** 方法将返回栈顶元素，但并不将其从栈顶删除，而 **pop()** 删除并返回顶部元素。
+
+如果只需要栈的行为，那么使用继承是不合适的，因为这将产生一个具有 **ArrayDeque** 的其它所有方法的类（在[附录：集合主题]()中将会看到， **Java 1.0** 设计者在创建 **java.util.Stack** 时，就犯了这个错误）。使用组合，可以选择要公开的方法以及如何命名它们。
+
+下面将使用 **StackTest.java** 中的相同代码来演示这个新的 **Stack** 类：
+
+```java
+// collections/StackTest2.java
+import onjava.*;
+
+public class StackTest2 {
+  public static void main(String[] args) {
+    Stack<String> stack = new Stack<>();
+    for(String s : "My dog has fleas".split(" "))
+      stack.push(s);
+    while(!stack.isEmpty())
+      System.out.print(stack.pop() + " ");
+  }
+}
+/* Output:
+fleas has dog My
+*/
+```
+
+如果想在自己的代码中使用这个 **Stack** 类，当在创建其实例时，就需要完整指定包名，或者更改这个类的名称；否则，就有可能会与 **java.util** 包中的 **Stack** 发生冲突。例如，如果我们在上面的例子中导入 **java.util.***，那么就必须使用包名来防止冲突：
+
+```java
+// collections/StackCollision.java
+
+public class StackCollision {
+  public static void main(String[] args) {
+    onjava.Stack<String> stack = new onjava.Stack<>();
+    for(String s : "My dog has fleas".split(" "))
+      stack.push(s);
+    while(!stack.isEmpty())
+      System.out.print(stack.pop() + " ");
+    System.out.println();
+    java.util.Stack<String> stack2 =
+      new java.util.Stack<>();
+    for(String s : "My dog has fleas".split(" "))
+      stack2.push(s);
+    while(!stack2.empty())
+      System.out.print(stack2.pop() + " ");
+  }
+}
+/* Output:
+fleas has dog My
+fleas has dog My
+*/
+```
+
+尽管已经有了 **java.util.Stack** ，但是 **ArrayDeque** 可以产生更好的 **Stack** ，因此更可取。
+
+还可以使用显式导入来控制对“首选” **Stack** 实现的选择：
+```java
+import onjava.Stack;
+```
+
+现在,任何对 **Stack** 的引用都将选择 **onjava** 版本，而在选择 **java.util.Stack** 时，必须使用全限定名称（full qualification）。
 
 <!-- Set -->
 ## 集合Set
