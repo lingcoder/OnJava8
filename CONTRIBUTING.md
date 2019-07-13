@@ -36,6 +36,10 @@ $ git rebase upstream/master
 $ git push -f origin master
 ```
 
+## 视频演示教程
+
+- https://www.bilibili.com/video/av58040840
+
 ## 排版规范
 
 本开源书籍排版布局和翻译风格上参考**阮一峰**老师的 [中文技术文档的写作规范](https://github.com/ruanyf/document-style-guide)
