@@ -966,7 +966,7 @@ import java.util.*;
 interface StringProcessor extends Processor {
     @Override
     String process(Object input); // [1]
-    String S = "If she weighs the same as a duck, " + "she's made of wood"; // [2]
+    String S = "If she weighs the same as a duck, she's made of wood"; // [2]
     
     static void main(String[] args) { // [3]
         Applicator.apply(new Upcase(), S);
@@ -1009,33 +1009,809 @@ Using Processor Splitter
 [If, she, weighs, the, same, as, a, duck,, she's, made, of, wood]
 ```
 
+>[1] 该声明不是必要的，即使移除它，编译器也不会报错。但是注意这里的协变返回类型从 Object 变成了 String。
+>
+>[2] S 自动就是 final 和 static 的，因为它是在接口中定义的。
+>
+>[3] 可以在接口中定义 `main()` 方法。
+
+这种方式运作得很好，然而你经常遇到的情况是无法修改类。例如在电子滤波器的例子中，类库是被发现而不是创建的。在这些情况下，可以使用*适配器*设计模式。适配器允许代码接受已有的接口产生需要的接口，如下：
+
+```java
+// interfaces/interfaceprocessor/FilterProcessor.java
+// {java interfaces.interfaceprocessor.FilterProcessor}
+package interfaces.interfaceprocessor;
+import interfaces.filters.*;
+
+class FilterAdapter implements Processor {
+    Filter filter;
+    
+    FilterAdapter(Filter filter) {
+        this.filter = filter;
+    }
+    
+    @Override
+    public String name() {
+        return filter.name();
+    }
+    
+    @Override
+    public Waveform process(Object input) {
+        return filter.process((Waveform) input);
+    }
+}
+
+punlic class FilterProcessor {
+    public static void main(String[] args) {
+        Waveform w = new Waveform();
+        Applicator.apply(new FilterAdapter(new LowPass(1.0)), w);
+        Applicator.apply(new FilterAdapter(new HighPass(2.0)), w);
+        Applicator.apply(new FilterAdapter(new BandPass(3.0, 4.0)), w);
+    }
+}
+```
+
+输出：
+
+```
+Using Processor LowPass
+Waveform 0
+Using Processor HighPass
+Waveform 0
+Using Processor BandPass
+Waveform 0
+```
+
+在这种使用适配器的方式中，**FilterAdapter** 的构造器接受已有的接口 **Filter**，继而产生需要的 **Processor** 接口的对象。你可能还注意到 **FilterAdapter** 中使用了委托。
+
+协变允许我们从 `process()` 方法中产生一个 **Waveform** 而非 **Object** 对象。
+
+将接口与实现解耦使得接口可以应用于多种不同的实现，因而代码更具可复用性。
+
 <!-- Combining Multiple Interfaces -->
 
 ## 多接口结合
 
+接口没有任何实现——也就是说，没有任何与接口相关的存储——因此无法阻止结合的多接口。这是有价值的，因为你有时需要表示“一个 **x** 是一个 **a** 和一个 **b** 以及一个 **c**”。
+
+![类图](../images/1562999314238.png)
+
+在一个派生类中，你不能要求必须有一个是抽象的活“具体的”（没有任何抽象方法）的基类。如果确实要继承一个非接口的类，那么只能继承一个，其余的基元素必须都是接口。需要将所有的接口名称置于 **implements** 关键字之后且用逗号分隔。可以有任意多个接口，并可以向上转型为每个接口，因为每个接口都是独立的类型。下例展示了一个组合了多接口的具体类产生了新类：
+
+```java
+// interfaces/Adventure.java
+// Multiple interfaces
+interface CanFight {
+    void fight();
+}
+
+interface CanSwim {
+    void swim();
+}
+
+interface CanFly {
+    void fly();
+}
+
+class ActionCharacter {
+    public void fight(){}
+}
+
+class Hero extends ActionCharacter implements CanFight, CanSwim, CanFly {
+    public void swim() {}
+    
+    pubilc void fly() {}
+}
+
+public class Adventure {
+    public static void t(CanFight x) {
+        x.fight();
+    }
+    
+    public static void u(CanSwim x) {
+        x.swim();
+    }
+    
+    public staic void v(CanFly x) {
+        x.fly();
+    }
+    
+    public static void w(ActionCharacter x) {
+        x.fight();
+    }
+    
+    public static void main(String[] args) {
+        Hero h = new Hero();
+        t(h); // Treat it as a CanFight
+        u(h); // Treat it as a CanSwim
+        v(h); // Treat it as a CanFly
+        w(h); // Treat it as an ActionCharacter
+    }
+}
+```
+
+类 **Hero** 结合了具体类 **ActionCharacter** 和接口 **CanFight**、**CanSwim** 和 **CanFly**。当通过这种方式结合具体类和接口时，需要将具体类放在前面，后面跟着接口（否则编译器会报错）。
+
+接口 **CanFight** 和类 **ActionCharacter** 中的 `flight()` 方法签名相同，而在类 Hero 中也没有提供 `fight()` 的定义。可以扩展一个接口，但是得到的是另一个接口。当想创建一个对象时，所有的定义必须首先都存在。类 **Hero** 中没有显式地提供 `fight()` 的定义，是由于该方法在类 **ActionCharacter** 中已经定义过，这样才使得创建 **Hero** 对象成为可能。
+
+在类 **Adventure** 中可以看到四个方法，它们把不同的接口和具体类作为参数。当创建一个 **Hero** 对象时，它可以被传入这些方法中的任意一个，意味着它可以依次向上转型为每个接口。Java 中这种接口的设计方式，使得程序员不需要付出特别的努力。
+
+记住，前面例子展示了使用接口的核心原因之一：为了能够向上转型为多个基类型（以及由此带来的灵活性）。然而，使用接口的第二个原因与使用抽象基类相同：防止客户端程序员创建这个类的对象，确保这仅仅只是一个接口。这带来了一个问题：应该使用接口还是抽象类呢？如果创建不带任何方法定义或成员变量的基类，就选择接口而不是抽象类。事实上，如果知道某事物是一个基类，可以考虑用接口实现它（这个主题在本章总结会再次讨论）。
 
 <!-- Extending an Interface with Inheritance -->
+
 ## 使用继承扩展接口
+
+通过继承，可以很容易在接口中增加方法声明，还可以在新接口中结合多个接口。这两种情况都可以得到新接口，如下例所示：
+
+```java
+// interfaces/HorrorShow.java
+// Extending an interface with inheritance
+interface Monster {
+    void menace();
+}
+
+interface DangerousMonster extends Monster {
+    void destroy();
+}
+
+interface Lethal {
+    void kill();
+}
+
+class DragonZilla implements DangerousMonster {
+    @Override
+    public void menace() {}
+    
+    @Override
+    public void destroy() {}
+}
+
+interface Vampire extends DangerousMonster, Lethal {
+    void drinkBlood();
+}
+
+class VeryBadVampire implements Vampire {
+    @Override
+    public void menace() {}
+    
+    @Override
+    public void destroy() {}
+    
+    @Override
+    public void kill() {}
+    
+    @Override
+    public void drinkBlood() {}
+}
+
+public class HorrorShow {
+    static void u(Monster b) {
+        b.menace();
+    }
+    
+    static void v(DangerousMonster d) {
+        d.menace();
+        d.destroy();
+    }
+    
+    static void w(Lethal l) {
+        l.kill();
+    }
+    
+    public static void main(String[] args) {
+        DangerousMonster barney = new DragonZilla();
+        u(barney);
+        v(barney);
+        Vampire vlad = new VeryBadVampire();
+        u(vlad);
+        v(vlad);
+        w(vlad);
+    }
+}
+```
+
+接口 **DangerousMonster** 是 **Monster** 简单扩展的一个新接口，类 **DragonZilla** 实现了这个接口。
+
+**Vampire** 中使用的语法仅适用于接口继承。通常来说，**extends** 只能用于单一类，但是在构建接口时可以引用多个基类接口。注意到，接口名之间用逗号分隔。
+
+### 结合接口时的命名冲突
+
+当实现多个接口时可能会存在一个小陷阱。在前面的例子中，**CanFlight** 和 **ActionCharacter** 具有完全相同的 `flight()` 方法。完全相同的方法没有问题，但是如果它们的签名或返回类型不同会怎么样呢？这里有一个例子：
+
+```java
+// interfaces/InterfaceCollision.java
+interface I1 {
+    void f();
+}
+
+interface I2 {
+    int f(int i);
+}
+
+interface I3 {
+    int f();
+}
+
+class C {
+    public int f() {
+        return 1;
+    }
+}
+
+class C2 implements I1, I2 {
+    @Override
+    public void f() {}
+    
+    @Override
+    public int f(int i) {
+        return 1;  // 重载
+    }
+}
+
+class C3 extends C implements I2 {
+    @Override
+    public int f(int i) {
+        return 1; // 重载
+    }
+}
+
+class C4 extends C implements I3 {
+    // 完全相同，没问题
+    @Override
+    public int f() {
+        return 1;
+    }
+}
+
+// 方法的返回类型不同
+//- class C5 extends C implements I1 {}
+//- interface I4 extends I1, I3 {}
+```
+
+覆写、实现和重载令人不快地搅和在一起带来了困难。同时，重载方法仅根据返回类型是区分不了的。当不注释最后两行时，报错信息如下：
+
+```
+error: C5 is not abstract and does not override abstract
+method f() in I1
+class C5 extends C implements I1 {}
+error: types I3 and I1 are incompatible; both define f(),
+but with unrelated return types
+interfacce I4 extends I1, I3 {}
+```
+
+当打算组合接口时，在不同的接口中使用相同的方法名通常会造成代码可读性的混乱，尽量避免这种情况。
 
 <!-- Adapting to an Interface -->
 
 ## 接口适配
 
+接口最吸引人的原因之一是相同的接口可以有多个实现。在简单情况下体现在一个方法接受接口作为参数，该接口的实现和传递对象给方法则交由你来做。
+
+因此，接口的一种常见用法是前面提到的*策略*设计模式。编写一个方法执行某些操作并接受一个指定的接口作为参数。可以说：“只要对象遵循接口，就可以调用方法” ，这使得方法更加灵活，通用，并更具可复用性。
+
+例如，类 **Scanner** 的构造器接受的是一个 **Readable** 接口（在“字符串”一章中学习更多相关内容）。你会发现 **Readable** 没有用作 Java 标准库中其他任何方法的参数——它是单独为 **Scanner** 创建的，因此 **Scanner** 没有将其参数限制为某个特定类。通过这种方式，**Scanner** 可以与更多的类型协作。如果你创建了一个新类并想让 **Scanner** 作用于它，就让它实现 **Readable** 接口，像这样：
+
+```java
+// interfaces/RandomStrings.java
+// Implementing an interface to conform to a method
+import java.nio.*;
+import java.util.*;
+
+public class RandomStrings implements Readable {
+    private statdic Random rand = new Random(47);
+    private static final char[] CAPITALS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    private static final char[] LOWERS = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+    private static final char[] VOWELS = "aeiou".toCharArray();
+    private int count;
+    
+    public RandomStrings(int count) {
+        this.count = count;
+    }
+    
+    @Override
+    public int read(CharBuffer cb) {
+        if (count-- == 0) {
+            return -1; // indicates end of input
+        }
+        cb.append(CAPITALS[rand.nextInt(CAPITALS.length)]);
+        for (int i = 0; i < 4; i++) {
+            cb.append(VOWELS[rand.nextInt(VOWELS.length)]);
+            cb.append(LOWERS[rand.nextInt(LOWERS.length)]);
+        }
+        cb.append(" ");
+        return 10; // Number of characters appended
+    }
+    
+    public static void main(String[] args) {
+        Scanner s = new Scanner(new RandomStrings(10));
+        while (s.hasNext()) {
+            System.out.println(s.next());
+        }
+    }
+}
+```
+
+输出：
+
+```
+Yazeruyac
+Fowenucor
+Goeazimom
+Raeuuacio
+Nuoadesiw
+Hageaikux
+Ruqicibui
+Numasetih
+Kuuuuozog
+Waqizeyoy
+```
+
+**Readable** 接口只需要实现 `read()` 方法（注意 `@Override` 注解的突出方法）。在 `read()` 方法里，将输入内容添加到 **CharBuffer** 参数中（有多种方法可以实现，查看 **CharBuffer** 文档），或在没有输入时返回 **-1**。
+
+假设你有一个类没有实现 **Readable** 接口，怎样才能让 **Scanner** 作用于它呢？下面是一个产生随机浮点数的例子：
+
+```java
+// interfaces/RandomDoubles.java
+import java.util.*;
+
+public interface RandomDoubles {
+    Random RAND = new Random(47);
+    
+    default double next() {
+        return RAND.nextDouble();
+    }
+    
+    static void main(String[] args) {
+        RandomDoubles rd = new RandomDoubles(){};
+        for (int i = 0; i < 7; i++) {
+            System.out.println(rd.next() + " ");
+        }
+    }
+}
+```
+
+输出：
+
+```
+0.7271157860730044 
+0.5309454508634242 
+0.16020656493302599 
+0.18847866977771732 
+0.5166020801268457 
+0.2678662084200585 
+0.2613610344283964
+```
+
+我们可以再次使用适配器模式，但这里适配器类可以实现两个接口。因此，通过关键字 **interface** 提供的多继承，我们可以创建一个既是 **RandomDoubles**，又是 **Readable** 的类：
+
+```java
+// interfaces/AdaptedRandomDoubles.java
+// creating an adapter with inheritance
+import java.nio.*;
+import java.util.*;
+
+public class AdaptedRandomDoubles implements RandomDoubles, Readable {
+    private int count;
+    
+    public AdaptedRandomDoubles(int count) {
+        this.count = count;
+    }
+    
+    @Override
+    public int read(CharBuffer cb) {
+        if (count-- == 0) {
+            return -1;
+        }
+        String result = Double.toString(next()) + " ";
+        cb.append(result);
+        return result.length();
+    }
+    
+    public static void main(String[] args) {
+        Scanner s = new Scanner(new AdaptedRandomDoubles(7));
+        while (s.hasNextDouble()) {
+            System.out.print(s.nextDouble() + " ");
+        }
+    }
+}
+```
+
+输出：
+
+```
+0.7271157860730044 0.5309454508634242 
+0.16020656493302599 0.18847866977771732 
+0.5166020801268457 0.2678662084200585 
+0.2613610344283964
+```
+
+因为你可以以这种方式在已有类中增加新接口，所以这就意味着一个接受接口类型的方法提供了一种让任何类都可以与该方法进行适配的方式。这就是使用接口而不是类的强大之处。
 
 <!-- Fields in Interfaces -->
+
 ## 接口字段
 
+因为接口中的字段都自动是 **static** 和 **final** 的，所以接口就成为了创建一组常量的方便的工具。在 Java 5 之前，这是产生与 C 或 C++ 中的 enum (枚举类型) 具有相同效果的唯一方式。所以你可能在 Java 5 之前的代码中看到：
+
+```java
+// interfaces/Months.java
+// Using interfaces to create groups of constants
+public interface Months {
+    int 
+    JANUARY = 1, FEBRUARY = 2, MARCH = 3,
+    APRIL = 4, MAY = 5, JUNE = 6, JULY = 7,
+    AUGUST = 8, SEPTEMBER = 9, OCTOBER = 10,
+    NOVEMBER = 11, DECEMBER = 12;
+}
+```
+
+注意 Java 中使用大写字母的风格定义具有初始化值的 **static** **final** 变量。接口中的字段自动是 **public** 的，所以没有显式指明这点。
+
+自 Java 5 开始，我们有了更加强大和灵活的关键字 **enum**，那么在接口中定义常量组就显得没什么意义了。然而当你阅读遗留的代码时，在很多场合你还会碰到这种旧的习惯用法。在“枚举”一章中你会学习到更多关于枚举的内容。
+
+### 初始化接口中的字段
+
+接口中定义的字段不能是“空 **final**"，但是可以用非常量表达式初始化。例如：
+
+```java
+// interfaces/RandVals.java
+// Initializing interface fields with
+// non-constant initializers
+import java.util.*;
+
+public interface RandVals {
+    Random RAND = new Random(47);
+    int RANDOM_INT = RAND.nextInt(10);
+    long RANDOM_LONG = RAND.nextLong() * 10;
+    float RANDOM_FLOAT = RAND.nextLong() * 10;
+    double RANDOM_DOUBLE = RAND.nextDouble() * 10;
+}
+```
+
+因为字段是 **static** 的，所以它们在类第一次被加载时初始化，这发生在任何字段首次被访问时。下面是个简单的测试：
+
+```java
+// interfaces/TestRandVals.java
+public class TestRandVals {
+    public static void main(String[] args) {
+        System.out.println(RandVals.RANDOM_INT);
+        System.out.println(RandVals.RANDOM_LONG);
+        System.out.println(RandVals.RANDOM_FLOAT);
+        System.out.println(RandVals.RANDOM_DOUBLE);
+    }
+}
+```
+
+输出：
+
+```
+8
+-32032247016559954
+-8.5939291E18
+5.779976127815049
+```
+
+这些字段不是接口的一部分，它们的值被存储在接口的静态存储区域中。
 
 <!-- Nesting Interfaces -->
+
 ## 接口嵌套
 
+接口可以嵌套在类或其他接口中。下面揭示一些有趣的特性：
+
+```java
+// interfaces/nesting/NestingInterfaces.java
+// {java interfaces.nesting.NestingInterfaces}
+package interfaces.nesting;
+
+class A {
+    interface B {
+        void f();
+    }
+    
+    public class BImp implements B {
+        @Override
+        public void f() {}
+    }
+    
+    public class BImp2 implements B {
+        @Override
+        public void f() {}
+    }
+    
+    public interface C {
+        void f();
+    }
+    
+    class CImp implements C {
+        @Override
+        public void f() {}
+    }
+    
+    private class CImp2 implements C {
+        @Override
+        public void f() {}
+    }
+    
+    private interface D {
+        void f();
+    }
+    
+    private class DImp implements D {
+        @Override
+        public void f() {}
+    }
+    
+    public class DImp2 implements D {
+        @Override
+        public void f() {}
+    }
+    
+    public D getD() {
+        return new DImp2();
+    }
+    
+    private D dRef;
+    
+    public void receiveD(D d) {
+        dRef = d;
+        dRef.f();
+    }
+}
+
+interface E {
+    interface G {
+        void f();
+    }
+    // Redundant "public"
+    public interface H {
+        void f();
+    }
+    
+    void g();
+    // Cannot be private within an interface
+    //- private interface I {}
+}
+
+public class NestingInterfaces {
+    public class BImp implements A.B {
+        @Override
+        public void f() {}
+    }
+    
+    class CImp implements A.C {
+        @Override
+        public void f() {}
+    }
+    // Cannot implements a private interface except
+    // within that interface's defining class:
+    //- class DImp implements A.D {
+    //- public void f() {}
+    //- }
+    class EImp implements E {
+        @Override
+        public void g() {}
+    }
+    
+    class EGImp implements E.G {
+        @Override
+        public void f() {}
+    }
+    
+    class EImp2 implements E {
+        @Override
+        public void g() {}
+        
+        class EG implements E.G {
+            @Override
+            public void f() {}
+        }
+    }
+    
+    public static void main(String[] args) {
+        A a = new A();
+        // Can't access to A.D:
+        //- A.D ad = a.getD();
+        // Doesn't return anything but A.D:
+        //- A.DImp2 di2 = a.getD();
+        // cannot access a member of the interface:
+        //- a.getD().f();
+        // Only another A can do anything with getD():
+        A a2 = new A();
+        a2.receiveD(a.getD());
+    }
+}
+```
+
+在类中嵌套接口的语法是相当显而易见的。就像非嵌套接口一样，它们具有 **public** 或包访问权限的可见性。
+
+作为一种新添加的方式，接口也可以是 **private** 的，例如 **A.D**（同样的语法同时适用于嵌套接口和嵌套类）。那么 **private** 嵌套接口有什么好处呢？你可能猜测它只是被用来实现一个 **private** 内部类，就像 **DImp**。然而 **A.DImp2** 展示了它可以被实现为 **public** 类，但是 **A.DImp2** 只能被自己使用，你无法说它实现了 **private** 接口 **D**，所以实现 **private** 接口是一种可以强制该接口中的方法定义不会添加任何类型信息（即不可以向上转型）的方式。
+
+`getD()` 方法产生了一个与 **private** 接口有关的窘境。它是一个 **public** 方法却返回了对 **private** 接口的引用。能对这个返回值做些什么呢？`main()` 方法里进行了一些使用返回值的尝试但都失败了。返回值必须交给有权使用它的对象，本例中另一个 **A** 通过 `receiveD()` 方法接受了它。
+
+接口 **E** 说明了接口之间也能嵌套。然而，作用于接口的规则——尤其是，接口中的元素必须是 **public** 的——在此都会被严格执行，所以嵌套在另一个接口中的接口自动就是 **public** 的，不能指明为 **private**。
+
+类 **NestingInterfaces** 展示了嵌套接口的不同实现方式。尤其是当实现某个接口时，并不需要实现嵌套在其内部的接口。同时，**private** 接口不能在定义它的类之外被实现。
+
+添加这些特性的最初原因看起来像是出于对严格的语法一致性的考虑，但是我通常认为，一旦你了解了某种特性，就总能找到其用武之地。
 
 <!-- Interfaces and Factories -->
+
 ## 接口和工厂方法模式
 
+接口是多实现的途径，而生成符合某个接口的对象的典型方式是*工厂方法*设计模式。不同于直接调用构造器，只需调用工厂对象中的创建方法就能生成对象的实现——理论上，通过这种方式可以将接口与实现的代码完全分离，使得可以透明地将某个实现替换为另一个实现。这里是一个展示工厂方法结构的例子：
+
+```java
+// interfaces/Factories.java
+interface Service {
+    void method1();
+    void method2();
+}
+
+interface ServiceFactory {
+    Service getService();
+}
+
+class Service1 implements Service {
+    Service1() {} // Package access
+    
+    @Override
+    public void method1() {
+        System.out.println("Service1 method1");
+    }
+    
+    @Override
+    public void method2() {
+        System.out.println("Service1 method2");
+    }
+}
+
+class Service1Factory implements ServiceFactory {
+    @Override
+    public Service getService() {
+        return new Service1();
+    }
+}
+
+class Service2 implements Service {
+    Service2() {} // Package access
+    
+    @Override
+    public void method1() {
+        System.out.println("Service2 method1");
+    }
+    
+    @Override
+    public void method2() {
+        System.out.println("Service2 method2");
+    }
+}
+
+class Service2Factory implements ServiceFactory {
+    @Override
+    public Service getService() {
+        return new Service2();
+    }
+}
+
+public class Factories {
+    public static void serviceConsumer(ServiceFactory fact) {
+        Service s = fact.getService();
+        s.method1();
+        s.method2();
+    }
+    
+    public static void main(String[] args) {
+        serviceConsumer(new Service1Factory());
+        // Services are completely interchangeable:
+        serviceConsumer(new Service2Factory());
+    }
+}
+```
+
+输出：
+
+```
+Service1 method1
+Service1 method2
+Service2 method1
+Service2 method2
+```
+
+如果没有工厂方法，代码就必须在某处指定将要创建的 **Service** 的确切类型，从而调用恰当的构造器。
+
+为什么要添加额外的间接层呢？一个常见的原因是创建框架。假设你正在创建一个游戏系统；例如，在相同的棋盘下国际象棋和西洋跳棋：
+
+```java
+// interfaces/Games.java
+// A Game framework using Factory Methods
+interface Game {
+    boolean move();
+}
+
+interface GameFactory {
+    Game getGame();
+}
+
+class Checkers implements Game {
+    private int moves = 0;
+    private static final int MOVES = 3;
+    
+    @Override
+    public boolean move() {
+        System.out.println("Checkers move " + moves);
+        return ++moves != MOVES;
+    }
+}
+
+class CheckersFactory implements GameFactory {
+    @Override
+    public Game getGame() {
+        return new Checkers();
+    }
+}
+
+class Chess implements Game {
+    private int moves = 0;
+    private static final int MOVES = 4;
+    
+    @Override
+    public boolean move() {
+        System.out.println("Chess move " + moves);
+        return ++moves != MOVES;
+    }
+}
+
+class ChessFactory implements GameFactory {
+    @Override
+    public Game getGame() {
+        return new Chess();
+    }
+}
+
+public class Games {
+    public static void playGame(GameFactory factory) {
+        Game s = factory.getGame();
+        while (s.move()) {
+            ;
+        }
+    }
+    
+    public static void main(String[] args) {
+        playGame(new CheckersFactory());
+        playGame(new ChessFactory());
+    }
+}
+```
+
+输出：
+
+```
+Checkers move 0
+Checkers move 1
+Checkers move 2
+Chess move 0
+Chess move 1
+Chess move 2
+Chess move 3
+```
+
+如果类 **Games** 表示一段很复杂的代码，那么这种方式意味着你可以在不同类型的游戏里复用这段代码。你可以再想象一些能够从这个模式中受益的更加精巧的游戏。
+
+在下一章，你将会看到一种更加优雅的使用匿名内部类的工厂实现方式。
 
 <!-- Summary -->
+
 ## 本章小结
+
+认为接口是好的选择，从而使用接口不用具体类，这具有诱惑性。几乎任何时候，创建类都可以替代为创建一个接口和工厂。
+
+很多人都掉进了这个陷阱，只要有可能就创建接口和工厂。这种逻辑看起来像是可能会使用不同的实现，所以总是添加这种抽象性。这变成了一种过早的设计优化。
+
+任何抽象性都应该是由真正的需求驱动的。当有必要时才应该使用接口进行重构，而不是到处添加额外的间接层，从而带来额外的复杂性。这种复杂性非常显著，如果你让某人去处理这种复杂性，只是因为你意识到“以防万一”而添加新接口，而没有其他具有说服力的原因——好吧，如果我碰上了这种设计，就会质疑此人所作的所有其他设计了。
+
+恰当的原则是优先使用类而不是接口。从类开始，如果使用接口的必要性变得很明确，那么就重构。接口是一个伟大的工具，但它们容易被滥用。
 
 <!-- 分页 -->
 

@@ -29,7 +29,7 @@
 - [x] [第七章 封装](docs/book/07-Implementation-Hiding.md) 
 - [x] [第八章 复用](docs/book/08-Reuse.md)
 - [x] [第九章 多态](docs/book/09-Polymorphism.md)
-- [ ] [第十章 接口](docs/book/10-Interfaces.md)
+- [x] [第十章 接口](docs/book/10-Interfaces.md)
 - [x] [第十一章 内部类](docs/book/11-Inner-Classes.md)
 - [ ] [第十二章 集合](docs/book/12-Collections.md)
 - [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
