@@ -827,14 +827,441 @@ import onjava.Stack;
 <!-- Set -->
 ## 集合Set
 
+**Set** 不保存重复的元素。 如果试图将相同对象的多个实例添加到 **Set** 中，那么它会阻止这种行为。  **Set** 最常见的用途是测试归属性，可以很轻松地询问某个对象是否在一个 **Set** 中。因此，查找通常是 **Set** 最重要的操作，因此通常会选择 **HashSet** 实现，该实现针对快速查找进行了优化。
+
+**Set** 具有与 **Collection** 相同的接口，因此没有任何额外的功能，不像前面两种不同类型的 **List** 那样。实际上， **Set** 就是一个 **Collection**  ，只是行为不同。（这是继承和多态思想的典型应用：表现不同的行为。）**Set** 根据对象的“值”确定归属性，更复杂的问题将在[附录：集合主题]()中介绍。
+
+下面是使用存放 **Integer** 对象的 **HashSet** 的示例：
+
+```java
+// collections/SetOfInteger.java
+import java.util.*;
+
+public class SetOfInteger {
+  public static void main(String[] args) {
+    Random rand = new Random(47);
+    Set<Integer> intset = new HashSet<>();
+    for(int i = 0; i < 10000; i++)
+      intset.add(rand.nextInt(30));
+    System.out.println(intset);
+  }
+}
+/* Output:
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+*/
+```
+
+在0到29之间的10000个随机整数被添加到 **Set** 中，因此可以想象每个值都重复了很多次。但是从结果中可以看到，每一个数只有一个实例出现在结果中。
+
+早期Java版本中的 **HashSet** 产生的输出没有可辨别的顺序。这是因为出于对速度的追求， **HashSet** 使用了散列，请参阅[附录：集合主题]()一章。由 **HashSet** 维护的顺序与 **TreeSet** 或 **LinkedHashSet** 不同，因为它们的实现具有不同的元素存储方式。 **TreeSet** 将元素存储在红-黑树数据结构中，而 **HashSet** 使用散列函数。  **LinkedHashSet** 因为查询速度的原因也使用了散列，但是看起来使用了链表来维护元素的插入顺序。显然，哈希算法已经更改，现在 **Integer** 按顺序排序。 但是，您不应该依赖此行为：
+
+```java
+// collections/SetOfString.java
+import java.util.*;
+
+public class SetOfString {
+  public static void main(String[] args) {
+    Set<String> colors = new HashSet<>();
+    for(int i = 0; i < 100; i++) {
+      colors.add("Yellow");
+      colors.add("Blue");
+      colors.add("Red");
+      colors.add("Red");
+      colors.add("Orange");
+      colors.add("Yellow");
+      colors.add("Blue");
+      colors.add("Purple");
+    }
+    System.out.println(colors);
+  }
+}
+/* Output:
+[Red, Yellow, Blue, Purple, Orange]
+*/
+```
+
+**String** 对象似乎没有排序。要对结果进行排序，一种方法是使用 **TreeSet** 而不是 **HashSet** ：
+
+```java
+// collections/SortedSetOfString.java
+import java.util.*;
+
+public class SortedSetOfString {
+  public static void main(String[] args) {
+    Set<String> colors = new TreeSet<>();
+    for(int i = 0; i < 100; i++) {
+      colors.add("Yellow");
+      colors.add("Blue");
+      colors.add("Red");
+      colors.add("Red");
+      colors.add("Orange");
+      colors.add("Yellow");
+      colors.add("Blue");
+      colors.add("Purple");
+    }
+    System.out.println(colors);
+  }
+}
+/* Output:
+[Blue, Orange, Purple, Red, Yellow]
+*/
+```
+
+最常见的操作之一是使用 **contains()** 测试成员归属性，但也有一些其它操作，可能会让你想起在小学学过的文氏图（译者注：用圆表示集与集之间关系的图）：
+
+```java
+// collections/SetOperations.java
+import java.util.*;
+
+public class SetOperations {
+  public static void main(String[] args) {
+    Set<String> set1 = new HashSet<>();
+    Collections.addAll(set1,
+      "A B C D E F G H I J K L".split(" "));
+    set1.add("M");
+    System.out.println("H: " + set1.contains("H"));
+    System.out.println("N: " + set1.contains("N"));
+    Set<String> set2 = new HashSet<>();
+    Collections.addAll(set2, "H I J K L".split(" "));
+    System.out.println(
+      "set2 in set1: " + set1.containsAll(set2));
+    set1.remove("H");
+    System.out.println("set1: " + set1);
+    System.out.println(
+      "set2 in set1: " + set1.containsAll(set2));
+    set1.removeAll(set2);
+    System.out.println(
+      "set2 removed from set1: " + set1);
+    Collections.addAll(set1, "X Y Z".split(" "));
+    System.out.println(
+      "'X Y Z' added to set1: " + set1);
+  }
+}
+/* Output:
+H: true
+N: false
+set2 in set1: true
+set1: [A, B, C, D, E, F, G, I, J, K, L, M]
+set2 in set1: false
+set2 removed from set1: [A, B, C, D, E, F, G, M]
+'X Y Z' added to set1: [A, B, C, D, E, F, G, M, X, Y,
+Z]
+*/
+```
+
+这些方法名都是自解释的，JDK文档中还有一些其它的方法。
+
+能够产生每个元素都唯一的列表是相当有用的功能。例如，假设想要列出上面的 **SetOperations.java** 文件中的所有单词，通过使用本书后面介绍的 **java.nio.file.Files.readAllLines()** 方法，可以打开一个文件，并将其作为一个 **List\<String\>** 读取，每个 **String** 都是输入文件中的一行：
+
+```java
+// collections/UniqueWords.java
+import java.util.*;
+import java.nio.file.*;
+
+public class UniqueWords {
+  public static void
+  main(String[] args) throws Exception {
+    List<String> lines = Files.readAllLines(
+      Paths.get("SetOperations.java"));
+    Set<String> words = new TreeSet<>();
+    for(String line : lines)
+      for(String word : line.split("\\W+"))
+        if(word.trim().length() > 0)
+          words.add(word);
+    System.out.println(words);
+  }
+}
+/* Output:
+[A, B, C, Collections, D, E, F, G, H, HashSet, I, J, K,
+L, M, N, Output, Set, SetOperations, String, System, X,
+Y, Z, add, addAll, added, args, class, collections,
+contains, containsAll, false, from, import, in, java,
+main, new, out, println, public, remove, removeAll,
+removed, set1, set2, split, static, to, true, util,
+void]
+*/
+```
+
+我们逐步浏览文件中的每一行，并使用 **String.split()** 将其分解为单词，这里使用正则表达式 **\\\ W +** ，这意味着它会依据一个或多个（即 **+** ）非单词字母来拆分字符串（正则表达式将在[字符串]()章节介绍）。每个结果单词都会添加到 **Set words** 中。因为它是 **TreeSet** ，所以对结果进行排序。这里，排序是按*字典顺序*（lexicographically）完成的，因此大写和小写字母位于不同的组中。如果想按*字母顺序*（alphabetically）对其进行排序，可以向  **TreeSet** 构造器传入 **String.CASE_INSENSITIVE_ORDER** 比较器（比较器是一个建立排序顺序的对象）：
+
+```java
+// collections/UniqueWordsAlphabetic.java
+// Producing an alphabetic listing
+import java.util.*;
+import java.nio.file.*;
+
+public class UniqueWordsAlphabetic {
+  public static void
+  main(String[] args) throws Exception {
+    List<String> lines = Files.readAllLines(
+      Paths.get("SetOperations.java"));
+    Set<String> words =
+      new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    for(String line : lines)
+      for(String word : line.split("\\W+"))
+        if(word.trim().length() > 0)
+          words.add(word);
+    System.out.println(words);
+  }
+}
+/* Output:
+[A, add, addAll, added, args, B, C, class, collections,
+contains, containsAll, D, E, F, false, from, G, H,
+HashSet, I, import, in, J, java, K, L, M, main, N, new,
+out, Output, println, public, remove, removeAll,
+removed, Set, set1, set2, SetOperations, split, static,
+String, System, to, true, util, void, X, Y, Z]
+*/
+```
+
+**Comparator** 比较器将在[数组]()章节详细介绍。
 
 <!-- Map -->
 ## 映射Map
 
+将对象映射到其他对象的能力是解决编程问题的有效方法。例如，考虑一个程序，它被用来检查Java的 **Random** 类的随机性。理想情况下， **Random** 会产生完美的数字分布，但为了测试这一点，则需要生成大量的随机数，并计算落在各种范围内的数字个数。  **Map** 可以很容易地解决这个问题。在本例中，键是 **Random** 生成的数字，而值是该数字出现的次数：
+
+```java
+// collections/Statistics.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+// Simple demonstration of HashMap
+import java.util.*;
+
+public class Statistics {
+  public static void main(String[] args) {
+    Random rand = new Random(47);
+    Map<Integer, Integer> m = new HashMap<>();
+    for(int i = 0; i < 10000; i++) {
+      // Produce a number between 0 and 20:
+      int r = rand.nextInt(20);
+      Integer freq = m.get(r); // [1]
+      m.put(r, freq == null ? 1 : freq + 1);
+    }
+    System.out.println(m);
+  }
+}
+/* Output:
+{0=481, 1=502, 2=489, 3=508, 4=481, 5=503, 6=519,
+7=471, 8=468, 9=549, 10=513, 11=531, 12=521, 13=506,
+14=477, 15=497, 16=533, 17=509, 18=478, 19=464}
+*/
+```
+
+- **[1]** 自动包装机制将随机生成的 **int** 转换为可以与 **HashMap** 一起使用的 **Integer** 引用（不能使用基本类型的集合）。如果键不在集合中，则 **get()** 返回 **null** （这意味着这是第一次找到该数字）。否则， **get()** 会为键生成与之关联的 **Integer** 值，然后该值被递增（自动包装机制再次简化了表达式，但实际上确实发生了对 **Integer** 的装箱和拆箱）。
+
+接下来的示例将使用一个 **String** 描述来查找 **Pet** 对象。它还展示了通过使用 **containsKey()**和 **containsValue()** 方法去测试一个 **Map** ，以查看它是否包含某个键或某个值：
+
+```java
+// collections/PetMap.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class PetMap {
+  public static void main(String[] args) {
+    Map<String, Pet> petMap = new HashMap<>();
+    petMap.put("My Cat", new Cat("Molly"));
+    petMap.put("My Dog", new Dog("Ginger"));
+    petMap.put("My Hamster", new Hamster("Bosco"));
+    System.out.println(petMap);
+    Pet dog = petMap.get("My Dog");
+    System.out.println(dog);
+    System.out.println(petMap.containsKey("My Dog"));
+    System.out.println(petMap.containsValue(dog));
+  }
+}
+/* Output:
+{My Dog=Dog Ginger, My Cat=Cat Molly, My
+Hamster=Hamster Bosco}
+Dog Ginger
+true
+true
+*/
+```
+
+**Map** 与数组和其他的 **Collection** 一样，可以轻松地扩展到多个维度，只需要创建一个值为 **Map** 的 **Map**（这些 **Map** 的值可以是其他集合，甚至是其他 **Map**）。因此，能够很容易地将集合组合起来以快速生成强大的数据结构。例如，假设你正在追踪有多个宠物的人，只需要一个 **Map\<Person, List\<Pet\>\>** 即可：
+
+```java
+
+// collections/MapOfList.java
+// {java collections.MapOfList}
+package collections;
+import typeinfo.pets.*;
+import java.util.*;
+
+public class MapOfList {
+  public static final Map<Person, List< ? extends Pet>>
+    petPeople = new HashMap<>();
+  static {
+    petPeople.put(new Person("Dawn"),
+      Arrays.asList(
+        new Cymric("Molly"),
+        new Mutt("Spot")));
+    petPeople.put(new Person("Kate"),
+      Arrays.asList(new Cat("Shackleton"),
+        new Cat("Elsie May"), new Dog("Margrett")));
+    petPeople.put(new Person("Marilyn"),
+      Arrays.asList(
+        new Pug("Louie aka Louis Snorkelstein Dupree"),
+        new Cat("Stanford"),
+        new Cat("Pinkola")));
+    petPeople.put(new Person("Luke"),
+      Arrays.asList(
+        new Rat("Fuzzy"), new Rat("Fizzy")));
+    petPeople.put(new Person("Isaac"),
+      Arrays.asList(new Rat("Freckly")));
+  }
+  public static void main(String[] args) {
+    System.out.println("People: " + petPeople.keySet());
+    System.out.println("Pets: " + petPeople.values());
+    for(Person person : petPeople.keySet()) {
+      System.out.println(person + " has:");
+      for(Pet pet : petPeople.get(person))
+        System.out.println("    " + pet);
+    }
+  }
+}
+/* Output:
+People: [Person Dawn, Person Kate, Person Isaac, Person
+Marilyn, Person Luke]
+Pets: [[Cymric Molly, Mutt Spot], [Cat Shackleton, Cat
+Elsie May, Dog Margrett], [Rat Freckly], [Pug Louie aka
+Louis Snorkelstein Dupree, Cat Stanford, Cat Pinkola],
+[Rat Fuzzy, Rat Fizzy]]
+Person Dawn has:
+    Cymric Molly
+    Mutt Spot
+Person Kate has:
+    Cat Shackleton
+    Cat Elsie May
+    Dog Margrett
+Person Isaac has:
+    Rat Freckly
+Person Marilyn has:
+    Pug Louie aka Louis Snorkelstein Dupree
+    Cat Stanford
+    Cat Pinkola
+Person Luke has:
+    Rat Fuzzy
+    Rat Fizzy
+*/
+```
+
+**Map** 可以返回由其键组成的 **Set** ，由其值组成的 **Collection** ，或者其键值对的 **Set** 。 **keySet()** 方法生成由在 **petPeople** 中的所有键组成的 **Set** ，它在*for-in*语句中被用来遍历该 **Map** 。
 
 <!-- Queue -->
 ## 队列Queue
 
+队列是一个典型的“先进先出”（FIFO）集合。 即从集合的一端放入事物，再从另一端去获取它们，事物放入集合的顺序和被取出的顺序是相同的。队列通常被当做一种可靠的将对象从程序的某个区域传输到另一个区域的途径。队列在[并发编程]()中尤为重要，因为它们可以安全地将对象从一个任务传输到另一个任务。
+
+**LinkedList** 实现了 **Queue** 接口，并且提供了一些方法以支持队列行为，因此 **LinkedList** 可以用作 **Queue** 的一种实现。 通过将 **LinkedList** 向上转换为 **Queue** ，下面的示例使用了在 **Queue** 接口中与 **Queue** 相关(Queue-specific)的方法：
+
+```java
+// collections/QueueDemo.java
+// Upcasting to a Queue from a LinkedList
+import java.util.*;
+
+public class QueueDemo {
+  public static void printQ(Queue queue) {
+    while(queue.peek() != null)
+      System.out.print(queue.remove() + " ");
+    System.out.println();
+  }
+  public static void main(String[] args) {
+    Queue<Integer> queue = new LinkedList<>();
+    Random rand = new Random(47);
+    for(int i = 0; i < 10; i++)
+      queue.offer(rand.nextInt(i + 10));
+    printQ(queue);
+    Queue<Character> qc = new LinkedList<>();
+    for(char c : "Brontosaurus".toCharArray())
+      qc.offer(c);
+    printQ(qc);
+  }
+}
+/* Output:
+8 1 1 1 5 14 3 1 0 1
+B r o n t o s a u r u s
+*/
+```
+
+**offer()** 是与 **Queue** 相关的方法之一，它在允许的情况下，在队列的尾部插入一个元素，或者返回 **false** 。 **peek()** 和 **element()** 都返回队头元素而不删除它，但是如果队列为空，则 **element()** 抛出 **NoSuchElementException** ，而 **peek()** 返回 **null** 。 **poll()** 和 **remove()** 都删除并返回队头元素，但如果队列为空，**poll()** 返回 **null** ，而 **remove()** 抛出 **NoSuchElementException** 。
+
+自动包装机制会自动将 **nextInt()** 的 **int** 结果转换为 **queue** 所需的 **Integer** 对象，并将 **char c** 转换为 **qc** 所需的 **Character** 对象。 **Queue** 接口窄化了对 **LinkedList** 方法的访问权限，因此只有适当的方法才能使用，因此能够访问到的 **LinkedList** 的方法会变少（这里实际上可以将 **Queue** 强制转换回 **LinkedList** ，但至少我们不鼓励这样做）。
+
+与 **Queue** 相关的方法提供了完整而独立的功能。 也就是说，对于 **Queue** 所继承的 **Collection** ，在不需要使用它的任何方法的情况下，就可以拥有一个可用的 **Queue** 。
+
+<!-- PriorityQueue -->
+### 优先级队列PriorityQueue
+
+先进先出（FIFO）描述了最典型的*队列规则*（queuing discipline）。队列规则是指在给定队列中的一组元素的情况下，确定下一个弹出队列的元素的规则。先进先出声明的是下一个弹出的元素应该是等待时间最长的元素。
+
+优先级队列声明下一个弹出的元素是最需要的元素（具有最高的优先级）。例如，在机场，当飞机临近起飞时，这架飞机的乘客可以在办理登机手续时排到队头。如果构建了一个消息传递系统，某些消息比其他消息更重要，应该尽快处理，而不管它们何时到达。在Java 5中添加了 **PriorityQueue** ，以便自动实现这种行为。
+
+当在 **PriorityQueue** 上调用 **offer()** 方法来插入一个对象时，该对象会在队列中被排序。默认的排序使用队列中对象的*自然顺序*（natural order），但是可以通过提供自己的 **Comparator** 来修改这个顺序。 **PriorityQueue** 确保在调用**peek()** ， **poll()** 或 **remove()** 方法时，获得的元素将是队列中优先级最高的元素。
+
+让 **PriorityQueue** 与 **Integer** ， **String** 和 **Character** 这样的内置类型一起工作易如反掌。在下面的示例中，第一组值与前一个示例中的随机值相同，可以看到它们从 **PriorityQueue** 中弹出的顺序与前一个示例不同：
+
+```java
+// collections/PriorityQueueDemo.java
+import java.util.*;
+
+public class PriorityQueueDemo {
+  public static void main(String[] args) {
+    PriorityQueue<Integer> priorityQueue =
+      new PriorityQueue<>();
+    Random rand = new Random(47);
+    for(int i = 0; i < 10; i++)
+      priorityQueue.offer(rand.nextInt(i + 10));
+    QueueDemo.printQ(priorityQueue);
+
+    List<Integer> ints = Arrays.asList(25, 22, 20,
+      18, 14, 9, 3, 1, 1, 2, 3, 9, 14, 18, 21, 23, 25);
+    priorityQueue = new PriorityQueue<>(ints);
+    QueueDemo.printQ(priorityQueue);
+    priorityQueue = new PriorityQueue<>(
+        ints.size(), Collections.reverseOrder());
+    priorityQueue.addAll(ints);
+    QueueDemo.printQ(priorityQueue);
+
+    String fact = "EDUCATION SHOULD ESCHEW OBFUSCATION";
+    List<String> strings =
+      Arrays.asList(fact.split(""));
+    PriorityQueue<String> stringPQ =
+      new PriorityQueue<>(strings);
+    QueueDemo.printQ(stringPQ);
+    stringPQ = new PriorityQueue<>(
+      strings.size(), Collections.reverseOrder());
+    stringPQ.addAll(strings);
+    QueueDemo.printQ(stringPQ);
+
+    Set<Character> charSet = new HashSet<>();
+    for(char c : fact.toCharArray())
+      charSet.add(c); // Autoboxing
+    PriorityQueue<Character> characterPQ =
+      new PriorityQueue<>(charSet);
+    QueueDemo.printQ(characterPQ);
+  }
+}
+/* Output:
+0 1 1 1 1 1 3 5 8 14
+1 1 2 3 3 9 9 14 14 18 18 20 21 22 23 25 25
+25 25 23 22 21 20 18 18 14 14 9 9 3 3 2 1 1
+      A A B C C C D D E E E F H H I I L N N O O O O S S
+S T T U U U W
+W U U U T T S S S O O O O N N L I I H H F E E E D D C C
+C B A A
+  A B C D E F H I L N O S T U W
+*/
+```
+
+**PriorityQueue** 是允许重复的，最小的值具有最高的优先级（如果是 **String** ，空格也可以算作值，并且比字母的优先级高）。为了展示如何通过提供自己的 **Comparator** 对象来改变顺序，第三个对 **PriorityQueue\<Integer\>** 构造器的调用，和第二个对 **PriorityQueue\<String\>** 的调用使用了由 **Collections.reverseOrder()** （Java SE5中新添加的）产生的反序的 **Comparator** 。
+
+最后一部分添加了一个 **HashSet** 来消除重复的 **Character**。
+
+**Integer** ， **String** 和 **Character** 可以与 **PriorityQueue** 一起使用，因为这些类已经内置了自然排序。如果想在 **PriorityQueue** 中使用自己的类，则必须包含额外的功能以产生自然排序，或者必须提供自己的 **Comparator** 。在[附录：集合主题]()中有一个更复杂的示例来演示这种情况。
 
 <!-- Collection vs. Iterator -->
 ## 集合与迭代器
