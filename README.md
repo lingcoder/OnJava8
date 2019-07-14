@@ -31,7 +31,7 @@
 - [x] [第九章 多态](docs/book/09-Polymorphism.md)
 - [x] [第十章 接口](docs/book/10-Interfaces.md)
 - [x] [第十一章 内部类](docs/book/11-Inner-Classes.md)
-- [ ] [第十二章 集合](docs/book/12-Collections.md)
+- [x] [第十二章 集合](docs/book/12-Collections.md)
 - [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
 - [x] [第十四章 流式编程](docs/book/14-Streams.md) 
 - [x] [第十五章 异常](docs/book/15-Exceptions.md)
