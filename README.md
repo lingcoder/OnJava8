@@ -90,7 +90,7 @@
 ## 贡献者
 
 * 主译：[LingCoder](https://github.com/LingCoder)，[sjsdfg](https://github.com/sjsdfg)
-* 参译：[xiangflight](https://github.com/xiangflight)，[LortSir](https://github.com/LortSir)
+* 参译：[xiangflight](https://github.com/xiangflight)，[1326670425](https://github.com/1326670425)，[LortSir](https://github.com/LortSir)
 * 校对：[LingCoder](https://github.com/LingCoder)，[xiangflight](https://github.com/xiangflight)，[nickChenyx](https://github.com/nickChenyx)
 
 
