@@ -17,12 +17,12 @@ MyType aReference
 
 集合还有一些其它特性。例如， **Set** 对于每个值都只保存一个对象， **Map** 是一个关联数组，允许将某些对象与其他对象关联起来。Java集合类都可以自动地调整自己的大小。因此，与数组不同，在编程时，可以将任意数量的对象放置在集合中，而不用关心集合应该有多大。
 
-尽管在Java中没有直接的关键字支持，集合类仍然是可以显著增强编程能力的基本工具。在本章中，将介绍Java集合类库的基本知识，并重点介绍一些典型用法。这里将专注于在日常编程中使用的集合。稍后，在[附录：集合主题]()中，还将学习到其余的那些集合和相关功能，以及如何使用它们的更多详细信息。
+尽管在Java中没有直接的关键字支持，[^1]但集合类仍然是可以显著增强编程能力的基本工具。在本章中，将介绍Java集合类库的基本知识，并重点介绍一些典型用法。这里将专注于在日常编程中使用的集合。稍后，在[附录：集合主题]()中，还将学习到其余的那些集合和相关功能，以及如何使用它们的更多详细信息。
 
 <!-- Generics and Type-Safe Collections -->
 ## 泛型和类型安全的集合
 
-使用Java SE5之前的集合的一个主要问题是编译器允许你向集合中插入不正确的类型。例如，考虑一个 **Apple** 对象的集合，这里使用最基本最可靠的 **ArrayList** 。现在，可以把 **ArrayList** 看作“可以自动扩充自身尺寸的数组”来看待。使用 **ArrayList** 相当简单：创建一个实例，用 **add()** 插入对象；然后用 **get()** 来访问这些对象，此时需要使用索引，就像数组那样，但是不需要方括号。 **ArrayList** 还有一个 **size()** 方法，来说明集合中包含了多少个元素，所以不会不小心因数组越界而引发错误（通过抛出*运行时异常*，[异常]()章节介绍了异常）。
+使用Java SE5之前的集合的一个主要问题是编译器允许你向集合中插入不正确的类型。例如，考虑一个 **Apple** 对象的集合，这里使用最基本最可靠的 **ArrayList** 。现在，可以把 **ArrayList** 看作“可以自动扩充自身尺寸的数组”来看待。使用 **ArrayList** 相当简单：创建一个实例，用 **add()** 插入对象；然后用 **get()** 来访问这些对象，此时需要使用索引，就像数组那样，但是不需要方括号。[^2] **ArrayList** 还有一个 **size()** 方法，来说明集合中包含了多少个元素，所以不会不小心因数组越界而引发错误（通过抛出*运行时异常*，[异常]()章节介绍了异常）。
 
 在本例中， **Apple** 和 **Orange** 都被放到了集合中，然后将它们取出。正常情况下，Java编译器会给出警告，因为这个示例没有使用泛型。在这里，使用特定的注解来抑制警告信息。注解以“@”符号开头，可以带参数。这里的 **@SuppressWarning** 注解及其参数表示只抑制“unchecked”类型的警告（[注解]()章节将介绍更多有关注解的信息）：
 
@@ -70,7 +70,7 @@ ndOrangesWithoutGenerics.java:23)
 
 在[泛型]()章节中，你将了解到使用Java泛型来创建类可能很复杂。但是，使用预先定义的泛型类却相当简单。例如，要定义一个用于保存 **Apple**  对象的 **ArrayList** ，只需要使用 **ArrayList<Apple>** 来代替 **ArrayList** 。尖括号括起来的是*类型参数*（可能会有多个），它指定了这个集合实例可以保存的类型。
 
-通过使用泛型，就可以在编译期防止将错误类型的对象放置到集合中。下面还是这个示例，但是使用了泛型：
+通过使用泛型，就可以在编译期防止将错误类型的对象放置到集合中。[^3]下面还是这个示例，但是使用了泛型：
 ```java
 // collections/ApplesAndOrangesWithGenerics.java
 import java.util.*;
@@ -517,7 +517,7 @@ public class SimpleIteration {
 
 如果只是想向前遍历 **List** ，并不打算修改 **List** 对象本身，那么使用 *for-in* 语法更加简洁。
 
-**Iterator** 还可以删除由 **next()** 生成的最后一个元素，这意味着在调用 **remove()** 之前必须先调用 **next()** 。
+**Iterator** 还可以删除由 **next()** 生成的最后一个元素，这意味着在调用 **remove()** 之前必须先调用 **next()** 。[^4]
 
 在集合中的每个对象上执行操作，这种思想十分强大，并且贯穿于本书。
 
@@ -1200,7 +1200,7 @@ B r o n t o s a u r u s
 
 优先级队列声明下一个弹出的元素是最需要的元素（具有最高的优先级）。例如，在机场，当飞机临近起飞时，这架飞机的乘客可以在办理登机手续时排到队头。如果构建了一个消息传递系统，某些消息比其他消息更重要，应该尽快处理，而不管它们何时到达。在Java 5中添加了 **PriorityQueue** ，以便自动实现这种行为。
 
-当在 **PriorityQueue** 上调用 **offer()** 方法来插入一个对象时，该对象会在队列中被排序。默认的排序使用队列中对象的*自然顺序*（natural order），但是可以通过提供自己的 **Comparator** 来修改这个顺序。 **PriorityQueue** 确保在调用**peek()** ， **poll()** 或 **remove()** 方法时，获得的元素将是队列中优先级最高的元素。
+当在 **PriorityQueue** 上调用 **offer()** 方法来插入一个对象时，该对象会在队列中被排序。[^5]默认的排序使用队列中对象的*自然顺序*（natural order），但是可以通过提供自己的 **Comparator** 来修改这个顺序。 **PriorityQueue** 确保在调用**peek()** ， **poll()** 或 **remove()** 方法时，获得的元素将是队列中优先级最高的元素。
 
 让 **PriorityQueue** 与 **Integer** ， **String** 和 **Character** 这样的内置类型一起工作易如反掌。在下面的示例中，第一组值与前一个示例中的随机值相同，可以看到它们从 **PriorityQueue** 中弹出的顺序与前一个示例不同：
 
@@ -1266,13 +1266,537 @@ C B A A
 <!-- Collection vs. Iterator -->
 ## 集合与迭代器
 
+**Collection** 是所有序列集合共有的根接口。它可能会被认为是一种“附属接口”（incidental interface），即因为要表示其他若干个接口的共性而出现的接口。此外，**java.util.AbstractCollection** 类提供了 **Collection** 的默认实现，使得你可以创建 **AbstractCollection** 的子类型，而其中没有不必要的代码重复。
+
+使用接口描述的一个理由是它可以使我们创建更通用的代码。通过针对接口而非具体实现来编写代码，我们的代码可以应用于更多类型的对象。[^6]因此，如果所编写的方法接受一个 **Collection** ，那么该方法可以应用于任何实现了 **Collection** 的类——这也就使得一个新类可以选择去实现 **Collection** 接口，以便该方法可以使用它。标准C++类库中的的集合并没有共同的基类——集合之间的所有共性都是通过迭代器实现的。在Java中，遵循C++的方式看起来似乎很明智，即用迭代器而不是 **Collection** 来表示集合之间的共性。但是，这两种方法绑定在了一起，因为实现 **Collection** 就意味着需要提供 **iterator()** 方法：
+
+```java
+// collections/InterfaceVsIterator.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class InterfaceVsIterator {
+  public static void display(Iterator<Pet> it) {
+    while(it.hasNext()) {
+      Pet p = it.next();
+      System.out.print(p.id() + ":" + p + " ");
+    }
+    System.out.println();
+  }
+  public static void display(Collection<Pet> pets) {
+    for(Pet p : pets)
+      System.out.print(p.id() + ":" + p + " ");
+    System.out.println();
+  }
+  public static void main(String[] args) {
+    List<Pet> petList = Pets.list(8);
+    Set<Pet> petSet = new HashSet<>(petList);
+    Map<String, Pet> petMap = new LinkedHashMap<>();
+    String[] names = ("Ralph, Eric, Robin, Lacey, " +
+      "Britney, Sam, Spot, Fluffy").split(", ");
+    for(int i = 0; i < names.length; i++)
+      petMap.put(names[i], petList.get(i));
+    display(petList);
+    display(petSet);
+    display(petList.iterator());
+    display(petSet.iterator());
+    System.out.println(petMap);
+    System.out.println(petMap.keySet());
+    display(petMap.values());
+    display(petMap.values().iterator());
+  }
+}
+/* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+{Ralph=Rat, Eric=Manx, Robin=Cymric, Lacey=Mutt,
+Britney=Pug, Sam=Cymric, Spot=Pug, Fluffy=Manx}
+[Ralph, Eric, Robin, Lacey, Britney, Sam, Spot, Fluffy]
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+*/
+```
+
+两个版本的 **display()** 方法都可以使用 **Map** 或 **Collection** 的子类型来工作。 而且**Collection** 接口和 **Iterator** 都将 **display()** 方法与低层集合的特定实现解耦。
+
+在本例中，这两种方式都可以奏效。事实上， **Collection** 要更方便一点，因为它是 **Iterable** 类型，因此在 **display(Collection)** 的实现中可以使用*for-in*构造，这使得代码更加清晰。
+
+当需要实现一个不是 **Collection** 的外部类时，由于让它去实现 **Collection** 接口可能非常困难或麻烦，因此使用 **Iterator** 就会变得非常吸引人。例如，如果我们通过继承一个持有 **Pet** 对象的类来创建一个 **Collection** 的实现，那么我们必须实现 **Collection** 所有的方法，即使我们不在 **display()** 方法中使用它们，也必须这样做。虽然这可以通过继承 **AbstractCollection** 而很容易地实现，但是无论如何还是要被强制去实现 **iterator()** 和 **size()** 方法，这些方法 **AbstractCollection** 没有实现，但是 **AbstractCollection** 中的其它方法会用到：
+
+```java
+// collections/CollectionSequence.java
+import typeinfo.pets.*;
+import java.util.*;
+
+public class CollectionSequence
+extends AbstractCollection<Pet> {
+  private Pet[] pets = Pets.array(8);
+  @Override
+  public int size() { return pets.length; }
+  @Override
+  public Iterator<Pet> iterator() {
+    return new Iterator<Pet>() { // [1]
+      private int index = 0;
+      @Override
+      public boolean hasNext() {
+        return index < pets.length;
+      }
+      @Override
+      public Pet next() { return pets[index++]; }
+      @Override
+      public void remove() { // Not implemented
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+  public static void main(String[] args) {
+    CollectionSequence c = new CollectionSequence();
+    InterfaceVsIterator.display(c);
+    InterfaceVsIterator.display(c.iterator());
+  }
+}
+/* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+*/
+```
+
+**remove()** 方法是一个“可选操作”，在[附录：集合主题]()中详细介绍。 这里可以不必实现它，如果你调用它，它将抛出异常。
+
+- **[1]** 你可能会认为，因为 **iterator()** 返回 **Iterator\<Pet\>** ，匿名内部类定义可以使用菱形语法，Java可以推断出类型。但这不起作用，类型推断仍然非常有限。
+
+这个例子表明，如果实现了 **Collection** ，就必须实现 **iterator()** ，并且只拿实现 **iterator()** 与继承 **AbstractCollection** 相比，花费的代价只有略微减少。但是，如果类已经继承了其他的类，那么就不能继承再 **AbstractCollection** 了。 在这种情况下，要实现 **Collection** ，就必须实现该接口中的所有方法。 此时，继承并提供创建迭代器的能力要容易得多：
+
+```java
+// collections/NonCollectionSequence.java
+import typeinfo.pets.*;
+import java.util.*;
+
+class PetSequence {
+  protected Pet[] pets = Pets.array(8);
+}
+
+public class NonCollectionSequence extends PetSequence {
+  public Iterator<Pet> iterator() {
+    return new Iterator<Pet>() {
+      private int index = 0;
+      @Override
+      public boolean hasNext() {
+        return index < pets.length;
+      }
+      @Override
+      public Pet next() { return pets[index++]; }
+      @Override
+      public void remove() { // Not implemented
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+  public static void main(String[] args) {
+    NonCollectionSequence nc =
+      new NonCollectionSequence();
+    InterfaceVsIterator.display(nc.iterator());
+  }
+}
+/* Output:
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
+7:Manx
+*/
+```
+
+生成 **Iterator** 是将序列与消费该序列的方法连接在一起耦合度最小的方式，并且与实现 **Collection** 相比，它在序列类上所施加的约束也少得多。
 
 <!-- for-in and Iterators -->
 ## for-in和迭代器
 
+到目前为止，*for-in*语法主要用于数组，但它也适用于任何 **Collection** 对象。实际上在使用 **ArrayList** 时，已经看到了一些使用它的示例，下面是一个更通用的证明：
+
+```java
+// collections/ForInCollections.java
+// All collections work with for-in
+import java.util.*;
+
+public class ForInCollections {
+  public static void main(String[] args) {
+    Collection<String> cs = new LinkedList<>();
+    Collections.addAll(cs,
+      "Take the long way home".split(" "));
+    for(String s : cs)
+      System.out.print("'" + s + "' ");
+  }
+}
+/* Output:
+'Take' 'the' 'long' 'way' 'home'
+*/
+```
+
+由于 **cs** 是一个 **Collection** ，因此该代码展示了使用*for-in*是所有 **Collection** 对象的特征。
+
+这样做的原因是Java SE5引入了一个名为 **Iterable** 的接口，该接口包含一个能够生成 **Iterator** 的 **iterator()** 方法。*for-in*使用此 **Iterable** 接口来遍历序列。因此，如果创建了任何实现了 **Iterable** 的类，都可以将它用于*for-in*语句中：
+
+```java
+// collections/IterableClass.java
+// Anything Iterable works with for-in
+import java.util.*;
+
+public class IterableClass implements Iterable<String> {
+  protected String[] words = ("And that is how " +
+    "we know the Earth to be banana-shaped."
+    ).split(" ");
+  @Override
+  public Iterator<String> iterator() {
+    return new Iterator<String>() {
+      private int index = 0;
+      @Override
+      public boolean hasNext() {
+        return index < words.length;
+      }
+      @Override
+      public String next() { return words[index++]; }
+      @Override
+      public void remove() { // Not implemented
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+  public static void main(String[] args) {
+    for(String s : new IterableClass())
+      System.out.print(s + " ");
+  }
+}
+/* Output:
+And that is how we know the Earth to be banana-shaped.
+*/
+```
+
+**iterator()** 返回的是实现了 **Iterator\<String\>** 的匿名内部类的实例，该匿名内部类可以遍历数组中的每个单词。在 **main()** 中，可以看到 **IterableClass** 确实可以用于*for-in*语句。
+
+在Java SE5中，许多类都是 **Iterable** ，主要包括所有的 **Collection** 类（但不包括各种 **Maps** ）。 例如，下面的代码可以显示所有的操作系统环境变量：
+
+```java
+// collections/EnvironmentVariables.java
+// {VisuallyInspectOutput}
+import java.util.*;
+
+public class EnvironmentVariables {
+  public static void main(String[] args) {
+    for(Map.Entry entry: System.getenv().entrySet()) {
+      System.out.println(entry.getKey() + ": " +
+        entry.getValue());
+    }
+  }
+}
+```
+
+**System.getenv()** [^7]返回一个 **Map** ， **entrySet()** 产生一个由 **Map.Entry** 的元素构成的 **Set** ，并且这个 **Set** 是一个 **Iterable** ，因此它可以用于*for-in*循环。
+
+*for-in*语句适用于数组或其它任何 **Iterable** ，但这并不意味着数组肯定也是个 **Iterable** ，也不会发生任何自动装箱：
+
+```java
+// collections/ArrayIsNotIterable.java
+import java.util.*;
+
+public class ArrayIsNotIterable {
+  static <T> void test(Iterable<T> ib) {
+    for(T t : ib)
+      System.out.print(t + " ");
+  }
+  public static void main(String[] args) {
+    test(Arrays.asList(1, 2, 3));
+    String[] strings = { "A", "B", "C" };
+    // An array works in for-in, but it's not Iterable:
+    //- test(strings);
+    // You must explicitly convert it to an Iterable:
+    test(Arrays.asList(strings));
+  }
+}
+/* Output:
+1 2 3 A B C
+*/
+```
+
+尝试将数组作为一个 **Iterable** 参数传递会导致失败。这说明不存在任何从数组到 **Iterable** 的自动转换; 必须手工执行这种转换。
+
+<!-- The Adapter Method Idiom -->
+### 适配器方法惯用法
+
+如果现在有一个 **Iterable** 类，你想要添加一种或多种在*for-in*语句中使用这个类的方法，应该怎么做呢？ 例如，假设你希望可以选择是在正向还是反向遍历一个单词列表。如果直接继承这个类，并覆盖 **iterator()** 方法，则只能替换现有的方法，而不能实现选择。
+
+一种解决方案是所谓*适配器方法*（Adapter Method）的惯用法。“适配器”部分来自于设计模式，因为必须要提供特定的接口来满足*for-in*语句。如果已经有一个接口并且需要另一个接口时，则编写适配器就可以解决这个问题。
+在这里，若希望在默认的正向迭代器的基础上，添加产生反向迭代器的能力，因此不能使用覆盖，相反，而是添加了一个能够生成 **Iterable** 对象的方法，该对象可以用于*for-in*语句。这使得我们可以提供多种使用*for-in*语句的方式：
+
+```java
+// collections/AdapterMethodIdiom.java
+// The "Adapter Method" idiom uses for-in
+// with additional kinds of Iterables
+import java.util.*;
+
+class ReversibleArrayList<T> extends ArrayList<T> {
+  ReversibleArrayList(Collection<T> c) {
+    super(c);
+  }
+  public Iterable<T> reversed() {
+    return new Iterable<T>() {
+      public Iterator<T> iterator() {
+        return new Iterator<T>() {
+          int current = size() - 1;
+          public boolean hasNext() {
+            return current > -1;
+          }
+          public T next() { return get(current--); }
+          public void remove() { // Not implemented
+            throw new UnsupportedOperationException();
+          }
+        };
+      }
+    };
+  }
+}
+
+public class AdapterMethodIdiom {
+  public static void main(String[] args) {
+    ReversibleArrayList<String> ral =
+      new ReversibleArrayList<String>(
+        Arrays.asList("To be or not to be".split(" ")));
+    // Grabs the ordinary iterator via iterator():
+    for(String s : ral)
+      System.out.print(s + " ");
+    System.out.println();
+    // Hand it the Iterable of your choice
+    for(String s : ral.reversed())
+      System.out.print(s + " ");
+  }
+}
+/* Output:
+To be or not to be
+be to not or be To
+*/
+```
+
+在 **main()** 中，如果直接将 **ral** 对象放在*for-in*语句中，则会得到（默认的）正向迭代器。但是如果在该对象上调用 **reversed()** 方法，它会产生不同的行为。
+
+通过使用这种方式，可以在 **IterableClass.java** 示例中添加两种适配器方法：
+
+```java
+// collections/MultiIterableClass.java
+// Adding several Adapter Methods
+import java.util.*;
+
+public class MultiIterableClass extends IterableClass {
+  public Iterable<String> reversed() {
+    return new Iterable<String>() {
+      public Iterator<String> iterator() {
+        return new Iterator<String>() {
+          int current = words.length - 1;
+          public boolean hasNext() {
+            return current > -1;
+          }
+          public String next() {
+            return words[current--];
+          }
+          public void remove() { // Not implemented
+            throw new UnsupportedOperationException();
+          }
+        };
+      }
+    };
+  }
+  public Iterable<String> randomized() {
+    return new Iterable<String>() {
+      public Iterator<String> iterator() {
+        List<String> shuffled =
+          new ArrayList<String>(Arrays.asList(words));
+        Collections.shuffle(shuffled, new Random(47));
+        return shuffled.iterator();
+      }
+    };
+  }
+  public static void main(String[] args) {
+    MultiIterableClass mic = new MultiIterableClass();
+    for(String s : mic.reversed())
+      System.out.print(s + " ");
+    System.out.println();
+    for(String s : mic.randomized())
+      System.out.print(s + " ");
+    System.out.println();
+    for(String s : mic)
+      System.out.print(s + " ");
+  }
+}
+/* Output:
+banana-shaped. be to Earth the know we how is that And
+is banana-shaped. Earth that how the be And we know to
+And that is how we know the Earth to be banana-shaped.
+*/
+```
+
+注意，第二个方法 **random()** 没有创建它自己的 **Iterator** ，而是直接返回被打乱的 **List** 中的 **Iterator** 。
+
+从输出中可以看到， **Collections.shuffle()** 方法不会影响到原始数组，而只是打乱了 **shuffled** 中的引用。之所以这样，是因为 **randomized()** 方法用一个 **ArrayList** 将 **Arrays.asList()** 的结果包装了起来。如果这个由 **Arrays.asList()** 生成的 **List** 被直接打乱，那么它将修改底层数组，如下所示：
+
+```java
+// collections/ModifyingArraysAsList.java
+import java.util.*;
+
+public class ModifyingArraysAsList {
+  public static void main(String[] args) {
+    Random rand = new Random(47);
+    Integer[] ia = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    List<Integer> list1 =
+      new ArrayList<>(Arrays.asList(ia));
+    System.out.println("Before shuffling: " + list1);
+    Collections.shuffle(list1, rand);
+    System.out.println("After shuffling: " + list1);
+    System.out.println("array: " + Arrays.toString(ia));
+
+    List<Integer> list2 = Arrays.asList(ia);
+    System.out.println("Before shuffling: " + list2);
+    Collections.shuffle(list2, rand);
+    System.out.println("After shuffling: " + list2);
+    System.out.println("array: " + Arrays.toString(ia));
+  }
+}
+/* Output:
+Before shuffling: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+After shuffling: [4, 6, 3, 1, 8, 7, 2, 5, 10, 9]
+array: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+Before shuffling: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+After shuffling: [9, 1, 6, 3, 7, 2, 5, 10, 4, 8]
+array: [9, 1, 6, 3, 7, 2, 5, 10, 4, 8]
+*/
+```
+
+在第一种情况下， **Arrays.asList()** 的输出被传递给了 **ArrayList** 的构造器，这将创建一个引用 **ia** 的元素的 **ArrayList** ，因此打乱这些引用不会修改该数组。但是，如果直接使用 **Arrays.asList(ia)** 的结果，这种打乱就会修改 **ia** 的顺序。重要的是要注意 **Arrays.asList()** 生成一个 **List** 对象，该对象使用底层数组作为其物理实现。如果执行的会修改这个 **List** ，并且不希望修改原始数组，那么就应该在另一个集合中创建一个副本。
 
 <!-- Summary -->
 ## 本章小结
+
+Java提供了许多保存对象的方法：
+
+1. 数组将数字索引与对象相关联。它保存类型明确的对象，因此在查找对象时不必对结果做类型转换。它可以是多维的，可以保存基本类型的数据。虽然可以在运行时创建数组，但是一旦创建数组，就无法更改数组的大小。
+
+2. **Collection** 保存单一的元素，而 **Map** 包含相关联的键值对。使用Java泛型，可以指定集合中保存的对象的类型，因此不能将错误类型的对象放入集合中，并且在从集合中获取元素时，不必进行类型转换。各种 **Collection** 和各种 **Map** 都可以在你向其中添加更多的元素时，自动调整其尺寸大小。集合不能保存基本类型，但自动装箱机制会负责执行基本类型和集合中保存的包装类型之间的双向转换。
+
+3. 像数组一样， **List** 也将数字索引与对象相关联，因此，数组和 **List** 都是有序集合。
+
+4. 如果要执行大量的随机访问，则使用 **ArrayList** ，如果要经常从表中间插入或删除元素，则应该使用 **LinkedList** 。
+
+5. 队列和堆栈的行为是通过 **LinkedList** 提供的。
+
+6. **Map** 是一种将对象（而非数字）与对象相关联的设计。 **HashMap** 专为快速访问而设计，而 **TreeMap** 保持键始终处于排序状态，所以没有 **HashMap** 快。 **LinkedHashMap** 按插入顺序保存其元素，但使用散列提供快速访问的能力。
+
+7. **Set** 不接受重复元素。 **HashSet** 提供最快的查询速度，而 **TreeSet** 保持元素处于排序状态。 **LinkedHashSets** 按插入顺序保存其元素，但使用散列提供快速访问的能力。
+
+8. 不要在新代码中使用遗留类 **Vector** ， **Hashtable** 和 **Stack** 。
+
+浏览一下Java集合的简图（不包含抽象类或遗留组件）会很有帮助。这里仅包括在一般情况下会碰到的接口和类。
+
+![simple collection taxonomy](../images/simple-collection-taxonomy.png)
+
+
+可以看到，实际上只有四个基本的集合组件： **Map** ， **List** ， **Set** 和 **Queue** ，它们各有两到三个实现版本（**Queue** 的 **java.util.concurrent** 实现未包含在此图中）。最常使用的集合用黑色粗线线框表示。
+
+虚线框表示接口，实线框表示普通的（具体的）类。带有空心箭头的虚线表示特定的类实现了一个接口。实心箭头表示某个类可以生成箭头指向的类的对象。例如，任何 **Collection** 都可以生成 **Iterator** ， **List** 可以生成 **ListIterator** （也能生成普通的 **Iterator** ，因为 **List** 继承自 **Collection** ）。
+
+下面的示例展示了各种不同的类在方法上的差异。实际代码来自[泛型]()章节，在这里只是调用它来产生输出。程序的输出还展示了在每个类或接口中所实现的接口：
+
+```java
+// collections/CollectionDifferences.java
+import onjava.*;
+
+public class CollectionDifferences {
+  public static void main(String[] args) {
+    CollectionMethodDifferences.main(args);
+  }
+}
+/* Output:
+Collection: [add, addAll, clear, contains, containsAll,
+equals, forEach, hashCode, isEmpty, iterator,
+parallelStream, remove, removeAll, removeIf, retainAll,
+size, spliterator, stream, toArray]
+Interfaces in Collection: [Iterable]
+Set extends Collection, adds: []
+Interfaces in Set: [Collection]
+HashSet extends Set, adds: []
+Interfaces in HashSet: [Set, Cloneable, Serializable]
+LinkedHashSet extends HashSet, adds: []
+Interfaces in LinkedHashSet: [Set, Cloneable,
+Serializable]
+TreeSet extends Set, adds: [headSet,
+descendingIterator, descendingSet, pollLast, subSet,
+floor, tailSet, ceiling, last, lower, comparator,
+pollFirst, first, higher]
+Interfaces in TreeSet: [NavigableSet, Cloneable,
+Serializable]
+List extends Collection, adds: [replaceAll, get,
+indexOf, subList, set, sort, lastIndexOf, listIterator]
+Interfaces in List: [Collection]
+ArrayList extends List, adds: [trimToSize,
+ensureCapacity]
+Interfaces in ArrayList: [List, RandomAccess,
+Cloneable, Serializable]
+LinkedList extends List, adds: [offerFirst, poll,
+getLast, offer, getFirst, removeFirst, element,
+removeLastOccurrence, peekFirst, peekLast, push,
+pollFirst, removeFirstOccurrence, descendingIterator,
+pollLast, removeLast, pop, addLast, peek, offerLast,
+addFirst]
+Interfaces in LinkedList: [List, Deque, Cloneable,
+Serializable]
+Queue extends Collection, adds: [poll, peek, offer,
+element]
+Interfaces in Queue: [Collection]
+PriorityQueue extends Queue, adds: [comparator]
+Interfaces in PriorityQueue: [Serializable]
+Map: [clear, compute, computeIfAbsent,
+computeIfPresent, containsKey, containsValue, entrySet,
+equals, forEach, get, getOrDefault, hashCode, isEmpty,
+keySet, merge, put, putAll, putIfAbsent, remove,
+replace, replaceAll, size, values]
+HashMap extends Map, adds: []
+Interfaces in HashMap: [Map, Cloneable, Serializable]
+LinkedHashMap extends HashMap, adds: []
+Interfaces in LinkedHashMap: [Map]
+SortedMap extends Map, adds: [lastKey, subMap,
+comparator, firstKey, headMap, tailMap]
+Interfaces in SortedMap: [Map]
+TreeMap extends Map, adds: [descendingKeySet,
+navigableKeySet, higherEntry, higherKey, floorKey,
+subMap, ceilingKey, pollLastEntry, firstKey, lowerKey,
+headMap, tailMap, lowerEntry, ceilingEntry,
+descendingMap, pollFirstEntry, lastKey, firstEntry,
+floorEntry, comparator, lastEntry]
+Interfaces in TreeMap: [NavigableMap, Cloneable,
+Serializable]
+*/
+```
+
+除 **TreeSet** 之外的所有 **Set** 都具有与 **Collection** 完全相同的接口。**List** 和 **Collection** 存在着明显的不同，尽管 **List** 所要求的方法都在 **Collection** 中。另一方面，在 **Queue** 接口中的方法是独立的，在创建具有 **Queue** 功能的实现时，不需要使用 **Collection** 方法。最后， **Map** 和 **Collection** 之间唯一的交集是Map可以使用 **entrySet()** 和 **values()** 方法来产生 **Collection** 。
+
+请注意，标记接口 **java.util.RandomAccess** 附加到了 **ArrayList** 上，但不附加到 **LinkedList** 上。这为根据特定 **List** 动态改变其行为的算法提供了信息。
+
+从面向对象的继承层次结构来看，这种组织结构确实有些奇怪。但是，当了解了 **java.util** 中更多的有关集合的内容后（特别是在[附录：集合主题]()中的内容），就会发现出了继承结构有点奇怪外，还有更多的问题。集合类库一直以来都是设计难题——解决这些问题涉及到要去满足经常彼此之间互为牵制的各方面需求。所以要做好准备，在各处做出妥协。
+
+尽管存在这些问题，但Java集合仍是在日常工作中使用的基本工具，它可以使程序更简洁、更强大、更有效。你可能需要一段时间才能熟悉集合类库的某些方面，但我想你很快就会找到自己的路子，来获得和使用这个类库中的类。
+
+[^1]: 许多语言，例如Perl，Python和Ruby，都有
+集合的本地支持。
+[^2]: 这里是操作符重载的用武之地，C++和C#的集合类都使用操作符重载生成了更简洁的语法。
+[^3]: 在[泛型]()章节的末尾，有个关于这个问题是否很严重的讨论。但是，[泛型]()章节还将展示Java泛型远不止是类型安全的集合这么简单。
+[^4]: **remove()** 是一个所谓的“可选”方法（还有一些其它的这种方法），这意味着并非所有的 **Iterator** 实现都必须实现该方法。这个问题将在[附录：集合主题]()中介绍。但是，标准Java库集合实现了 **remove()** ，因此在[附录：集合主题]()章节之前，都不必担心这个问题。
+[^5]: 这实际上依赖于具体实现。优先级队列算法通常会按插入顺序排序（维护一个*堆*），但它们也可以在删除时选择最重要的元素。 如果对象的优先级在它在队列中等待时可以修改，那么算法的选择就显得很重要了。
+[^6]: 有些人提倡这样一种自动创建机制，即对一个类中所有可能的方法组合都自动创建一个接口，有时候对于单个的类都是如此。 我相信接口的意义不应该仅限于方法组合的机械地复制，因此我在创建接口之前，总是要先看到增加接口带来的价值。
+[^7]: 这在Java SE5之前是不可用的，因为该方法被认为与操作系统的耦合度过紧，因此违反“一次编写，处处运行”的原则。现在提供它这一事实表明，Java的设计者们更加务实了。
 
 <!-- 分页 -->
 
