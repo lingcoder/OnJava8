@@ -4,9 +4,9 @@
 
 # 第十一章 内部类
 
-> 一个类的定义在另一个类的定义内部，这就是内部类。
+> 一个定义在另一个类中的类，叫作内部类。
 
-内部类是一种非常有用的特性，因为它允许你把一些逻辑相关的类组织在一起，并控制位于内部的类的可视性。然而必须要了解，内部类与组合是完全不同的概念，这一点很重要。在最初，内部类看起来就像是一种代码隐藏机制：将类置于其他类的内部。但是，你将会了解到，内部类远不止如此，它了解外围类，并能与之通信，而且你用内部类写出的代码更加优雅而清晰，尽管并不总是这样。
+内部类是一种非常有用的特性，因为它允许你把一些逻辑相关的类组织在一起，并控制位于内部的类的可见性。然而必须要了解，内部类与组合是完全不同的概念，这一点很重要。在最初，内部类看起来就像是一种代码隐藏机制：将类置于其他类的内部。但是，你将会了解到，内部类远不止如此，它了解外围类，并能与之通信，而且你用内部类写出的代码更加优雅而清晰，尽管并不总是这样（而且 Java 8 的 Lambda 表达式和方法引用减少了编写内部类的需求）。
 
 最初，内部类可能看起来有些奇怪，而且要花些时间才能在设计中轻松地使用它们。对内部类的需求并非总是很明显的，但是在描述完内部类的基本语法与语义之后，"Why inner classes?"就应该使得内部类的益处明确显现了。
 
@@ -24,13 +24,17 @@
 public class Parcel1 {
     class Contents {
         private int i = 11;
+      
         public int value() { return i; }
     }
+  
     class Destination {
         private String label;
+      
         Destination(String whereTo) {
             label = whereTo;
         }
+      
         String readLabel() { return label; }
     }
     // Using inner classes looks just like
@@ -40,6 +44,7 @@ public class Parcel1 {
         Destination d = new Destination(dest);
         System.out.println(d.readLabel());
     }
+  
     public static void main(String[] args) {
         Parcel1 p = new Parcel1();
         p.ship("Tasmania");
@@ -53,9 +58,9 @@ public class Parcel1 {
 Tasmania
 ```
 
-当我们在 ship() 方法里面使用内部类的时候，与使用普通类没什么不同。在这里，实际的区别只是内部类的名字是嵌套在 Parcel1 里面的。
+当我们在 `ship()` 方法里面使用内部类的时候，与使用普通类没什么不同。在这里，明显的区别只是内部类的名字是嵌套在 **Parcel1** 里面的。
 
-更典型的情况是，外部类将有一个方法，该方法返回一个指向内部类的引用，就像在 to() 和 contents() 方法中看到的那样：
+更典型的情况是，外部类将有一个方法，该方法返回一个指向内部类的引用，就像在 `to()` 和 `contents()` 方法中看到的那样：
 
 ```java
 // innerclasses/Parcel2.java
@@ -63,31 +68,39 @@ Tasmania
 public class Parcel2 {
     class Contents {
         private int i = 11;
+      
         public int value() { return i; }
     }
+  
     class Destination {
         private String label;
+      
         Destination(String whereTo) {
             label = whereTo;
         }
+      
         String readLabel() { return label; }
     }
+  
     public Destination to(String s) {
         return new Destination(s);
     }
+  
     public Contents contents() {
         return new Contents();
     }
+  
     public void ship(String dest) {
         Contents c = contents();
         Destination d = to(dest);
         System.out.println(d.readLabel());
     }
+  
     public static void main(String[] args) {
         Parcel2 p = new Parcel2();
         p.ship("Tasmania");
         Parcel2 q = new Parcel2();
-// Defining references to inner classes:
+        // Defining references to inner classes:
         Parcel2.Contents c = q.contents();
         Parcel2.Destination d = q.to("Borneo");
     }
@@ -100,7 +113,7 @@ public class Parcel2 {
 Tasmania
 ```
 
-如果想从外部类的非静态方法之外的任意位置创建某个内部类的对象，那么必须像在 main() 方法中那样，具体地指明这个对象的类型：OuterClassName.InnerClassName。
+如果想从外部类的非静态方法之外的任意位置创建某个内部类的对象，那么必须像在 `main()` 方法中那样，具体地指明这个对象的类型：*OuterClassName.InnerClassName*。(译者注：在外部类的静态方法中也可以直接指明类型 *InnerClassName*，在其他类中需要指明 *OuterClassName.InnerClassName*。)
 
 <!-- The Link to the Outer Class -->
 
@@ -157,30 +170,33 @@ public class Sequence {
 0 1 2 3 4 5 6 7 8 9
 ```
 
-Sequence 类只是一个固定大小的 Object 的数组，以类的形式包装了起来。可以调用 add）在序列末增加新的 Object（只要还有空间），要获取 Sequence 中的每一个对象，可以使用 Selector 接口。这是“迭代器”设计模式的一个例子，在本书稍后的部分将更多地学习它。Selector 允许你检查序列是否到末尾了（end()），访问当前对象（current()），以及移到序列中的下一个对象（next()），因为 Selector 是一个接口，所以别的类可以按它们自己的方式来实现这个接口，并且另的方法能以此接口为参数，来生成更加通用的代码。
+**Sequence** 类只是一个固定大小的 **Object** 的数组，以类的形式包装了起来。可以调用 `add()` 在序列末尾增加新的 **Object**（只要还有空间），要获取 **Sequence** 中的每一个对象，可以使用 **Selector** 接口。这是“迭代器”设计模式的一个例子，在本书稍后的部分将更多地学习它。**Selector** 允许你检查序列是否到末尾了（`end()`），访问当前对象（`current()`），以及移到序列中的下一个对象（`next()`）。因为 **Selector** 是一个接口，所以别的类可以按它们自己的方式来实现这个接口，并且其他方法能以此接口为参数，来生成更加通用的代码。
 
-这里，SequenceSelector 是提供 Selector 功能的 private 类。可以看到，在 main() 中创建了一个 Sequence，并向其中添加了一些 String 对象。然后通过调用 selector() 获取一个 Selector，并用它在 Sequence 中移动和选择每一个元素。
-最初看到 SequenceSelector，可能会觉得它只不过是另一个内部类罢了。但请仔细观察它，注意方法 end()，current() 和 next() 都用到了 items，这是一个引用，它并不是 SequenceSelector 的一部分，而是外围类中的一个 private 字段。然而内部类可以访问其外围类的方法和字段，就像自己拥有它们似的，这带来了很大的方便，就如前面的例子所示。
+这里，**SequenceSelector** 是提供 **Selector** 功能的 **private** 类。可以看到，在 `main()` 中创建了一个 **Sequence**，并向其中添加了一些 **String** 对象。然后通过调用 `selector()` 获取一个 **Selector**，并用它在 **Sequence** 中移动和选择每一个元素。
+最初看到 **SequenceSelector**，可能会觉得它只不过是另一个内部类罢了。但请仔细观察它，注意方法 `end()`，`current()` 和 `next()` 都用到了 **items**，这是一个引用，它并不是 **SequenceSelector** 的一部分，而是外围类中的一个 **private** 字段。然而内部类可以访问其外围类的方法和字段，就像自己拥有它们似的，这带来了很大的方便，就如前面的例子所示。
 
-所以内部类自动拥有对其外围类所有成员的访问权。这是如何做到的呢？当某个外围类的对象创建了一个内部类对象时，此内部类对象必定会秘密地捕获一个指向那个外围类对象的引用。然后，在你访问此外围类的成员时，就是用那个引用来选择外围类的成员。幸运的是，编译器会帮你处理所有的细节，但你现在可以看到：内部类的对象只能在与其外围类的对象相关联的情况下才能被创建（就像你应该看到的，在内部类是非 static 类时）。构建内部类对象时，需要一个指向其外围类对象的引用，如果编译器访问不到这个引用就会报错。不过绝大多数时候这都无需程序员操心。
+所以内部类自动拥有对其外围类所有成员的访问权。这是如何做到的呢？当某个外围类的对象创建了一个内部类对象时，此内部类对象必定会秘密地捕获一个指向那个外围类对象的引用。然后，在你访问此外围类的成员时，就是用那个引用来选择外围类的成员。幸运的是，编译器会帮你处理所有的细节，但你现在可以看到：内部类的对象只能在与其外围类的对象相关联的情况下才能被创建（就像你应该看到的，内部类是非 **static** 类时）。构建内部类对象时，需要一个指向其外围类对象的引用，如果编译器访问不到这个引用就会报错。不过绝大多数时候这都无需程序员操心。
 
 <!-- Using .this and .new -->
 ## 使用 .this 和 .new
 
-如果你需要生成对外部类对象的引用，可以使用外部类的名字后面紧跟圆点和 this。这样产生的引用自动地具有正确的类型，这一点在编译期就被知晓并受到检查，因此没有任何运行时开销。下面的示例展示了如何使用.this：
+如果你需要生成对外部类对象的引用，可以使用外部类的名字后面紧跟圆点和 **this**。这样产生的引用自动地具有正确的类型，这一点在编译期就被知晓并受到检查，因此没有任何运行时开销。下面的示例展示了如何使用 **.this**：
 
 ```java
 // innerclasses/DotThis.java
 // Accessing the outer-class object
 public class DotThis {
     void f() { System.out.println("DotThis.f()"); }
+  
     public class Inner {
         public DotThis outer() {
             return DotThis.this;
             // A plain "this" would be Inner's "this"
         }
     }
+  
     public Inner inner() { return new Inner(); }
+  
     public static void main(String[] args) {
         DotThis dt = new DotThis();
         DotThis.Inner dti = dt.inner();
@@ -195,7 +211,7 @@ public class DotThis {
 DotThis.f()
 ```
 
-有时你可能想要告知某些其他对象，去创建其某个内部类的对象。要实现此目的，你必须在 mew 表达式中提供对其他外部类对象的引用，这是需要使用.new 语法，就像下面这样：
+有时你可能想要告知某些其他对象，去创建其某个内部类的对象。要实现此目的，你必须在 **new** 表达式中提供对其他外部类对象的引用，这是需要使用 **.new** 语法，就像下面这样：
 
 ```java
 // innerclasses/DotNew.java
@@ -209,9 +225,9 @@ public class DotNew {
 }
 ```
 
-要想直接创建内部类的对象，你不能按照你想象的方式，去引用外部类的名字 DotNew，而是必须使用外部类的对象来创建该内部类对象，就像在上面的程序中所看到的那样。这也解决了内部类名字作用域的问题，因此你不必声明（实际上你不能声明）dn.new DotNew.Innero。
+要想直接创建内部类的对象，你不能按照你想象的方式，去引用外部类的名字 **DotNew**，而是必须使用外部类的对象来创建该内部类对象，就像在上面的程序中所看到的那样。这也解决了内部类名字作用域的问题，因此你不必声明（实际上你不能声明）dn.new DotNew.Innero。
 
-下面你可以看到将.new 应用于 Parcel 的示例：
+下面你可以看到将 **.new** 应用于 Parcel 的示例：
 
 ```java
 // innerclasses/Parcel3.java
@@ -228,8 +244,8 @@ public class Parcel3 {
     }
     public static void main(String[] args) {
         Parcel3 p = new Parcel3();
-// Must use instance of outer class
-// to create an instance of the inner class:
+        // Must use instance of outer class
+        // to create an instance of the inner class:
         Parcel3.Contents c = p.new Contents();
         Parcel3.Destination d =
                 p.new Destination("Tasmania");
@@ -240,6 +256,7 @@ public class Parcel3 {
 在拥有外部类对象之前是不可能创建内部类对象的。这是因为内部类对象会暗暗地连接到建它的外部类对象上。但是，如果你创建的是嵌套类（静态内部类），那么它就不需要对外部类对象的引用。
 
 <!-- Inner Classes and Upcasting -->
+
 ## 内部类与向上转型
 
 当将内部类向上转型为其基类，尤其是转型为一个接口的时候，内部类就有了用武之地。（从实现了某个接口的对象，得到对此接口的引用，与向上转型为这个对象的基类，实质上效果是一样的。）这是因为此内部类-某个接口的实现-能够完全不可见，并且不可用。所得到的只是指向基类或接口的引用，所以能够很方便地隐藏实现细节。
@@ -260,7 +277,7 @@ public interface Contents {
 }
 ```
 
-现在 Contents 和 Destination 表示客户端程序员可用的接口。记住，接口的所有成员自动被设置为 public 的。
+现在 **Contents** 和 **Destination** 表示客户端程序员可用的接口。记住，接口的所有成员自动被设置为 **public**。
 
 当取得了一个指向基类或接口的引用时，甚至可能无法找出它确切的类型，看下面的例子：
 
@@ -292,17 +309,17 @@ public class TestParcel {
         Parcel4 p = new Parcel4();
         Contents c = p.contents();
         Destination d = p.destination("Tasmania");
-// Illegal -- can't access private class:
-//- Parcel4.PContents pc = p.new PContents();
+        // Illegal -- can't access private class:
+        //- Parcel4.PContents pc = p.new PContents();
     }
 }
 ```
 
-在 Parcel4 中，内部类 PContents 是 private，所以除了 Parcel4，没有人能访问它。普通（非内部）类的访问权限不能被设为 private 或者 protected；他们只能设置为 public 或 package 访问权限。
+在 **Parcel4** 中，内部类 **PContents** 是 **private**，所以除了 **Parcel4**，没有人能访问它。普通（非内部）类的访问权限不能被设为 **private** 或者 **protected**；他们只能设置为 **public** 或 **package** 访问权限。
 
-PDestination 是 protected，所以只有 Parcel4 及其子类、还有与 Parcel4 同一个包中的类（因为 protected 也给予了包访问权）能访问 PDestination，其他类都不能访问 PDestination，这意味着，如果客户端程序员想了解或访问这些成员，那是要受到限制的。实际上，甚至不能向下转型成 private 内部类（或 protected 内部类，除非是继承自它的子类），因为不能访问其名字，就像在 TestParcel 类中看到的那样。
+**PDestination** 是 **protected**，所以只有 **Parcel4** 及其子类、还有与 **Parcel4** 同一个包中的类（因为 **protected** 也给予了包访问权）能访问 **PDestination**，其他类都不能访问 **PDestination**，这意味着，如果客户端程序员想了解或访问这些成员，那是要受到限制的。实际上，甚至不能向下转型成 **private** 内部类（或 **protected** 内部类，除非是继承自它的子类），因为不能访问其名字，就像在 **TestParcel** 类中看到的那样。
 
-private 内部类给类的设计者提供了一种途径，通过这种方式可以完全阻止任何依赖于类型的编码，并且完全隐藏了实现的细节。此外，从客户端程序员的角度来看，由于不能访问任何新增加的、原本不属于公共接口的方法，所以扩展接口是没值的。这也给 Java 编译器
+**private** 内部类给类的设计者提供了一种途径，通过这种方式可以完全阻止任何依赖于类型的编码，并且完全隐藏了实现的细节。此外，从客户端程序员的角度来看，由于不能访问任何新增加的、原本不属于公共接口的方法，所以扩展接口是没有价值的。这也给 Java 编译器提供了生成高效代码的机会。
 
 <!-- Inner Classes in Methods and Scopes -->
 
