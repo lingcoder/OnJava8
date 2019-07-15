@@ -58,6 +58,7 @@
 - [x] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
 - [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
 - [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
+- [x] [附录:C++和Java的优良传统](docs/book/Appendix-The-Positive-Legacy-of-C-plus-plus-and-Java.md)
 - [ ] [附录:成为一名程序员](docs/book/Appendix-Becoming-a-Programmer.md)
 
 
