@@ -337,9 +337,9 @@ public class TestParcel {
 1. 一个定义在方法中的类。
 2. 一个定义在作用域内的类，此作用域在方法的内部。
 3. 一个实现了接口的匿名类。
-4. 一个匿名类，它扩展了有非默认构造器的类。
+4. 一个匿名类，它扩展了没有默认构造器的类。
 5. 一个匿名类，它执行字段初始化。
-6. 一个匿名类，它通过实例初始化实现构造（匿名类不可能有构造器）。
+6. 一个匿名类，它通过实例初始化实现构造（匿名内部类不可能有构造器）。
 
 第一个例子展示了在方法的作用域内（而不是在其他类的作用域内）创建一个完整的类。这被称作局部内部类：
 
@@ -350,14 +350,17 @@ public class Parcel5 {
     public Destination destination(String s) {
         final class PDestination implements Destination {
             private String label;
+          
             private PDestination(String whereTo) {
                 label = whereTo;
             }
+          
             @Override
             public String readLabel() { return label; }
         }
         return new PDestination(s);
     }
+  
     public static void main(String[] args) {
         Parcel5 p = new Parcel5();
         Destination d = p.destination("Tasmania");
@@ -365,9 +368,9 @@ public class Parcel5 {
 }
 ```
 
-PDestination 类是 destination() 方法的一部分，而不是 Parcel5 的一部分。所以，在 destination() 之外不能访问 PDestination，注意出现在 return 语句中的向上转型-返回的是 Destination 的引用，它是 PDestination 的基类。当然，在 destination() 中定义了内部类 PDestination，并不意味着一旦 dest() 方法执行完毕，PDestination 就不可用了。
+**PDestination** 类是 `destination()` 方法的一部分，而不是 **Parcel5** 的一部分。所以，在 `destination()` 之外不能访问 **PDestination**，注意出现在 **return** 语句中的向上转型-返回的是 **Destination** 的引用，它是 **PDestination** 的基类。当然，在 `destination()` 中定义了内部类 **PDestination**，并不意味着一旦 `dest()` 方法执行完毕，**PDestination** 就不可用了。
 
-你可以在同一个子目录下的任意类中对某个内部类使用类标识符 PDestination，这并不会有命名冲突。
+你可以在同一个子目录下的任意类中对某个内部类使用类标识符 **PDestination**，这并不会有命名冲突。
 
 下面的例子展示了如何在任意的作用域内嵌入一个内部类：
 
@@ -398,7 +401,7 @@ public class Parcel6 {
 }
 ```
 
-TrackingSlip 类被嵌入在 if 语句的作用域内，这并不是说该类的创建是有条件的，它其实与别的类一起编译过了。然而，在定义 Trackingslip 的作用域之外，它是不可用的，除此之外，它与普通的类一样。
+**TrackingSlip** 类被嵌入在 **if** 语句的作用域内，这并不是说该类的创建是有条件的，它其实与别的类一起编译过了。然而，在定义 **Trackingslip** 的作用域之外，它是不可用的，除此之外，它与普通的类一样。
 
 <!-- Anonymous Inner Classes -->
 
@@ -413,10 +416,12 @@ public class Parcel7 {
     public Contents contents() {
         return new Contents() { // Insert class definition
             private int i = 11;
+          
             @Override
             public int value() { return i; }
         }; // Semicolon required
     }
+  
     public static void main(String[] args) {
         Parcel7 p = new Parcel7();
         Contents c = p.contents();
@@ -424,9 +429,9 @@ public class Parcel7 {
 }
 ```
 
-contents() 方法将返回值的生成与表示这个返回值的类的定义结合在一起！另外，这个类是匿名的，它没有名字。更糟的是，看起来似乎是你正要创建一个 Contents 对象。但是然后（在到达语句结束的分号之前）你却说：“等一等，我想在这里插入一个类的定义。
+`contents()` 方法将返回值的生成与表示这个返回值的类的定义结合在一起！另外，这个类是匿名的，它没有名字。更糟的是，看起来似乎是你正要创建一个 **Contents** 对象。但是然后（在到达语句结束的分号之前）你却说：“等一等，我想在这里插入一个类的定义。
 
-这种奇怪的语法指的是：“创建一个继承自 Contents 的匿名类的对象。”通过 new 表达式返回的引用被自动向上转型为对 Contents 的引用。上述匿名内部类的语法是下述形式的简化形式：
+这种奇怪的语法指的是：“创建一个继承自 **Contents** 的匿名类的对象。”通过 **new** 表达式返回的引用被自动向上转型为对 **Contents** 的引用。上述匿名内部类的语法是下述形式的简化形式：
 
 ```java
 // innerclasses/Parcel7b.java
@@ -437,9 +442,11 @@ public class Parcel7b {
         @Override
         public int value() { return i; }
     }
+  
     public Contents contents() {
         return new MyContents();
     }
+  
     public static void main(String[] args) {
         Parcel7b p = new Parcel7b();
         Contents c = p.contents();
@@ -447,14 +454,14 @@ public class Parcel7b {
 }
 ```
 
-在这个匿名内部类中，使用了默认的构造器来生成 Contents。下面的代码展示的是，如果你的基类需要一个有参数的构造器，应该怎么办：
+在这个匿名内部类中，使用了默认的构造器来生成 **Contents**。下面的代码展示的是，如果你的基类需要一个有参数的构造器，应该怎么办：
 
 ```java
 // innerclasses/Parcel8.java
 // Calling the base-class constructor
 public class Parcel8 {
     public Wrapping wrapping(int x) {
-// Base constructor call:
+        // Base constructor call:
         return new Wrapping(x) { // [1]
             @Override
             public int value() {
@@ -472,7 +479,11 @@ public class Parcel8 {
 - \[1\] 将合适的参数传递给基类的构造器。
 - \[2\] 在匿名内部类末尾的分号，并不是用来标记此内部类结束的。实际上，它标记的是表达式的结束，只不过这个表达式正巧包含了匿名内部类罢了。因此，这与别的地方使用的分号是一致的。
 
+<<<<<<< Updated upstream
 尽管 Wrapping 只是一个具有具体实现的普通类，但它还是被派生类当作公共“接口”来使用。
+=======
+尽管 **Wrapping** 只是一个具有具体实现的普通类，但它还是被导出类当作公共“接口”来使用。
+>>>>>>> Stashed changes
 
 ```java
 // innerclasses/Wrapping.java
@@ -483,7 +494,7 @@ public class Wrapping {
 }
 ```
 
-为了多样性，Wrapping 拥有一个要求传递一个参数的构造器。
+为了多样性，**Wrapping** 拥有一个要求传递一个参数的构造器。
 
 在匿名类中定义字段时，还能够对其执行初始化操作：
 
@@ -491,7 +502,7 @@ public class Wrapping {
 // innerclasses/Parcel9.java
 public class Parcel9 {
     // Argument must be final or "effectively final"
-// to use within the anonymous inner class:
+    // to use within the anonymous inner class:
     public Destination destination(final String dest) {
         return new Destination() {
             private String label = dest;
@@ -506,9 +517,9 @@ public class Parcel9 {
 }
 ```
 
-如果定义一个匿名内部类，并且希望它使用一个在其外部定义的对象，那么编译器会要求其参数引用是 final 的，就像你在 destination() 的参数中看到的那样。如果你忘记了，将会得到一个编译时错误消息。
+如果定义一个匿名内部类，并且希望它使用一个在其外部定义的对象，那么编译器会要求其参数引用是 **final** 的（也就是说，它在初始化后不会改变，所以可以被当作 **final**），就像你在 `destination()` 的参数中看到的那样。这里省略掉 **final** 也没问题，但是通常最好加上 **final** 作为一种暗示。
 
-如果只是简单地给一个字段赋值，那么此例中的方法是很好的。但是，如果想做一些类似勾造器的行为，该怎么办呢？在匿名类中不可能有命名构造器（因为它根本没名字！），但通过实例初始化，就能够达到为匿名内部类创建一个构造器的效果，就像这样：
+如果只是简单地给一个字段赋值，那么此例中的方法是很好的。但是，如果想做一些类似构造器的行为，该怎么办呢？在匿名类中不可能有命名构造器（因为它根本没名字！），但通过实例初始化，就能够达到为匿名内部类创建一个构造器的效果，就像这样：
 
 ```java
 // innerclasses/AnonymousConstructor.java
@@ -545,9 +556,9 @@ Inside instance initializer
 In anonymous f()
 ```
 
-在此例中，不要求变量一定是 final 的。因为被传递给匿名类的基类的构造器，它并不会在匿名类内部被直接使用。
+在此例中，不要求变量一定是 **final** 的。因为被传递给匿名类的基类的构造器，它并不会在匿名类内部被直接使用。
 
-下例是带实例初始化的"parcel"形式。注意 destination() 的参数必须是 final 的，因为它们是在匿名类内部使用的。
+下例是带实例初始化的"parcel"形式。注意 `destination()` 的参数必须是 **final** 的，因为它们是在匿名类内部使用的（译者注：即使不加 **final**, Java 8 的编译器也会为我们自动加上 **final**，以保证数据的一致性）。
 
 ```java
 // innerclasses/Parcel10.java
@@ -582,7 +593,7 @@ public class Parcel10 {
 Over budget!
 ```
 
-在实例初始化操作的内部，可以看到有一段代码，它们不能作为字段初始化动作的一部分来执行（就是 if 语句）。所以对于匿名类而言，实例初始化的实际效果就是构造器。当然它受到了限制-你不能重载实例初始化方法，所以你仅有一个这样的构造器。
+在实例初始化操作的内部，可以看到有一段代码，它们不能作为字段初始化动作的一部分来执行（就是 **if** 语句）。所以对于匿名类而言，实例初始化的实际效果就是构造器。当然它受到了限制-你不能重载实例初始化方法，所以你仅有一个这样的构造器。
 
 匿名内部类与正规的继承相比有些受限，因为匿名内部类既可以扩展类，也可以实现接口，但是不能两者兼备。而且如果是实现接口，也只能实现一个接口。
 
@@ -590,12 +601,12 @@ Over budget!
 
 ## 嵌套类
 
-如果不需要内部类对象与其外围类对象之间有联系，那么可以将内部类声明为 static，这通常称为嵌套类。想要理解 static 应用于内部类时的含义，就必须记住，普通的内部类对象隐式地保存了一个引用，指向创建它的外围类对象。然而，当内部类是 static 的时，就不是这样了。嵌套类意味着：
+如果不需要内部类对象与其外围类对象之间有联系，那么可以将内部类声明为 **static**，这通常称为嵌套类。想要理解 **static** 应用于内部类时的含义，就必须记住，普通的内部类对象隐式地保存了一个引用，指向创建它的外围类对象。然而，当内部类是 **static** 的时，就不是这样了。嵌套类意味着：
 
 1. 要创建嵌套类的对象，并不需要其外围类的对象。
 2. 不能从嵌套类的对象中访问非静态的外围类对象。
 
-嵌套类与普通的内部类还有一个区别。普通内部类的字段与方法，只能放在类的外部层次上，所以普通的内部类不能有 static 数据和 static 字段，也不能包含嵌套类。但是嵌套类类可以包含所有这些东西：
+嵌套类与普通的内部类还有一个区别。普通内部类的字段与方法，只能放在类的外部层次上，所以普通的内部类不能有 **static** 数据和 **static** 字段，也不能包含嵌套类。但是嵌套类可以包含所有这些东西：
 
 ```java
 // innerclasses/Parcel11.java
@@ -635,13 +646,13 @@ public class Parcel11 {
 }
 ```
 
-在 main() 中，没有任何 Parcell1 的对象是必需的；而是使用选取 static 成员的普通语法来调用方法-这些方法返回对 Contents 和 Destination 的引用。
+在 `main()` 中，没有任何 **Parcel11** 的对象是必需的；而是使用选取 **static** 成员的普通语法来调用方法-这些方法返回对 **Contents** 和 **Destination** 的引用。
 
-就像你在本章前面看到的那样，在一个普通的（非 static）内部类中，通过一个特殊的 this 引用可以链接到其外围类对象。嵌套类就没有这个特殊的 this 引用，这使得它类似于一个 static 方法。
+就像你在本章前面看到的那样，在一个普通的（非 **static**）内部类中，通过一个特殊的 **this** 引用可以链接到其外围类对象。嵌套类就没有这个特殊的 **this** 引用，这使得它类似于一个 **static** 方法。
 
 ### 接口内部的类
 
-嵌套类可以作为接口的一部分。你放到接口中的任何类都自动地是 public 和 static 的。因为类是 static 的，只是将嵌套类置于接口的命名空间内，这并不违反接口的规则。你甚至可以在内部类中实现其外围接口，就像下面这样：
+嵌套类可以作为接口的一部分。你放到接口中的任何类都自动地是 **public** 和 **static** 的。因为类是 **static** 的，只是将嵌套类置于接口的命名空间内，这并不违反接口的规则。你甚至可以在内部类中实现其外围接口，就像下面这样：
 
 ```java
 // innerclasses/ClassInInterface.java
@@ -666,9 +677,9 @@ public interface ClassInInterface {
 Howdy!
 ```
 
-如果你想要创建某些公共代码，使得它们可以被某个接口的所有不同实现所共用，那么使用接口内部的铁套类会显得很方便。
+如果你想要创建某些公共代码，使得它们可以被某个接口的所有不同实现所共用，那么使用接口内部的嵌套类会显得很方便。
 
-我曾在本书中建议过，在每个类中都写一个 main() 方法，用来测试这个类。这样做有一个缺点，那就是必须带着那些已编译过的额外代码。如果这对你是个麻烦，那就可以使用嵌套类来放置测试代码。
+我曾在本书中建议过，在每个类中都写一个 `main()` 方法，用来测试这个类。这样做有一个缺点，那就是必须带着那些已编译过的额外代码。如果这对你是个麻烦，那就可以使用嵌套类来放置测试代码。
 
 ```java
 // innerclasses/TestBed.java
@@ -690,6 +701,8 @@ public class TestBed {
 ```
 f()
 ```
+
+这生成了一个独立的类 **TestBed$Tester**（要运行这个程序，执行 **java TestBed$Tester**，在 Unix/Linux 系统中需要转义 **$**）。你可以使用这个类测试，但是不必在发布的产品中包含它，可以在打包产品前删除 **TestBed$Tester.class**。
 
 ### 从多层嵌套类中访问外部类的成员
 
@@ -721,7 +734,7 @@ public class MultiNestingAccess {
 }
 ```
 
-可以看到在 MNA.A.B 中，调用方法 g() 和 f() 不需要任何条件（即使它们被定义为 private）。这个例子同时展示了如何从不同的类里创建多层嵌套的内部类对象的基本语法。".new"语法能产生正确的作用域，所以不必在调用构造器时限定类名。
+可以看到在 **MNA.A.B** 中，调用方法 `g()` 和 `f()` 不需要任何条件（即使它们被定义为 **private**）。这个例子同时展示了如何从不同的类里创建多层嵌套的内部类对象的基本语法。"**.new**"语法能产生正确的作用域，所以不必在调用构造器时限定类名。
 
 <!-- Why Inner Classes? -->
 
