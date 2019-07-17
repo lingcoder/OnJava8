@@ -137,7 +137,7 @@
     * [内部类方法和作用域](docs/book/11-Inner-Classes.md#内部类方法和作用域)
     * [匿名内部类](docs/book/11-Inner-Classes.md#匿名内部类)
     * [嵌套类](docs/book/11-Inner-Classes.md#嵌套类)
-    * [内部类应用场景](docs/book/11-Inner-Classes.md#内部类应用场景)
+    * [为什么需要内部类](docs/book/11-Inner-Classes.md#为什么需要内部类)
     * [继承内部类](docs/book/11-Inner-Classes.md#继承内部类)
     * [重写内部类](docs/book/11-Inner-Classes.md#重写内部类)
     * [内部类局部变量](docs/book/11-Inner-Classes.md#内部类局部变量)
