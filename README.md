@@ -29,15 +29,15 @@
 - [x] [第七章 封装](docs/book/07-Implementation-Hiding.md) 
 - [x] [第八章 复用](docs/book/08-Reuse.md)
 - [x] [第九章 多态](docs/book/09-Polymorphism.md)
-- [ ] [第十章 接口](docs/book/10-Interfaces.md)
+- [x] [第十章 接口](docs/book/10-Interfaces.md)
 - [x] [第十一章 内部类](docs/book/11-Inner-Classes.md)
-- [ ] [第十二章 集合](docs/book/12-Collections.md)
+- [x] [第十二章 集合](docs/book/12-Collections.md)
 - [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
 - [x] [第十四章 流式编程](docs/book/14-Streams.md) 
 - [x] [第十五章 异常](docs/book/15-Exceptions.md)
 - [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
 - [ ] [第十七章 文件](docs/book/17-Files.md)
-- [ ] [第十八章 字符串](docs/book/18-Strings.md)
+- [x] [第十八章 字符串](docs/book/18-Strings.md)
 - [ ] [第十九章 类型信息](docs/book/19-Type-Information.md) 
 - [ ] [第二十章 泛型](docs/book/20-Generics.md)
 - [ ] [第二十一章 数组](docs/book/21-Arrays.md)
@@ -45,7 +45,7 @@
 - [x] [第二十三章 注解](docs/book/23-Annotations.md)
 - [ ] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
 - [ ] [第二十五章 设计模式](docs/book/25-Patterns.md)
-- [ ] [附录:补充](docs/book/Appendix-Supplements.md)
+- [x] [附录:补充](docs/book/Appendix-Supplements.md)
 - [ ] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)
 - [ ] [附录:文档注释](docs/book/Appendix-Javadoc.md)
 - [ ] [附录:对象传递和返回](docs/book/Appendix-Passing-and-Returning-Objects.md)
@@ -58,6 +58,7 @@
 - [x] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
 - [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
 - [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
+- [x] [附录:C++和Java的优良传统](docs/book/Appendix-The-Positive-Legacy-of-C-plus-plus-and-Java.md)
 - [ ] [附录:成为一名程序员](docs/book/Appendix-Becoming-a-Programmer.md)
 
 
@@ -90,7 +91,7 @@
 ## 贡献者
 
 * 主译：[LingCoder](https://github.com/LingCoder)，[sjsdfg](https://github.com/sjsdfg)
-* 参译：[xiangflight](https://github.com/xiangflight)，[LortSir](https://github.com/LortSir)
+* 参译：[xiangflight](https://github.com/xiangflight)，[1326670425](https://github.com/1326670425)，[LortSir](https://github.com/LortSir)
 * 校对：[LingCoder](https://github.com/LingCoder)，[xiangflight](https://github.com/xiangflight)，[nickChenyx](https://github.com/nickChenyx)
 
 

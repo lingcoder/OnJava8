@@ -202,7 +202,7 @@ void doSomething(Shape shape) {
 ```java
     doSomething(circle);
 ```
-当预期接收 **Shape** 的方法被传入了 **Circle**，会发生什么。由于 **Circle** 也是一种 **Shape**，所
+当预期接收 **Shape** 的方法被传入了 **Circle**，会发生什么。由于 **Circle** 也是一种 **Shape**，所
 以 `doSomething(circle)` 能正确地执行。也就是说，`doSomething()` 能接收任意发送给 **Shape** 的消息。这是完全安全和合乎逻辑的事情。
 
 这种把子类当成其基类来处理的过程叫做“向上转型”（**upcasting**）。在面向对象的编程里，经常利用这种方法来给程序解耦。再看下面的 `doSomething()` 代码示例：
