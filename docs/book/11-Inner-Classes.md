@@ -479,11 +479,7 @@ public class Parcel8 {
 - \[1\] 将合适的参数传递给基类的构造器。
 - \[2\] 在匿名内部类末尾的分号，并不是用来标记此内部类结束的。实际上，它标记的是表达式的结束，只不过这个表达式正巧包含了匿名内部类罢了。因此，这与别的地方使用的分号是一致的。
 
-<<<<<<< Updated upstream
-尽管 Wrapping 只是一个具有具体实现的普通类，但它还是被派生类当作公共“接口”来使用。
-=======
 尽管 **Wrapping** 只是一个具有具体实现的普通类，但它还是被导出类当作公共“接口”来使用。
->>>>>>> Stashed changes
 
 ```java
 // innerclasses/Wrapping.java
@@ -740,7 +736,7 @@ public class MultiNestingAccess {
 
 ## 为什么需要内部类
 
-至此，我们已经看到了许多描述内部类的语法和语义，但是这并不能同答“为什么需要内部类”这个问题。那么，Sun 公司为什么会如此费心地增加这项基本的语言特性呢？
+至此，我们已经看到了许多描述内部类的语法和语义，但是这并不能同答“为什么需要内部类”这个问题。那么，Java 设计者们为什么会如此费心地增加这项基本的语言特性呢？
 
 一般说来，内部类继承自某个类或实现某个接口，内部类的代码操作创建它的外围类的对象。所以可以认为内部类提供了某种进入其外围类的窗口。
 
@@ -762,7 +758,7 @@ interface B {}
 class X implements A, B {}
 class Y implements A {
     B makeB() {
-// Anonymous inner class:
+        // Anonymous inner class:
         return new B() {};
     }
 }
@@ -782,7 +778,36 @@ public class MultiInterfaces {
 
 当然，这里假设在两种方式下的代码结构都确实有逻辑意义。然而遇到问题的时候，通常问题本身就能给出某些指引，告诉你是应该使用单一类，还是使用内部类。但如果没有任何其他限制，从实现的观点来看，前面的例子并没有什么区别，它们都能正常运作。
 
-如果拥有的是抽象的类或具体的类，而不是接口，那就只能使用内部类才能实现多重继承。
+如果拥有的是抽象的类或具体的类，而不是接口，那就只能使用内部类才能实现多重继承：
+
+```java
+// innerclasses/MultiImplementation.java
+// For concrete or abstract classes, inner classes
+// produce "multiple implementation inheritance"
+// {java innerclasses.MultiImplementation}
+package innerclasses;
+
+class D {}
+
+abstract class E {}
+
+class Z extends D {
+    E makeE() {
+      return new E() {};  
+    }
+}
+
+public class MultiImplementation {
+    static void takesD(D d) {}
+    static void takesE(E e) {}
+    
+    public static void main(String[] args) {
+        Z z = new Z();
+        takesD(z);
+        takesE(z.makeE());
+    }
+}
+```
 
 如果不需要解决“多重继承”的问题，那么自然可以用别的方式编码，而不需要使用内部类。但如果使用内部类，还可以获得其他一些特性：
 
@@ -792,13 +817,13 @@ public class MultiInterfaces {
 3. 创建内部类对象的时刻并不依赖于外围类对象的创建
 4. 内部类并没有令人迷惑的"is-a”关系，它就是一个独立的实体。
 
-举个例子，如果 Sequence.java 不使用内部类，就必须声明"Sequence 是一个 Selector"，对于某个特定的 Sequence 只能有一个 Selector，然而使用内部类很容易就能拥有另一个方法 reverseSelector()，用它来生成一个反方向遍历序列的 Selector，只有内部类才有这种灵活性。
+举个例子，如果 **Sequence.java** 不使用内部类，就必须声明"**Sequence** 是一个 **Selector**"，对于某个特定的 **Sequence** 只能有一个 **Selector**，然而使用内部类很容易就能拥有另一个方法 `reverseSelector()`，用它来生成一个反方向遍历序列的 **Selector**，只有内部类才有这种灵活性。
 
 ### 闭包与回调
 
-闭包（closure）是一个可调用的对象，它记录了一些信息，这些信息来自于创建它的作用域。通过这个定义，可以看出内部类是面向对象的闭包，因为它不仅包含外围类对象（创建内部类的作用域）的信息，还自动拥有一个指向此外围类对象的引用，在此作用域内，内部类有权操作所有的成员，包括 private 成员。
+闭包（**closure**）是一个可调用的对象，它记录了一些信息，这些信息来自于创建它的作用域。通过这个定义，可以看出内部类是面向对象的闭包，因为它不仅包含外围类对象（创建内部类的作用域）的信息，还自动拥有一个指向此外围类对象的引用，在此作用域内，内部类有权操作所有的成员，包括 **private** 成员。
 
-在 Java 8 之前，生成闭包行为的唯一方式就是内部类。在 Java 8 之后，我们可以使用 lambda  来生成闭包行为，并且语法更加精细和简洁；你将会在 [函数式编程 ]() 这一章节中学习相关细节。即使应该优先使用 lambda 表达式用于内部类闭包，你依旧会看到那些 Java 8 以前的代码，即使用内部类来表示闭包的方式，所以非常有必要来理解这种形式。
+在 Java 8 之前，生成闭包行为的唯一方式就是内部类。在 Java 8 之后，我们可以使用 lambda  表达式来生成闭包行为，并且语法更加精细和简洁；你将会在 [函数式编程 ]() 这一章节中学习相关细节。即使应该优先使用 lambda 表达式用于内部类闭包，你依旧会看到那些 Java 8 以前的代码，即使用内部类来表示闭包的方式，所以非常有必要来理解这种形式。
 
 Java 最引人争议的问题之一就是，人们认为 Java 应该包含某种类似指针的机制，以允许回调（callback）。通过回调，对象能够携带一些信息，这些信息允许它在稍后的某个时刻调用初始的对象。稍后将会看到这是一个非常有用的概念。如果回调是通过指针实现的，那么就只能寄希望于程序员不会误用该指针。然而，读者应该已经了解到，Java 更小心仔细，所以没有在语言中包括指针。
 
@@ -840,8 +865,8 @@ class Callee2 extends MyIncrement {
     private class Closure implements Incrementable {
         @Override
         public void increment() {
-// Specify outer-class method, otherwise
-// you'll get an infinite recursion:
+            // Specify outer-class method, otherwise
+            // you'll get an infinite recursion:
             Callee2.this.increment();
         }
     }
@@ -885,14 +910,14 @@ Other operation
 3
 ```
 
-这个例子进一步展示了外围类实现一个接口与内部类实现此接口之间的区别。就代码而言，Calleel 是简单的解决方式。Callee2 继承自 MyIncrement，后者已经有了一个不同的 increment() 方法，并且与 Incrementable 接口期望的 increment() 方法完全不相关。所以如果 Callee2 继承了 MyIncrement，就不能为了 Incrementable 的用途而覆盖 increment() 方法，于是只能使用内部类独立地实现 Incrementable，还要注意，当创建了一个内部类时，并没有在外围类的接口中添加东西，也没有修改外围类的接口。
+这个例子进一步展示了外围类实现一个接口与内部类实现此接口之间的区别。就代码而言，**Calleel** 是更简单的解决方式。**Callee2** 继承自 **MyIncrement**，后者已经有了一个不同的 `increment()` 方法，并且与 **Incrementable** 接口期望的 `increment()` 方法完全不相关。所以如果 **Callee2** 继承了 **MyIncrement**，就不能为了 **Incrementable** 的用途而覆盖 `increment()` 方法，于是只能使用内部类独立地实现 **Incrementable**，还要注意，当创建了一个内部类时，并没有在外围类的接口中添加东西，也没有修改外围类的接口。
 
-注意，在 Callee2 中除了 getCallbackReference() 以外，其他成员都是 private 的。要想建立与外部世界的任何连接，interface Incrementable 都是必需的。在这里可以看到，interface 是如何允许接口与接口的实现完全独立的。
-内部类 Closure 实现了 Incrementable，以提供一个返回 Callee2 的“钩子”（hook）-而且是一个安全的钩子。无论谁获得此 Incrementable 的引用，都只能调用 increment()，除此之外没有其他功能（不像指针那样，允许你做很多事情）。
+注意，在 **Callee2** 中除了 `getCallbackReference()` 以外，其他成员都是 **private** 的。要想建立与外部世界的任何连接，接口 **Incrementable** 都是必需的。在这里可以看到，**interface** 是如何允许接口与接口的实现完全独立的。
+内部类 **Closure** 实现了 **Incrementable**，以提供一个返回 **Callee2** 的“钩子”（hook）-而且是一个安全的钩子。无论谁获得此 **Incrementable** 的引用，都只能调用 `increment()`，除此之外没有其他功能（不像指针那样，允许你做很多事情）。
 
-Caller 的构造器需要一个 Incrementable 的引用作为参数（虽然可以在任意时刻捕获回调引用），然后在以后的某个时刻，Caller 对象可以使用此引用回调 Callee 类。
+**Caller** 的构造器需要一个 **Incrementable** 的引用作为参数（虽然可以在任意时刻捕获回调引用），然后在以后的某个时刻，**Caller** 对象可以使用此引用回调 **Callee** 类。
 
-回调的价值在于它的灵活性-可以在运行时动态地决定需要调用什么方法。这样做的好处在第 22 章可以看得更明显，在那里实现 GUI 功能的时候，到处都用到了回调。
+回调的价值在于它的灵活性-可以在运行时动态地决定需要调用什么方法。例如，在图形界面实现 GUI 功能的时候，到处都用到回调。
 
 ### 内部类与控制框架
 
@@ -900,9 +925,9 @@ Caller 的构造器需要一个 Incrementable 的引用作为参数（虽然可�
 
 应用程序框架（application framework）就是被设计用以解决某类特定问题的一个类或一组类。要运用某个应用程序框架，通常是继承一个或多个类，并覆盖某些方法。在覆盖后的方法中，编写代码定制应用程序框架提供的通用解决方案，以解决你的特定问题。这是设计模式中模板方法的一个例子，模板方法包含算法的基本结构，并且会调用一个或多个可覆盖的方法，以完成算法的动作。设计模式总是将变化的事物与保持不变的事物分离开，在这个模式中，模板方法是保持不变的事物，而可覆盖的方法就是变化的事物。
 
-控制框架是一类特殊的应用程序框架，它用来解决响应事件的需求。主要用来响应事件的系统被称作事件驱动系统。应用程序设计中常见的问题之一是图形用户接口（GUI），它几乎完全是事件驱动的系统。在第 22 章将会看到，Java Swing 库就是一个控制框架，它优雅地解决了 GUI 的问题，并使用了大量的内部类。
+控制框架是一类特殊的应用程序框架，它用来解决响应事件的需求。主要用来响应事件的系统被称作*事件驱动*系统。应用程序设计中常见的问题之一是图形用户接口（GUI），它几乎完全是事件驱动的系统。
 
-要理解内部类是如何允许简单的创建过程以及如何使用控制框架的，请考虑这样一个控制框架，它的工作就是在事件“就绪”的时候执行事件。虽然“就绪”可以指任何事，但在本例中是指基于时间触发的事件。接下来的问题就是，对于要控制什么，控制框架并不包含任何具体的信息。那些信息是在实现算法的 action() 部分时，通过继承来提供的。
+要理解内部类是如何允许简单的创建过程以及如何使用控制框架的，请考虑这样一个控制框架，它的工作就是在事件“就绪”的时候执行事件。虽然“就绪”可以指任何事，但在本例中是指基于时间触发的事件。接下来的问题就是，对于要控制什么，控制框架并不包含任何具体的信息。那些信息是在实现算法的 `action()` 部分时，通过继承来提供的。
 
 首先，接口描述了要控制的事件。因为其默认的行为是基于时间去执行控制，所以使用抽象类代替实际的接口。下面的例子包含了某些实现：
 
@@ -928,11 +953,11 @@ public abstract class Event {
 }
 ```
 
-当希望运行 Event 并随后调用 start() 时，那么构造器就会捕获（从对象创建的时刻开始的）时间，此时间是这样得来的：start() 获取当前时间，然后加上一个延迟时间，这样生成触发事件的时间。start() 是一个独立的方法，而没有包含在构造器内，因为这样就可以在事件运行以后重新启动计时器，也就是能够重复使用 Event 对象。例如，如果想要重复一个事件，只需简单地在 action() 中调用 start() 方法。
+当希望运行 **Event** 并随后调用 `start()` 时，那么构造器就会捕获（从对象创建的时刻开始的）时间，此时间是这样得来的：`start()` 获取当前时间，然后加上一个延迟时间，这样生成触发事件的时间。`start()` 是一个独立的方法，而没有包含在构造器内，因为这样就可以在事件运行以后重新启动计时器，也就是能够重复使用 **Event** 对象。例如，如果想要重复一个事件，只需简单地在 `action()` 中调用 `start()` 方法。
 
-ready() 告诉你何时可以运行 action() 方法了。当然，可以在派生类中覆盖 ready() 方法，使得 Event 能够基于时间以外的其他因素而触发。
+`ready()` 告诉你何时可以运行 `action()` 方法了。当然，可以在派生类中覆盖 `ready()` 方法，使得 **Event** 能够基于时间以外的其他因素而触发。
 
-下面的文件包含了一个用来管理并触发事件的实际控制框架。Event 对象被保存在 List\<Event\> 类型（读作“Event 的列表”）的容器对象中，容器会在 [集合 ]() 中详细介绍。目前读者只需要知道 add() 方法用来将一个 Object 添加到 List 的尾端，size() 方法用来得到 List 中元素的个数，foreach 语法用来连续获联 List 中的 Event，remove() 方法用来从 List 中移除指定的 Event。
+下面的文件包含了一个用来管理并触发事件的实际控制框架。**Event** 对象被保存在 **List**\<**Event**\> 类型（读作“Event 的列表”）的容器对象中，容器会在 [集合 ]() 中详细介绍。目前读者只需要知道 `add()` 方法用来将一个 **Event** 添加到 **List** 的尾端，`size()` 方法用来得到 **List** 中元素的个数，foreach 语法用来连续获联 **List** 中的 **Event**，`remove()` 方法用来从 **List** 中移除指定的 **Event**。
 
 ```java
 // innerclasses/controller/Controller.java
@@ -957,18 +982,18 @@ public class Controller {
 }
 ```
 
-run() 方法循环遍历 eventList，寻找就绪的（ready()）、要运行的 Event 对象。对找到的每一个就绪的（ready()）事件，使用对象的 toString() 打印其信息，调用其 action() 方法，然后从队列中移除此 Event。
+`run()` 方法循环遍历 **eventList**，寻找就绪的（`ready()`）、要运行的 **Event** 对象。对找到的每一个就绪的（`ready()`）事件，使用对象的 `toString()` 打印其信息，调用其 `action()` 方法，然后从列表中移除此 **Event**。
 
-注意，在目前的设计中你并不知道 Event 到底做了什么。这正是此设计的关键所在，"使变化的事物与不变的事物相互分离”。用我的话说，“变化向量”就是各种不同的 Event 对象所具有的不同行为，而你通过创建不同的 Event 子类来表现不同的行为。
+注意，在目前的设计中你并不知道 **Event** 到底做了什么。这正是此设计的关键所在—"使变化的事物与不变的事物相互分离”。用我的话说，“变化向量”就是各种不同的 **Event** 对象所具有的不同行为，而你通过创建不同的 **Event** 子类来表现不同的行为。
 
 这正是内部类要做的事情，内部类允许：
 
-1. 控制框架的完整实现是由单个的类创建的，从而使得实现的细节被封装了起来。内部类用来表示解决问题所必需的各种不同的 action()。
+1. 控制框架的完整实现是由单个的类创建的，从而使得实现的细节被封装了起来。内部类用来表示解决问题所必需的各种不同的 `action()`。
 2. 内部类能够很容易地访问外围类的任意成员，所以可以避免这种实现变得笨拙。如果没有这种能力，代码将变得令人讨厌，以至于你肯定会选择别的方法。
 
-考虑此控制框架的一个特定实现，如控制温室的运作：控制灯光、水、温度调节器的开关，以及响铃和重新启动系统，每个行为都是完全不同的。控制框架的设计使得分离这些不同的代码变得非常容易。使用内部类，可以在单一的类里面产生对同一个基类 Event 的多种导出版本。对于温室系统的每一种行为，都继承一个新的 Event 内部类，并在要实现的 action() 中编写控制代码。
+考虑此控制框架的一个特定实现，如控制温室的运作：控制灯光、水、温度调节器的开关，以及响铃和重新启动系统，每个行为都是完全不同的。控制框架的设计使得分离这些不同的代码变得非常容易。使用内部类，可以在单一的类里面产生对同一个基类 **Event** 的多种派生版本。对于温室系统的每一种行为，都继承创建一个新的 **Event** 内部类，并在要实现的 `action()` 中编写控制代码。
 
-作为典型的应用程序框架，GreenhouseControls 类继承自 Controller：
+作为典型的应用程序框架，**GreenhouseControls** 类继承自 **Controller**：
 
 ```java
 // innerclasses/GreenhouseControls.java
@@ -981,12 +1006,12 @@ public class GreenhouseControls extends Controller {
     private boolean light = false;
     public class LightOn extends Event {
         public LightOn(long delayTime) {
-            super(delayTime);
+            super(delayTime); 
         }
         @Override
         public void action() {
-// Put hardware control code here to
-// physically turn on the light.
+            // Put hardware control code here to
+            // physically turn on the light.
             light = true;
         }
         @Override
@@ -1000,8 +1025,8 @@ public class GreenhouseControls extends Controller {
         }
         @Override
         public void action() {
-// Put hardware control code here to
-// physically turn off the light.
+            // Put hardware control code here to
+            // physically turn off the light.
             light = false;
         }
         @Override
@@ -1016,7 +1041,7 @@ public class GreenhouseControls extends Controller {
         }
         @Override
         public void action() {
-// Put hardware control code here.
+            // Put hardware control code here.
             water = true;
         }
         @Override
@@ -1030,7 +1055,7 @@ public class GreenhouseControls extends Controller {
         }
         @Override
         public void action() {
-// Put hardware control code here.
+            // Put hardware control code here.
             water = false;
         }
         @Override
@@ -1045,7 +1070,7 @@ public class GreenhouseControls extends Controller {
         }
         @Override
         public void action() {
-// Put hardware control code here.
+            // Put hardware control code here.
             thermostat = "Night";
         }
         @Override
@@ -1059,7 +1084,7 @@ public class GreenhouseControls extends Controller {
         }
         @Override
         public void action() {
-// Put hardware control code here.
+            // Put hardware control code here.
             thermostat = "Day";
         }
         @Override
@@ -1068,7 +1093,7 @@ public class GreenhouseControls extends Controller {
         }
     }
     // An example of an action() that inserts a
-// new one of itself into the event list:
+    // new one of itself into the event list:
     public class Bell extends Event {
         public Bell(long delayTime) {
             super(delayTime);
@@ -1119,13 +1144,13 @@ public class GreenhouseControls extends Controller {
 }
 ```
 
-注意，light，water 和 thermostat 都属于外围类 GreenhouseControls，而这些内部类能够自由地访问那些字段，无需限定条件或特殊许可。而且，action0 方法通常都涉及对某种硬件的控制。
+注意，**light**，**water** 和 **thermostat** 都属于外围类 **GreenhouseControls**，而这些内部类能够自由地访问那些字段，无需限定条件或特殊许可。而且，`action()` 方法通常都涉及对某种硬件的控制。
 
-大多数 Event 类看起来都很相似，但是 Bell 和 Restart 则比较特别。Bell 控制响铃，然后在事件列表中增加一个 Bell 对象，于是过一会儿它可以再次响铃。读者可能注意到了内部类是多么像多重继承：Bell 和 Restart 有 Event 的所有方法，并且似乎也拥有外围类 GreenhouseContrlos 的所有方法。
+大多数 **Event** 类看起来都很相似，但是 **Bell** 和 **Restart** 则比较特别。**Bell** 控制响铃，然后在事件列表中增加一个 **Bell** 对象，于是过一会儿它可以再次响铃。读者可能注意到了内部类是多么像多重继承：**Bell** 和 **Restart** 有 **Event** 的所有方法，并且似乎也拥有外围类 **GreenhouseContrlos** 的所有方法。
 
-一个由 Event 对象组成的数组被递交给 Restart，该数组要加到控制器上。由于 Restart0 也是一个 Event 对象，所以同样可以将 Restart 对象添加到 Restart.action0 中，以使系统能够有规律地重新启动自己。
+一个由 **Event** 对象组成的数组被递交给 **Restart**，该数组要加到控制器上。由于 `Restart()` 也是一个 **Event** 对象，所以同样可以将 **Restart** 对象添加到 `Restart.action()` 中，以使系统能够有规律地重新启动自己。
 
-下面的类通过创建一个 GreenhouseControls 对象，并添加各种不同的 Event 对象来配置该系统，这是命令设计模式的一个例子在 eventList 中的每一个被封装成对象的请求：
+下面的类通过创建一个 **GreenhouseControls** 对象，并添加各种不同的 **Event** 对象来配置该系统，这是命令设计模式的一个例子—**eventList** 中的每个对象都被封装成对象的请求：
 
 ```java
 // innerclasses/GreenhouseController.java
@@ -1134,8 +1159,8 @@ import innerclasses.controller.*;
 public class GreenhouseController {
     public static void main(String[] args) {
         GreenhouseControls gc = new GreenhouseControls();
-// Instead of using code, you could parse
-// configuration information from a text file:
+        // Instead of using code, you could parse
+        // configuration information from a text file:
         gc.addEvent(gc.new Bell(900));
         Event[] eventList = {
                 gc.new ThermostatNight(0),
@@ -1183,7 +1208,7 @@ Greenhouse water is off
 Terminating
 ```
 
-这个类的作用是初始化系统，所以它添加了所有相应的事件。Restart 事件反复运行，而且它每次都会将 eventList 加载到 GreenhouseControls 对象中。如果提供了命令行参数，系统会以它作为毫秒数，决定什么时候终止程序（这是测试程序时使用的）。
+这个类的作用是初始化系统，所以它添加了所有相应的事件。**Restart** 事件反复运行，而且它每次都会将 **eventList** 加载到 **GreenhouseControls** 对象中。如果提供了命令行参数，系统会以它作为毫秒数，决定什么时候终止程序（这是测试程序时使用的）。
 
 当然，更灵活的方法是避免对事件进行硬编码。
 
@@ -1213,7 +1238,7 @@ public class InheritInner extends WithInner.Inner {
 }
 ```
 
-可以看到，InheritInner 只继承自内部类，而不是外围类。但是当要生成一个构造器时，默认的构造器并不算好，而且不能只是传递一个指向外围类对象的引用。此外，必须在构造器内使用如下语法：
+可以看到，**InheritInner** 只继承自内部类，而不是外围类。但是当要生成一个构造器时，默认的构造器并不算好，而且不能只是传递一个指向外围类对象的引用。此外，必须在构造器内使用如下语法：
 
 ```java
 enclosingClassReference.super();
@@ -1261,7 +1286,7 @@ New Egg()
 Egg.Yolk()
 ```
 
-默认的无参构造器是编译器自动生成的，这里是调用基类的默认构造器。你可能认为既然创建了 BigEgg 的对象，那么所使用的应该是“覆盖后”的 Yolk 版本，但从输出中可以看到实际情况并不是这样的。
+默认的无参构造器是编译器自动生成的，这里是调用基类的默认构造器。你可能认为既然创建了 **BigEgg** 的对象，那么所使用的应该是“覆盖后”的 **Yolk** 版本，但从输出中可以看到实际情况并不是这样的。
 
 这个例子说明，当继承了某个外围类的时候，内部类并没有发生什么特别神奇的变化。这两个内部类是完全独立的两个实体，各自在自己的命名空间内。当然，明确地继承某个内部类也是可以的：
 
@@ -1310,9 +1335,7 @@ BigEgg2.Yolk()
 BigEgg2.Yolk.f()
 ```
 
-现在 BigEgg2.Yolk 通过 extends Egg2.Yolk 明确地继承了此内部类，并且覆盖了其中的方法。
-
-insertYolk() 方法允许 BigEgg2 将它自己的 Yolk 对象向上转型为 Egg2 中的引用 y。所以当 g() 调用 y.f() 时，覆盖后的新版的 f() 被执行。第二次调用 Egg2.Yolk()，结果是 BigEgg2.Yolk 的构造器调用了其基类的构造器。可以看到在调用 g() 的时候，新版的 f() 被调用了。
+现在 **BigEgg2.Yolk** 通过 **extends Egg2.Yolk** 明确地继承了此内部类，并且覆盖了其中的方法。`insertYolk()` 方法允许 **BigEgg2** 将它自己的 **Yolk** 对象向上转型为 **Egg2** 中的引用 **y**。所以当 `g()` 调用 `y.f()` 时，覆盖后的新版的 `f()` 被执行。第二次调用 `Egg2.Yolk()`，结果是 **BigEgg2.Yolk** 的构造器调用了其基类的构造器。可以看到在调用 `g()` 的时候，新版的 `f()` 被调用了。
 
 <!-- Local Inner Classes -->
 
@@ -1329,10 +1352,10 @@ interface Counter {
 public class LocalInnerClass {
     private int count = 0;
     Counter getCounter(final String name) {
-// A local inner class:
+        // A local inner class:
         class LocalCounter implements Counter {
             LocalCounter() {
-// Local inner class can have a constructor
+                // Local inner class can have a constructor
                 System.out.println("LocalCounter()");
             }
             @Override
@@ -1347,7 +1370,7 @@ public class LocalInnerClass {
     Counter getCounter2(final String name) {
         return new Counter() {
             // Anonymous inner class cannot have a named
-// constructor, only an instance initializer:
+            // constructor, only an instance initializer:
             {
                 System.out.println("Counter()");
             }
@@ -1388,17 +1411,17 @@ Anonymous inner 8
 Anonymous inner 9
 ```
 
-Counter 返回的是序列中的下一个值。我们分别使用局部内部类和匿名内部类实现了这个功能，它们具有相同的行为和能力，既然局部内部类的名字在方法外是不可见的，那为什么我们仍然使用局部内部类而不是匿名内部类呢？唯一的理由是，我们需要一个已命名的构造器，或者需要重载构造器，而匿名内部类只能用于实例初始化。
+**Counter** 返回的是序列中的下一个值。我们分别使用局部内部类和匿名内部类实现了这个功能，它们具有相同的行为和能力，既然局部内部类的名字在方法外是不可见的，那为什么我们仍然使用局部内部类而不是匿名内部类呢？唯一的理由是，我们需要一个已命名的构造器，或者需要重载构造器，而匿名内部类只能用于实例初始化。
 
 所以使用局部内部类而不使用匿名内部类的另一个理由就是，需要不止一个该内部类的对象。
 
-
 <!-- Inner-Class Identifiers -->
+
 ## 内部类标识符
 
-由于每个类都会产生一个.class 文件，其中包含了如何创建该类型的对象的全部信息（此信息产生一个"meta-class"，叫做 Class 对象）。
+由于编译后每个类都会产生一个**.class** 文件，其中包含了如何创建该类型的对象的全部信息（此信息产生一个"meta-class"，叫做 **Class** 对象）。
 
-你可能猜到了，内部类也必须生成一个.class 文件以包含它们的 Class 对象信息。这些类文件的命名有严格的规则：外围类的名字，加上“$"，再加上内部类的名字。例如，LocalInnerClass.java 生成的.class 文件包括：
+你可能猜到了，内部类也必须生成一个**.class** 文件以包含它们的 **Class** 对象信息。这些类文件的命名有严格的规则：外围类的名字，加上“**$**"，再加上内部类的名字。例如，**LocalInnerClass.java** 生成的 **.class** 文件包括：
 
 ```java
 Counter.class
@@ -1407,7 +1430,7 @@ LocalInnerClass$1LocalCounter.class
 LocalInnerClass.class
 ```
 
-如果内部类是匿名的，编译器会简单地产生一个数字作为其标识符。如果内部类是嵌套在别的内部类之中，只需直接将它们的名字加在其外围类标识符与“$”的后面。
+如果内部类是匿名的，编译器会简单地产生一个数字作为其标识符。如果内部类是嵌套在别的内部类之中，只需直接将它们的名字加在其外围类标识符与“**$**”的后面。
 
 虽然这种命名格式简单而直接，但它还是很健壮的，足以应对绝大多数情况。因为这是 java 的标准命名方式，所以产生的文件自动都是平台无关的。（注意，为了保证你的内部类能起作用，Java 编译器会尽可能地转换它们。）
 
@@ -1419,7 +1442,7 @@ LocalInnerClass.class
 
 虽然这些特性本身是相当直观的，但是就像多态机制一样，这些特性的使用应该是设计阶段考虑的问题。随着时间的推移，读者将能够更好地识别什么情况下应该使用接口，什么情况使用内部类，或者两者同时使用。但此时，读者至少应该已经完全理解了它们的语法和语义。
 
-当见到这些语言特性实际应用时，就最终理解它们了。
+当读者见到这些语言特性的实际应用时，就能最终理解它们了。
 
 <!-- 分页 -->
 
