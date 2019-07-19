@@ -2,17 +2,23 @@
 
 <!-- File -->
 # 第十七章 文件
-在丑陋的Java I/O编程方式诞生多年以后，Java终于简化了文件读写的基本操作。这种"困难方式"的全部细节都在[Appendix: I/O Streams]()。如果你读过这个部分，就会认同Java设计者毫不在意他们的使用者的体验这一观念。打开并读取文件对于大多数编程语言来是非常常用的，由于I/O糟糕的设计以至于
+>在丑陋的Java I/O编程方式诞生多年以后，Java终于简化了文件读写的基本操作。这种"困难方式"的全部细节都在
+
+[Appendix: I/O Streams](.\Appendix-IO-Streams.md)。如果你读过这个部分，就会认同Java设计者毫不在意他们的使用者的体验这一观念。打开并读取文件对于大多数编程语言来是非常常用的，由于I/O糟糕的设计以至于
 很少有人能够在不依赖其他参考代码的情况下完成打开文件的操作。
 
 好像Java设计者终于意识到了Java使用者多年来的痛苦，在Java7中对此引入了巨大的改进。这些新元素被放在**java.nio.file**包下面，过去人们通常把**nio**中的**n**理解为**new**即新的**io**，现在更应该当成是**non-blocking**非阻塞**io**(**io**就是*input/output输入/输出*)。**java.nio.file**库终于将Java文件操作带到与其他编程语言相同的水平。最重要的是Java8新增的streams与文件结合使得文件操作编程变得更加优雅。我们将看一下文件操作的两个基本组件：
+
 1. 文件或者目录的路径；
 2. 文件本身。
 
 <!-- File and Directory Paths -->
 ## 文件和目录路径
+
 ### `Paths`
+
 一个**Path**对象表示一个文件或者目录的路径，是一个跨操作系统（OS）和文件系统的抽象，目的是在构造路径时不必关注底层操作系统，代码可以在不进行修改的情况下运行在不同的操作系统上。**java.nio.file.Paths**类包含一个重载方法**static get()**，该方法方法接受一系列**Strings**字符串或一个*统一资源标识符*(URI)作为参数，并且进行转换返回一个**Path**对象：
+
 ```java
 // files/PathInfo.java
 import java.nio.file.*;
@@ -24,7 +30,7 @@ public class PathInfo {
     static void show(String id, Object p) {
         System.out.println(id + ": " + p);
     }
-    
+
     static void info(Path p) {
         show("toString", p);
         show("Exists", Files.exists(p));
@@ -38,7 +44,7 @@ public class PathInfo {
     }
     public static void main(String[] args) {
         System.out.println(System.getProperty("os.name"));
-        info(Paths.get("C:", "path", "to", "nowhere", "NoFile.txt")); 
+        info(Paths.get("C:", "path", "to", "nowhere", "NoFile.txt"));
         Path p = Paths.get("PathInfo.java");
         info(p);
         Path ap = p.toAbsolutePath();
@@ -116,7 +122,7 @@ true
 */
 ```
 
-我已经在这一章第一个程序的**main()**方法添加了第一行用于展示操作系统的名称，因此你可以看到不同操作系统之间存在哪些差异。理想情况下，差别会相对较小，并且使用**/**或者**\\**路径分隔符进行分隔。你可以看到我运行在Windows 10上的程序输出。
+我已经在这一章第一个程序的 **main()** 方法添加了第一行用于展示操作系统的名称，因此你可以看到不同操作系统之间存在哪些差异。理想情况下，差别会相对较小，并且使用 **/** 或者 **\\** 路径分隔符进行分隔。你可以看到我运行在Windows 10上的程序输出。
 
 当**toString()**方法生成完整形式的路径，你可以看到**getFileName()** 方法总是返回当前文件名。
 通过使用**Files**工具类(我们接下类将会更多的使用它)，可以测试一个文件是否存在，测试是否是一个"真正"的文件还是一个目录等等。"Nofile.txt"这个示例展示我们描述的文件可能并不在指定的位置；这样可以允许你创建一个新的路径。"PathInfo.java"存在于当前目录中，最初它只是没有路径的文件名，但它仍然被检测为"存在"。一旦我们将其转换为绝对路径，我们将会得到一个从"C:"盘(因为我们是在Windows机器下进行测试)开始的完整路径，现在它也拥有一个父路径。“真实”路径的定义在文档中有点模糊，因为它取决于具体的文件系统。例如，如果文件名不区分大小写，即使路径由于大小写的缘故而不是完全相同，也可能得到肯定的匹配结果。在这样的平台上，**toRealPath()** 将返回实际情况下的**Path**，并且还会删除任何冗余元素。

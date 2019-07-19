@@ -212,7 +212,7 @@ Java采用了更传统的方法[^2]，即在顺序语言之上添加对线程的
 Java是一种多线程语言，如果您了解它们是否存在并发问题。因此，有许多Java程序正在使用中，或者只是偶然工作，或者大部分时间工作并且不时地发生问题，因为。有时这种问题是相对良性的，但有时它意味着丢失有价值的数据，如果你没有意识到并发问题，你最终可能会把问题放在其他地方而不是你的代码中。如果将程序移动到多处理器系统，则可以暴露或放大这些类型的问题。基本上，了解并发性使您意识到正确的程序可能会表现出错误的行为。
 
 <!-- The Brutal Truth -->
-## 残酷的真相
+## <span id = "The-Brutal-Truth">残酷的真相</span>
 
 当人类开始烹饪他们的食物时，他们大大减少了他们的身体分解和消化食物所需的能量。烹饪创造了一个“外化的胃”，从而释放出追去其他的的能力。火的使用促成了文明。
 
@@ -248,14 +248,76 @@ Java实验告诉我们，结果是悄然灾难性的。程序员很容易陷入�
 这是我们将在本章的其余部分介绍的内容。请记住，本章的重点是使用最新的高级Java并发结构。使用这些使得您的生活比旧的替代品更加轻松。但是，您仍会在遗留代码中遇到一些低级工具。有时，你可能会被迫自己使用其中的一些。附录：[并发底层原理](./Appendix-Low-Level-Concurrency.md)包含一些更原始的Java并发元素的介绍。
 
 - Parallel Streams（并发流）
+到目前为止，我已经强调了Java 8 Streams提供的改进语法。现在您对该语法（作为一个粉丝，我希望）感到满意，您可以获得额外的好处：您可以通过简单地将parallel（）添加到表达式来并行化流。这是一种简单，强大，坦率地说是利用多处理器的惊人方式
+
+添加parallel（）来提高速度似乎是微不足道的，但是，唉，它就像你刚刚在[残酷的真相](#The-Brutal-Truth)中学到的那样简单。我将演示并解释一些盲目添加parallel（）到Stream表达式的缺陷。
+
 - 创建和运行任务
+任务是一段可以独立运行的代码。为了解释创建和运行任务的一些基础知识，本节介绍了一种比并行流或CompletableFutures：Executor更复杂的机制。执行者管理一些低级Thread对象（Java中最原始的并发形式）。您创建一个任务，然后将其交给Executorto运行。
+
+有多种类型的Executor用于不同的目的。在这里，我们将展示规范形式，代表创建和运行任务的最简单和最佳方法。
+
 - 终止长时间运行的任务
+任务独立运行，因此需要一种机制来关闭它们。典型的方法使用了一个标志，这引入了共享内存的问题，我们将使用Java的“Atomic”库来回避它。
 - Completable Futures
+当您将衣服带到干洗店时，他们会给您一张收据。你继续完成其他任务，最终你的衣服很干净，你可以拿起它。收据是您与干洗店在后台执行的任务的连接。这是Java 5中引入的Future的方法。
+
+Future比以前的方法更方便，但你仍然必须出现并用收据取出干洗，等待任务没有完成。对于一系列操作，Futures并没有真正帮助那么多。
+
+Java 8 CompletableFuture是一个更好的解决方案：它允许您将操作链接在一起，因此您不必将代码写入接口排序操作。有了CompletableFuture完美的结合，就可以更容易地做出“采购原料，组合成分，烹饪食物，提供食物，清理菜肴，储存菜肴”等一系列链式操作。
+
 - 死锁
+某些任务必须去**等待 - 阻塞**来获得其他任务的结果。被阻止的任务有可能等待另一个被阻止的任务，等待另一个被阻止的任务，等等。如果被阻止的任务链循环到第一个，没有人可以取得任何进展，你就会陷入僵局。
+
+如果在运行程序时没有立即出现死锁，则会出现最大的问题。您的系统可能容易出现死锁，并且只会在某些条件下死锁。程序可能在某个平台上运行正常，例如您的开发机器，但是当您将其部署到不同的硬件时会开始死锁。
+
+死锁通常源于细微的编程错误;一系列无辜的决定，最终意外地创建了一个依赖循环。本节包含一个经典示例，演示了死锁的特性。
+
+我们将通过模拟创建披萨的过程完成本章，首先使用并行流实现它，然后是完成配置。这不仅仅是两种方法的比较，更重要的是探索你应该投入多少工作来加速计划。
+
 - 努力，复杂，成本
 <!-- Parallel Streams -->
 ## 并行流
 
+Java 8流的一个显着优点是，在某些情况下，它们可以很容易地并行化。这来自仔细的库设计，特别是流使用内部迭代的方式 - 也就是说，它们控制着自己的迭代器。特别是，它们使用一种特殊的迭代器，称为Spliterator，它被限制为易于自动分类。这产生了相当神奇的结果，只能说.parallel（），并且你的流中的所有东西都是作为一组并行任务运行的。如果您的代码是使用Streams编写的，那么并行化以提高速度似乎微不足道。
+
+例如，考虑来自Streams的Prime.java。查找质数可能是一个耗时的过程，我们可以看到该程序的计时：
+
+```java
+// concurrent/ParallelPrime.java
+import java.util.*;
+import java.util.stream.*;
+import static java.util.stream.LongStream.*;
+import java.io.*;
+import java.nio.file.*;
+import onjava.Timer;
+
+public class ParallelPrime {
+    static final int COUNT = 100_000;
+    public static boolean isPrime(long n){
+        return rangeClosed(2, (long)Math.sqrt(n)).noneMatch(i -> n % i == 0);
+        }
+    public static void main(String[] args)
+        throws IOException {
+        Timer timer = new Timer();
+        List<String> primes =
+            iterate(2, i -> i + 1)
+                .parallel()              // [1]
+                .filter(ParallelPrime::isPrime)
+                .limit(COUNT)
+                .mapToObj(Long::toString)
+                .collect(Collectors.toList());
+        System.out.println(timer.duration());
+        Files.write(Paths.get("primes.txt"), primes, StandardOpenOption.CREATE);
+        }
+    }
+    /*
+    Output:
+    1224
+    */
+```
+
+请注意，这不是微基准测试，因为我们计时整个程序。我们将数据保存在磁盘上以防止激进的优化;如果我们没有对结果做任何事情，那么一个狡猾的编译器可能会观察到程序没有意义并且消除了计算（这不太可能，但并非不可能）。请注意使用nio2库编写文件的简单性（在[文件](./17-Files.md)一章中有描述）。
 
 <!-- Creating and Running Tasks -->
 ## 创建和运行任务
