@@ -573,26 +573,89 @@ public class EvenProducer extends IntGenerator {
 
 Java 以提供关键字 **synchronized** 的形式，为防止资源冲突提供了内置支持。当任务希望执行被 **synchronized** 关键字保护的代码片段的时候，Java 编译器会生成代码以查看锁是否可用。如果可用，该任务获取锁，执行代码，然后释放锁。
 
-### 同步多个生产者
+共享资源一般是以对象形式存在的内存片段，但也可以是文件、I/O 端口，或者类似打印机的东西。要控制对共享资源的访问，得先把它包装进一个对象。然后把任何访问该资源的方法标记为 **synchronized** 。 如果一个任务在调用其中一个 **synchronized** 方法之内，那么在这个任务从该方法返回之前，其他所有要调用该对象的 **synchronized** 方法的任务都会被阻塞。
+
+通常你会将字段设为 **private**，并仅通过方法访问这些字段。你可用通过使用 **synchronized** 关键字声明方法来防止资源冲突。如下所示：
+
+```java
+synchronized void f() { /* ... */ }
+synchronized void g() { /* ... */ }
+```
+
+所有对象都自动包含单一的锁（也称为 *monitor*，即监视器）。当你调用对象上任何 **synchronized** 方法，此对象将被加锁，并且该对象上的的其他 **synchronized** 方法调用只有等到前一个方法执行完成并释放了锁之后才能被调用。如果一个任务对对象调用了 **f()** ，对于同一个对象而言，就只能等到 **f()** 调用结束并释放了锁之后，其他任务才能调用 **f()** 和 **g()**。所以，某个特定对象的所有 **synchronized** 方法共享同一个锁，这个锁可以防止多个任务同时写入对象内存。
+
+在使用并发时，将字段设为 **private** 特别重要；否则，**synchronized** 关键字不能阻止其他任务直接访问字段，从而产生资源冲突。
+
+一个线程可以多次获取对象的锁。如果一个方法在同一个对象上调用第二个方法，而后者又在同一个对象上调用另一个方法，就会发生这种情况。 JVM 会跟踪对象被锁定的次数。如果对象已解锁，则其计数为 0 。当一个线程第一次锁时，计数变为 1 。每次同一线程在同一对象上获取另一个锁时，计数就会递增。显然，只有首先获得锁的线程才允许多次获取多个锁。每当线程离开 **synchronized** 方法时，计数递减，当、直到计数变为 0 ，完全释放锁以给其他线程使用。每个类也有一个锁（作为该类的 **Class** 对象的一部分），因此 **synchronized** 静态方法可以在类范围的基础上彼此锁定，不让同时访问静态数据。
+
+你应该什么时候使用同步呢？可以永远 *Brian* 的同步法则[^2]。
+
+> 如果你正在写一个变量，它可能接下来被另一个线程读取，或者正在读取一个上一次已经被另一个线程写过的变量，那么你必须使用同步，并且，读写线程都必须用相同的监视器锁同步。
+
+如果在你的类中有超过一个方法在处理临界数据，那么你必须同步所有相关方法。如果只同步其中一个方法，那么其他方法可以忽略对象锁，并且可以不受惩罚地调用。这是很重要的一点：每个访问临界共享资源的方法都必须被同步，否则将不会正确地工作。
+
+### 同步控制 EventProducer
+
+通过在 **EvenProducer.java** 文件中添加 **synchronized** 关键字，可以防止不希望的线程访问：
+
+```java
+// lowlevel/SynchronizedEvenProducer.java
+// Simplifying mutexes with the synchronized keyword
+import onjava.Nap;
+
+public class
+SynchronizedEvenProducer extends IntGenerator {
+  private int currentEvenValue = 0;
+  @Override
+  public synchronized int next() {
+    ++currentEvenValue;
+    new Nap(0.01); // Cause failure faster
+    ++currentEvenValue;
+    return currentEvenValue;
+  }
+  public static void main(String[] args) {
+    EvenChecker.test(new SynchronizedEvenProducer());
+  }
+}
+/* Output:
+No odd numbers discovered
+*/
+```
+
+在两个递增操作之间插入 **Nap()** 构造器方法，以提高在 **currentEvenValue** 是奇数的状态时上下文切换的可能性。因为互斥锁可以阻止多个任务同时进入临界区，所有这不会产生失败。第一个进入 **next()** 方法的任务将获得锁，任何试图获取锁的后续任务都将被阻塞，直到第一个任务释放锁。此时，调度机制选择另一个等待锁的任务。通过这种方式，任何时刻只能有一个任务通过互斥锁保护的代码。
 
 <!-- The volatile Keyword -->
 ## volatile 关键字
 
+**volatile** 可能是Java中最微妙和最难用的关键字。幸运的是，在现代 Java 中，你几乎总能避免使用它，如果你确实看到它在代码中使用，你应该保持怀疑态度和怀疑 - 这很有可能代码是过时的，或者编写代码的人不清楚在大体上（或两者都有）易变性（**volatile**） 或并发性的后果。
+
+使用 **volatile** 有三个理由。
+
 ### 字分裂
+
+当你的 Java 数据类型足够大（在 Java 中 **long** 和 **double** 类型都是 64 位），写入变量的过程分两步进行，就会发生 *Word tearing* （字分裂）情况。 JVM 被允许将64位数量的读写作为两个单独的32位操作执行[^3] ，这增加了在读写过程中发生上下文切换的可能性，因此其他任务会看到不正确的结果。这被称为 *Word tearing* （字分裂），因为你可能只看到其中一部分修改后的值。基本上，任务有时可以在第一步之后但在第二步之前读取变量，从而产生垃圾值（对于例如 **boolean** 或 **int** 类型的小变量是没有问题的；任何 **long** 或 **double** 类型则除外）。
+
+在缺乏任何其他保护的情况下，用 **volatile** 修饰符定义一个 **long** 或 **double** 变量，可阻止字分裂情况。然而，如果使用 **synchronized** 或 **java.util.concurrent.atomic** 类之一保护这些变量，则volatile将被取代。此外，**volatile** 不会影响到增量操作并不是原子操作的事实。
 
 ### 可见性
 
-### 重排与 *Happen-Before*原则
+### 重排与 *Happen-Before* 原则
 
 ### 什么时候使用 volatile
 
 <!-- Atomicity -->
 ## 原子性
 
+### Josh 的序列数字
+
+### 使用显式锁定对象
+
+### 原子类
 
 <!-- Critical Sections -->
-## 关键部分
+## 临界区
 
+### 在其他对象上同步
 
 <!-- Library Components -->
 ## 库组件
@@ -620,7 +683,7 @@ Java 以提供关键字 **synchronized** 的形式，为防止资源冲突提供
 
 [^1]: 在某些平台上，特别是 Windows ，默认值可能非常难以查明。您可以使用 -Xss 标志调整堆栈大小。
 
-[^2]: 出自 Brian Goetz, Java Concurrency in Practice 一书的作者 , 该书由 Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug Lea 联合著作 (Addison-Wesley 出版社, 2006)。↩
+[^2]: 引自 Brian Goetz, Java Concurrency in Practice 一书的作者 , 该书由 Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug Lea 联合著作 (Addison-Wesley 出版社, 2006)。↩
 
 [^3]: 请注意，在64位处理器上可能不会发生这种情况，从而消除了这个问题。
 
