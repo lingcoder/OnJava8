@@ -46,7 +46,7 @@
 - [ ] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
 - [ ] [第二十五章 设计模式](docs/book/25-Patterns.md)
 - [x] [附录:补充](docs/book/Appendix-Supplements.md)
-- [ ] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)
+- [x] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)
 - [ ] [附录:文档注释](docs/book/Appendix-Javadoc.md)
 - [ ] [附录:对象传递和返回](docs/book/Appendix-Passing-and-Returning-Objects.md)
 - [ ] [附录:流式IO](docs/book/Appendix-IO-Streams.md)
