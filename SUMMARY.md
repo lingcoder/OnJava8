@@ -369,7 +369,7 @@
     * [在Map中使用函数式操作](docs/book/Appendix-Collection-Topics.md#在Map中使用函数式操作)
     * [选择Map片段](docs/book/Appendix-Collection-Topics.md#选择Map片段)
     * [填充集合](docs/book/Appendix-Collection-Topics.md#填充集合)
-    * [使用Flyweight自定义集合和Map](docs/book/Appendix-Collection-Topics.md#使用Flyweight自定义集合和Map)
+    * [使用享元（Flyweight）自定义Collection和Map](docs/book/Appendix-Collection-Topics.md#使用享元（Flyweight）自定义Collection和Map)
     * [集合功能](docs/book/Appendix-Collection-Topics.md#集合功能)
     * [可选操作](docs/book/Appendix-Collection-Topics.md#可选操作)
     * [Set和存储顺序](docs/book/Appendix-Collection-Topics.md#Set和存储顺序)
