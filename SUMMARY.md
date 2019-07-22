@@ -385,7 +385,7 @@
     * [资源共享](docs/book/Appendix-Low-Level-Concurrency.md#资源共享)
     * [volatile关键字](docs/book/Appendix-Low-Level-Concurrency.md#volatile关键字)
     * [原子性](docs/book/Appendix-Low-Level-Concurrency.md#原子性)
-    * [关键部分](docs/book/Appendix-Low-Level-Concurrency.md#关键部分)
+    * [临界区](docs/book/Appendix-Low-Level-Concurrency.md#临界区)
     * [库组件](docs/book/Appendix-Low-Level-Concurrency.md#库组件)
     * [本章小结](docs/book/Appendix-Low-Level-Concurrency.md#本章小结)
 * [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
