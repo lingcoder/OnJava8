@@ -9,8 +9,6 @@
 
 在 Java 的早期版本中, 底层并发概念是并发编程的重要组成部分。我们会着眼于围绕这些技巧的复杂性以及为何你应该避免它们而谈。 “并发编程” 章节展示最新的 Java 版本(尤其是 Java 8)所提供的改进技巧，这些技巧使得并发的使用，如果本来不容易使用，也会变得更容易些。
 
-
-
 <!-- What is a Thread? -->
 ## 什么是线程？
 
@@ -26,14 +24,14 @@ Java 并发的核心机制是 **Thread** 类，在该语言最初版本中， **
 * *thread-local variables* （线程本地变量）的存储区域
 * 用于控制线程的状态管理变量
 
-包括 **main()** 在内的所有代码都会在某个线程内运行。 每当调用一个方法时，当前程序计数器被推到该线程的栈上，然后栈指针向下移动以足够来创建一个栈帧，其栈帧里存储该方法的所有局部变量，参数和返回值。所有基本类型变量都直接在栈上，虽然方法中创建（或方法中使用）对象的任何引用都位于栈帧中，但对象本身存于堆中。这仅且只有一个堆，被程序中所有线程所共享。
+包括 `main()` 在内的所有代码都会在某个线程内运行。 每当调用一个方法时，当前程序计数器被推到该线程的栈上，然后栈指针向下移动以足够来创建一个栈帧，其栈帧里存储该方法的所有局部变量，参数和返回值。所有基本类型变量都直接在栈上，虽然方法中创建（或方法中使用）对象的任何引用都位于栈帧中，但对象本身存于堆中。这仅且只有一个堆，被程序中所有线程所共享。
 
 除此以外，线程必须绑定到操作系统，这样它就可以在某个时候连接到处理器。这是作为线程构建过程的一部分为你管理的。Java 使用底层操作系统中的机制来管理线程的执行。
 
 ### 最佳线程数
 
 如果你查看第 24 章 [并发编程](./24-Concurrent-Programming.md) 中使用 *CachedThreadPool* 的用例，你会发现 **ExecutorService** 为每个我们提交的任务分配一个线程。然而，并行流（**parallel Stream**）在 [**CountingStream.java** ](https://github.com/BruceEckel/OnJava8-Examples/blob/master/concurrent/CountingStream.java
-) 中只分配了 8 个线程（id 中 1-7 为工作线程，8 为  **main()** 方法的主线程，它巧妙地将其用作额外的并行流）。如果你尝试提高 **range()** 方法中的上限值，你会看到没有创建额外的线程。这是为什么？
+) 中只分配了 8 个线程（id 中 1-7 为工作线程，8 为  `main()` 方法的主线程，它巧妙地将其用作额外的并行流）。如果你尝试提高 `range()` 方法中的上限值，你会看到没有创建额外的线程。这是为什么？
 
 我们可以查出当前机器上处理器的数量：
 
@@ -94,7 +92,7 @@ public class ThreadSize {
 }
 ```
 
-只要你不断递交任务，**CachedThreadPool** 就会继续创建线程。将 **Dummy** 对象递交到 **execute()** 方法以开始任务，如果线程池无可用线程，则分配一个新线程。执行的暂停方法 **pause()** 运行时间必须足够长，使任务不会开始即完成(从而为新任务释放现有线程)。只要任务不断进入而没有完成，**CachedThreadPool** 最终就会耗尽内存。
+只要你不断递交任务，**CachedThreadPool** 就会继续创建线程。将 **Dummy** 对象递交到 `execute()` 方法以开始任务，如果线程池无可用线程，则分配一个新线程。执行的暂停方法 `pause()` 运行时间必须足够长，使任务不会开始即完成(从而为新任务释放现有线程)。只要任务不断进入而没有完成，**CachedThreadPool** 最终就会耗尽内存。
 
 我并不总是能够在我尝试的每台机器上造成内存不足的错误。在一台机器上，我看到这样的结果:
 
@@ -204,11 +202,11 @@ public class SwallowedException {
 }
 ```
 
-这个程序什么也不输出（然而，如果你用 **execute** 方法替换 **submit()** 方法，你就将会看到异常抛出。这说明在线程中抛出异常是很棘手的，需要特别注意的事情。
+这个程序什么也不输出（然而，如果你用 **execute** 方法替换 `submit()` 方法，你就将会看到异常抛出。这说明在线程中抛出异常是很棘手的，需要特别注意的事情。
 
-你无法捕获到从线程逃逸的异常。一旦异常越过了任务的 **run()** 方法，它就会传递至控制台，除非你采取特殊步骤来捕获此类错误异常。
+你无法捕获到从线程逃逸的异常。一旦异常越过了任务的 `run()` 方法，它就会传递至控制台，除非你采取特殊步骤来捕获此类错误异常。
 
-下面是一个抛出异常的代码，该异常会传递到它的 **run()** 方法之外，而 **main()** 方法会显示运行它时会发生什么：
+下面是一个抛出异常的代码，该异常会传递到它的 `run()` 方法之外，而 `main()` 方法会显示运行它时会发生什么：
 
 ```java
 // lowlevel/ExceptionThread.java
@@ -250,7 +248,7 @@ Exception in thread "pool-1-thread-1" RuntimeException
   at java.lang.Thread.run(Thread.java:745)
 ```
 
-即使在 **main()** 方法体内包裹 **try-catch** 代码块来捕获异常也不成功：
+即使在 `main()` 方法体内包裹 **try-catch** 代码块来捕获异常也不成功：
 
 ```java
 // lowlevel/NaiveExceptionHandling.java
@@ -288,8 +286,8 @@ er.run(ThreadPoolExecutor.java:617)
 
 为解决这个问题，需要改变 **Executor** （执行器）生成线程的方式。 **Thread.UncaughtExceptionHandler** 是一个添加给每个 **Thread** 对象，用于进行异常处理的接口。
 
-当该线程即将死于未捕获的异常时，将自动调用 **Thread.UncaughtExceptionHandler.uncaughtException()**
- 方法。为了调用该方法，我们创建一个新的 `ThreadFactory` 类型来让 **Thread.UncaughtExceptionHandler** 对象附加到每个它所新创建的 **Thread**（线程）对象上。我们赋值该工厂对象给 **Executors** 对象的 方法，让它的方法来生成新的 **ExecutorService** 对象：
+当该线程即将死于未捕获的异常时，将自动调用 `Thread.UncaughtExceptionHandler.uncaughtException()`
+ 方法。为了调用该方法，我们创建一个新的 **ThreadFactory** 类型来让 **Thread.UncaughtExceptionHandler** 对象附加到每个它所新创建的 **Thread**（线程）对象上。我们赋值该工厂对象给 **Executors** 对象的 方法，让它的方法来生成新的 **ExecutorService** 对象：
 
 ```java
 // lowlevel/CaptureUncaughtException.java
@@ -370,9 +368,9 @@ caught java.lang.RuntimeException
 */
 ```
 
-只有在每个线程没有设置异常处理器时候，默认处理器才会被调用。系统会检查线程专有的版本，如果没有，则检查是否线程组中有专有的 **uncaughtException()** 方法；如果都没有，就会调用 **defaultUncaughtExceptionHandler** 方法。
+只有在每个线程没有设置异常处理器时候，默认处理器才会被调用。系统会检查线程专有的版本，如果没有，则检查是否线程组中有专有的 `uncaughtException()` 方法；如果都没有，就会调用 **defaultUncaughtExceptionHandler** 方法。
 
-可以将此方法与 **CompletableFuture**s 的改进方法进行比较。
+可以将此方法与 **CompletableFuture** 的改进方法进行比较。
 
 <!-- Sharing Resources -->
 ## 资源共享
@@ -395,7 +393,7 @@ caught java.lang.RuntimeException
 
 请思考以下的示例，其中一个任务负责生成偶数，其他任务则负责消费这些数字。在这里，消费者任务的唯一工作就是检查偶数的有效性。
 
-我们将定义消费者任务 **EvenChecker** 类，以便在后续示例中可复用。为了将 **EvenChecker** 与我们的各种实验生成器类解耦，我们首先创建名为 **IntGenerator** 的抽象类，它包含 **EvenChecker** 必须知道的最低必要方法：它包含 **next()** 方法，以及可以取消它执行生成的方法。
+我们将定义消费者任务 **EvenChecker** 类，以便在后续示例中可复用。为了将 **EvenChecker** 与我们的各种实验生成器类解耦，我们首先创建名为 **IntGenerator** 的抽象类，它包含 **EvenChecker** 必须知道的最低必要方法：它包含 `next()` 方法，以及可以取消它执行生成的方法。
 
 ```java
 // lowlevel/IntGenerator.java
@@ -412,7 +410,7 @@ public abstract class IntGenerator {
 }
 ```
 
-**cancel()** 方法改变 **AtomicBoolean** 类型的 **canceled** 标志位的状态， 而 **isCanceled()** 方法则告诉标志位是否设置。因为 **canceled** 标志位是 **AtomicBoolean** 类型，由于它是原子性的，这意味着分配和值返回等简单操作发生时没有中断的可能性，因此你无法在这些简单操作中看到该字段处于中间状态。你将在本附录的后面部分了解有关原子性和 **Atomic** 类的更多信息
+`cancel()` 方法改变 **AtomicBoolean** 类型的 **canceled** 标志位的状态， 而 `isCanceled()` 方法则告诉标志位是否设置。因为 **canceled** 标志位是 **AtomicBoolean** 类型，由于它是原子性的，这意味着分配和值返回等简单操作发生时没有中断的可能性，因此你无法在这些简单操作中看到该字段处于中间状态。你将在本附录的后面部分了解有关原子性和 **Atomic** 类的更多信息
 
 任何 **IntGenerator** 都可以使用下面的 **EvenChecker** 类进行测试:
 
@@ -457,15 +455,15 @@ public class EvenChecker implements Runnable {
 }
 ```
 
-**test()** 方法开启了许多访问同一个 **IntGenerator** 的 **EvenChecker**。**EvenChecker** 任务们会不断读取和测试与其关联的 **IntGenerator** 对象中的生成值。如果 **IntGenerator** 导致失败，**test()** 方法会报告并返回。
+`test()` 方法开启了许多访问同一个 **IntGenerator** 的 **EvenChecker**。**EvenChecker** 任务们会不断读取和测试与其关联的 **IntGenerator** 对象中的生成值。如果 **IntGenerator** 导致失败，`test()` 方法会报告并返回。
 
-依赖于 **IntGenerator** 对象的所有 **EvenChecker** 任务都会检查它是否已被取消。如果 **generator.isCanceled()** 返回值为 true ，则 **run()** 方法返回。 任何 **EvenChecker** 任务都可以在 **IntGenerator** 上调用**cancel()** ，这会导致使用该 **IntGenerator** 的其他所有 **EvenChecker** 正常关闭。
+依赖于 **IntGenerator** 对象的所有 **EvenChecker** 任务都会检查它是否已被取消。如果 `generator.isCanceled()` 返回值为 true ，则 `run()` 方法返回。 任何 **EvenChecker** 任务都可以在 **IntGenerator** 上调用 `cancel()` ，这会导致使用该 **IntGenerator** 的其他所有 **EvenChecker** 正常关闭。
 
 在本设计中，共享公共资源（ **IntGenerator** ）的任务会监视该资源的终止信号。这消除所谓的竞争条件，其中两个或更多的任务竞争响应某个条件并因此冲突或不一致结果的情况。
 
 你必须仔细考虑并防止并发系统失败的所有可能途径。例如，一个任务不能依赖于另一个任务，因为任务关闭的顺序无法得到保证。这里，通过使任务依赖于非任务对象，我们可以消除潜在的竞争条件。
 
-一般来说，我们假设 **test()** 方法最终失败，因为各个 **EvenChecker** 的任务在 **IntGenerator** 处于 “不恰当的” 状态时，仍能够访问其中的信息。但是，直到 **IntGenerator** 完成许多循环之前，它可能无法检测到问题，具体取决于操作系统的详细信息和其他实现细节。为确保本书的自动构建不会卡住，我们使用 **TimedAbort** 类，在此处定义：
+一般来说，我们假设 `test()` 方法最终失败，因为各个 **EvenChecker** 的任务在 **IntGenerator** 处于 “不恰当的” 状态时，仍能够访问其中的信息。但是，直到 **IntGenerator** 完成许多循环之前，它可能无法检测到问题，具体取决于操作系统的详细信息和其他实现细节。为确保本书的自动构建不会卡住，我们使用 **TimedAbort** 类，在此处定义：
 
 ```java
 // onjava/TimedAbort.java
@@ -497,9 +495,9 @@ public class TimedAbort {
 }
 ```
 
-我们使用 lambda 表达式创建一个 **Runnable** ，该表达式使用 **CompletableFuture** 的 **runAsync()** 静态方法执行。  **runAsync()** 方法的值会立即返回。 因此，**TimedAbort** 不会保持任何打开的任务，否则已完成任务，但如果它需要太长时间，它仍将终止该任务（ **TimedAbort** 有时被称为守护进程）。
+我们使用 lambda 表达式创建一个 **Runnable** ，该表达式使用 **CompletableFuture** 的 `runAsync()` 静态方法执行。  `runAsync()` 方法的值会立即返回。 因此，**TimedAbort** 不会保持任何打开的任务，否则已完成任务，但如果它需要太长时间，它仍将终止该任务（ **TimedAbort** 有时被称为守护进程）。
 
-**TimedAbort** 还允许你 **restart()** 方法重启任务，在有某些有用的活动进行时保持程序打开。
+**TimedAbort** 还允许你 `restart()` 方法重启任务，在有某些有用的活动进行时保持程序打开。
 
 我们可以看到正在运行的 **TimedAbort** 示例:
 
@@ -522,7 +520,7 @@ TimedAbort 1.0
 
 如果你注释掉 **Nap** 创建实列那行，程序执行会立即退出，表明 **TimedAbort** 没有维持程序打开。
 
-我们将看到第一个 **IntGenerator** 示例有一个生成一系列偶数值的 **next()** 方法：
+我们将看到第一个 **IntGenerator** 示例有一个生成一系列偶数值的 `next()` 方法：
 
 ```java
 // lowlevel/EvenProducer.java
@@ -549,9 +547,9 @@ public class EvenProducer extends IntGenerator {
 417 not even!
 */
 ```
-* [1] 一个任务有可能在另外一个任务执行第一个对 **currentEvenValue** 的递增操作之后，但是没有执行第二个操作之前，调用 **next()** 方法。这将使这个值处于 “不恰当” 的状态。
+* [1] 一个任务有可能在另外一个任务执行第一个对 **currentEvenValue** 的递增操作之后，但是没有执行第二个操作之前，调用 `next()` 方法。这将使这个值处于 “不恰当” 的状态。
 
-为了证明这是可能发生的， **EvenChecker.test()** 创建了一组 **EventChecker** 对象，以连续读取 **EvenProducer** 的输出并测试检查每个数值是否都是偶数。如果不是，就会报告错误，而程序也将关闭。
+为了证明这是可能发生的， `EvenChecker.test()` 创建了一组 **EventChecker** 对象，以连续读取 **EvenProducer** 的输出并测试检查每个数值是否都是偶数。如果不是，就会报告错误，而程序也将关闭。
 
 多线程程序的部分问题是，即使存在 bug ，如果失败的可能性很低，程序仍然可以正确显示。
 
@@ -582,7 +580,7 @@ synchronized void f() { /* ... */ }
 synchronized void g() { /* ... */ }
 ```
 
-所有对象都自动包含独立的锁（也称为 *monitor*，即监视器）。当你调用对象上任何 **synchronized** 方法，此对象将被加锁，并且该对象上的的其他 **synchronized** 方法调用只有等到前一个方法执行完成并释放了锁之后才能被调用。如果一个任务对对象调用了 **f()** ，对于同一个对象而言，就只能等到 **f()** 调用结束并释放了锁之后，其他任务才能调用 **f()** 和 **g()**。所以，某个特定对象的所有 **synchronized** 方法共享同一个锁，这个锁可以防止多个任务同时写入对象内存。
+所有对象都自动包含独立的锁（也称为 *monitor*，即监视器）。当你调用对象上任何 **synchronized** 方法，此对象将被加锁，并且该对象上的的其他 **synchronized** 方法调用只有等到前一个方法执行完成并释放了锁之后才能被调用。如果一个任务对对象调用了 `f()` ，对于同一个对象而言，就只能等到 `f()` 调用结束并释放了锁之后，其他任务才能调用 `f()` 和 `g()`。所以，某个特定对象的所有 **synchronized** 方法共享同一个锁，这个锁可以防止多个任务同时写入对象内存。
 
 在使用并发时，将字段设为 **private** 特别重要；否则，**synchronized** 关键字不能阻止其他任务直接访问字段，从而产生资源冲突。
 
@@ -622,7 +620,7 @@ No odd numbers discovered
 */
 ```
 
-在两个递增操作之间插入 **Nap()** 构造器方法，以提高在 **currentEvenValue** 是奇数的状态时上下文切换的可能性。因为互斥锁可以阻止多个任务同时进入临界区，所有这不会产生失败。第一个进入 **next()** 方法的任务将获得锁，任何试图获取锁的后续任务都将被阻塞，直到第一个任务释放锁。此时，调度机制选择另一个等待锁的任务。通过这种方式，任何时刻只能有一个任务通过互斥锁保护的代码。
+在两个递增操作之间插入 `Nap()` 构造器方法，以提高在 **currentEvenValue** 是奇数的状态时上下文切换的可能性。因为互斥锁可以阻止多个任务同时进入临界区，所有这不会产生失败。第一个进入 `next()` 方法的任务将获得锁，任何试图获取锁的后续任务都将被阻塞，直到第一个任务释放锁。此时，调度机制选择另一个等待锁的任务。通过这种方式，任何时刻只能有一个任务通过互斥锁保护的代码。
 
 <!-- The volatile Keyword -->
 ## volatile 关键字
@@ -633,7 +631,7 @@ No odd numbers discovered
 
 ### 字分裂
 
-当你的 Java 数据类型足够大（在 Java 中 **long** 和 **double** 类型都是 64 位），写入变量的过程分两步进行，就会发生 *Word tearing* （字分裂）情况。 JVM 被允许将64位数量的读写作为两个单独的32位操作执行[^3] ，这增加了在读写过程中发生上下文切换的可能性，因此其他任务会看到不正确的结果。这被称为 *Word tearing* （字分裂），因为你可能只看到其中一部分修改后的值。基本上，任务有时可以在第一步之后但在第二步之前读取变量，从而产生垃圾值（对于例如 **boolean** 或 **int** 类型的小变量是没有问题的；任何 **long** 或 **double** 类型则除外）。
+当你的 Java 数据类型足够大（在 Java 中 **long** 和 **double** 类型都是 64 位），写入变量的过程分两步进行，就会发生 *Word tearing* （字分裂）情况。 JVM 被允许将64位数量的读写作为两个单独的32位操作执行[^3]，这增加了在读写过程中发生上下文切换的可能性，因此其他任务会看到不正确的结果。这被称为 *Word tearing* （字分裂），因为你可能只看到其中一部分修改后的值。基本上，任务有时可以在第一步之后但在第二步之前读取变量，从而产生垃圾值（对于例如 **boolean** 或 **int** 类型的小变量是没有问题的；任何 **long** 或 **double** 类型则除外）。
 
 在缺乏任何其他保护的情况下，用 **volatile** 修饰符定义一个 **long** 或 **double** 变量，可阻止字分裂情况。然而，如果使用 **synchronized** 或 **java.util.concurrent.atomic** 类之一保护这些变量，则 **volatile** 将被取代。此外，**volatile** 不会影响到增量操作并不是原子操作的事实。
 
@@ -663,10 +661,205 @@ No odd numbers discovered
 
 ### 重排与 *Happen-Before* 原则
 
+只要结果不会改变程序表现，Java 可以通过重排指令来优化性能。然而，重排可能会影响本地处理器缓存与主内存交互的方式，从而产生细微的程序 bug 。直到 Java 5 才理解并解决了这个无法阻止重排的问题。现在，**volatile** 关键字可以阻止重排 **volatile** 变量周围的读写指令。这种重排规则称为 *happens before* 担保原则 。
+
+这项原则保证在 **volatile** 变量读写之前发生的指令先于它们的读写之前发生。同样，任何跟随 **volatile** 变量之后读写的操作都保证发生在它们的读写之后。例如：
+
+```java
+// lowlevel/ReOrdering.java
+
+public class ReOrdering implements Runnable {
+  int one, two, three, four, five, six;
+  volatile int volaTile;
+  @Override
+  public void run() {
+    one = 1;
+    two = 2;
+    three = 3;
+    volaTile = 92;
+    int x = four;
+    int y = five;
+    int z = six;
+  }
+}
+```
+
+例子中 **one**，**two**，**three** 变量赋值操作就可以被重排，只要它们都发生在 **volatile** 变量写操作之前。同样，只要 **volatile** 变量写操作发生在所有语句之前， **x**，**y**，**z** 语句可以被重排。这种 **volatile** （易变性）操作通常称为 *memory barrier* （内存屏障）。 *happens before* 担保原则确保 **volatile** 变量的读写指令不能跨过内存屏障进行重排。
+
+*happens before* 担保原则还有另一个作用：当线程向一个 **volatile** 变量写入时，在线程写入之前的其他所有变量（包括非 **volatile** 变量）也会刷新到主内存。当线程读取一个 **volatile** 变量时，它也会读取其他所有变量（包括非 **volatile** 变量）与 **volatile** 变量一起刷新到主内存。尽管这是一个重要的特性，它解决了 Java 5 版本之前出现的一些非常狡猾的 bug ，但是你不应该依赖这项特性来“自动”使周围的变量变得易变性 （ **volatile** ）的 。如果你希望变量是易变性 （ **volatile** ）的，那么维护代码的任何人都应该清楚这一点。
+
 ### 什么时候使用 volatile
+
+对于 Java 早期版本，编写一个证明需要 **volatile** 的示例并不难。如果你进行搜索，你可以找到这样的例子，但是如果你在 Java 8 中尝试这些例子，它们就不起作用了(我没有找到任何一个)。我努力写这样一个例子，但没什么用。这可能原因是 JVM 或者硬件，或两者都得到了改进。这种效果对现有的应该  **volatile** （易变性） 但不 **volatile** 的存储的程序是有益的；对于此类程序，失误发生的频率要低得多，而且问题更难追踪。
+
+如果你尝试使用 **volatile** ，你可能更应该尝试让一个变量线程安全而不是引起同步的成本。因为 **volatile** 使用起来非常微妙和棘手，所以我建议根本不要使用它;相反，请使用本附录后面介绍的 **java.util.concurrent.atomic** 里面类之一。它们以比同步低得多的成本提供了完全的线程安全性。
+
+如果您正在尝试调试其他人的并发代码，请首先查找使用 **volatile** 的代码并将其替换为**Atomic** 变量。除非你确定程序员对并发性有很高的理解，否则它们很可能会误用 **volatile** 。
 
 <!-- Atomicity -->
 ## 原子性
+
+在 Java 线程的讨论中，经常反复提交但不正确的知识是：“原子操作不需要同步”。 一个 *原子操作* 是不能被线程调度机制中断的操作；一旦操作开始，那么它一定可以在可能发生的“上下文切换”之前（切换到其他线程执行）执行完毕。依赖于原子性是很棘手且很危险的，如果你是一个并发编程专家，或者你得到了来自这样的专家的帮助，你才应该使用原子性来代替同步，如果你认为自己足够聪明可以应付这种玩火似的情况，那么请接受下面的测试：
+
+> Goetz 测试：如果你可以编写用于现代微处理器的高性能 JVM ，那么就有资格考虑是否可以避免同步[^4]。
+
+了解原子性是很有用的，并且知道它与其他高级技术一起用于实现一些更加巧妙的  **java.util.concurrent** 库组件。 但是要坚决抵制自己依赖它的冲动。
+
+原子性可以应用于除 **long** 和 **double** 之外的所有基本类型之上的 “简单操作”。对于读写和写入除 **long** 和 **double** 之外的基本类型变量这样的操作，可以保证它们作为不可分 (原子) 的操作执行。
+
+
+因为原子操作不能被线程机制中断。专家程序员可以利用这个来编写无锁代码（*lock-free code*），这些代码不需要被同步。但即使这样也过于简单化了。有时候，甚至看起来应该是安全的原子操作，实际上也可能不安全。本书的读者通常不会通过前面提到的 Goetz 测试，因此也就不具备用原子操作来替换同步的能力。尝试着移除同步通常是一种表示不成熟优化的信号，并且会给你带来大量的麻烦，可能不会获得太多或任何的好处。
+
+在多核处理器系统，相对于单核处理器而言，可见性问题远比原子性问题多得多。一个任务所做的修改，即使它们是原子性的，也可能对其他任务不可见（例如，修改只是暂时性存储在本地处理器缓存中），因此不同的任务对应用的状态有不同的视图。另一方面，同步机制强制多核处理器系统上的一个任务做出的修改必须在应用程序中是可见的。如果没有同步机制，那么修改时可见性将无法确认。
+
+什么才属于原子操作时？对于属性中的值做赋值和返回操作通常都是原子性的，但是在 C++ 中，甚至下面的操作都可能是原子性的：
+
+```c++
+i++; // Might be atomic in C++
+i += 2; // Might be atomic in C++
+```
+
+但是在 C++ 中，这取决于编译器和处理器。你无法编写出依赖于原子性的 C++ 跨平台代码，因为 C++ [^5] 没有像 Java 那样的一致 *内存模型* （memory model）。
+
+在 Java 中，上面的操作肯定不是原子性的，正如下面的方法产生的 JVM 指令中可以看到的那样：
+
+```java
+// lowlevel/NotAtomic.java
+// {javap -c NotAtomic}
+// {VisuallyInspectOutput}
+
+public class NotAtomic {
+  int i;
+  void f1() { i++; }
+  void f2() { i += 3; }
+}
+/* Output:
+Compiled from "NotAtomic.java"
+public class NotAtomic {
+  int i;
+
+  public NotAtomic();
+    Code:
+       0: aload_0
+       1: invokespecial #1 // Method
+java/lang/Object."<init>":()V
+       4: return
+
+  void f1();
+    Code:
+       0: aload_0
+       1: dup
+       2: getfield      #2 // Field
+i:I
+       5: iconst_1
+       6: iadd
+       7: putfield      #2 // Field
+i:I
+      10: return
+
+  void f2();
+    Code:
+       0: aload_0
+       1: dup
+       2: getfield      #2 // Field
+i:I
+       5: iconst_3
+       6: iadd
+       7: putfield      #2 // Field
+i:I
+      10: return
+}
+*/
+```
+
+每条指令都会产生一个 “get” 和 “put”，它们之间还有一些其他指令。因此在获取指令和放置指令之间，另有一个任务可能会修改这个属性，所有，这些操作不是原子性的。
+
+让我们通过定义一个抽象类来测试原子性的概念，这个抽象类的方法是将一个整数类型进行偶数递增，并且 `run()` 不断地调用这个方法:
+
+```java
+// lowlevel/IntTestable.java
+import java.util.function.*;
+
+public abstract class
+IntTestable implements Runnable, IntSupplier {
+  abstract void evenIncrement();
+  @Override
+  public void run() {
+    while(true)
+      evenIncrement();
+  }
+}
+```
+
+**IntSupplier** 是一个带 `getAsInt()` 方法的函数式接口。
+
+现在我们可以创建一个测试，它作为一个独立的任务启动 `run()` 方法 ，然后获取值来检查它们是否为偶数:
+
+```java
+// lowlevel/Atomicity.java
+import java.util.concurrent.*;
+import onjava.TimedAbort;
+
+public class Atomicity {
+  public static void test(IntTestable it) {
+    new TimedAbort(4, "No failures found");
+    CompletableFuture.runAsync(it);
+    while(true) {
+      int val = it.getAsInt();
+      if(val % 2 != 0) {
+        System.out.println("failed with: " + val);
+        System.exit(0);
+      }
+    }
+  }
+}
+```
+
+很容易盲目地应用原子性的概念。在这里，`getAsInt()` 似乎是安全的原子性方法：
+
+```java
+// lowlevel/UnsafeReturn.java
+import java.util.function.*;
+import java.util.concurrent.*;
+
+public class UnsafeReturn extends IntTestable {
+  private int i = 0;
+  public int getAsInt() { return i; }
+  public synchronized void evenIncrement() {
+    i++; i++;
+  }
+  public static void main(String[] args) {
+    Atomicity.test(new UnsafeReturn());
+  }
+}
+/* Output:
+failed with: 79
+*/
+```
+
+但是， `Atomicity.test()` 方法还是出现有非偶数的失败。尽管，返回 **i** 变量确实是原子操作，但是同步缺失允许了在对象处于不稳定的中间状态时读取值。最重要的是，由于 **i** 也不是 **volatile** 变量，所以存在可见性问题。包括 `getValue()` 和 `evenIncrement()` 都必须同步(这也顾及到没有使用 **volatile** 修饰的 **i** 变量):
+
+```java
+// lowlevel/SafeReturn.java
+import java.util.function.*;
+import java.util.concurrent.*;
+
+public class SafeReturn extends IntTestable {
+  private int i = 0;
+  public synchronized int getAsInt() { return i; }
+  public synchronized void evenIncrement() {
+    i++; i++;
+  }
+  public static void main(String[] args) {
+    Atomicity.test(new SafeReturn());
+  }
+}
+/* Output:
+No failures found
+*/
+```
+
+只有并发编程专家有能力去尝试做像前面例子情况的优化；再次强调，请遵循 Brain 的同步法则。
 
 ### Josh 的序列数字
 
@@ -711,8 +904,7 @@ No odd numbers discovered
 
 [^4]: 这个测试的推论是，“如果某人表示线程是容易并且简单的，请确保这个人没有对你的项目做出重要的决策。如果那个人已经做出，那么你就已经陷入麻烦之中了。”
 
-[^5]: 这版本是我参与的；这可能在以后的标准中得到了修正
-
+[^5]: 这在即将产生的 C++ 的标准中得到了补救
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
