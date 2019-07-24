@@ -586,7 +586,7 @@ Lambda 表达式包含类型推导（编译器会自动推导出类型信息，�
 
 为了解决这个问题，Java 8 引入了 `java.util.function` 包。它包含一组接口，这些接口是 Lambda 表达式和方法引用的目标类型。 每个接口只包含一个抽象方法，称为函数式方法。
 
-在编写接口时，可以使用 `@FunctionalInterface` 注解强制执行此“函数方法”模式：
+在编写接口时，可以使用 `@FunctionalInterface` 注解强制执行此“函数式方法”模式：
 
 ```java
 // functional/FunctionalAnnotation.java
@@ -628,9 +628,9 @@ public class FunctionalAnnotation {
 }
 ```
 
-`@FunctionalInterface` 注解是可选的; Java 将 `Functional` 和 `FunctionalNoAnn` 视为主方法中的函数接口。 `@FunctionalInterface` 的值在 `NotFunctional` 的定义中可见：接口中的如果有多个方法则会产生编译时错误消息。
+`@FunctionalInterface` 注解是可选的; Java 在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口。 `@FunctionalInterface` 的值在 `NotFunctional` 的定义中可见：接口中如果有多个方法则会产生编译时错误消息。
 
-仔细观察 `f` 和 `fna` 声明中会发生什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口类的方法。Java 8 在这里添加了一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数接口（以及适合的类型），Java 会适配你的赋值到目标接口。 编译器会自动包装方法引用或 Lambda 表达式到实现目标接口的类的实例中。
+仔细观察在定义 `f` 和 `fna` 时发生了什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而被赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口的类中的方法。Java 8 在这里添加了一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数接口（类型需要匹配），Java 会适配你的赋值到目标接口。 编译器会自动包装方法引用或 Lambda 表达式到实现目标接口的类的实例中。
 
 尽管 `FunctionalAnnotation` 确实适合 `Functional` 模型，但 Java 不允许我们将 `FunctionalAnnotation` 像 `fac` 定义一样直接赋值给 `Functional`，因为它没有明确地实现 `Functional` 接口。 令人惊奇的是 ，Java 8 允许我们以简便的语法为接口赋值函数。
 
