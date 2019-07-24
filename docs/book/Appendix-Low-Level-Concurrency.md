@@ -694,7 +694,7 @@ public class ReOrdering implements Runnable {
 
 如果你尝试使用 **volatile** ，你可能更应该尝试让一个变量线程安全而不是引起同步的成本。因为 **volatile** 使用起来非常微妙和棘手，所以我建议根本不要使用它;相反，请使用本附录后面介绍的 **java.util.concurrent.atomic** 里面类之一。它们以比同步低得多的成本提供了完全的线程安全性。
 
-如果您正在尝试调试其他人的并发代码，请首先查找使用 **volatile** 的代码并将其替换为**Atomic** 变量。除非你确定程序员对并发性有很高的理解，否则它们很可能会误用 **volatile** 。
+如果你正在尝试调试其他人的并发代码，请首先查找使用 **volatile** 的代码并将其替换为**Atomic** 变量。除非你确定程序员对并发性有很高的理解，否则它们很可能会误用 **volatile** 。
 
 <!-- Atomicity -->
 ## 原子性
@@ -861,7 +861,7 @@ No failures found
 
 只有并发编程专家有能力去尝试做像前面例子情况的优化；再次强调，请遵循 Brain 的同步法则。
 
-### Josh 的序列数字
+### Josh 的序列号
 
 作为第二个示例，考虑某些更简单的东西：创建一个产生序列号的类，灵感启发于 Joshua Bloch 的 *Effective Java Programming Language Guide* (Addison-Wesley 出版社, 2001) 第 190 页。每次调用 `nextSerialNumber()` 都必须返回唯一值。
 
@@ -991,6 +991,82 @@ No duplicates detected
 读取和赋值原语应该是安全的原子操作。然后，正如在 **UnsafeReturn.java** 中所看到，使用原子操作访问处于不稳定中间状态的对象仍然很容易。对这个问题做出假设既棘手又危险。最明智的做法就是遵循 Brian 的同步规则(如果可以，首先不要共享变量)。
 
 ### 原子类
+
+Java 5 引入了专用的原子变量类，例如 **AtomicInteger**、**AtomicLong**、**AtomicReference** 等。这些提供了原子性升级。这些快速、无锁的操作，它们是利用了现代处理器上可用的机器级原子性。
+
+下面，我们可以使用 **atomicinteger** 重写 **unsafereturn.java** 示例：
+
+```java
+// lowlevel/AtomicIntegerTest.java
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import java.util.*;
+import onjava.*;
+
+public class AtomicIntegerTest extends IntTestable {
+  private AtomicInteger i = new AtomicInteger(0);
+  public int getAsInt() { return i.get(); }
+  public void evenIncrement() { i.addAndGet(2); }
+  public static void main(String[] args) {
+    Atomicity.test(new AtomicIntegerTest());
+  }
+}
+/* Output:
+No failures found
+*/
+```
+
+现在，我们通过使用 **AtomicInteger** 来消除了 **synchronized** 关键字。
+
+下面使用 **AtomicInteger** 来重写 **SynchronizedEvenProducer.java** 示例：
+
+```java
+// lowlevel/AtomicEvenProducer.java
+// Atomic classes: occasionally useful in regular code
+import java.util.concurrent.atomic.*;
+
+public class AtomicEvenProducer extends IntGenerator {
+  private AtomicInteger currentEvenValue =
+    new AtomicInteger(0);
+  @Override
+  public int next() {
+    return currentEvenValue.addAndGet(2);
+  }
+  public static void main(String[] args) {
+    EvenChecker.test(new AtomicEvenProducer());
+  }
+}
+/* Output:
+No odd numbers discovered
+*/
+```
+
+再次，使用 **AtomicInteger** 消除了对所有其他同步方式的需要。
+
+下面是一个使用 **AtomicInteger** 实现 **SerialNumbers** 的例子:
+
+```java
+// lowlevel/AtomicSerialNumbers.java
+import java.util.concurrent.atomic.*;
+
+public class
+AtomicSerialNumbers extends SerialNumbers {
+  private AtomicInteger serialNumber =
+    new AtomicInteger();
+  public synchronized int nextSerialNumber() {
+    return serialNumber.getAndIncrement();
+  }
+  public static void main(String[] args) {
+    SerialNumberChecker.test(
+      new AtomicSerialNumbers());
+  }
+}
+/* Output:
+No duplicates detected
+*/
+```
+
+这些都是对单一字段的简单示例； 当你创建更复杂的类时，你必须确定哪些字段需要保护，在某些情况下，你可能仍然最后在方法上使用 **synchronized** 关键字。
 
 <!-- Critical Sections -->
 ## 临界区
