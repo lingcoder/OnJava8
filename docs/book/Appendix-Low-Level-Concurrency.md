@@ -133,7 +133,7 @@ OutOfMemoryError: 5703
 
 因此，“我可以拥有多少线程”这一问题的答案是“几千个”。但是，如果你发现自己分配了数千个线程，那么你可能需要重新考虑你的做法; 恰当的问题是“我需要多少线程？”
 
-### The WorkStealingPool
+### The WorkStealingPool (工作窃取线程池)
 
 这是一个 **ExecutorService** ，它使用所有可用的(由JVM报告) 处理器自动创建线程池。
 
@@ -862,6 +862,133 @@ No failures found
 只有并发编程专家有能力去尝试做像前面例子情况的优化；再次强调，请遵循 Brain 的同步法则。
 
 ### Josh 的序列数字
+
+作为第二个示例，考虑某些更简单的东西：创建一个产生序列号的类，灵感启发于 Joshua Bloch 的 *Effective Java Programming Language Guide* (Addison-Wesley 出版社, 2001) 第 190 页。每次调用 `nextSerialNumber()` 都必须返回唯一值。
+
+```java
+// lowlevel/SerialNumbers.java
+
+public class SerialNumbers {
+  private volatile int serialNumber = 0;
+  public int nextSerialNumber() {
+    return serialNumber++; // Not thread-safe
+  }
+}
+```
+
+**SerialNumbers**  是你可以想象到最简单的类，如果你具备 C++ 或者其他底层的知识背景，你可能会认为递增是一个原子操作，因为 C++ 的递增操作通常被单个微处理器指令所实现（尽管不是以任何一致，可靠，跨平台的方式）。但是，正如前面所提到的，Java 递增操作不是原子性的，并且操作同时涉及读取和写入，因此即使在这样一个简单的操作中，也存在有线程问题的空间。
+
+我们在这里加入 volatile ，看看它是否有帮助。然而，真正的问题是 `nextSerialNumber()` 方法在不进行线程同步的情况下访问共享的可变变量值。
+
+为了测试 **SerialNumbers**，我们将创建一个不会耗尽内存的集合，假如需要很长时间来检测问题。这里展示的 **CircularSet** 重用了存储 **int** 变量的内存，最终新值会覆盖旧值(复制的速度通常发生足够快，你也可以使用  **java.util.Set** 来代替):
+
+```java
+// lowlevel/CircularSet.java
+// Reuses storage so we don't run out of memory
+import java.util.*;
+
+public class CircularSet {
+  private int[] array;
+  private int size;
+  private int index = 0;
+  public CircularSet(int size) {
+    this.size = size;
+    array = new int[size];
+    // Initialize to a value not produced
+    // by SerialNumbers:
+    Arrays.fill(array, -1);
+  }
+  public synchronized void add(int i) {
+    array[index] = i;
+    // Wrap index and write over old elements:
+    index = ++index % size;
+  }
+  public synchronized boolean contains(int val) {
+    for(int i = 0; i < size; i++)
+      if(array[i] == val) return true;
+    return false;
+  }
+}
+```
+
+`add()` 和 `contains()` 方法是线程同步的，以防止线程冲突。
+The add() and contains() methods are synchronized to prevent thread collisions.
+
+**SerialNumberChecker** 类包含一个存储最近序列号的 **CircularSet** 变量，以及一个填充数值给 **CircularSet**  和确保它里面的序列号是唯一的 `run()` 方法。
+
+```java
+// lowlevel/SerialNumberChecker.java
+// Test SerialNumbers implementations for thread-safety
+import java.util.concurrent.*;
+import onjava.Nap;
+
+public class SerialNumberChecker implements Runnable {
+  private CircularSet serials = new CircularSet(1000);
+  private SerialNumbers producer;
+  public SerialNumberChecker(SerialNumbers producer) {
+    this.producer = producer;
+  }
+  @Override
+  public void run() {
+    while(true) {
+      int serial = producer.nextSerialNumber();
+      if(serials.contains(serial)) {
+        System.out.println("Duplicate: " + serial);
+        System.exit(0);
+      }
+      serials.add(serial);
+    }
+  }
+  static void test(SerialNumbers producer) {
+    for(int i = 0; i < 10; i++)
+      CompletableFuture.runAsync(
+        new SerialNumberChecker(producer));
+    new Nap(4, "No duplicates detected");
+  }
+}
+```
+
+`test()` 方法创建多个任务来竞争单独的 **SerialNumbers** 对象。这时参于竞争的的 SerialNumberChecker 任务们就会试图生成重复的序列号（这情况在具有更多内核处理器的机器上发生得更快）。
+
+当我们测试基本的 **SerialNumbers** 类，它会失败（产生重复序列号）：
+
+```java
+// lowlevel/SerialNumberTest.java
+
+public class SerialNumberTest {
+  public static void main(String[] args) {
+    SerialNumberChecker.test(new SerialNumbers());
+  }
+}
+/* Output:
+Duplicate: 148044
+*/
+```
+
+**volatile** 在这里没有帮助。要解决这个问题，将 **synchronized** 关键字添加到 `nextSerialNumber()` 方法 :
+
+```java
+// lowlevel/SynchronizedSerialNumbers.java
+
+public class
+SynchronizedSerialNumbers extends SerialNumbers {
+  private int serialNumber = 0;
+  public synchronized int nextSerialNumber() {
+    return serialNumber++;
+  }
+  public static void main(String[] args) {
+    SerialNumberChecker.test(
+      new SynchronizedSerialNumbers());
+  }
+}
+/* Output:
+No duplicates detected
+*/
+```
+
+**volatile** 不再是必需的，因为 **synchronized** 关键字保证了 volatile （易变性） 的特性。
+
+读取和赋值原语应该是安全的原子操作。然后，正如在 **UnsafeReturn.java** 中所看到，使用原子操作访问处于不稳定中间状态的对象仍然很容易。对这个问题做出假设既棘手又危险。最明智的做法就是遵循 Brian 的同步规则(如果可以，首先不要共享变量)。
 
 ### 原子类
 
