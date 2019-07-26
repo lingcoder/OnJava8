@@ -1593,17 +1593,264 @@ Brasilia
 
 二维数组 **String DATA** 是 **public** 的，因此可以在别处使用。 **FlyweightMap** 必须实现 **entrySet()** 方法，该方法需要一个自定义 **Set** 实现和一个自定义 **Map.Entry** 类。这是实现享元的另一种方法：每个 **Map.Entry** 对象存储它自身的索引，而不是实际的键和值。当调用 **getKey()** 或 **getValue()** 时，它使用索引返回相应的 **DATA** 元素。 **EntrySet** 确保它的 **size** 不大于 **DATA** 。
 
-享元的另一部分在 **EntrySet.Iterator** 中实现。相比于为 **DATA** 中的每个数据对创建一个 **Map.Entry** 对象，这里每个迭代器只有一个 **Map.Entry** 对象。 **Entry** 对象作为数据的窗口，它只包含 **String** 静态数组的索引。每次为迭代器调用 **next()** 时，**Entry** 中的索引都会递增，因此它会指向下一个数据对，然后从 **next()** 返回 **Iterators** 的单个 **Entry** 对象。
+享元的另一部分在 **EntrySet.Iterator** 中实现。相比于为 **DATA** 中的每个数据对创建一个 **Map.Entry** 对象，这里每个迭代器只有一个 **Map.Entry** 对象。 **Entry** 对象作为数据的窗口，它只包含 **String** 静态数组的索引。每次为迭代器调用 **next()** 时，**Entry** 中的索引都会递增，因此它会指向下一个数据对，然后从 **next()** 返回 **Iterators** 的单个 **Entry** 对象。[^1]
 
 **select()** 方法生成一个包含所需大小的 **EntrySet** 的 **FlyweightMap** ，这用于在 **main()** 中演示的重载的 **capitals()** 和 **names()** 方法。
 
 <!-- Collection Functionality -->
 ## 集合功能
 
+下面这个表格展示了可以对 **Collection** 执行的所有操作（不包括自动继承自 **Object** 的方法），因此，可以用 **List** ， **Set** ， **Queue** 或 **Deque** 执行这里的所有操作（这些接口可能也提供了一些其他的功能）。**Map** 不是从 **Collection** 继承的，所以要单独处理它。
+
+| 方法名 | 描述 |
+| :---: | :---: |
+| **boolean add(T)** | 确保集合包含该泛型类型 **T** 的参数。如果不添加参数，则返回 **false** 。 （这是一种“可选”方法，将在下一节中介绍。） |
+| **boolean addAll(Collection\<? extends T\>)** | 添加参数集合中的所有元素。只要有元素被成功添加则返回 **true**。（“可选的”） |
+| **void clear()** | 删除集合中的所有元素。（“可选的”） |
+| **boolean contains(T)** | 如果目标集合包含该泛型类型 **T** 的参数，则返回 **true** 。 |
+| **boolean containsAll(Collection\<?\>)** | 如果目标集合包含参数集合中的所有元素，则返回 **true** |
+| **boolean isEmpty()** | 如果集合为空，则返回 **true** |
+| **Iterator\<T\> iterator() Spliterator\<T\> spliterator()** | 返回一个迭代器来遍历集合中的元素。 **Spliterators** 更复杂一些，它用在并发场景 |
+| **boolean remove(Object)** | 如果目标集合包含该参数，则在集合中删除该参数，如果成功删除则返回 **true** 。（“可选的”） |
+| **boolean removeAll(Collection\<?\>)** | 删除目标集合中，参数集合所包含的全部元素。如果有元素被成功删除则返回 **true** 。 （“可选的”） |
+| **boolean removeIf(Predicate\<? super E\>)** | 删除此集合中，满足给定谓词（predicate）的所有元素 |
+| **Stream\<E\> stream() Stream\<E\> parallelStream()** | 返回由该 **Collection** 中元素所组成的一个 **Stream** |
+| **int size()** | 返回集合中所包含元素的个数 |
+| **Object[] toArrat()** | 返回包含该集合所有元素的一个数组 |
+| **\<T\> T[] toArray(T[] a)** | 返回包含该集合所有元素的一个数组。结果的运行时类型是参数数组而不是普通的 **Object** 数组。 |
+
+这里没有提供用于随机访问元素的 **get()** 方法，因为 **Collection** 还包含 **Set** ，它维护自己的内部排序，所以随机访问查找就没有意义了。因此，要查找 **Collection** 中的元素必须使用迭代器。
+
+下面这个示例演示了 **Collection** 的所有方法。这里以 **ArrayList** 为例：
+
+```java
+// collectiontopics/CollectionMethods.java
+// Things you can do with all Collections
+import java.util.*;
+import static onjava.HTMLColors.*;
+
+public class CollectionMethods {
+  public static void main(String[] args) {
+    Collection<String> c =
+        new ArrayList<>(LIST.subList(0, 4));
+    c.add("ten");
+    c.add("eleven");
+    show(c);
+    border();
+    // Make an array from the List:
+    Object[] array = c.toArray();
+    // Make a String array from the List:
+    String[] str = c.toArray(new String[0]);
+    // Find max and min elements; this means
+    // different things depending on the way
+    // the Comparable interface is implemented:
+    System.out.println(
+      "Collections.max(c) = " + Collections.max(c));
+    System.out.println(
+      "Collections.min(c) = " + Collections.min(c));
+    border();
+    // Add a Collection to another Collection
+    Collection<String> c2 =
+        new ArrayList<>(LIST.subList(10, 14));
+    c.addAll(c2);
+    show(c);
+    border();
+    c.remove(LIST.get(0));
+    show(c);
+    border();
+    // Remove all components that are
+    // in the argument collection:
+    c.removeAll(c2);
+    show(c);
+    border();
+    c.addAll(c2);
+    show(c);
+    border();
+    // Is an element in this Collection?
+    String val = LIST.get(3);
+    System.out.println(
+      "c.contains(" + val  + ") = " + c.contains(val));
+    // Is a Collection in this Collection?
+    System.out.println(
+      "c.containsAll(c2) = " + c.containsAll(c2));
+    Collection<String> c3 =
+      ((List<String>)c).subList(3, 5);
+    // Keep all the elements that are in both
+    // c2 and c3 (an intersection of sets):
+    c2.retainAll(c3);
+    show(c2);
+    // Throw away all the elements
+    // in c2 that also appear in c3:
+    c2.removeAll(c3);
+    System.out.println(
+      "c2.isEmpty() = " +  c2.isEmpty());
+    border();
+    // Functional operation:
+    c = new ArrayList<>(LIST);
+    c.removeIf(s -> !s.startsWith("P"));
+    c.removeIf(s -> s.startsWith("Pale"));
+    // Stream operation:
+    c.stream().forEach(System.out::println);
+    c.clear(); // Remove all elements
+    System.out.println("after c.clear():" + c);
+  }
+}
+/* Output:
+AliceBlue
+AntiqueWhite
+Aquamarine
+Azure
+ten
+eleven
+******************************
+Collections.max(c) = ten
+Collections.min(c) = AliceBlue
+******************************
+AliceBlue
+AntiqueWhite
+Aquamarine
+Azure
+ten
+eleven
+Brown
+BurlyWood
+CadetBlue
+Chartreuse
+******************************
+AntiqueWhite
+Aquamarine
+Azure
+ten
+eleven
+Brown
+BurlyWood
+CadetBlue
+Chartreuse
+******************************
+AntiqueWhite
+Aquamarine
+Azure
+ten
+eleven
+******************************
+AntiqueWhite
+Aquamarine
+Azure
+ten
+eleven
+Brown
+BurlyWood
+CadetBlue
+Chartreuse
+******************************
+c.contains(Azure) = true
+c.containsAll(c2) = true
+c2.isEmpty() = true
+******************************
+PapayaWhip
+PeachPuff
+Peru
+Pink
+Plum
+PowderBlue
+Purple
+after c.clear():[]
+*/
+```
+
+为了只演示 **Collection** 接口的方法，而没有其它额外的内容，所以这里创建包含不同数据集的 **ArrayList** ，并向上转型为 **Collection** 对象。
 
 <!-- Optional Operations -->
 ## 可选操作
 
+在 **Collection** 接口中执行各种添加和删除操作的方法是 *可选操作* （optional operations）。这意味着实现类不需要为这些方法提供功能定义。
+
+这是一种非常不寻常的定义接口的方式。正如我们所知，接口是一种合约（contract）。它表达的意思是，“无论你如何选择实现这个接口，我保证你可以将这些消息发送到这个对象”（我在这里使用术语“接口”来描述正式的 **interface** 关键字和“任何类或子类都支持的方法”的更一般含义）。但“可选”操作违反了这一基本原则，它表示调用某些方法不会执行有意义的行为。相反，它们会抛出异常！这看起来似乎丢失了编译时的类型安全性。
+
+其实没那么糟糕。如果操作是可选的，编译器仍然能够限制你仅调用该接口中的方法。它不像动态语言那样，可以为任何对象调用任何方法，并在运行时查找特定的调用是否可行。[^2]此外，大多数将 **Collection** 作为参数的方法仅从该 **Collection** 中读取，并且 **Collection** 的所有“读取”方法都不是可选的。
+
+为什么要将方法定义为“可选”的？因为这样做可以防止设计中的接口爆炸。集合库的其他设计往往会产生令人困惑的过多接口来描述主题的每个变体。这甚至使得不可能捕获到接口中的所有特殊情况，因为总有人能发明一个新的接口。“不支持的操作（unsupported operation）”这种方式实现了Java集合库的一个重要目标：集合要易于学习和使用。不支持的操作是一种特殊情况，可以推迟到必要的时候。但是，要使用此方法：
+
+1. **UnsupportedOperationException** 必须是一个罕见的事件。也就是说，对于大多数类，所有操作都应该起作用，并且只有在特殊情况下才应该不支持某项操作。这在Java集合库中是正确的，因为99%的时间使用到的类 —— **ArrayList** ， **LinkedList** ， **HashSet** 和 **HashMap** ，以及其他具体实现，都支持所有操作。该设计确实为创建一个新的 **Collection** 提供了一个“后门”，可以不为 **Collection** 接口中的所有方法都提供有意义的定义，这些定义仍然适合现有的类库。
+
+2. 当不支持某个操作时， **UnsupportedOperationException** 应该出现在实现阶段，而不是在将产品发送给客户之后。毕竟，这个异常表示编程错误：错误地使用了一个具体实现。
+
+值得注意的是，不支持的操作只能在运行时检测到，因此这代表动态类型检查。如果你来自像 C++ 这样的静态类型语言，Java 可能看起来只是另一种静态类型语言。当然， Java 肯定有静态类型检查，但它也有大量的动态类型，因此很难说它只是静态语言或动态语言。一旦你开始注意到这一点，你就会开始看到 Java 中动态类型检查的其他示例。
+
+<!-- Unsupported Operations -->
+### 不支持的操作
+
+不支持的操作的常见来源是由固定大小的数据结构所支持的集合。使用 **Arrays.asList()** 方法将数组转换为 **List** 时，就会得到这样的集合。此外，还可以选择使用 **Collections** 类中的“不可修改（unmodifiable）”方法使任何集合（包括 **Map** ）抛出 **UnsupportedOperationException** 异常。此示例展示了这两种情况：
+
+```java
+// collectiontopics/Unsupported.java
+// Unsupported operations in Java collections
+import java.util.*;
+
+public class Unsupported {
+  static void
+  check(String description, Runnable tst) {
+    try {
+      tst.run();
+    } catch(Exception e) {
+      System.out.println(description + "(): " + e);
+    }
+  }
+  static void test(String msg, List<String> list) {
+    System.out.println("--- " + msg + " ---");
+    Collection<String> c = list;
+    Collection<String> subList = list.subList(1,8);
+    // Copy of the sublist:
+    Collection<String> c2 = new ArrayList<>(subList);
+    check("retainAll", () -> c.retainAll(c2));
+    check("removeAll", () -> c.removeAll(c2));
+    check("clear", () -> c.clear());
+    check("add", () -> c.add("X"));
+    check("addAll", () -> c.addAll(c2));
+    check("remove", () -> c.remove("C"));
+    // The List.set() method modifies the value but
+    // doesn't change the size of the data structure:
+    check("List.set", () -> list.set(0, "X"));
+  }
+  public static void main(String[] args) {
+    List<String> list = Arrays.asList(
+      "A B C D E F G H I J K L".split(" "));
+    test("Modifiable Copy", new ArrayList<>(list));
+    test("Arrays.asList()", list);
+    test("unmodifiableList()",
+      Collections.unmodifiableList(
+        new ArrayList<>(list)));
+  }
+}
+/* Output:
+--- Modifiable Copy ---
+--- Arrays.asList() ---
+retainAll(): java.lang.UnsupportedOperationException
+removeAll(): java.lang.UnsupportedOperationException
+clear(): java.lang.UnsupportedOperationException
+add(): java.lang.UnsupportedOperationException
+addAll(): java.lang.UnsupportedOperationException
+remove(): java.lang.UnsupportedOperationException
+--- unmodifiableList() ---
+retainAll(): java.lang.UnsupportedOperationException
+removeAll(): java.lang.UnsupportedOperationException
+clear(): java.lang.UnsupportedOperationException
+add(): java.lang.UnsupportedOperationException
+addAll(): java.lang.UnsupportedOperationException
+remove(): java.lang.UnsupportedOperationException
+List.set(): java.lang.UnsupportedOperationException
+*/
+```
+
+因为 **Arrays.asList()** 生成的 **List** 由一个固定大小的数组所支持，所以唯一支持的操作是那些不改变数组大小的操作。任何会导致更改基础数据结构大小的方法都会产生 **UnsupportedOperationException** 异常，来说明这是对不支持的方法的调用（编程错误）。
+
+请注意，始终可以将 **Arrays.asList()** 的结果作为一个参数传递给任何 **Collection** 的构造方法（或使用 **addAll()** 方法或静态的 **Collections.addAll()** 方法）来创建一个允许使用所有方法的常规集合，在 **main()** 中第一次调用 **test()** 时显示了这种情况。这种调用产生了一个新的可调整大小的底层数据结构。
+
+**Collections** 类中的“unmodifiable”方法会将集合包装一个代理中，如果执行任何想要修改集合的操作，则该代理会生成 **UnsupportedOperationException** 异常。使用这些方法的目的是生成一个“常量”集合对象。稍后将描述“unmodifiable“集合方法的完整列表。
+
+**test()** 中的最后一个 **check()** 用于测试**List** 的 **set()** 方法。这里，“不支持的操作”技术的粒度（granularity）就派上用场了，得到的“接口”可以通过一种方法在 **Arrays.asList()** 返回的对象和 **Collections.unmodifiableList()** 返回的对象之间变换。 **Arrays.asList()** 返回固定大小的 **List** ，而 **Collections.unmodifiableList()** 生成无法更改的 **List** 。如输出中所示， **Arrays.asList()** 返回的 **List** 中的元素是可以修改的，因为这不会违反该 **List** 的“固定大小”特性。但很明显， **unmodifiableList()** 的结果不应该以任何方式修改。如果使用接口来描述，则需要两个额外的接口，一个具有可用的 **set()** 方法，而另一个没有。 **Collection** 的各种不可修改的子类型都将需要额外的接口。
+
+如果一个方法将一个集合作为它的参数，那么它的文档应该说明必须实现哪些可选方法。
 
 <!-- Sets and Storage Order -->
 ## Set和存储顺序
@@ -1636,6 +1883,9 @@ Brasilia
 
 
 
+[^1]: **java.util** 中的 **Map** 使用 **Map** 的 **getKey()** 和 **getValue()** 执行批量复制，因此这是有效的。如果自定义 **Map** 只是复制整个 **Map.Entry** ，那么这种方法就会出现问题。
+
+[^2]: 虽然当我用这种方式描述它的时候听起来很奇怪而且好像没什么用处，但在[第十九章 类型信息]()章节中已经看到过，这种动态行为也可以非常强大有用。
 
 
 <!-- 分页 -->
