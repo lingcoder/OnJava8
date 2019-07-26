@@ -1071,7 +1071,195 @@ No duplicates detected
 <!-- Critical Sections -->
 ## 临界区
 
+有时，你只是想防止多线程访问方法中的部分代码，而不是整个方法。要隔离的代码部分称为临界区，它使用我们用于保护整个方法相同的 **synchronized** 关键字创建，但使用不同的语法。语法如下， **synchronized** 指定某个对象作为锁用于同步控制花括号内的代码：
+
+```java
+synchronized(syncObject) {
+  // This code can be accessed
+  // by only one task at a time
+}
+```
+
+这也被称为 *同步控制块* （synchronized block）；在进入此段代码前，必须得到 **syncObject** 对象的锁。如果一些其他任务已经得到这个锁，那么就得等到锁被释放以后，才能进入临界区。当发生这种情况时，尝试获取该锁的任务就会挂起。线程调度会定期回来并检查锁是否已经释放；如果释放了锁则唤醒任务。
+
+使用同步控制块而不是同步控制整个方法的主要动机是性能（有时，算法确实聪明，但还是要特别警惕来自并发性问题上的聪明）。下面的示例演示了同步控制代码块而不是整个方法可以使方法更容易被其他任务访问。该示例会统计成功访问 `method()` 的计数并且发起一些任务来尝试竞争调用 `method()` 方法。
+
+```java
+// lowlevel/SynchronizedComparison.java
+// speeds up access.
+import java.util.*;
+import java.util.stream.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import onjava.Nap;
+
+abstract class Guarded {
+  AtomicLong callCount = new AtomicLong();
+  public abstract void method();
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() +
+      ": " + callCount.get();
+  }
+}
+
+class SynchronizedMethod extends Guarded {
+  public synchronized void method() {
+    new Nap(0.01);
+    callCount.incrementAndGet();
+  }
+}
+
+class CriticalSection extends Guarded {
+  public void method() {
+    new Nap(0.01);
+    synchronized(this) {
+      callCount.incrementAndGet();
+    }
+  }
+}
+
+class Caller implements Runnable {
+  private Guarded g;
+  Caller(Guarded g) { this.g = g; }
+  private AtomicLong successfulCalls =
+    new AtomicLong();
+  private AtomicBoolean stop =
+    new AtomicBoolean(false);
+  @Override
+  public void run() {
+    new Timer().schedule(new TimerTask() {
+      public void run() { stop.set(true); }
+    }, 2500);
+    while(!stop.get()) {
+      g.method();
+      successfulCalls.getAndIncrement();
+    }
+    System.out.println(
+      "-> " + successfulCalls.get());
+  }
+}
+
+public class SynchronizedComparison {
+  static void test(Guarded g) {
+    List<CompletableFuture<Void>> callers =
+      Stream.of(
+        new Caller(g),
+        new Caller(g),
+        new Caller(g),
+        new Caller(g))
+        .map(CompletableFuture::runAsync)
+        .collect(Collectors.toList());
+    callers.forEach(CompletableFuture::join);
+    System.out.println(g);
+  }
+  public static void main(String[] args) {
+    test(new CriticalSection());
+    test(new SynchronizedMethod());
+  }
+}
+/* Output:
+-> 243
+-> 243
+-> 243
+-> 243
+CriticalSection: 972
+-> 69
+-> 61
+-> 83
+-> 36
+SynchronizedMethod: 249
+*/
+```
+
+**Guarded** 类负责跟踪 **callCount** 中成功调用 `method()`  的次数。**SynchronizedMethod** 的方式是同步控制整个 `method` 方法，而 **CriticalSection** 的方式是使用同步控制块来仅同步 `method` 方法的一部分代码。这样，耗时的 **Nap** 对象可以被排除到同步控制块外。输出会显示 **CriticalSection** 中可用的 `method()` 有多少。
+
+请记住，使用同步控制块是有风险；它要求你确切知道同步控制块外的非同步代码是实际上要线程安全的。
+
+**Caller** 是尝试在给定的时间周期内尽可能多地调用 `method()` 方法（并报告调用次数）的任务。为了构建这个时间周期，我们会使用虽然有点过时但仍然可以很好地工作的 **java.util.Timer** 类。此类接收一个 **TimerTask** 参数, 但该参数并不是函数式接口，所以我们不能使用 **lambda** 表达式，必须显式创建该类对象（在这种情况下，使用匿名内部类）。当超时的时候，定时对象将设置 **AtomicBoolean** 类型的 **stop** 字段为 true ，这样循环就会退出。
+
+`test()` 方法接收一个 **Guarded** 类对象并创建四个 **Caller** 任务。所有这些任务都添加到同一个 **Guarded** 对象上，因此它们竞争来获取使用 `method()` 方法的锁。
+
+你通常会看到从一次运行到下一次运行的输出变化。结果表明， **CriticalSection** 方式比起 **SynchronizedMethod** 方式允许更多地访问 `method()` 方法。这通常是使用 **synchronized** 块取代同步控制整个方法的原因：允许其他任务更多访问(只要这样做是线程安全的)。
+
 ### 在其他对象上同步
+
+**synchronized** 块必须给定一个在其上进行同步的对象。并且最合理的方式是，使用其方法正在被调用的当前对象： **synchronized(this)**，这正是前面示例中 **CriticalSection** 采取的方式。在这种方式中，当 **synchronized** 块获得锁的时候，那么该对象其他的 **synchronized** 方法和临界区就不能被调用了。因此，在进行同步时，临界区的作用是减小同步的范围。
+
+有时必须在另一个对象上同步，但是如果你要这样做，就必须确保所有相关的任务都是在同一个任务上同步的。下面的示例演示了当对象中的方法在不同的锁上同步时，两个任务可以同时进入同一对象：
+Sometimes you must synchronize on another object, but if you do this you must ensure that all relevant tasks are synchronizing on the same object. The following example demonstrates that two tasks can enter an object when the methods in that object synchronize on different locks:
+
+```java
+// lowlevel/SyncOnObject.java
+// Synchronizing on another object
+import java.util.*;
+import java.util.stream.*;
+import java.util.concurrent.*;
+import onjava.Nap;
+
+class DualSynch {
+  ConcurrentLinkedQueue<String> trace =
+    new ConcurrentLinkedQueue<>();
+  public synchronized void f(boolean nap) {
+    for(int i = 0; i < 5; i++) {
+      trace.add(String.format("f() " + i));
+      if(nap) new Nap(0.01);
+    }
+  }
+  private Object syncObject = new Object();
+  public void g(boolean nap) {
+    synchronized(syncObject) {
+      for(int i = 0; i < 5; i++) {
+        trace.add(String.format("g() " + i));
+        if(nap) new Nap(0.01);
+      }
+    }
+  }
+}
+
+public class SyncOnObject {
+  static void test(boolean fNap, boolean gNap) {
+    DualSynch ds = new DualSynch();
+    List<CompletableFuture<Void>> cfs =
+      Arrays.stream(new Runnable[] {
+        () -> ds.f(fNap), () -> ds.g(gNap) })
+        .map(CompletableFuture::runAsync)
+        .collect(Collectors.toList());
+    cfs.forEach(CompletableFuture::join);
+    ds.trace.forEach(System.out::println);
+  }
+  public static void main(String[] args) {
+    test(true, false);
+    System.out.println("****");
+    test(false, true);
+  }
+}
+/* Output:
+f() 0
+g() 0
+g() 1
+g() 2
+g() 3
+g() 4
+f() 1
+f() 2
+f() 3
+f() 4
+****
+f() 0
+g() 0
+f() 1
+f() 2
+f() 3
+f() 4
+g() 1
+g() 2
+g() 3
+g() 4
+*/
+```
+
+`DualSync.f()` 方法（通过同步整个方法）在 **this** 上同步，而 `g()` 方法有一个在 **syncObject** 上同步的 **synchronized** 块。因此，这两个同步是互相独立的。在 `test()` 方法中运行的两个调用 `f()` 和 `g()` 方法的独立任务演示了这一点。**fNap** 和 **gNap** 标志变量分别指示 `f()` 和 `g()` 是否应该在其 **for** 循环中调用 `Nap()` 方法。例如，当 f() 线程休眠时 ，该线程继续持有它的锁，但是你可以看到这并不阻止调用 `g()` ，反之亦然。
 
 ### 使用显式锁定对象
 
