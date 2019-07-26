@@ -1187,7 +1187,6 @@ SynchronizedMethod: 249
 **synchronized** 块必须给定一个在其上进行同步的对象。并且最合理的方式是，使用其方法正在被调用的当前对象： **synchronized(this)**，这正是前面示例中 **CriticalSection** 采取的方式。在这种方式中，当 **synchronized** 块获得锁的时候，那么该对象其他的 **synchronized** 方法和临界区就不能被调用了。因此，在进行同步时，临界区的作用是减小同步的范围。
 
 有时必须在另一个对象上同步，但是如果你要这样做，就必须确保所有相关的任务都是在同一个任务上同步的。下面的示例演示了当对象中的方法在不同的锁上同步时，两个任务可以同时进入同一对象：
-Sometimes you must synchronize on another object, but if you do this you must ensure that all relevant tasks are synchronizing on the same object. The following example demonstrates that two tasks can enter an object when the methods in that object synchronize on different locks:
 
 ```java
 // lowlevel/SyncOnObject.java
@@ -1261,7 +1260,105 @@ g() 4
 
 `DualSync.f()` 方法（通过同步整个方法）在 **this** 上同步，而 `g()` 方法有一个在 **syncObject** 上同步的 **synchronized** 块。因此，这两个同步是互相独立的。在 `test()` 方法中运行的两个调用 `f()` 和 `g()` 方法的独立任务演示了这一点。**fNap** 和 **gNap** 标志变量分别指示 `f()` 和 `g()` 是否应该在其 **for** 循环中调用 `Nap()` 方法。例如，当 f() 线程休眠时 ，该线程继续持有它的锁，但是你可以看到这并不阻止调用 `g()` ，反之亦然。
 
-### 使用显式锁定对象
+### 使用显式锁对象
+
+**java.util.concurrent** 库包含在 **java.util.concurrent.locks** 中定义的显示互斥锁机制。 必须显式地创建，锁定和解锁 **Lock** 对象，因此它产出的代码没有内置 **synchronized** 关键字那么优雅。然而，它在解决某些类型的问题时更加灵活。下面是使用显式 **Lock** 对象重写 **SynchronizedEvenProducer.java** 代码：
+
+```java
+// lowlevel/MutexEvenProducer.java
+// Preventing thread collisions with mutexes
+import java.util.concurrent.locks.*;
+import onjava.Nap;
+
+public class MutexEvenProducer extends IntGenerator {
+  private int currentEvenValue = 0;
+  private Lock lock = new ReentrantLock();
+  @Override
+  public int next() {
+    lock.lock();
+    try {
+      ++currentEvenValue;
+      new Nap(0.01); // Cause failure faster
+      ++currentEvenValue;
+      return currentEvenValue;
+    } finally {
+      lock.unlock();
+    }
+  }
+  public static void main(String[] args) {
+    EvenChecker.test(new MutexEvenProducer());
+  }
+}
+/*
+No odd numbers discovered
+*/
+```
+**MutexEvenProducer** 添加一个名为 **lock** 的互斥锁并在 `next()` 中使用 `lock()` 和 `unlock()` 方法创建一个临界区。当你使用 **Lock** 对象时，使用下面显示的习惯用法很重要：在调用 `Lock()` 之后，你必须放置 **try-finally** 语句，该语句在 **finally** 子句中带有 `unlock()` 方法 - 这是确保锁总是被释放的惟一方法。注意，**return** 语句必须出现在 **try** 子句中，以确保 **unlock()** 不会过早发生并将数据暴露给第二个任务。
+
+尽管 **try-finally** 比起使用 **synchronized** 关键字需要用得更多代码，但它也代表了显式锁对象的优势之一。如果使用 **synchronized** 关键字失败，就会抛出异常，但是你没有机会进行任何清理以保持系统处于良好状态。而使用显式锁对象，可以使用 **finally** 子句在系统中维护适当的状态。
+
+一般来说，当你使用 **synchronized** 的时候，需要编写的代码更少，并且用户出错的机会也大大减少，因此通常只在解决特殊问题时使用显式锁对象。例如，使用 **synchronized** 关键字，你不能尝试获得锁并让其失败，或者你在一段时间内尝试获得锁，然后放弃 - 为此，你必须使用这个并发库。
+
+```java
+// lowlevel/AttemptLocking.java
+// Locks in the concurrent library allow you
+// to give up on trying to acquire a lock
+import java.util.concurrent.*;
+import java.util.concurrent.locks.*;
+import onjava.Nap;
+
+public class AttemptLocking {
+  private ReentrantLock lock = new ReentrantLock();
+  public void untimed() {
+    boolean captured = lock.tryLock();
+    try {
+      System.out.println("tryLock(): " + captured);
+    } finally {
+      if(captured)
+        lock.unlock();
+    }
+  }
+  public void timed() {
+    boolean captured = false;
+    try {
+      captured = lock.tryLock(2, TimeUnit.SECONDS);
+    } catch(InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    try {
+      System.out.println(
+        "tryLock(2, TimeUnit.SECONDS): " + captured);
+    } finally {
+      if(captured)
+        lock.unlock();
+    }
+  }
+  public static void main(String[] args) {
+    final AttemptLocking al = new AttemptLocking();
+    al.untimed(); // True -- lock is available
+    al.timed();   // True -- lock is available
+    // Now create a second task to grab the lock:
+    CompletableFuture.runAsync( () -> {
+        al.lock.lock();
+        System.out.println("acquired");
+    });
+    new Nap(0.1);  // Give the second task a chance
+    al.untimed(); // False -- lock grabbed by task
+    al.timed();   // False -- lock grabbed by task
+  }
+}
+/* Output:
+tryLock(): true
+tryLock(2, TimeUnit.SECONDS): true
+acquired
+tryLock(): false
+tryLock(2, TimeUnit.SECONDS): false
+*/
+```
+
+**ReentrantLock** 可以尝试或者放弃获取锁，因此如果某些任务已经拥有锁，你可以决定放弃并执行其他操作，而不是一直等到锁释放，就像 `untimed()` 方法那样。而在 `timed()` 方法中，则尝试获取可能在 2 秒后没成功而放弃的锁。在 `main()` 方法中，一个单独的线程被匿名类所创建，并且它会获得锁，因此让 `untimed()` 和 `timed() ` 方法有东西可以去竞争。
+
+显式锁比起内置同步锁提供更细粒度的加锁和解锁控制。这对于实现专门的同步并发结构，比如用于遍历链表节点的 *交替锁* ( *hand-over-hand locking* ) ，也称为 *锁耦合* （ *lock coupling* ）- 该遍历代码要求必须在当前节点的解锁之前捕获下一个节点的锁。
 
 <!-- Library Components -->
 ## 库组件
