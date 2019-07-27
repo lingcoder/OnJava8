@@ -1603,7 +1603,7 @@ Brasilia
 下面这个表格展示了可以对 **Collection** 执行的所有操作（不包括自动继承自 **Object** 的方法），因此，可以用 **List** ， **Set** ， **Queue** 或 **Deque** 执行这里的所有操作（这些接口可能也提供了一些其他的功能）。**Map** 不是从 **Collection** 继承的，所以要单独处理它。
 
 | 方法名 | 描述 |
-| :---: | :---: |
+| :---: | :--- |
 | **boolean add(T)** | 确保集合包含该泛型类型 **T** 的参数。如果不添加参数，则返回 **false** 。 （这是一种“可选”方法，将在下一节中介绍。） |
 | **boolean addAll(Collection\<? extends T\>)** | 添加参数集合中的所有元素。只要有元素被成功添加则返回 **true**。（“可选的”） |
 | **void clear()** | 删除集合中的所有元素。（“可选的”） |
@@ -1855,6 +1855,187 @@ List.set(): java.lang.UnsupportedOperationException
 <!-- Sets and Storage Order -->
 ## Set和存储顺序
 
+[第十二章 集合]()章节中的 **Set** 有关示例对 **Set** 的基本操作做了很好的介绍。 但是，这些示例可以方便地使用预定义的 Java 类型，例如 **Integer** 和 **String** ，它们可以在集合中使用。在创建自己的类型时请注意， **Set** （以及稍后会看到的 **Map** ）需要一种维护存储顺序的方法，该顺序因 **Set** 的不同实现而异。因此，不同的 **Set** 实现不仅具有不同的行为，而且它们对可以放入特定 **Set** 中的对象类型也有不同的要求：
+
+| **Set** 类型 | 要求 |
+| :---: | :--- |
+| **Set(interface)** | 添加到 **Set** 中的每个元素必须是唯一的，否则，**Set** 不会添加重复元素。添加到 **Set** 的元素必须至少定义 `equals()` 方法以建立对象唯一性。 **Set** 与 **Collection** 具有完全相同的接口。 **Set** 接口不保证它将以任何特定顺序维护其元素。 |
+| **HashSet\*** | 注重快速查找元素的集合，其中元素必须定义 `hashCode()` 和 `equals()` 方法。 |
+| **TreeSet** | 由树支持的有序 **Set**。这样，就可以从 **Set** 中获取有序序列，其中元素必须实现 **Comparable** 接口。 |
+| **LinkedHashSet** | 具有 **HashSet** 的查找速度，但在内部使用链表维护元素的插入顺序。因此，当在遍历 **Set** 时，结果将按元素的插入顺序显示。元素必须定义 `hashCode()` 和 `equals()` 方法。 |
+
+**HashSet** 上的星号表示，在没有其他约束的情况下，这应该是你的默认选择，因为它针对速度进行了优化。
+
+定义 `hashCode()` 方法在[附录:理解equals和hashCode方法]()中进行了描述。必须为散列和树存储结构创建 `equals()` 方法，但只有当把类放在 **HashSet** 中时才需要 `hashCode()` （当然这很有可能，因为 **HashSet** 通常应该是作为 **Set** 实现的首选）或 **LinkedHashSet** 。 但是，作为一种良好的编程风格，在覆盖 `equals()` 时应始终覆盖 `hashCode()` 。
+
+下面的示例演示了成功使用具有特定 **Set** 实现的类型所需的方法：
+
+```java
+// collectiontopics/TypesForSets.java
+// Methods necessary to put your own type in a Set
+import java.util.*;
+import java.util.function.*;
+import java.util.Objects;
+
+class SetType {
+  protected int i;
+  SetType(int n) { i = n; }
+  @Override
+  public boolean equals(Object o) {
+    return o instanceof SetType &&
+      Objects.equals(i, ((SetType)o).i);
+  }
+  @Override
+  public String toString() {
+    return Integer.toString(i);
+  }
+}
+
+class HashType extends SetType {
+  HashType(int n) { super(n); }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(i);
+  }
+}
+
+class TreeType extends SetType
+implements Comparable<TreeType> {
+  TreeType(int n) { super(n); }
+  @Override
+  public int compareTo(TreeType arg) {
+    return Integer.compare(arg.i, i);
+    // Equivalent to:
+    // return arg.i < i ? -1 : (arg.i == i ? 0 : 1);
+  }
+}
+
+public class TypesForSets {
+  static <T> void
+  fill(Set<T> set, Function<Integer, T> type) {
+    for(int i = 10; i >= 5; i--) // Descending
+      set.add(type.apply(i));
+    for(int i = 0; i < 5; i++) // Ascending
+      set.add(type.apply(i));
+  }
+  static <T> void
+  test(Set<T> set, Function<Integer, T> type) {
+    fill(set, type);
+    fill(set, type); // Try to add duplicates
+    fill(set, type);
+    System.out.println(set);
+  }
+  public static void main(String[] args) {
+    test(new HashSet<>(), HashType::new);
+    test(new LinkedHashSet<>(), HashType::new);
+    test(new TreeSet<>(), TreeType::new);
+    // Things that don't work:
+    test(new HashSet<>(), SetType::new);
+    test(new HashSet<>(), TreeType::new);
+    test(new LinkedHashSet<>(), SetType::new);
+    test(new LinkedHashSet<>(), TreeType::new);
+    try {
+      test(new TreeSet<>(), SetType::new);
+    } catch(Exception e) {
+      System.out.println(e.getMessage());
+    }
+    try {
+      test(new TreeSet<>(), HashType::new);
+    } catch(Exception e) {
+      System.out.println(e.getMessage());
+    }
+  }
+}
+/* Output:
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+[10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4]
+[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+[1, 6, 8, 6, 2, 7, 8, 9, 4, 10, 7, 5, 1, 3, 4, 9, 9,
+10, 5, 3, 2, 0, 4, 1, 2, 0, 8, 3, 0, 10, 6, 5, 7]
+[3, 1, 4, 8, 7, 6, 9, 5, 3, 0, 10, 5, 5, 10, 7, 8, 8,
+9, 1, 4, 10, 2, 6, 9, 1, 6, 0, 3, 2, 0, 7, 2, 4]
+[10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5,
+0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4]
+[10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5,
+0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4]
+SetType cannot be cast to java.lang.Comparable
+HashType cannot be cast to java.lang.Comparable
+*/
+```
+
+为了证明特定 **Set** 需要哪些方法，同时避免代码重复，这里创建了三个类。基类 **SetType** 存储一个 **int** 值，并通过 `toString()` 方法打印它。由于存储在 **Set** 中的所有类都必须具有 `equals()` ，因此该方法也放在基类中。基于 `int i` 来判断元素是否相等。
+
+**HashType** 继承自 **SetType** ，并添加了 `hashCode()` 方法，该方法对于 **Set** 的散列实现是必需的。
+
+要在任何类型的有序集合中使用对象，由 **TreeType** 实现的 **Comparable** 接口都是必需的，例如 **SortedSet** （ **TreeSet** 是其唯一实现）。在 `compareTo()` 中，请注意我没有使用“简单明了”的形式： `return i-i2` 。虽然这是一个常见的编程错误，但只有当 **i** 和 **i2** 是“无符号（unsigned）”整型时才能正常工作（如果 Java 有一个“unsigned”关键字的话，不过它没有）。它破坏了 Java 的有符号 **int** ，它不足以代表两个有符号整数的差异。如果 **i** 是一个大的正整数而 **j** 是一个大的负整数， `i-j` 将溢出并返回一个负值，这不是我们所需要的。
+
+通常希望 `compareTo()` 方法生成与 `equals()` 方法一致的自然顺序。如果 `equals()` 对于特定比较产生 **true**，则 `compareTo()` 应该为该比较返回结果 零，并且如果 `equals()` 为比较产生 **false** ，则 `compareTo()` 应该为该比较产生非零结果。
+
+在 **TypesForSets** 中， `fill()` 和 `test()` 都是使用泛型定义的，以防止代码重复。为了验证 **Set** 的行为， `test()` 在测试集上调用 `fill()` 三次，尝试引入重复的对象。 `fill()` 方法的参数可以接收任意一个 **Set** 类型，以及生成该类型的 **Function** 对象。因为此示例中使用的所有对象都有一个带有单个 **int** 参数的构造方法，所以可以将构造方法作为此 **Function** 传递，它将提供用于填充 **Set** 的对象。
+
+请注意， `fill()` 方法按降序添加前五个元素，按升序添加后五个元素，以此来指出生成的存储顺序。输出显示 **HashSet** 按升序保留元素，但是，在[附录:理解equals和hashCode方法]()中，你会发现这只是偶然的，因为散列会创建自己的存储顺序。这里只是因为元素是一个简单的 **int** ，在这种情况下它是升序的。 **LinkedHashSet** 按照插入顺序保存元素，**TreeSet** 按排序顺序维护元素（在此示例中因为 `compareTo()` 的实现方式，所以元素按降序排列。）
+
+特定的 **Set** 类型一般都有所必需的操作，如果尝试使用没能正确支持这些操作的类型，那么事情就会出错。将没有重新定义 `hashCode()` 方法的 **SetType** 或 **TreeType** 对象放入任何散列实现会导致重复值，因此违反了 **Set** 的主要契约。 这是相当令人不安的，因为这甚至不产生运行时错误。但是，默认的 `hashCode()` 是合法的，所以即使它是不正确的，这也是合法的行为。确保此类程序正确性的唯一可靠方法是将单元测试合并到构建系统中。
+
+如果尝试在 **TreeSet** 中使用没有实现 **Comparable** 接口的类型，则会得到更明确的结果：当 **TreeSet** 尝试将对象用作一个 **Comparable** 时，将会抛出异常。
+
+<!-- SortedSet -->
+### SortedSet
+
+**SortedSet** 中的元素保证按排序规则顺序， **SortedSet** 接口中的以下方法可以产生其他功能：
+
+- `Comparator comparator()` ：生成用于此 **Set** 的**Comparator** 或 **null** 来用于自然排序。
+- `Object first()` ：返回第一个元素。
+- `Object last()` ：返回最后一个元素。
+- `SortedSet subSet(fromElement，toElement)` ：使用 **fromElement** （包含）和 **toElement** （不包括）中的元素生成此 **Set** 的一个视图。
+- `SortedSet headSet(toElement)` ：使用顺序在 **toElement** 之前的元素生成此 **Set** 的一个视图。
+- `SortedSet tailSet(fromElement)` ：使用顺序在 **fromElement** 之后（包含 **fromElement** ）的元素生成此 **Set** 的一个视图。
+
+下面是一个简单的演示：
+
+```java
+// collectiontopics/SortedSetDemo.java
+import java.util.*;
+import static java.util.stream.Collectors.*;
+
+public class SortedSetDemo {
+  public static void main(String[] args) {
+    SortedSet<String> sortedSet =
+      Arrays.stream(
+        "one two three four five six seven eight"
+        .split(" "))
+        .collect(toCollection(TreeSet::new));
+    System.out.println(sortedSet);
+    String low = sortedSet.first();
+    String high = sortedSet.last();
+    System.out.println(low);
+    System.out.println(high);
+    Iterator<String> it = sortedSet.iterator();
+    for(int i = 0; i <= 6; i++) {
+      if(i == 3) low = it.next();
+      if(i == 6) high = it.next();
+      else it.next();
+    }
+    System.out.println(low);
+    System.out.println(high);
+    System.out.println(sortedSet.subSet(low, high));
+    System.out.println(sortedSet.headSet(high));
+    System.out.println(sortedSet.tailSet(low));
+  }
+}
+/* Output:
+[eight, five, four, one, seven, six, three, two]
+eight
+two
+one
+two
+[one, seven, six, three]
+[eight, five, four, one, seven, six, three]
+[one, seven, six, three, two]
+*/
+```
+
+注意， **SortedSet** 表示“根据对象的比较函数进行排序”，而不是“根据插入顺序”。可以使用 **LinkedHashSet** 保留元素的插入顺序。
 
 <!-- Queues -->
 ## 队列
