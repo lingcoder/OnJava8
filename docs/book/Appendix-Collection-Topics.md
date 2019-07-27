@@ -246,13 +246,13 @@ public class HTMLColors {
 }
 ```
 
-**MAP** 是使用Streams（[第十四章 流式编程]()）创建的。 二维数组 **ARRAY** 作为流传输到 **Map** 中，但请注意我们不仅仅是使用简单版本的 **Collectors.toMap()** 。 那个版本生成一个 **HashMap** ，它使用散列函数来控制对键的排序。 为了保留原来的顺序，我们必须将键值对直接放入 **TreeMap** 中，这意味着我们需要使用更复杂的 **Collectors.toMap()** 版本。这需要两个函数从每个流元素中提取键和值，就像简单版本的**Collectors.toMap()** 一样。 然后它需要一个*合并函数*（merge function），它解决了与同一个键相关的两个值之间的冲突。这里的数据已经预先审查过，因此绝不会发生这种情况，如果有的话，这里会抛出异常。最后，传递生成所需类型的空map的函数，然后用流来填充它。
+**MAP** 是使用Streams（[第十四章 流式编程]()）创建的。 二维数组 **ARRAY** 作为流传输到 **Map** 中，但请注意我们不仅仅是使用简单版本的 `Collectors.toMap()` 。 那个版本生成一个 **HashMap** ，它使用散列函数来控制对键的排序。 为了保留原来的顺序，我们必须将键值对直接放入 **TreeMap** 中，这意味着我们需要使用更复杂的 `Collectors.toMap()` 版本。这需要两个函数从每个流元素中提取键和值，就像简单版本的`Collectors.toMap()` 一样。 然后它需要一个*合并函数*（merge function），它解决了与同一个键相关的两个值之间的冲突。这里的数据已经预先审查过，因此绝不会发生这种情况，如果有的话，这里会抛出异常。最后，传递生成所需类型的空map的函数，然后用流来填充它。
 
-**rgb()** 方法是一个便捷函数（convenience function），它接受颜色名称 **String** 参数并生成其数字RGB值。为此，我们需要一个反转版本的 **COLORS** ，它接受一个 **String**键并查找RGB的 **Integer** 值。 这是通过 **invert()** 方法实现的，如果任何 **COLORS** 值不唯一，则抛出异常。
+`rgb()` 方法是一个便捷函数（convenience function），它接受颜色名称 **String** 参数并生成其数字RGB值。为此，我们需要一个反转版本的 **COLORS** ，它接受一个 **String**键并查找RGB的 **Integer** 值。 这是通过 `invert()` 方法实现的，如果任何 **COLORS** 值不唯一，则抛出异常。
 
 我们还创建包含所有名称的 **LIST** ，以及包含十六进制表示法的RGB值的 **RGBLIST** 。
 
-第一个 **show()** 方法接受一个 **Map.Entry** 并显示以十六进制表示的键，以便轻松地对原始 **ARRAY** 进行双重检查。 名称以 **show** 开头的每个方法都会重载两个版本，其中一个版本采用 **count** 参数来指示要显示的元素数量，第二个版本显示序列中的所有元素。
+第一个 `show()` 方法接受一个 **Map.Entry** 并显示以十六进制表示的键，以便轻松地对原始 **ARRAY** 进行双重检查。 名称以 **show** 开头的每个方法都会重载两个版本，其中一个版本采用 **count** 参数来指示要显示的元素数量，第二个版本显示序列中的所有元素。
 
 这里是一个基本的测试：
 
@@ -366,14 +366,14 @@ Cyan
 
 **Lists** 是存储和检索对象（次于数组）的最基本方法。基本列表操作包括：
 
-- **add()** 用于插入元素
-- **get()** 用于随机访问元素
-- **iterator()** 获取序列上的一个 **Iterator**
-- **stream()** 生成元素的一个 **Stream**
+- `add()` 用于插入元素
+- `get()` 用于随机访问元素
+- `iterator()` 获取序列上的一个 **Iterator**
+- `stream()` 生成元素的一个 **Stream**
 
 列表构造方法始终保留元素的添加顺序。
 
-以下示例中的方法各自涵盖了一组不同的行为：每个 **List** 可以执行的操作（ **basicTest()** ），使用 **Iterator** （ **iterMotion()** ）遍历序列，使用 **Iterator** （ **iterManipulation()** ）更改内容，查看 **List** 操作（ **testVisual()** ）的效果，以及仅可用于 **LinkedLists** 的操作：
+以下示例中的方法各自涵盖了一组不同的行为：每个 **List** 可以执行的操作（ `basicTest()` ），使用 **Iterator** （ `iterMotion()` ）遍历序列，使用 **Iterator** （ `iterManipulation()` ）更改内容，查看 **List** 操作（ `testVisual()` ）的效果，以及仅可用于 **LinkedLists** 的操作：
 
 ```java
 // collectiontopics/ListOps.java
@@ -542,7 +542,7 @@ Bisque, Black, BlanchedAlmond, Blue]
 */
 ```
 
-在 **basicTest()** 和 **iterMotion()** 中，方法调用是为了展示正确的语法，尽管获取了返回值，但不会使用它。在某些情况下，根本不会去获取返回值。在使用这些方法之前，请查看JDK文档中这些方法的完整用法。
+在 `basicTest()` 和 `iterMotion()` 中，方法调用是为了展示正确的语法，尽管获取了返回值，但不会使用它。在某些情况下，根本不会去获取返回值。在使用这些方法之前，请查看JDK文档中这些方法的完整用法。
 
 <!-- Set Behavior -->
 ## Set行为
@@ -643,9 +643,9 @@ Teal
 */
 ```
 
-这里需要使用 **@SuppressWarnings(“unchecked”)** ，因为这里将一个 **String** （可能是任何东西）传递给了 **Class.forName(type).newInstance()** 。编译器并不能保证这是一次成功的操作。
+这里需要使用 **@SuppressWarnings(“unchecked”)** ，因为这里将一个 **String** （可能是任何东西）传递给了 `Class.forName(type).newInstance()` 。编译器并不能保证这是一次成功的操作。
 
-**RLIST** 是 **HTMLColors.LIST** 的反转版本。因为 **Collections.reverse()** 是通过修改参数来执行反向操作，而不是返回包含反向元素的新 **List** ，所以该调用在 **static** 块内执行。  **RLIST** 可以防止我们意外地认为 **Set** 对其结果进行了排序。
+**RLIST** 是 **HTMLColors.LIST** 的反转版本。因为 `Collections.reverse()` 是通过修改参数来执行反向操作，而不是返回包含反向元素的新 **List** ，所以该调用在 **static** 块内执行。  **RLIST** 可以防止我们意外地认为 **Set** 对其结果进行了排序。
 
 **HashSet** 的输出结果似乎没有可辨别的顺序，因为它是基于散列函数的。 **TreeSet** 和 **ConcurrentSkipListSet** 都对它们的元素进行了排序，它们都实现了 **SortedSet** 接口来标识这个特点。因为实现该接口的 **Set** 按顺序排列，所以该接口还有一些其他的可用操作。 **LinkedHashSet** 和 **CopyOnWriteArraySet** 尽管没有用于标识的接口，但它们还是保留了元素的插入顺序。
 
@@ -656,9 +656,9 @@ Teal
 <!-- Using Functional Operations with any Map -->
 ## 在Map中使用函数式操作
 
-与 **Collection** 接口一样，**forEach()** 也内置在 **Map** 接口中。但是如果想要执行任何其他的基本功能操作，比如 **map()** ，**flatMap()** ，**reduce()** 或 **filter()** 时，该怎么办？ 查看 **Map** 接口发现并没有这些。
+与 **Collection** 接口一样，`forEach()` 也内置在 **Map** 接口中。但是如果想要执行任何其他的基本功能操作，比如 `map()` ，`flatMap()` ，`reduce()` 或 `filter()` 时，该怎么办？ 查看 **Map** 接口发现并没有这些。
 
-可以通过 **entrySet()** 连接到这些方法，该方法会生成一个由 **Map.Entry** 对象组成的 **Set** 。这个 **Set** 包含 **stream()** 和 **parallelStream()** 方法。只需要记住一件事，这里正在使用的是 **Map.Entry** 对象：
+可以通过 `entrySet()` 连接到这些方法，该方法会生成一个由 **Map.Entry** 对象组成的 **Set** 。这个 **Set** 包含 `stream()` 和 `parallelStream()` 方法。只需要记住一件事，这里正在使用的是 **Map.Entry** 对象：
 
 ```java
 // collectiontopics/FunctionalMap.java
@@ -801,16 +801,16 @@ public class NavMap {
 */
 ```
 
-在 **main()** 方法中可以看到 **NavigableMap** 的各种功能。 因为 **NavigableMap** 具有键顺序，所以它使用了 **firstEntry()** 和 **lastEntry()** 的概念。调用 **headMap()** 会生成一个 **NavigableMap** ，其中包含了从 **Map** 的开头到 **headMap()** 参数中所指向的一组元素，其中 **boolean** 值指示结果中是否包含该参数。调用 **tailMap()** 执行了类似的操作，只不过是从参数开始到 **Map** 的末尾。 **subMap()** 则允许生成 **Map** 中间的一部分。
+在主方法中可以看到 **NavigableMap** 的各种功能。 因为 **NavigableMap** 具有键顺序，所以它使用了 `firstEntry()` 和 `lastEntry()` 的概念。调用 `headMap()` 会生成一个 **NavigableMap** ，其中包含了从 **Map** 的开头到 `headMap()` 参数中所指向的一组元素，其中 **boolean** 值指示结果中是否包含该参数。调用 `tailMap()` 执行了类似的操作，只不过是从参数开始到 **Map** 的末尾。 `subMap()` 则允许生成 **Map** 中间的一部分。
 
-**ceilingEntry()** 从当前键值对向上搜索下一个键值对，**floorEntry()** 则是向下搜索。 **descendingMap()** 反转了 **NavigableMap** 的顺序。
+`ceilingEntry()` 从当前键值对向上搜索下一个键值对，`floorEntry()` 则是向下搜索。 `descendingMap()` 反转了 **NavigableMap** 的顺序。
 
 如果需要通过分割 **Map** 来简化所正在解决的问题，则 **NavigableMap** 可以做到。具有类似的功能的其它集合实现也可以用来帮助解决问题。
 
 <!-- Filling Collections -->
 ## 填充集合
 
-与 **Arrays** 一样，这里有一个名为 **Collections** 的伴随类（companion class），包含了一些 **static** 的实用方法，其中包括一个名为 **fill()** 的方法。 **fill()** 只复制整个集合中的单个对象引用。此外，它仅适用于 **List** 对象，但结果列表可以传递给构造方法或 **addAll()** 方法：
+与 **Arrays** 一样，这里有一个名为 **Collections** 的伴随类（companion class），包含了一些 **static** 的实用方法，其中包括一个名为 `fill()` 的方法。 `fill()` 只复制整个集合中的单个对象引用。此外，它仅适用于 **List** 对象，但结果列表可以传递给构造方法或 `addAll()` 方法：
 
 ```java
 // collectiontopics/FillingLists.java
@@ -847,9 +847,9 @@ StringAddress@6d06d69c World!]
 */
 ```
 
-这个示例展示了两种使用对单个对象的引用来填充 **Collection** 的方法。 第一个： **Collections.nCopies()** ，创建一个 **List**，并传递给 **ArrayList** 的构造方法，进而填充了 **ArrayList** 。
+这个示例展示了两种使用对单个对象的引用来填充 **Collection** 的方法。 第一个： `Collections.nCopies()` ，创建一个 **List**，并传递给 **ArrayList** 的构造方法，进而填充了 **ArrayList** 。
 
-**StringAddress** 中的 **toString()** 方法调用了 **Object.toString()** ，它先生成类名，后跟着对象的哈希码的无符号十六进制表示（哈希吗由 **hashCode()** 方法生成）。 输出显示所有的引用都指向同一个对象。调用第二个方法 **Collections.fill()** 后也是如此。 **fill()** 方法的用处非常有限，它只能替换 **List** 中已有的元素,而且不会添加新元素，
+**StringAddress** 中的 `toString()` 方法调用了 `Object.toString()` ，它先生成类名，后跟着对象的哈希码的无符号十六进制表示（哈希吗由 `hashCode()` 方法生成）。 输出显示所有的引用都指向同一个对象。调用第二个方法 `Collections.fill()` 后也是如此。 `fill()` 方法的用处非常有限，它只能替换 **List** 中已有的元素,而且不会添加新元素，
 
 ### 使用 Suppliers 填充集合
 
@@ -930,7 +930,7 @@ swords, is, no, basis, for, a, system, of, government]
 
 ### Map Suppliers
 
-使用 **Supplier** 来填充 **Map** 时需要一个 **Pair** 类，因为每次调用一个 **Supplier** 的 **get()** 方法时，都必须生成一对对象（一个键和一个值）：
+使用 **Supplier** 来填充 **Map** 时需要一个 **Pair** 类，因为每次调用一个 **Supplier** 的 `get()` 方法时，都必须生成一对对象（一个键和一个值）：
 
 ```java
 // onjava/Pair.java
@@ -951,7 +951,7 @@ public class Pair<K, V> {
 }
 ```
 
-**Pair** 是一个只读的 *数据传输对象* （Data Transfer Object）或 *信使* （Messenger）。 这与[第二十章 泛型]()章节中的 **Tuple2** 基本相同，但名字更适合 **Map** 初始化。我还添加了静态的 **make()** 方法，以便为创建 **Pair** 对象提供一个更简洁的名字。
+**Pair** 是一个只读的 *数据传输对象* （Data Transfer Object）或 *信使* （Messenger）。 这与[第二十章 泛型]()章节中的 **Tuple2** 基本相同，但名字更适合 **Map** 初始化。我还添加了静态的 `make()` 方法，以便为创建 **Pair** 对象提供一个更简洁的名字。
 
 Java 8 的 **Stream** 提供了填充 **Map** 的便捷方法：
 
@@ -1050,7 +1050,7 @@ public class FillMap {
 }
 ```
 
-basic() 方法生成一个默认的 **Map** ，而 **create()** 方法允许指定一个确切的 **Map** 类型，并返回那个确切的类型。
+basic() 方法生成一个默认的 **Map** ，而 `create()` 方法允许指定一个确切的 **Map** 类型，并返回那个确切的类型。
 
 下面是一个测试：
 
@@ -1089,11 +1089,11 @@ ztdv=6}
 <!-- Custom Collection and Map using Flyweight -->
 ## 使用享元（Flyweight）自定义Collection和Map
 
-本节介绍如何创建自定义 **Collection** 和 **Map** 实现。每个 **java.util** 中的集合都有自己的 **Abstract** 类，它提供了该集合的部分实现，因此只需要实现必要的方法来生成所需的集合。你将看到通过继承 **java.util.Abstract** 类来创建自定义 **Map** 和 **Collection** 是多么简单。例如，要创建一个只读的 **Set** ，则可以从 **AbstractSet** 继承并实现 **iterator()** 和 **size()** 。最后一个示例是生成测试数据的另一种方法。生成的集合通常是只读的，并且所提供的方法最少。
+本节介绍如何创建自定义 **Collection** 和 **Map** 实现。每个 **java.util** 中的集合都有自己的 **Abstract** 类，它提供了该集合的部分实现，因此只需要实现必要的方法来生成所需的集合。你将看到通过继承 **java.util.Abstract** 类来创建自定义 **Map** 和 **Collection** 是多么简单。例如，要创建一个只读的 **Set** ，则可以从 **AbstractSet** 继承并实现 `iterator()` 和 `size()` 。最后一个示例是生成测试数据的另一种方法。生成的集合通常是只读的，并且所提供的方法最少。
 
 该解决方案还演示了 *享元* （Flyweight）设计模式。当普通解决方案需要太多对象时，或者当生成普通对象占用太多空间时，可以使用享元。享元设计模式将对象的一部分外部化（externalizes）。相比于把对象的所有内容都包含在对象中，这样做使得对象的部分或者全部可以在更有效的外部表中查找，或通过一些节省空间的其他计算生成。
 
-下面是一个可以是任何大小的 **List** ，并且（有效地）使用 **Integer** 数据进行预初始化。要从 **AbstractList** 创建只读 **List** ，必须实现 **get()** 和 **size()**：
+下面是一个可以是任何大小的 **List** ，并且（有效地）使用 **Integer** 数据进行预初始化。要从 **AbstractList** 创建只读 **List** ，必须实现 `get()` 和 `size()`：
 
 ```java
 // onjava/CountingIntegerList.java
@@ -1129,11 +1129,11 @@ extends AbstractList<Integer> {
 */
 ```
 
-只有当想要限制 **List** 的长度时， **size** 值才是重要的，就像在 **main()** 中那样。即使在这种情况下， **get()** 也会产生任何值。
+只有当想要限制 **List** 的长度时， **size** 值才是重要的，就像在主方法中那样。即使在这种情况下， `get()` 也会产生任何值。
 
-这个类是享元模式的一个简洁的例子。当需要的时候， **get()** “计算”所需的值，因此没必要存储和初始化实际的底层 **List** 结构。
+这个类是享元模式的一个简洁的例子。当需要的时候， `get()` “计算”所需的值，因此没必要存储和初始化实际的底层 **List** 结构。
 
-在大多数程序中，这里所保存的存储结构永远都不会改变。但是，它允许用非常大的 **index** 来调用 **List.get()** ，而 **List** 并不需要填充到这么大。此外，还可以在程序中大量使用 **CountingIntegerLists** 而无需担心存储问题。实际上，享元的一个好处是它允许使用更好的抽象而不用担心资源。
+在大多数程序中，这里所保存的存储结构永远都不会改变。但是，它允许用非常大的 **index** 来调用 `List.get()` ，而 **List** 并不需要填充到这么大。此外，还可以在程序中大量使用 **CountingIntegerLists** 而无需担心存储问题。实际上，享元的一个好处是它允许使用更好的抽象而不用担心资源。
 
 可以使用享元设计模式来实现具有任何大小数据集的其他“初始化”自定义集合。下面是一个 **Map** ，它为每一个 **Integer** 键产生唯一的值：
 
@@ -1234,11 +1234,11 @@ N16
 */
 ```
 
-要创建一个只读的 **Map** ，则从 **AbstractMap** 继承并实现 **entrySet()** 。私有的 **value()** 方法计算任何键的值，并在 **get()** 和 **Entry.getValue()** 中使用。可以忽略 **CountMap** 的大小。
+要创建一个只读的 **Map** ，则从 **AbstractMap** 继承并实现 `entrySet()` 。私有的 `value()` 方法计算任何键的值，并在 `get()` 和 `Entry.getValue()` 中使用。可以忽略 **CountMap** 的大小。
 
-这里是使用了 **LinkedHashSet** 而不是创建自定义 **Set** 类，因此并未完全实现享元。只有在调用 **entrySet()** 时才会生成此对象。
+这里是使用了 **LinkedHashSet** 而不是创建自定义 **Set** 类，因此并未完全实现享元。只有在调用 `entrySet()` 时才会生成此对象。
 
-现在创建一个更复杂的享元。这个示例中的数据集是世界各国及其首都的 **Map** 。 **capitals()** 方法生成一个国家和首都的 **Map** 。 **names()** 方法生成一个由国家名字组成的 **List** 。 当给定了表示所需大小的 **int** 参数时，两种方法都生成对应大小的列表片段：
+现在创建一个更复杂的享元。这个示例中的数据集是世界各国及其首都的 **Map** 。 `capitals()` 方法生成一个国家和首都的 **Map** 。 `names()` 方法生成一个由国家名字组成的 **List** 。 当给定了表示所需大小的 **int** 参数时，两种方法都生成对应大小的列表片段：
 
 ```java
 // onjava/Countries.java
@@ -1591,11 +1591,11 @@ Brasilia
 */
 ```
 
-二维数组 **String DATA** 是 **public** 的，因此可以在别处使用。 **FlyweightMap** 必须实现 **entrySet()** 方法，该方法需要一个自定义 **Set** 实现和一个自定义 **Map.Entry** 类。这是实现享元的另一种方法：每个 **Map.Entry** 对象存储它自身的索引，而不是实际的键和值。当调用 **getKey()** 或 **getValue()** 时，它使用索引返回相应的 **DATA** 元素。 **EntrySet** 确保它的 **size** 不大于 **DATA** 。
+二维数组 **String DATA** 是 **public** 的，因此可以在别处使用。 **FlyweightMap** 必须实现 `entrySet()` 方法，该方法需要一个自定义 **Set** 实现和一个自定义 **Map.Entry** 类。这是实现享元的另一种方法：每个 **Map.Entry** 对象存储它自身的索引，而不是实际的键和值。当调用 `getKey()` 或 `getValue()` 时，它使用索引返回相应的 **DATA** 元素。 **EntrySet** 确保它的 **size** 不大于 **DATA** 。
 
-享元的另一部分在 **EntrySet.Iterator** 中实现。相比于为 **DATA** 中的每个数据对创建一个 **Map.Entry** 对象，这里每个迭代器只有一个 **Map.Entry** 对象。 **Entry** 对象作为数据的窗口，它只包含 **String** 静态数组的索引。每次为迭代器调用 **next()** 时，**Entry** 中的索引都会递增，因此它会指向下一个数据对，然后从 **next()** 返回 **Iterators** 的单个 **Entry** 对象。[^1]
+享元的另一部分在 **EntrySet.Iterator** 中实现。相比于为 **DATA** 中的每个数据对创建一个 **Map.Entry** 对象，这里每个迭代器只有一个 **Map.Entry** 对象。 **Entry** 对象作为数据的窗口，它只包含 **String** 静态数组的索引。每次为迭代器调用 `next()` 时，**Entry** 中的索引都会递增，因此它会指向下一个数据对，然后从 `next()` 返回 **Iterators** 的单个 **Entry** 对象。[^1]
 
-**select()** 方法生成一个包含所需大小的 **EntrySet** 的 **FlyweightMap** ，这用于在 **main()** 中演示的重载的 **capitals()** 和 **names()** 方法。
+`select()` 方法生成一个包含所需大小的 **EntrySet** 的 **FlyweightMap** ，这用于在主方法中演示的重载的 `capitals()` 和 `names()` 方法。
 
 <!-- Collection Functionality -->
 ## 集合功能
@@ -1603,7 +1603,7 @@ Brasilia
 下面这个表格展示了可以对 **Collection** 执行的所有操作（不包括自动继承自 **Object** 的方法），因此，可以用 **List** ， **Set** ， **Queue** 或 **Deque** 执行这里的所有操作（这些接口可能也提供了一些其他的功能）。**Map** 不是从 **Collection** 继承的，所以要单独处理它。
 
 | 方法名 | 描述 |
-| :---: | :---: |
+| :---: | :--- |
 | **boolean add(T)** | 确保集合包含该泛型类型 **T** 的参数。如果不添加参数，则返回 **false** 。 （这是一种“可选”方法，将在下一节中介绍。） |
 | **boolean addAll(Collection\<? extends T\>)** | 添加参数集合中的所有元素。只要有元素被成功添加则返回 **true**。（“可选的”） |
 | **void clear()** | 删除集合中的所有元素。（“可选的”） |
@@ -1780,7 +1780,7 @@ after c.clear():[]
 <!-- Unsupported Operations -->
 ### 不支持的操作
 
-不支持的操作的常见来源是由固定大小的数据结构所支持的集合。使用 **Arrays.asList()** 方法将数组转换为 **List** 时，就会得到这样的集合。此外，还可以选择使用 **Collections** 类中的“不可修改（unmodifiable）”方法使任何集合（包括 **Map** ）抛出 **UnsupportedOperationException** 异常。此示例展示了这两种情况：
+不支持的操作的常见来源是由固定大小的数据结构所支持的集合。使用 `Arrays.asList()` 方法将数组转换为 **List** 时，就会得到这样的集合。此外，还可以选择使用 **Collections** 类中的“不可修改（unmodifiable）”方法使任何集合（包括 **Map** ）抛出 **UnsupportedOperationException** 异常。此示例展示了这两种情况：
 
 ```java
 // collectiontopics/Unsupported.java
@@ -1842,19 +1842,200 @@ List.set(): java.lang.UnsupportedOperationException
 */
 ```
 
-因为 **Arrays.asList()** 生成的 **List** 由一个固定大小的数组所支持，所以唯一支持的操作是那些不改变数组大小的操作。任何会导致更改基础数据结构大小的方法都会产生 **UnsupportedOperationException** 异常，来说明这是对不支持的方法的调用（编程错误）。
+因为 `Arrays.asList()` 生成的 **List** 由一个固定大小的数组所支持，所以唯一支持的操作是那些不改变数组大小的操作。任何会导致更改基础数据结构大小的方法都会产生 **UnsupportedOperationException** 异常，来说明这是对不支持的方法的调用（编程错误）。
 
-请注意，始终可以将 **Arrays.asList()** 的结果作为一个参数传递给任何 **Collection** 的构造方法（或使用 **addAll()** 方法或静态的 **Collections.addAll()** 方法）来创建一个允许使用所有方法的常规集合，在 **main()** 中第一次调用 **test()** 时显示了这种情况。这种调用产生了一个新的可调整大小的底层数据结构。
+请注意，始终可以将 `Arrays.asList()` 的结果作为一个参数传递给任何 **Collection** 的构造方法（或使用 `addAll()` 方法或静态的 `Collections.addAll()` 方法）来创建一个允许使用所有方法的常规集合，在主方法中第一次调用 `test()` 时显示了这种情况。这种调用产生了一个新的可调整大小的底层数据结构。
 
 **Collections** 类中的“unmodifiable”方法会将集合包装一个代理中，如果执行任何想要修改集合的操作，则该代理会生成 **UnsupportedOperationException** 异常。使用这些方法的目的是生成一个“常量”集合对象。稍后将描述“unmodifiable“集合方法的完整列表。
 
-**test()** 中的最后一个 **check()** 用于测试**List** 的 **set()** 方法。这里，“不支持的操作”技术的粒度（granularity）就派上用场了，得到的“接口”可以通过一种方法在 **Arrays.asList()** 返回的对象和 **Collections.unmodifiableList()** 返回的对象之间变换。 **Arrays.asList()** 返回固定大小的 **List** ，而 **Collections.unmodifiableList()** 生成无法更改的 **List** 。如输出中所示， **Arrays.asList()** 返回的 **List** 中的元素是可以修改的，因为这不会违反该 **List** 的“固定大小”特性。但很明显， **unmodifiableList()** 的结果不应该以任何方式修改。如果使用接口来描述，则需要两个额外的接口，一个具有可用的 **set()** 方法，而另一个没有。 **Collection** 的各种不可修改的子类型都将需要额外的接口。
+`test()` 中的最后一个 `check()` 用于测试**List** 的 `set()` 方法。这里，“不支持的操作”技术的粒度（granularity）就派上用场了，得到的“接口”可以通过一种方法在 `Arrays.asList()` 返回的对象和 `Collections.unmodifiableList()` 返回的对象之间变换。 `Arrays.asList()` 返回固定大小的 **List** ，而 `Collections.unmodifiableList()` 生成无法更改的 **List** 。如输出中所示， `Arrays.asList()` 返回的 **List** 中的元素是可以修改的，因为这不会违反该 **List** 的“固定大小”特性。但很明显， `unmodifiableList()` 的结果不应该以任何方式修改。如果使用接口来描述，则需要两个额外的接口，一个具有可用的 `set()` 方法，而另一个没有。 **Collection** 的各种不可修改的子类型都将需要额外的接口。
 
 如果一个方法将一个集合作为它的参数，那么它的文档应该说明必须实现哪些可选方法。
 
 <!-- Sets and Storage Order -->
 ## Set和存储顺序
 
+[第十二章 集合]()章节中的 **Set** 有关示例对 **Set** 的基本操作做了很好的介绍。 但是，这些示例可以方便地使用预定义的 Java 类型，例如 **Integer** 和 **String** ，它们可以在集合中使用。在创建自己的类型时请注意， **Set** （以及稍后会看到的 **Map** ）需要一种维护存储顺序的方法，该顺序因 **Set** 的不同实现而异。因此，不同的 **Set** 实现不仅具有不同的行为，而且它们对可以放入特定 **Set** 中的对象类型也有不同的要求：
+
+| **Set** 类型 | 要求 |
+| :---: | :--- |
+| **Set(interface)** | 添加到 **Set** 中的每个元素必须是唯一的，否则，**Set** 不会添加重复元素。添加到 **Set** 的元素必须至少定义 `equals()` 方法以建立对象唯一性。 **Set** 与 **Collection** 具有完全相同的接口。 **Set** 接口不保证它将以任何特定顺序维护其元素。 |
+| **HashSet\*** | 注重快速查找元素的集合，其中元素必须定义 `hashCode()` 和 `equals()` 方法。 |
+| **TreeSet** | 由树支持的有序 **Set**。这样，就可以从 **Set** 中获取有序序列，其中元素必须实现 **Comparable** 接口。 |
+| **LinkedHashSet** | 具有 **HashSet** 的查找速度，但在内部使用链表维护元素的插入顺序。因此，当在遍历 **Set** 时，结果将按元素的插入顺序显示。元素必须定义 `hashCode()` 和 `equals()` 方法。 |
+
+**HashSet** 上的星号表示，在没有其他约束的情况下，这应该是你的默认选择，因为它针对速度进行了优化。
+
+定义 `hashCode()` 方法在[附录:理解equals和hashCode方法]()中进行了描述。必须为散列和树存储结构创建 `equals()` 方法，但只有当把类放在 **HashSet** 中时才需要 `hashCode()` （当然这很有可能，因为 **HashSet** 通常应该是作为 **Set** 实现的首选）或 **LinkedHashSet** 。 但是，作为一种良好的编程风格，在覆盖 `equals()` 时应始终覆盖 `hashCode()` 。
+
+下面的示例演示了成功使用具有特定 **Set** 实现的类型所需的方法：
+
+```java
+// collectiontopics/TypesForSets.java
+// Methods necessary to put your own type in a Set
+import java.util.*;
+import java.util.function.*;
+import java.util.Objects;
+
+class SetType {
+  protected int i;
+  SetType(int n) { i = n; }
+  @Override
+  public boolean equals(Object o) {
+    return o instanceof SetType &&
+      Objects.equals(i, ((SetType)o).i);
+  }
+  @Override
+  public String toString() {
+    return Integer.toString(i);
+  }
+}
+
+class HashType extends SetType {
+  HashType(int n) { super(n); }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(i);
+  }
+}
+
+class TreeType extends SetType
+implements Comparable<TreeType> {
+  TreeType(int n) { super(n); }
+  @Override
+  public int compareTo(TreeType arg) {
+    return Integer.compare(arg.i, i);
+    // Equivalent to:
+    // return arg.i < i ? -1 : (arg.i == i ? 0 : 1);
+  }
+}
+
+public class TypesForSets {
+  static <T> void
+  fill(Set<T> set, Function<Integer, T> type) {
+    for(int i = 10; i >= 5; i--) // Descending
+      set.add(type.apply(i));
+    for(int i = 0; i < 5; i++) // Ascending
+      set.add(type.apply(i));
+  }
+  static <T> void
+  test(Set<T> set, Function<Integer, T> type) {
+    fill(set, type);
+    fill(set, type); // Try to add duplicates
+    fill(set, type);
+    System.out.println(set);
+  }
+  public static void main(String[] args) {
+    test(new HashSet<>(), HashType::new);
+    test(new LinkedHashSet<>(), HashType::new);
+    test(new TreeSet<>(), TreeType::new);
+    // Things that don't work:
+    test(new HashSet<>(), SetType::new);
+    test(new HashSet<>(), TreeType::new);
+    test(new LinkedHashSet<>(), SetType::new);
+    test(new LinkedHashSet<>(), TreeType::new);
+    try {
+      test(new TreeSet<>(), SetType::new);
+    } catch(Exception e) {
+      System.out.println(e.getMessage());
+    }
+    try {
+      test(new TreeSet<>(), HashType::new);
+    } catch(Exception e) {
+      System.out.println(e.getMessage());
+    }
+  }
+}
+/* Output:
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+[10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4]
+[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+[1, 6, 8, 6, 2, 7, 8, 9, 4, 10, 7, 5, 1, 3, 4, 9, 9,
+10, 5, 3, 2, 0, 4, 1, 2, 0, 8, 3, 0, 10, 6, 5, 7]
+[3, 1, 4, 8, 7, 6, 9, 5, 3, 0, 10, 5, 5, 10, 7, 8, 8,
+9, 1, 4, 10, 2, 6, 9, 1, 6, 0, 3, 2, 0, 7, 2, 4]
+[10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5,
+0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4]
+[10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5,
+0, 1, 2, 3, 4, 10, 9, 8, 7, 6, 5, 0, 1, 2, 3, 4]
+SetType cannot be cast to java.lang.Comparable
+HashType cannot be cast to java.lang.Comparable
+*/
+```
+
+为了证明特定 **Set** 需要哪些方法，同时避免代码重复，这里创建了三个类。基类 **SetType** 存储一个 **int** 值，并通过 `toString()` 方法打印它。由于存储在 **Set** 中的所有类都必须具有 `equals()` ，因此该方法也放在基类中。基于 `int i` 来判断元素是否相等。
+
+**HashType** 继承自 **SetType** ，并添加了 `hashCode()` 方法，该方法对于 **Set** 的散列实现是必需的。
+
+要在任何类型的有序集合中使用对象，由 **TreeType** 实现的 **Comparable** 接口都是必需的，例如 **SortedSet** （ **TreeSet** 是其唯一实现）。在 `compareTo()` 中，请注意我没有使用“简单明了”的形式： `return i-i2` 。虽然这是一个常见的编程错误，但只有当 **i** 和 **i2** 是“无符号（unsigned）”整型时才能正常工作（如果 Java 有一个“unsigned”关键字的话，不过它没有）。它破坏了 Java 的有符号 **int** ，它不足以代表两个有符号整数的差异。如果 **i** 是一个大的正整数而 **j** 是一个大的负整数， `i-j` 将溢出并返回一个负值，这不是我们所需要的。
+
+通常希望 `compareTo()` 方法生成与 `equals()` 方法一致的自然顺序。如果 `equals()` 对于特定比较产生 **true**，则 `compareTo()` 应该为该比较返回结果 零，并且如果 `equals()` 为比较产生 **false** ，则 `compareTo()` 应该为该比较产生非零结果。
+
+在 **TypesForSets** 中， `fill()` 和 `test()` 都是使用泛型定义的，以防止代码重复。为了验证 **Set** 的行为， `test()` 在测试集上调用 `fill()` 三次，尝试引入重复的对象。 `fill()` 方法的参数可以接收任意一个 **Set** 类型，以及生成该类型的 **Function** 对象。因为此示例中使用的所有对象都有一个带有单个 **int** 参数的构造方法，所以可以将构造方法作为此 **Function** 传递，它将提供用于填充 **Set** 的对象。
+
+请注意， `fill()` 方法按降序添加前五个元素，按升序添加后五个元素，以此来指出生成的存储顺序。输出显示 **HashSet** 按升序保留元素，但是，在[附录:理解equals和hashCode方法]()中，你会发现这只是偶然的，因为散列会创建自己的存储顺序。这里只是因为元素是一个简单的 **int** ，在这种情况下它是升序的。 **LinkedHashSet** 按照插入顺序保存元素，**TreeSet** 按排序顺序维护元素（在此示例中因为 `compareTo()` 的实现方式，所以元素按降序排列。）
+
+特定的 **Set** 类型一般都有所必需的操作，如果尝试使用没能正确支持这些操作的类型，那么事情就会出错。将没有重新定义 `hashCode()` 方法的 **SetType** 或 **TreeType** 对象放入任何散列实现会导致重复值，因此违反了 **Set** 的主要契约。 这是相当令人不安的，因为这甚至不产生运行时错误。但是，默认的 `hashCode()` 是合法的，所以即使它是不正确的，这也是合法的行为。确保此类程序正确性的唯一可靠方法是将单元测试合并到构建系统中。
+
+如果尝试在 **TreeSet** 中使用没有实现 **Comparable** 接口的类型，则会得到更明确的结果：当 **TreeSet** 尝试将对象用作一个 **Comparable** 时，将会抛出异常。
+
+<!-- SortedSet -->
+### SortedSet
+
+**SortedSet** 中的元素保证按排序规则顺序， **SortedSet** 接口中的以下方法可以产生其他功能：
+
+- `Comparator comparator()` ：生成用于此 **Set** 的**Comparator** 或 **null** 来用于自然排序。
+- `Object first()` ：返回第一个元素。
+- `Object last()` ：返回最后一个元素。
+- `SortedSet subSet(fromElement，toElement)` ：使用 **fromElement** （包含）和 **toElement** （不包括）中的元素生成此 **Set** 的一个视图。
+- `SortedSet headSet(toElement)` ：使用顺序在 **toElement** 之前的元素生成此 **Set** 的一个视图。
+- `SortedSet tailSet(fromElement)` ：使用顺序在 **fromElement** 之后（包含 **fromElement** ）的元素生成此 **Set** 的一个视图。
+
+下面是一个简单的演示：
+
+```java
+// collectiontopics/SortedSetDemo.java
+import java.util.*;
+import static java.util.stream.Collectors.*;
+
+public class SortedSetDemo {
+  public static void main(String[] args) {
+    SortedSet<String> sortedSet =
+      Arrays.stream(
+        "one two three four five six seven eight"
+        .split(" "))
+        .collect(toCollection(TreeSet::new));
+    System.out.println(sortedSet);
+    String low = sortedSet.first();
+    String high = sortedSet.last();
+    System.out.println(low);
+    System.out.println(high);
+    Iterator<String> it = sortedSet.iterator();
+    for(int i = 0; i <= 6; i++) {
+      if(i == 3) low = it.next();
+      if(i == 6) high = it.next();
+      else it.next();
+    }
+    System.out.println(low);
+    System.out.println(high);
+    System.out.println(sortedSet.subSet(low, high));
+    System.out.println(sortedSet.headSet(high));
+    System.out.println(sortedSet.tailSet(low));
+  }
+}
+/* Output:
+[eight, five, four, one, seven, six, three, two]
+eight
+two
+one
+two
+[one, seven, six, three]
+[eight, five, four, one, seven, six, three]
+[one, seven, six, three, two]
+*/
+```
+
+注意， **SortedSet** 表示“根据对象的比较函数进行排序”，而不是“根据插入顺序”。可以使用 **LinkedHashSet** 保留元素的插入顺序。
 
 <!-- Queues -->
 ## 队列
@@ -1883,7 +2064,7 @@ List.set(): java.lang.UnsupportedOperationException
 
 
 
-[^1]: **java.util** 中的 **Map** 使用 **Map** 的 **getKey()** 和 **getValue()** 执行批量复制，因此这是有效的。如果自定义 **Map** 只是复制整个 **Map.Entry** ，那么这种方法就会出现问题。
+[^1]: **java.util** 中的 **Map** 使用 **Map** 的 `getKey()` 和 `getValue()` 执行批量复制，因此这是有效的。如果自定义 **Map** 只是复制整个 **Map.Entry** ，那么这种方法就会出现问题。
 
 [^2]: 虽然当我用这种方式描述它的时候听起来很奇怪而且好像没什么用处，但在[第十九章 类型信息]()章节中已经看到过，这种动态行为也可以非常强大有用。
 
