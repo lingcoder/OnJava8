@@ -96,7 +96,7 @@ Sphere 9
 
 ### 用于显示数组的实用程序
 
-在本章中，我们处处都要显示数组。Java提供了 **array.toString()** 来将数组转换为可读字符串，然后可以再控制台上显示。然而这种方式视觉上噪音太大，所以我们创建一个小的库来完成这项工作。
+在本章中，我们处处都要显示数组。Java提供了 **array.toString()** 来将数组转换为可读字符串，然后可以在控制台上显示。然而这种方式视觉上噪音太大，所以我们创建一个小的库来完成这项工作。
 
 ```java
 // onjava/ArrayShow.java
@@ -184,6 +184,123 @@ public interface ArrayShow {
 
 <!-- Arrays are First-Class Objects -->
 ## 一等对象
+
+不管你使用的什么类型的数组，数组中的数据集实际上都是对堆中真正对象的引用。数组是保存指向其他对象的引用的对象，数组可以隐式地地创建，作为数组初始化语法的一部分，也可以显式地创建，比如使用一个 **new** 关键字。数组对象的一部分（事实上，你唯一可以使用的方法）就是只读的 **length** 成员函数，它能告诉你数组对象中可以存储多少元素。**[ ]** 语法是你访问数组对象的唯一方式。
+
+下面的例子总结了初始化数组的多种方式，并且展示了如何给不同的数组对象分配数组引用。同时也可以看出对象数组和基元数组在使用上是完全相同的。唯一的不同之处就是对象数组存储的是对象的引用，而基元数组则直接存储基本数据类型的值。
+
+```java
+// arrays/ArrayOptions.java
+// Initialization & re-assignment of arrays
+import java.util.*;
+import static onjava.ArrayShow.*;
+
+public class ArrayOptions {
+  public static void main(String[] args) {
+    // Arrays of objects:
+    BerylliumSphere[] a; // Uninitialized local
+    BerylliumSphere[] b = new BerylliumSphere[5];
+
+    // The references inside the array are
+    // automatically initialized to null:
+    show("b", b);
+    BerylliumSphere[] c = new BerylliumSphere[4];
+    for(int i = 0; i < c.length; i++)
+      if(c[i] == null) // Can test for null reference
+        c[i] = new BerylliumSphere();
+
+    // Aggregate initialization:
+    BerylliumSphere[] d = {
+      new BerylliumSphere(),
+      new BerylliumSphere(),
+      new BerylliumSphere()
+    };
+
+    // Dynamic aggregate initialization:
+    a = new BerylliumSphere[]{
+      new BerylliumSphere(), new BerylliumSphere(),
+    };
+    // (Trailing comma is optional)
+
+    System.out.println("a.length = " + a.length);
+    System.out.println("b.length = " + b.length);
+    System.out.println("c.length = " + c.length);
+    System.out.println("d.length = " + d.length);
+    a = d;
+    System.out.println("a.length = " + a.length);
+
+    // Arrays of primitives:
+    int[] e; // Null reference
+    int[] f = new int[5];
+
+    // The primitives inside the array are
+    // automatically initialized to zero:
+    show("f", f);
+    int[] g = new int[4];
+    for(int i = 0; i < g.length; i++)
+      g[i] = i*i;
+    int[] h = { 11, 47, 93 };
+
+    //  Compile error: variable e not initialized:
+    //- System.out.println("e.length = " + e.length);
+    System.out.println("f.length = " + f.length);
+    System.out.println("g.length = " + g.length);
+    System.out.println("h.length = " + h.length);
+    e = h;
+    System.out.println("e.length = " + e.length);
+    e = new int[]{ 1, 2 };
+    System.out.println("e.length = " + e.length);
+  }
+}
+/* Output:
+b: [null, null, null, null, null]
+a.length = 2
+b.length = 5
+c.length = 4
+d.length = 3
+a.length = 3
+f: [0, 0, 0, 0, 0]
+f.length = 5
+g.length = 4
+h.length = 3
+e.length = 3
+e.length = 2
+*/
+
+```
+
+
+
+数组 **a** 是一个未初始化的本地变量，编译器不会允许你使用这个引用直到你正确地对其进行初始化。数组 **b** 被初始化成一系列指向 **BerylliumSphere**  对象的引用，但是并没有真正的 **BerylliumSphere** 对象被存储在数组中。尽管你仍然可以获得这个数组的大小，因为 **b** 指向合法对象。这带来了一个小问题：你无法找出到底有多少元素存储在数组中，因为 **length** 只能告诉你数组可以存储多少元素；这就是说，数组对象的大小并不是真正存储在数组中对象的个数。然而，当你创建一个对象数组，其引用将自动初始化为 **null** ，因此你可以通过检查特定数组元素中的引用是否为 **null** 来判断其中是否有对象。基元数组也有类似的机制，比如自动将数值类型初始化为 **0** ，char型初始化为 **(char)0** ，布尔类型初始化为 **false** 。
+
+在给数组中各元素分配 **BerylliumSphere** 对象后，数组 **c** 展示数组对象的创建。数组 **d** 展示了创建数组对象的聚合初始化语法（隐式地使用new在堆中创建对象，就像 **c** 一样）并且初始化成 **BeryliumSphere** 对象，这一切都在一条语句中完成。
+
+下一个数组初始化可以被看做是一个“动态聚合初始化”。 **d** 使用的聚合初始化必须在 **d** 定义的点使用，但是使用第二种语法，你可以在任何地方创建和初始化数组对象。例如，假设 **hide()** 是一个需要使用一系列的 **BeryliumSphere**对象。你可以这样调用它：
+
+```Java
+hide(d);
+```
+
+你也可以动态的创建你用作参数传递的数组：
+
+```Java
+hide(new BerylliumSphere[]{
+    new BerlliumSphere(),
+    new BerlliumSphere()
+});
+```
+
+很多情况下这种语法写代码更加方便。
+
+表达式：
+
+```Java
+a = d;
+```
+
+显示了你如何获取指向一个数组对象的引用并将其分配给另一个数组对象。就像你可以处理其他类型的对象引用。现在 **a** 和 **d** 都指向了堆中的同一个数组对象。
+
+**ArrayOptions.java** 的第二部分展示了基元数组的语法就像对象数组一样，除了基元数组直接保存基本数据类型的值。
 
 
 <!-- Returning an Array -->
