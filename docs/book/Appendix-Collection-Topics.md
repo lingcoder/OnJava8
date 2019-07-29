@@ -1857,7 +1857,7 @@ List.set(): java.lang.UnsupportedOperationException
 
 [第十二章 集合]()章节中的 **Set** 有关示例对 **Set** 的基本操作做了很好的介绍。 但是，这些示例可以方便地使用预定义的 Java 类型，例如 **Integer** 和 **String** ，它们可以在集合中使用。在创建自己的类型时请注意， **Set** （以及稍后会看到的 **Map** ）需要一种维护存储顺序的方法，该顺序因 **Set** 的不同实现而异。因此，不同的 **Set** 实现不仅具有不同的行为，而且它们对可以放入特定 **Set** 中的对象类型也有不同的要求：
 
-| **Set** 类型 | 要求 |
+| **Set** 类型 | 约束 |
 | :---: | :--- |
 | **Set(interface)** | 添加到 **Set** 中的每个元素必须是唯一的，否则，**Set** 不会添加重复元素。添加到 **Set** 的元素必须至少定义 `equals()` 方法以建立对象唯一性。 **Set** 与 **Collection** 具有完全相同的接口。 **Set** 接口不保证它将以任何特定顺序维护其元素。 |
 | **HashSet\*** | 注重快速查找元素的集合，其中元素必须定义 `hashCode()` 和 `equals()` 方法。 |
@@ -2237,6 +2237,277 @@ ConcurrentLinkedDeque
 <!-- Understanding Maps -->
 ## 理解Map
 
+正如在[第十二章 集合]()章节中所了解到的，**Map**（也称为 *关联数组* ）维护键值关联（对），因此可以使用键来查找值。标准 Java 库包含不同的 **Map** 基本实现，例如 **HashMap** ， **TreeMap** ， **LinkedHashMap** ， **WeakHashMap** ， **ConcurrentHashMap** 和 **IdentityHashMap** 。 它们都具有相同的基本 **Map** 接口，但它们的行为不同，包括效率，键值对的保存顺序和呈现顺序，保存对象的时间，如何在多线程程序中工作，以及如何确定键的相等性。 **Map** 接口的实现数量应该告诉你一些关于此工具重要性的信息。
+
+为了更深入地了解 **Map** ，学习如何构造关联数组会很有帮助。下面是一个非常简单的实现：
+
+```java
+// collectiontopics/AssociativeArray.java
+// Associates keys with values
+
+public class AssociativeArray<K, V> {
+  private Object[][] pairs;
+  private int index;
+  public AssociativeArray(int length) {
+    pairs = new Object[length][2];
+  }
+  public void put(K key, V value) {
+    if(index >= pairs.length)
+      throw new ArrayIndexOutOfBoundsException();
+    pairs[index++] = new Object[]{ key, value };
+  }
+  @SuppressWarnings("unchecked")
+  public V get(K key) {
+    for(int i = 0; i < index; i++)
+      if(key.equals(pairs[i][0]))
+        return (V)pairs[i][1];
+    return null; // Did not find key
+  }
+  @Override
+  public String toString() {
+    StringBuilder result = new StringBuilder();
+    for(int i = 0; i < index; i++) {
+      result.append(pairs[i][0].toString());
+      result.append(" : ");
+      result.append(pairs[i][1].toString());
+      if(i < index - 1)
+        result.append("\n");
+    }
+    return result.toString();
+  }
+  public static void main(String[] args) {
+    AssociativeArray<String,String> map =
+      new AssociativeArray<>(6);
+    map.put("sky", "blue");
+    map.put("grass", "green");
+    map.put("ocean", "dancing");
+    map.put("tree", "tall");
+    map.put("earth", "brown");
+    map.put("sun", "warm");
+    try {
+      map.put("extra", "object"); // Past the end
+    } catch(ArrayIndexOutOfBoundsException e) {
+      System.out.println("Too many objects!");
+    }
+    System.out.println(map);
+    System.out.println(map.get("ocean"));
+  }
+}
+/* Output:
+Too many objects!
+sky : blue
+grass : green
+ocean : dancing
+tree : tall
+earth : brown
+sun : warm
+dancing
+*/
+```
+
+关联数组中的基本方法是 `put()` 和 `get()` ，但为了便于显示，重写了 `toString()` 方法以打印键值对。为了显示它的工作原理，主方法加载一个带有字符串对的 **AssociativeArray** 并打印生成的映射，然后调用其中一个值的 `get()` 方法。
+
+要使用 `get()` 方法，可以传入要查找的 **key** ，它将生成相关联的值作为结果，如果找不到则返回 **null** 。 `get()` 方法使用可能是效率最低的方法来定位值：从数组的头部开始并使用 `equals()` 来比较键。但这里是侧重于简单，而不是效率。
+
+这个版本很有启发性，但它不是很有效，而且它只有一个固定的大小，这是不灵活的。幸运的是， **java.util** 中的那些 **Map** 没有这些问题。
+
+<!-- Performance -->
+### 性能
+
+性能是 **Map** 的基本问题，在 `get()` 中使用线性方法搜索一个键时会非常慢。这就是 **HashMap** 要加速的地方。它使用一个称为 *哈希码* 的特殊值来替代慢速搜索一个键。哈希码是一种从相关对象中获取一些信息并将其转换为该对象的“相对唯一” **int** 的方法。 `hashCode()` 是根类 **Object** 中的一个方法，因此所有 Java 对象都可以生成哈希码。 **HashMap** 获取对象的 `hashCode()` 并使用它来快速搜索键。这就使得性能有了显著的提升。[^3]
+
+以下是基本的 **Map** 实现。 **HashMap**上的星号表示，在没有其他约束的情况下，这应该是你的默认选择，因为它针对速度进行了优化。其他实现强调其他特性，因此不如 **HashMap** 快。
+
+| **Map** 实现 | 描述 |
+| :---: | :--- |
+| **HashMap\*** | 基于哈希表的实现。（使用此类来代替 **Hashtable** 。）为插入和定位键值对提供了常数时间性能。可以通过构造方法调整性能，这些构造方法允许你设置哈希表的容量和装填因子。 |
+| **LinkedHashMap** | 与 **HashMap** 类似，但是当遍历时，可以按插入顺序或最近最少使用（LRU）顺序获取键值对。只比 **HashMap** 略慢，一个例外是在迭代时，由于其使用链表维护内部顺序，所以会更快些。 |
+| **TreeMap** | 基于红黑树的实现。当查看键或键值对时，它们按排序顺序（由 **Comparable** 或 **Comparator** 确定）。 **TreeMap** 的侧重点是按排序顺序获得结果。 **TreeMap** 是唯一使用 `subMap()` 方法的 **Map** ，它返回红黑树的一部分。 |
+| **WeakHashMap** | 一种具有 *弱键*（weak keys） 的 **Map** ，为了解决某些类型的问题，它允许释放 **Map** 所引用的对象。如果在 **Map** 外没有对特定键的引用，则可以对该键进行垃圾回收。 |
+| **ConcurrentHashMap** | 不使用同步锁定的线程安全 **Mao** 。这在[第二十四章 并发编程]() 一章中讨论。 |
+| **IdentityHashMap** | 使用 `==` 而不是 `equals()` 来比较键。仅用于解决特殊问题，不适用于一般用途。 |
+
+散列是在 **Map** 中存储元素的最常用方法。
+
+**Map** 中使用的键的要求与 **Set** 中的元素的要求相同。可以在 **TypesForSets.java** 中看到这些。任何键必须具有 `equals()` 方法。如果键用于散列映射，则它还必须具有正确的 `hashCode()` 方法。如果键在 **TreeMap** 中使用，则必须实现 **Comparable** 接口。
+
+以下示例使用先前定义的 **CountMap** 测试数据集显示通过 **Map** 接口可用的操作：
+
+```java
+// collectiontopics/MapOps.java
+// Things you can do with Maps
+import java.util.concurrent.*;
+import java.util.*;
+import onjava.*;
+
+public class MapOps {
+  public static
+  void printKeys(Map<Integer,String> map) {
+    System.out.print("Size = " + map.size() + ", ");
+    System.out.print("Keys: ");
+    // Produce a Set of the keys:
+    System.out.println(map.keySet());
+  }
+  public static
+  void test(Map<Integer,String> map) {
+    System.out.println(
+      map.getClass().getSimpleName());
+    map.putAll(new CountMap(25));
+    // Map has 'Set' behavior for keys:
+    map.putAll(new CountMap(25));
+    printKeys(map);
+    // Producing a Collection of the values:
+    System.out.print("Values: ");
+    System.out.println(map.values());
+    System.out.println(map);
+    System.out.println("map.containsKey(11): " +
+      map.containsKey(11));
+    System.out.println(
+      "map.get(11): " + map.get(11));
+    System.out.println("map.containsValue(\"F0\"): "
+      + map.containsValue("F0"));
+    Integer key = map.keySet().iterator().next();
+    System.out.println("First key in map: " + key);
+    map.remove(key);
+    printKeys(map);
+    map.clear();
+    System.out.println(
+      "map.isEmpty(): " + map.isEmpty());
+    map.putAll(new CountMap(25));
+    // Operations on the Set change the Map:
+    map.keySet().removeAll(map.keySet());
+    System.out.println(
+      "map.isEmpty(): " + map.isEmpty());
+  }
+  public static void main(String[] args) {
+    test(new HashMap<>());
+    test(new TreeMap<>());
+    test(new LinkedHashMap<>());
+    test(new IdentityHashMap<>());
+    test(new ConcurrentHashMap<>());
+    test(new WeakHashMap<>());
+  }
+}
+/* Output: (First 11 Lines)
+HashMap
+Size = 25, Keys: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+Values: [A0, B0, C0, D0, E0, F0, G0, H0, I0, J0, K0,
+L0, M0, N0, O0, P0, Q0, R0, S0, T0, U0, V0, W0, X0, Y0]
+{0=A0, 1=B0, 2=C0, 3=D0, 4=E0, 5=F0, 6=G0, 7=H0, 8=I0,
+9=J0, 10=K0, 11=L0, 12=M0, 13=N0, 14=O0, 15=P0, 16=Q0,
+17=R0, 18=S0, 19=T0, 20=U0, 21=V0, 22=W0, 23=X0, 24=Y0}
+map.containsKey(11): true
+map.get(11): L0
+map.containsValue("F0"): true
+First key in map: 0
+Size = 24, Keys: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+map.isEmpty(): true
+map.isEmpty(): true
+                  ...
+*/
+```
+
+`printKeys()` 方法演示了如何生成 **Map** 的 **Collection** 视图。 `keySet()` 方法生成一个由 **Map** 中的键组成的 **Set** 。 打印 `values()` 方法的结果会生成一个包含 **Map** 中所有值的 **Collection** 。（请注意，键必须是唯一的，但值可以包含重复项。）由于这些 **Collection** 由 **Map** 支持，因此 **Collection** 中的任何更改都会反映在所关联的 **Map** 中。
+
+程序的其余部分提供了每个 **Map** 操作的简单示例，并测试了每种基本类型的 **Map** 。
+
+<!-- SortedMap -->
+### SortedMap
+
+使用 **SortedMap** （由 **TreeMap** 或 **ConcurrentSkipListMap** 实现），键保证按排序顺序，这允许在 **SortedMap** 接口中使用这些方法来提供其他功能：
+
+- `Comparator comparator()` ：生成用于此 **Map** 的比较器， **null** 表示自然排序。
+- `T firstKey()` ：返回第一个键。
+- `T lastKey()` ：返回最后一个键。
+- `SortedMap subMap(fromKey，toKey)` ：生成此 **Map** 的视图，其中键从 **fromKey**（包括），到 **toKey** （不包括）。
+- `SortedMap headMap(toKey)` ：使用小于 **toKey** 的键生成此 **Map** 的视图。
+- `SortedMap tailMap(fromKey)` ：使用大于或等于 **fromKey** 的键生成此 **Map** 的视图。
+
+这是一个类似于 **SortedSetDemo.java** 的示例，显示了 **TreeMap** 的这种额外行为：
+
+```java
+// collectiontopics/SortedMapDemo.java
+// What you can do with a TreeMap
+import java.util.*;
+import onjava.*;
+
+public class SortedMapDemo {
+  public static void main(String[] args) {
+    TreeMap<Integer,String> sortedMap =
+      new TreeMap<>(new CountMap(10));
+    System.out.println(sortedMap);
+    Integer low = sortedMap.firstKey();
+    Integer high = sortedMap.lastKey();
+    System.out.println(low);
+    System.out.println(high);
+    Iterator<Integer> it =
+      sortedMap.keySet().iterator();
+    for(int i = 0; i <= 6; i++) {
+      if(i == 3) low = it.next();
+      if(i == 6) high = it.next();
+      else it.next();
+    }
+    System.out.println(low);
+    System.out.println(high);
+    System.out.println(sortedMap.subMap(low, high));
+    System.out.println(sortedMap.headMap(high));
+    System.out.println(sortedMap.tailMap(low));
+  }
+}
+/* Output:
+{0=A0, 1=B0, 2=C0, 3=D0, 4=E0, 5=F0, 6=G0, 7=H0, 8=I0,
+9=J0}
+0
+9
+3
+7
+{3=D0, 4=E0, 5=F0, 6=G0}
+{0=A0, 1=B0, 2=C0, 3=D0, 4=E0, 5=F0, 6=G0}
+{3=D0, 4=E0, 5=F0, 6=G0, 7=H0, 8=I0, 9=J0}
+*/
+```
+
+这里，键值对按照键的排序顺序进行排序。因为 **TreeMap** 中存在顺序感，所以“位置”的概念很有意义，因此可以拥有第一个、最后一个元素或子图。
+
+<!-- LinkedHashMap -->
+### LinkedHashMap
+
+**LinkedHashMap** 针对速度进行哈希处理，但在遍历期间也会按插入顺序生成键值对（ `System.out.println()` 可以遍历它，因此可以看到遍历的结果）。 此外，可以在构造方法中配置 **LinkedHashMap** 以使用基于访问的 *最近最少使用*（LRU） 算法，因此未访问的元素（因此是删除的候选者）会出现在列表的前面。 这样可以轻松创建一个能够定期清理以节省空间的程序。下面是一个显示这两个功能的简单示例：
+
+```java
+// collectiontopics/LinkedHashMapDemo.java
+// What you can do with a LinkedHashMap
+import java.util.*;
+import onjava.*;
+
+public class LinkedHashMapDemo {
+  public static void main(String[] args) {
+    LinkedHashMap<Integer,String> linkedMap =
+      new LinkedHashMap<>(new CountMap(9));
+    System.out.println(linkedMap);
+    // Least-recently-used order:
+    linkedMap =
+      new LinkedHashMap<>(16, 0.75f, true);
+    linkedMap.putAll(new CountMap(9));
+    System.out.println(linkedMap);
+    for(int i = 0; i < 6; i++)
+      linkedMap.get(i);
+    System.out.println(linkedMap);
+    linkedMap.get(0);
+    System.out.println(linkedMap);
+  }
+}
+/* Output:
+{0=A0, 1=B0, 2=C0, 3=D0, 4=E0, 5=F0, 6=G0, 7=H0, 8=I0}
+{0=A0, 1=B0, 2=C0, 3=D0, 4=E0, 5=F0, 6=G0, 7=H0, 8=I0}
+{6=G0, 7=H0, 8=I0, 0=A0, 1=B0, 2=C0, 3=D0, 4=E0, 5=F0}
+{6=G0, 7=H0, 8=I0, 1=B0, 2=C0, 3=D0, 4=E0, 5=F0, 0=A0}
+*/
+```
+
+这些键值对确实是按照插入顺序进行遍历，即使对于LRU版本也是如此。 但是，在LRU版本中访问前六项（仅限）后，最后三项将移至列表的前面。然后，当再次访问“ **0** ”后，它移动到了列表的后面。
 
 <!-- Utilities -->
 ## 集合工具类
@@ -2261,6 +2532,7 @@ ConcurrentLinkedDeque
 
 [^2]: 虽然当我用这种方式描述它的时候听起来很奇怪而且好像没什么用处，但在[第十九章 类型信息]()章节中已经看到过，这种动态行为也可以非常强大有用。
 
+[^3]: 如果这些加速仍然无法满足性能需求，则可以通过编写自己的 **Map** 并将其自定义为特定类型来进一步加速表查找，以避免因向 **对象** 转换而导致的延迟。为了达到更高的性能水平，速度爱好者可以使用 Donald Knuth 的《计算机程序设计艺术（第3卷）：排序与查找》（第二版），将溢出桶列表（overflow bucket lists）替换为具有两个额外优势的阵列：它们可以针对磁盘存储进行优化，并且它们可以节省大部分创建和回收个别记录（individual records）的时间。
 
 <!-- 分页 -->
 
