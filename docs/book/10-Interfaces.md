@@ -1299,7 +1299,7 @@ import java.nio.*;
 import java.util.*;
 
 public class RandomStrings implements Readable {
-    private statdic Random rand = new Random(47);
+    private static Random rand = new Random(47);
     private static final char[] CAPITALS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private static final char[] LOWERS = "abcdefghijklmnopqrstuvwxyz".toCharArray();
     private static final char[] VOWELS = "aeiou".toCharArray();
