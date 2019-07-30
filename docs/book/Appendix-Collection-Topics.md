@@ -2512,6 +2512,320 @@ public class LinkedHashMapDemo {
 <!-- Utilities -->
 ## 集合工具类
 
+集合有许多独立的实用工具程序，在 **java.util.Collections** 中表示为静态方法。之前已经见过其中一些，例如 `addAll()` ， `reverseOrder()` 和 `binarySearch()` 。以下是其他内容（同步和不可修改的实用工具程序将在后面的章节中介绍）。在此表中，在需要的时候使用了泛型：
+
+| 方法 | 描述 |
+| :--- | :--- |
+| **checkedCollection(Collection\<T> c, Class\<T> type)** <br><br> **checkedList(List\<T> list, Class\<T> type)** <br><br> **checkedMap(Map\<K, V> m, Class\<K> keyType, Class\<V> valueType)** <br><br> **checkedSet(Set\<T> s, Class\<T> type)** <br><br> **checkedSortedMap(SortedMap\<K, V> m, Class\<K> keyType, Class\<V> valueType)** <br><br> **checkedSortedSet(SortedSet\<T> s, Class\<T> type)** | 生成 **Collection** 的动态类型安全视图或 **Collection** 的特定子类型。 当无法使用静态检查版本时使用这个版本。 <br><br> 这些方法的使用在[第九章 多态]()章节的“动态类型安全”标题下进行了展示。 |
+| **max(Collection)** <br><br> **min(Collection)** | 使用 **Collection** 中对象的自然比较方法生成参数集合中的最大或最小元素。 |
+| **max(Collection, Comparator)** <br><br> **min(Collection, Comparator)** | 使用 **Comparator** 指定的比较方法生成参数集合中的最大或最小元素。 |
+| **indexOfSubList(List source, List target)** | 返回 **target** 在 **source** 内第一次出现的起始索引，如果不存在则返回 -1。 |
+| **lastIndexOfSubList(List source, List target)** | 返回 **target** 在 **source** 内最后一次出现的起始索引，如果不存在则返回 -1。 |
+| **replaceAll(List\<T> list, T oldVal, T newVal)** | 用 **newVal** 替换列表中所有的 **oldVal** 。 |
+| **reverse(List)**| 反转列表 |
+| **reverseOrder()** <br><br> **reverseOrder(Comparator\<T>)** | 返回一个 **Comparator** ，它与集合中实现了 **comparable\<T>** 接口的对象的自然顺序相反。第二个版本颠倒了所提供的 **Comparator** 的顺序。 |
+| **rotate(List, int distance)** | 将所有元素向前移动 **distance** ，将尾部的元素移到开头。（译者注：即循环移动） |
+| **shuffle(List)** <br><br> **shuffle(List, Random)**  | 随机置换指定列表（即打乱顺序）。第一个版本使用了默认的随机化源，或者也可以使用第二个版本，提供自己的随机化源。 |
+| **sort(List\<T>)** <br><br> **sort(List\<T>, Comparator\<? super T> c)** | 第一个版本使用元素的自然顺序排序该 **List\<T>** 。第二个版本根据提供的 **Comparator** 排序。 |
+| **copy(List\<? super T> dest, List\<? extends T> src)** | 将 **src** 中的元素复制到 **dest** 。 |
+| **swap(List, int i, int j)** | 交换 **List** 中位置 **i** 和 位置 **j** 的元素。可能比你手工编写的速度快。 |
+| **fill(List\<? super T>, T x)** | 用 **x** 替换 **List** 中的所有元素。|
+| **nCopies(int n, T x)** | 返回大小为 **n** 的不可变 **List\<T>** ，其引用都指向 **x** 。 |
+| **disjoint(Collection, Collection)** | 如果两个集合没有共同元素，则返回 **true** 。 |
+| **frequency(Collection, Object x)** | 返回 **Collection** 中，等于 **x** 的元素个数。 |
+| **emptyList()** <br><br> **emptyMap()** <br><br> **emptySet()** | 返回不可变的空 **List** ， **Map** 或 **Set** 。这些是泛型的，因此生成的 **Collection** 可以被参数化为所需的类型。 |
+| **singleton(T x)** <br><br> **singletonList(T x)** <br><br> **singletonMap(K key, V value)** | 生成一个不可变的 **List** ， **Set** 或 **Map** ，其中只包含基于给定参数的单个元素。 |
+| **list(Enumeration\<T> e)** | 生成一个 **ArrayList\<T>** ，其中元素为（旧式） **Enumeration** （ **Iterator** 的前身）中的元素。用于从遗留代码向新式转换。 |
+| **enumeration(Collection\<T>)** | 为参数集合生成一个旧式的 **Enumeration\<T>** 。 |
+
+请注意， `min（)` 和 `max()` 使用 **Collection** 对象，而不使用 **List** ，因此不必担心是否应对 **Collection** 进行排序。（如前所述，在执行 `binarySearch()` 之前，将会对 **List** 或数组进行`sort()` 排序。）
+
+下面是一个示例，展示了上表中大多数实用工具程序的基本用法：
+
+```java
+// collectiontopics/Utilities.java
+// Simple demonstrations of the Collections utilities
+import java.util.*;
+
+public class Utilities {
+  static List<String> list = Arrays.asList(
+    "one Two three Four five six one".split(" "));
+  public static void main(String[] args) {
+    System.out.println(list);
+    System.out.println("'list' disjoint (Four)?: " +
+      Collections.disjoint(list,
+        Collections.singletonList("Four")));
+    System.out.println(
+      "max: " + Collections.max(list));
+    System.out.println(
+      "min: " + Collections.min(list));
+    System.out.println(
+      "max w/ comparator: " + Collections.max(list,
+      String.CASE_INSENSITIVE_ORDER));
+    System.out.println(
+      "min w/ comparator: " + Collections.min(list,
+      String.CASE_INSENSITIVE_ORDER));
+    List<String> sublist =
+      Arrays.asList("Four five six".split(" "));
+    System.out.println("indexOfSubList: " +
+      Collections.indexOfSubList(list, sublist));
+    System.out.println("lastIndexOfSubList: " +
+      Collections.lastIndexOfSubList(list, sublist));
+    Collections.replaceAll(list, "one", "Yo");
+    System.out.println("replaceAll: " + list);
+    Collections.reverse(list);
+    System.out.println("reverse: " + list);
+    Collections.rotate(list, 3);
+    System.out.println("rotate: " + list);
+    List<String> source =
+      Arrays.asList("in the matrix".split(" "));
+    Collections.copy(list, source);
+    System.out.println("copy: " + list);
+    Collections.swap(list, 0, list.size() - 1);
+    System.out.println("swap: " + list);
+    Collections.shuffle(list, new Random(47));
+    System.out.println("shuffled: " + list);
+    Collections.fill(list, "pop");
+    System.out.println("fill: " + list);
+    System.out.println("frequency of 'pop': " +
+      Collections.frequency(list, "pop"));
+    List<String> dups =
+      Collections.nCopies(3, "snap");
+    System.out.println("dups: " + dups);
+    System.out.println("'list' disjoint 'dups'?: " +
+      Collections.disjoint(list, dups));
+    // Getting an old-style Enumeration:
+    Enumeration<String> e =
+      Collections.enumeration(dups);
+    Vector<String> v = new Vector<>();
+    while(e.hasMoreElements())
+      v.addElement(e.nextElement());
+    // Converting an old-style Vector
+    // to a List via an Enumeration:
+    ArrayList<String> arrayList =
+      Collections.list(v.elements());
+    System.out.println("arrayList: " + arrayList);
+  }
+}
+/* Output:
+[one, Two, three, Four, five, six, one]
+'list' disjoint (Four)?: false
+max: three
+min: Four
+max w/ comparator: Two
+min w/ comparator: five
+indexOfSubList: 3
+lastIndexOfSubList: 3
+replaceAll: [Yo, Two, three, Four, five, six, Yo]
+reverse: [Yo, six, five, Four, three, Two, Yo]
+rotate: [three, Two, Yo, Yo, six, five, Four]
+copy: [in, the, matrix, Yo, six, five, Four]
+swap: [Four, the, matrix, Yo, six, five, in]
+shuffled: [six, matrix, the, Four, Yo, five, in]
+fill: [pop, pop, pop, pop, pop, pop, pop]
+frequency of 'pop': 7
+dups: [snap, snap, snap]
+'list' disjoint 'dups'?: true
+arrayList: [snap, snap, snap]
+*/
+```
+
+输出解释了每种实用方法的行为。请注意由于大小写的缘故，普通版本的 `min()` 和 `max()` 与带有 **String.CASE_INSENSITIVE_ORDER** 比较器参数的版本的区别。
+
+<!-- Sorting and Searching Lists -->
+### 排序和搜索列表
+
+用于执行排序和搜索 **List** 的实用工具程序与用于排序对象数组的程序具有相同的名字和方法签名，只不过是 **Collections** 的静态方法而不是 **Arrays** 。 这是一个使用 **Utilities.java** 中的 **list** 数据的示例：
+
+```java
+// collectiontopics/ListSortSearch.java
+// Sorting/searching Lists with Collections utilities
+import java.util.*;
+
+public class ListSortSearch {
+  public static void main(String[] args) {
+    List<String> list =
+      new ArrayList<>(Utilities.list);
+    list.addAll(Utilities.list);
+    System.out.println(list);
+    Collections.shuffle(list, new Random(47));
+    System.out.println("Shuffled: " + list);
+    // Use ListIterator to trim off last elements:
+    ListIterator<String> it = list.listIterator(10);
+    while(it.hasNext()) {
+      it.next();
+      it.remove();
+    }
+    System.out.println("Trimmed: " + list);
+    Collections.sort(list);
+    System.out.println("Sorted: " + list);
+    String key = list.get(7);
+    int index = Collections.binarySearch(list, key);
+    System.out.println(
+      "Location of " + key + " is " + index +
+      ", list.get(" + index + ") = " +
+      list.get(index));
+    Collections.sort(list,
+      String.CASE_INSENSITIVE_ORDER);
+    System.out.println(
+      "Case-insensitive sorted: " + list);
+    key = list.get(7);
+    index = Collections.binarySearch(list, key,
+      String.CASE_INSENSITIVE_ORDER);
+    System.out.println(
+      "Location of " + key + " is " + index +
+      ", list.get(" + index + ") = " +
+      list.get(index));
+  }
+}
+/* Output:
+[one, Two, three, Four, five, six, one, one, Two,
+three, Four, five, six, one]
+Shuffled: [Four, five, one, one, Two, six, six, three,
+three, five, Four, Two, one, one]
+Trimmed: [Four, five, one, one, Two, six, six, three,
+three, five]
+Sorted: [Four, Two, five, five, one, one, six, six,
+three, three]
+Location of six is 7, list.get(7) = six
+Case-insensitive sorted: [five, five, Four, one, one,
+six, six, three, three, Two]
+Location of three is 7, list.get(7) = three
+*/
+```
+
+就像使用数组进行搜索和排序一样，如果使用 **Comparator** 进行排序，则必须使用相同的 **Comparator** 执行 `binarySearch()` 。
+
+该程序还演示了 **Collections** 中的 `shuffle()` 方法，该方法随机打乱了 **List** 的顺序。 **ListIterator** 是在打乱后的列表中的特定位置创建的，用于从该位置删除元素，直到列表末尾。
+
+<!-- Making a Collection or Map Unmodifiable -->
+### 创建不可修改的 Collection 或 Map
+
+通常，创建 **Collection** 或 **Map** 的只读版本会很方便。 **Collections** 类通过将原始集合传递给一个方法然后返回一个只读版本的集合。 对于 **Collection** （如果不能将 **Collection** 视为更具体的类型）， **List** ， **Set** 和 **Map** ，这类方法有许多变体。这个示例展示了针对每种类型，正确构建只读版本集合的方法：
+
+```java
+// collectiontopics/ReadOnly.java
+// Using the Collections.unmodifiable methods
+import java.util.*;
+import onjava.*;
+
+public class ReadOnly {
+  static Collection<String> data =
+    new ArrayList<>(Countries.names(6));
+  public static void main(String[] args) {
+    Collection<String> c =
+      Collections.unmodifiableCollection(
+        new ArrayList<>(data));
+    System.out.println(c); // Reading is OK
+    //- c.add("one"); // Can't change it
+
+    List<String> a = Collections.unmodifiableList(
+        new ArrayList<>(data));
+    ListIterator<String> lit = a.listIterator();
+    System.out.println(lit.next()); // Reading is OK
+    //- lit.add("one"); // Can't change it
+
+    Set<String> s = Collections.unmodifiableSet(
+      new HashSet<>(data));
+    System.out.println(s); // Reading is OK
+    //- s.add("one"); // Can't change it
+
+    // For a SortedSet:
+    Set<String> ss =
+      Collections.unmodifiableSortedSet(
+        new TreeSet<>(data));
+
+    Map<String,String> m =
+      Collections.unmodifiableMap(
+        new HashMap<>(Countries.capitals(6)));
+    System.out.println(m); // Reading is OK
+    //- m.put("Ralph", "Howdy!");
+
+    // For a SortedMap:
+    Map<String,String> sm =
+      Collections.unmodifiableSortedMap(
+        new TreeMap<>(Countries.capitals(6)));
+  }
+}
+/* Output:
+[ALGERIA, ANGOLA, BENIN, BOTSWANA, BURKINA FASO,
+BURUNDI]
+ALGERIA
+[BENIN, BOTSWANA, ANGOLA, BURKINA FASO, ALGERIA,
+BURUNDI]
+{BENIN=Porto-Novo, BOTSWANA=Gaberone, ANGOLA=Luanda,
+BURKINA FASO=Ouagadougou, ALGERIA=Algiers,
+BURUNDI=Bujumbura}
+*/
+```
+
+为特定类型调用 “unmodifiable” 方法不会导致编译时检查，但是一旦发生转换，对修改特定集合内容的任何方法调用都将产生 **UnsupportedOperationException** 异常。
+
+在每种情况下，在将集合设置为只读之前，必须使用有意义的数据填充集合。填充完成后，最好的方法是用 “unmodifiable” 方法调用生成的引用替换现有引用。这样，一旦使得内容无法修改，那么就不会冒有意外更改内容的风险。另一方面，此工具还允许将可修改的集合保留为类中的**私有**集合，并从方法调用处返回对该集合的只读引用。所以，你可以在类内修改它，但其他人只能读它。
+
+<!-- Synchronizing a Collection or Map -->
+### 同步 Collection 或 Map
+
+**synchronized** 关键字是多线程主题的重要组成部分，更复杂的内容在[第二十四章 并发编程]()中介绍。在这里，只需要注意到 **Collections** 类包含一种自动同步整个集合的方法。 语法类似于 “unmodifiable” 方法：
+
+```java
+// collectiontopics/Synchronization.java
+// Using the Collections.synchronized methods
+import java.util.*;
+
+public class Synchronization {
+  public static void main(String[] args) {
+    Collection<String> c =
+      Collections.synchronizedCollection(
+        new ArrayList<>());
+    List<String> list = Collections
+      .synchronizedList(new ArrayList<>());
+    Set<String> s = Collections
+      .synchronizedSet(new HashSet<>());
+    Set<String> ss = Collections
+      .synchronizedSortedSet(new TreeSet<>());
+    Map<String,String> m = Collections
+      .synchronizedMap(new HashMap<>());
+    Map<String,String> sm = Collections
+      .synchronizedSortedMap(new TreeMap<>());
+  }
+}
+```
+
+最好立即通过适当的 “synchronized” 方法传递新集合，如上所示。这样，就不会意外地暴露出非同步版本。
+
+<!-- Fail Fast -->
+#### Fail Fast
+
+Java 集合还具有防止多个进程修改集合内容的机制。如果当前正在迭代集合，然后有其他一些进程介入并插入，删除或更改该集合中的对象，则会出现此问题。也许在集合中已经遍历过了那个元素，也许还没有遍历到，也许在调用 `size()` 之后集合的大小会缩小...有许多灾难情景。 Java 集合库使用一种 *fail-fast* 的机制，该机制可以检测到除了当前进程引起的更改之外，其它任何对集合的更改操作。如果它检测到其他人正在修改集合，则会立即生成 **ConcurrentModificationException** 异常。这就是“fail-fast”的含义——它不会在以后使用更复杂的算法尝试检测问题（快速失败）。
+
+通过创建迭代器并向迭代器指向的集合中添加元素，可以很容易地看到操作中的 fail-fast 机制，如下所示：
+
+```java
+// collectiontopics/FailFast.java
+// Demonstrates the "fail-fast" behavior
+import java.util.*;
+
+public class FailFast {
+  public static void main(String[] args) {
+    Collection<String> c = new ArrayList<>();
+    Iterator<String> it = c.iterator();
+    c.add("An object");
+    try {
+      String s = it.next();
+    } catch(ConcurrentModificationException e) {
+      System.out.println(e);
+    }
+  }
+}
+/* Output:
+java.util.ConcurrentModificationException
+*/
+```
+
+异常来自于在从集合中获得迭代器之后，又尝试在集合中添加元素。程序的两个部分可能会修改同一个集合，这种可能性的存在会产生不确定状态，因此异常会通知你更改代码。在这种情况下，应先将所有元素添加到集合，然后再获取迭代器。
+
+**ConcurrentHashMap** ， **CopyOnWriteArrayList** 和 **CopyOnWriteArraySet** 使用了特定的技术来避免产生 **ConcurrentModificationException** 异常。
 
 <!-- Holding References -->
 ## 持有引用
