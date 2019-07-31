@@ -377,7 +377,7 @@
     * [理解Map](docs/book/Appendix-Collection-Topics.md#理解Map)
     * [集合工具类](docs/book/Appendix-Collection-Topics.md#集合工具类)
     * [持有引用](docs/book/Appendix-Collection-Topics.md#持有引用)
-    * [避免旧式类库](docs/book/Appendix-Collection-Topics.md#避免旧式类库)
+    * [Java 1.0 / 1.1 的集合类](docs/book/Appendix-Collection-Topics.md#避免旧式类库)
     * [本章小结](docs/book/Appendix-Collection-Topics.md#本章小结)
 * [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
     * [线程](docs/book/Appendix-Low-Level-Concurrency.md#线程)

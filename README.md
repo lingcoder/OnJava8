@@ -53,7 +53,7 @@
 - [ ] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
 - [x] [附录:新IO](docs/book/Appendix-New-IO.md)
 - [ ] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
-- [ ] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
+- [x] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
 - [ ] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
 - [x] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
 - [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
