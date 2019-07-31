@@ -2830,16 +2830,399 @@ java.util.ConcurrentModificationException
 <!-- Holding References -->
 ## 持有引用
 
+**java.lang.ref** 中库包含一组类，这些类允许垃圾收集具有更大的灵活性。特别是当拥有可能导致内存耗尽的大对象时，这些类特别有用。这里有三个从抽象类 **Reference** 继承来的类： **SoftReference** （软引用）， **WeakReference** （弱引用）和 **PhantomReference** （虚引用）继承了三个类。如果一个对象只能通过这其中的一个 **Reference** 对象访问，那么这三种类型每个都为垃圾收集器提供不同级别的间接引用（indirection）。
+
+如果一个对象是 *可达的*（reachable），那么意味着在程序中的某个位置可以找到该对象。这可能意味着在栈上有一个直接引用该对象的普通引用，但也有可能是引用了一个对该对象有引用的对象，这可以有很多中间环节。如果某个对象是可达的，则垃圾收集器无法释放它，因为它仍然被程序所使用。如果某个对象是不可达的，则程序无法使用它，那么垃圾收集器回收该对象就是安全的。
+
+使用 **Reference** 对象继续保持对该对象的引用，以到达该对象，但也允许垃圾收集器释放该对象。因此，程序可以使用该对象，但如果内存即将耗尽，则允许释放该对象。
+
+可以通过使用 **Reference** 对象作为你和普通引用之间的中介（代理）来实现此目的。此外，必须没有对象的普通引用（未包含在 **Reference** 对象中的对象）。如果垃圾收集器发现对象可通过普通引用访问，则它不会释放该对象。
+
+按照 **SoftReference** ， **WeakReference** 和 **PhantomReference** 的顺序，每个都比前一个更“弱”，并且对应于不同的可达性级别。软引用用于实现对内存敏感的缓存。弱引用用于实现“规范化映射”（ canonicalized mappings）——对象的实例可以在程序的多个位置同时使用，以节省存储，但不会阻止其键（或值）被回收。虚引用用于调度 pre-mortem 清理操作，这是一种比 Java 终结机制（Java finalization mechanism）更灵活的方式。
+
+使用 **SoftReference** 和 **WeakReference** ，可以选择是否将它们放在 **ReferenceQueue** （用于 pre-mortem 清理操作的设备）中，但 **PhantomReference** 只能在 **ReferenceQueue** 上构建。下面是一个简单的演示：
+
+```java
+// collectiontopics/References.java
+// Demonstrates Reference objects
+import java.lang.ref.*;
+import java.util.*;
+
+class VeryBig {
+  private static final int SIZE = 10000;
+  private long[] la = new long[SIZE];
+  private String ident;
+  VeryBig(String id) { ident = id; }
+  @Override
+  public String toString() { return ident; }
+  @Override
+  protected void finalize() {
+    System.out.println("Finalizing " + ident);
+  }
+}
+
+public class References {
+  private static ReferenceQueue<VeryBig> rq =
+    new ReferenceQueue<>();
+  public static void checkQueue() {
+    Reference<? extends VeryBig> inq = rq.poll();
+    if(inq != null)
+      System.out.println("In queue: " + inq.get());
+  }
+  public static void main(String[] args) {
+    int size = 10;
+    // Or, choose size via the command line:
+    if(args.length > 0)
+      size = Integer.valueOf(args[0]);
+    LinkedList<SoftReference<VeryBig>> sa =
+      new LinkedList<>();
+    for(int i = 0; i < size; i++) {
+      sa.add(new SoftReference<>(
+        new VeryBig("Soft " + i), rq));
+      System.out.println(
+        "Just created: " + sa.getLast());
+      checkQueue();
+    }
+    LinkedList<WeakReference<VeryBig>> wa =
+      new LinkedList<>();
+    for(int i = 0; i < size; i++) {
+      wa.add(new WeakReference<>(
+        new VeryBig("Weak " + i), rq));
+      System.out.println(
+        "Just created: " + wa.getLast());
+      checkQueue();
+    }
+    SoftReference<VeryBig> s =
+      new SoftReference<>(new VeryBig("Soft"));
+    WeakReference<VeryBig> w =
+      new WeakReference<>(new VeryBig("Weak"));
+    System.gc();
+    LinkedList<PhantomReference<VeryBig>> pa =
+      new LinkedList<>();
+    for(int i = 0; i < size; i++) {
+      pa.add(new PhantomReference<>(
+        new VeryBig("Phantom " + i), rq));
+      System.out.println(
+        "Just created: " + pa.getLast());
+      checkQueue();
+    }
+  }
+}
+/* Output: (First and Last 10 Lines)
+Just created: java.lang.ref.SoftReference@15db9742
+Just created: java.lang.ref.SoftReference@6d06d69c
+Just created: java.lang.ref.SoftReference@7852e922
+Just created: java.lang.ref.SoftReference@4e25154f
+Just created: java.lang.ref.SoftReference@70dea4e
+Just created: java.lang.ref.SoftReference@5c647e05
+Just created: java.lang.ref.SoftReference@33909752
+Just created: java.lang.ref.SoftReference@55f96302
+Just created: java.lang.ref.SoftReference@3d4eac69
+Just created: java.lang.ref.SoftReference@42a57993
+...________...________...________...________...
+Just created: java.lang.ref.PhantomReference@45ee12a7
+In queue: null
+Just created: java.lang.ref.PhantomReference@330bedb4
+In queue: null
+Just created: java.lang.ref.PhantomReference@2503dbd3
+In queue: null
+Just created: java.lang.ref.PhantomReference@4b67cf4d
+In queue: null
+Just created: java.lang.ref.PhantomReference@7ea987ac
+In queue: null
+*/
+```
+
+当运行此程序（将输出重定向到文本文件以查看页面中的输出）时，将会看到对象是被垃圾收集了的，虽然仍然可以通过 **Reference** 对象访问它们（使用 `get()` 来获取实际的对象引用）。 还可以看到 **ReferenceQueue** 始终生成包含 **null** 对象的 **Reference** 。 要使用它，请从特定的 **Reference** 类继承，并为新类添加更多有用的方法。
+
+
+<!-- The WeakHashMap -->
+### WeakHashMap
+
+集合类库中有一个特殊的 **Map** 来保存弱引用： **WeakHashMap** 。 此类可以更轻松地创建规范化映射。在这种映射中，可以通过仅仅创建一个特定值的实例来节省存储空间。当程序需要该值时，它会查找映射中的现有对象并使用它（而不是从头开始创建一个）。 该映射可以将值作为其初始化的一部分，但更有可能的是在需要时创建该值。
+
+由于这是一种节省存储空间的技术，因此 **WeakHashMap** 允许垃圾收集器自动清理键和值，这是非常方便的。不能对放在 **WeakHashMap** 中的键和值做任何特殊操作，它们由 map 自动包装在 **WeakReference** 中。当键不再被使用的时候才允许清理，如下所示：
+
+```java
+// collectiontopics/CanonicalMapping.java
+// Demonstrates WeakHashMap
+import java.util.*;
+
+class Element {
+  private String ident;
+  Element(String id) { ident = id; }
+  @Override
+  public String toString() { return ident; }
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(ident);
+  }
+  @Override
+  public boolean equals(Object r) {
+    return r instanceof Element &&
+      Objects.equals(ident, ((Element)r).ident);
+  }
+  @Override
+  protected void finalize() {
+    System.out.println("Finalizing " +
+      getClass().getSimpleName() + " " + ident);
+  }
+}
+
+class Key extends Element {
+  Key(String id) { super(id); }
+}
+
+class Value extends Element {
+  Value(String id) { super(id); }
+}
+
+public class CanonicalMapping {
+  public static void main(String[] args) {
+    int size = 1000;
+    // Or, choose size via the command line:
+    if(args.length > 0)
+      size = Integer.valueOf(args[0]);
+    Key[] keys = new Key[size];
+    WeakHashMap<Key,Value> map =
+      new WeakHashMap<>();
+    for(int i = 0; i < size; i++) {
+      Key k = new Key(Integer.toString(i));
+      Value v = new Value(Integer.toString(i));
+      if(i % 3 == 0)
+        keys[i] = k; // Save as "real" references
+      map.put(k, v);
+    }
+    System.gc();
+  }
+}
+```
+
+**Key** 类必须具有 `hashCode()` 和 `equals()` ，因为它将被用作散列数据结构中的键。 `hashCode()` 的内容在[附录：理解hashCode和equals方法]()中进行了描述。
+
+运行程序，你会看到垃圾收集器每三个键跳过一次。对该键的普通引用也被放置在 **keys** 数组中，因此这些对象不能被垃圾收集。
 
 <!-- Java 1.0/1.1 Collections -->
-## 避免旧式类库
+## Java 1.0 / 1.1 的集合类
 
+不幸的是，许多代码是使用 Java 1.0 / 1.1 中的集合编写的，甚至新代码有时也是使用这些类编写的。编写新代码时切勿使用旧集合。旧的集合类有限，所以关于它们的讨论不多。由于它们是不合时宜的，所以我会尽量避免过分强调一些可怕的设计决定。
+
+<!-- Vector & Enumeration -->
+### Vector 和 Enumeration
+
+Java 1.0 / 1.1 中唯一的自扩展序列是 **Vector** ，因此它被用于很多地方。它的缺陷太多了，无法在这里描述（参见《Java编程思想》第1版，可从[www.OnJava8.com](www.OnJava8.com)免费下载）。基本上，你可以将它看作是具有冗长且笨拙的方法名称的 **ArrayList** 。在修订后的 Java 集合库中，**Vector** 已经被调整适配过，因此可以作为 **Collection** 和 **List** 来使用。事实证明这有点不正常，集合类库仍然包含它只是为了支持旧的 Java 代码，但这会让一些人误以为 **Vector** 已经变得更好了。
+
+迭代器的 Java 1.0 / 1.1 版本选择创建一个新名称“enumeration”，而不是使用每个人都熟悉的术语（“iterator”）。 **Enumeration** 接口小于 **Iterator** ，只包含两个方法，并且它使用更长的方法名称：如果还有更多元素，则 `boolean hasMoreElements()` 返回 `true` ， `Object nextElement()` 返回此enumeration的下一个元素 （否则会抛出异常）。
+
+**Enumeration** 只是一个接口，而不是一个实现，甚至新的类库有时仍然使用旧的 **Enumeration** ，这是不幸的，但通常是无害的。应该总是在自己的代码中使用 **Iterator** ，但要做好准备应对那些提供 **Enumeration** 的类库。
+
+此外，可以使用 `Collections.enumeration()` 方法为任何 **Collection** 生成 **Enumeration** ，如下例所示：
+
+```java
+// collectiontopics/Enumerations.java
+// Java 1.0/1.1 Vector and Enumeration
+import java.util.*;
+import onjava.*;
+
+public class Enumerations {
+  public static void main(String[] args) {
+    Vector<String> v =
+      new Vector<>(Countries.names(10));
+    Enumeration<String> e = v.elements();
+    while(e.hasMoreElements())
+      System.out.print(e.nextElement() + ", ");
+    // Produce an Enumeration from a Collection:
+    e = Collections.enumeration(new ArrayList<>());
+  }
+}
+/* Output:
+ALGERIA, ANGOLA, BENIN, BOTSWANA, BURKINA FASO,
+BURUNDI, CAMEROON, CAPE VERDE, CENTRAL AFRICAN
+REPUBLIC, CHAD,
+*/
+```
+
+要生成 **Enumeration** ，可以调用 `elements()` ，然后可以使用它来执行向前迭代。
+
+最后一行创建一个 **ArrayList** ，并使用 `enumeration() ` 来将 **ArrayList** 适配为一个 **Enumeration** 。 因此，如果有旧代码需要使用 **Enumeration** ，你仍然可以使用新集合。
+
+<!-- Hashtable -->
+### Hashtable
+
+正如你在本附录中的性能比较中所看到的，基本的 **Hashtable** 与 **HashMap** 非常相似，甚至方法名称都相似。在新代码中没有理由使用 **Hashtable** 而不是 **HashMap** 。
+
+<!-- Stack -->
+### Stack
+
+之前使用 **LinkedList** 引入了栈的概念。 Java 1.0 / 1.1 **Stack** 的奇怪之处在于，不是以组合方式使用 **Vector** ，而是继承自 **Vector** 。 因此它具有 **Vector** 的所有特征和行为以及一些额外的 **Stack** 行为。很难去知道设计师是否有意识地认为这样做是有用的，或者它是否只是太天真了，无论如何，它在进入发行版之前显然没有经过审查，所以这个糟糕的设计仍然存在（但不要使用它）。
+
+这是 **Stack** 的简单演示，向栈中放入枚举中每一个类型的 **String** 形式。它还展示了如何轻松地将 **LinkedList** 用作栈，或者使用在[第十二章：集合]()章节中创建的 **Stack** 类：
+
+```java
+// collectiontopics/Stacks.java
+// Demonstration of Stack Class
+import java.util.*;
+
+enum Month { JANUARY, FEBRUARY, MARCH, APRIL,
+  MAY, JUNE, JULY, AUGUST, SEPTEMBER,
+  OCTOBER, NOVEMBER }
+
+public class Stacks {
+  public static void main(String[] args) {
+    Stack<String> stack = new Stack<>();
+    for(Month m : Month.values())
+      stack.push(m.toString());
+    System.out.println("stack = " + stack);
+    // Treating a stack as a Vector:
+    stack.addElement("The last line");
+    System.out.println(
+      "element 5 = " + stack.elementAt(5));
+    System.out.println("popping elements:");
+    while(!stack.empty())
+      System.out.print(stack.pop() + " ");
+
+    // Using a LinkedList as a Stack:
+    LinkedList<String> lstack = new LinkedList<>();
+    for(Month m : Month.values())
+      lstack.addFirst(m.toString());
+    System.out.println("lstack = " + lstack);
+    while(!lstack.isEmpty())
+      System.out.print(lstack.removeFirst() + " ");
+
+    // Using the Stack class from
+    // the Collections Chapter:
+    onjava.Stack<String> stack2 =
+      new onjava.Stack<>();
+    for(Month m : Month.values())
+      stack2.push(m.toString());
+    System.out.println("stack2 = " + stack2);
+    while(!stack2.isEmpty())
+      System.out.print(stack2.pop() + " ");
+
+  }
+}
+/* Output:
+stack = [JANUARY, FEBRUARY, MARCH, APRIL, MAY, JUNE,
+JULY, AUGUST, SEPTEMBER, OCTOBER, NOVEMBER]
+element 5 = JUNE
+popping elements:
+The last line NOVEMBER OCTOBER SEPTEMBER AUGUST JULY
+JUNE MAY APRIL MARCH FEBRUARY JANUARY lstack =
+[NOVEMBER, OCTOBER, SEPTEMBER, AUGUST, JULY, JUNE, MAY,
+APRIL, MARCH, FEBRUARY, JANUARY]
+NOVEMBER OCTOBER SEPTEMBER AUGUST JULY JUNE MAY APRIL
+MARCH FEBRUARY JANUARY stack2 = [NOVEMBER, OCTOBER,
+SEPTEMBER, AUGUST, JULY, JUNE, MAY, APRIL, MARCH,
+FEBRUARY, JANUARY]
+NOVEMBER OCTOBER SEPTEMBER AUGUST JULY JUNE MAY APRIL
+MARCH FEBRUARY JANUARY
+*/
+```
+
+**String** 形式是由 **Month** 中的枚举常量生成的，使用 `push()` 压入到栈中，然后使用 `pop()` 从栈顶部取出。为了说明一点，将 **Vector** 的操作也在 **Stack** 对象上执行， 这是可能的，因为凭借继承， **Stack** 是 **Vector** 。 因此，可以在 **Vector** 上执行的所有操作也可以在 **Stack** 上执行，例如 `elementAt()` 。
+
+如前所述，在需要栈行为时使用 **LinkedList** ，或者从 **LinkedList** 类创建的 **onjava.Stack** 类。
+
+<!-- BitSet -->
+### BitSet
+
+**BitSet** 用于有效地存储大量的开关信息。仅从尺寸大小的角度来看它是有效的，如果你正在寻找有效的访问，它比使用本机数组（native array）稍慢。
+
+此外， **BitSet** 的最小大小是 **long** ：64位。这意味着如果你要存储更小的东西，比如8位， **BitSet** 就是浪费，如果尺寸有问题，你最好创建自己的类，或者只是用一个数组来保存你的标志。（只有在你创建许多包含开关信息列表的对象时才会出现这种情况，并且只应根据分析和其他指标来决定。如果你做出此决定只是因为您认为 **BitSet** 太大，那么最终会产生不必要的复杂性并且浪费大量时间。）
+
+当添加更多元素时，普通集合会扩展， **BitSet**也会这样做。以下示例显示了 **BitSet** 的工作原理：
+
+```java
+// collectiontopics/Bits.java
+// Demonstration of BitSet
+import java.util.*;
+
+public class Bits {
+  public static void printBitSet(BitSet b) {
+    System.out.println("bits: " + b);
+    StringBuilder bbits = new StringBuilder();
+    for(int j = 0; j < b.size() ; j++)
+      bbits.append(b.get(j) ? "1" : "0");
+    System.out.println("bit pattern: " + bbits);
+  }
+  public static void main(String[] args) {
+    Random rand = new Random(47);
+    // Take the LSB of nextInt():
+    byte bt = (byte)rand.nextInt();
+    BitSet bb = new BitSet();
+    for(int i = 7; i >= 0; i--)
+      if(((1 << i) &  bt) != 0)
+        bb.set(i);
+      else
+        bb.clear(i);
+    System.out.println("byte value: " + bt);
+    printBitSet(bb);
+
+    short st = (short)rand.nextInt();
+    BitSet bs = new BitSet();
+    for(int i = 15; i >= 0; i--)
+      if(((1 << i) &  st) != 0)
+        bs.set(i);
+      else
+        bs.clear(i);
+    System.out.println("short value: " + st);
+    printBitSet(bs);
+
+    int it = rand.nextInt();
+    BitSet bi = new BitSet();
+    for(int i = 31; i >= 0; i--)
+      if(((1 << i) &  it) != 0)
+        bi.set(i);
+      else
+        bi.clear(i);
+    System.out.println("int value: " + it);
+    printBitSet(bi);
+
+    // Test bitsets >= 64 bits:
+    BitSet b127 = new BitSet();
+    b127.set(127);
+    System.out.println("set bit 127: " + b127);
+    BitSet b255 = new BitSet(65);
+    b255.set(255);
+    System.out.println("set bit 255: " + b255);
+    BitSet b1023 = new BitSet(512);
+    b1023.set(1023);
+    b1023.set(1024);
+    System.out.println("set bit 1023: " + b1023);
+  }
+}
+/* Output:
+byte value: -107
+bits: {0, 2, 4, 7}
+bit pattern: 101010010000000000000000000000000000000000
+0000000000000000000000
+short value: 1302
+bits: {1, 2, 4, 8, 10}
+bit pattern: 011010001010000000000000000000000000000000
+0000000000000000000000
+int value: -2014573909
+bits: {0, 1, 3, 5, 7, 9, 11, 18, 19, 21, 22, 23, 24,
+25, 26, 31}
+bit pattern: 110101010101000000110111111000010000000000
+0000000000000000000000
+set bit 127: {127}
+set bit 255: {255}
+set bit 1023: {1023, 1024}
+*/
+```
+
+随机数生成器用于创建随机 **byte** ， **short** 和 **int** ，并且每个都在 **BitSet** 中转换为相应的位模式。这样可以正常工作，因为 **BitSet** 是64位，所以这些都不会导致它的大小增加，然后创建更大的 **BitSet** 。 请注意， **BitSet** 会根据需要进行扩展。
+
+对于可以命名的固定标志集， **EnumSet** （参见[第二十二章：枚举]()章节）通常比 **BitSet** 更好，因为 **EnumSet** 允许操作名称而不是数字位位置，从而可以减少错误。 **EnumSet** 还可以防止意外地添加新的标记位置，这可能会导致一些严重的，难以发现的错误。使用 **BitSet** 而不是 **EnumSet** 的唯一原因是，不知道在运行时需要多少标志，或者为标志分配名称是不合理的，或者需要 **BitSet** 中的一个特殊操作（请参阅 **BitSet** 和 **EnumSet** 的 JDK 文档）。
 
 <!-- Summary -->
 ## 本章小结
 
+集合可以说是编程语言中最常用的工具。有些语言（例如Python）甚至将基本集合组件（列表，映射和集合）作为内置函数包含在其中。
 
+正如在[第十二章：集合]()章节中看到的那样，可以使用集合执行许多非常有用的操作，而不需要太多努力。但是，在某些时候，为了正确地使用它们而不得不更多地了解集合，特别是，必须充分了解散列操作以编写自己的 `hashCode()` 方法（并且必须知道何时需要），并且你必须充分了解各种集合实现，以根据你的需求选择合适的集合。本附录涵盖了这些概念，并讨论了有关集合库的其他有用详细信息。你现在应该已经准备好在日常编程任务中使用 Java 集合了。
 
+集合库的设计很困难（大多数库设计问题都是如此）。在 C++ 中，集合类涵盖了许多不同类的基础。这比之前可用的 C++ 集合类更好，但它没有很好地转换为 Java 。在另一个极端，我看到了一个由单个类“collection”组成的集合库，它同时充当线性序列和关联数组。 Java 集合库试图在功能和复杂性之间取得平衡。结果在某些地方看起来有点奇怪。与早期 Java 库中的一些决策不同，这些奇怪的不是事故，而是在基于复杂性的权衡下而仔细考虑的决策。
 
 
 [^1]: **java.util** 中的 **Map** 使用 **Map** 的 `getKey()` 和 `getValue()` 执行批量复制，因此这是有效的。如果自定义 **Map** 只是复制整个 **Map.Entry** ，那么这种方法就会出现问题。
