@@ -630,7 +630,7 @@ public class FunctionalAnnotation {
 
 `@FunctionalInterface` 注解是可选的; Java 在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口。 `@FunctionalInterface` 的值在 `NotFunctional` 的定义中可见：接口中如果有多个方法则会产生编译时错误消息。
 
-仔细观察在定义 `f` 和 `fna` 时发生了什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而被赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口的类中的方法。Java 8 在这里添加了一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数接口（类型需要匹配），Java 会适配你的赋值到目标接口。 编译器会自动包装方法引用或 Lambda 表达式到实现目标接口的类的实例中。
+仔细观察在定义 `f` 和 `fna` 时发生了什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而被赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口的类中的方法。Java 8 在这里添加了一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数式接口（类型需要匹配），Java 会适配你的赋值到目标接口。 编译器会自动包装方法引用或 Lambda 表达式到实现目标接口的类的实例中。
 
 尽管 `FunctionalAnnotation` 确实适合 `Functional` 模型，但 Java 不允许我们将 `FunctionalAnnotation` 像 `fac` 定义一样直接赋值给 `Functional`，因为它没有明确地实现 `Functional` 接口。 令人惊奇的是 ，Java 8 允许我们以简便的语法为接口赋值函数。
 
@@ -638,17 +638,17 @@ public class FunctionalAnnotation {
 
  以下是基本命名准则：
 
-1. 如果只处理对象而非基本类型，名称为 `Function`，`Consumer`，`Predicate` 等。参数类型通过泛型添加。
+1. 如果只处理对象而非基本类型，名称则为 `Function`，`Consumer`，`Predicate` 等。参数类型通过泛型添加。
 
-2. 如果是基本类型，则由名称的第一部分表示，如 `LongConsumer`，`DoubleFunction`，`IntPredicate` 等，但基本 `Supplier` 类型例外。
+2. 如果接收的参数是基本类型，则由名称的第一部分表示，如 `LongConsumer`，`DoubleFunction`，`IntPredicate` 等，但基本 `Supplier` 类型例外。
 
 3. 如果返回值为基本类型，则用 `To` 表示，如 `ToLongFunction <T>` 和 `IntToLongFunction`。
 
 4. 如果返回值类型与参数类型一致，则是一个运算符：单个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
 
-5. 如果是 2 个参数且返回值为布尔值，则是一个谓词（Predicate）。
+5. 如果接收两个参数且返回值为布尔值，则是一个谓词（Predicate）。
 
-6. 如果是两个参数类型不同，则名称中有一个 `Bi`。
+6. 如果接收的两个参数类型不同，则名称中有一个 `Bi`。
 
 下表描述了 `java.util.function` 中的目标类型（包括例外情况）：
 
@@ -669,15 +669,15 @@ public class FunctionalAnnotation {
 |2 参数类型不同|**Bi操作** <br> (不同方法名)|**`BiFunction<T,U,R>` <br> `BiConsumer<T,U>` <br> `BiPredicate<T,U>` <br> `ToIntBiFunction<T,U>` <br> `ToLongBiFunction<T,U>` <br> `ToDoubleBiFunction<T>`**|
 
 
-　　此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出更多行的函数式接口。
+此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出更多行的函数式接口。
 
-能看出来在创建 `java.util.function` 时，设计者做出了一些选择。 
+可以看出，在创建 `java.util.function` 时，设计者们做出了一些选择。 
 
-例如，为什么没有 `IntComparator`，`LongComparator` 和 `DoubleComparator` 呢？有 `BooleanSupplier` 却没有其他表示 **Boolean** 的接口；有通用的 `BiConsumer` 却没有用于 **int**，**long** 和 **double** 的 `BiConsumers` 变体（我对他们放弃的原因表示同情）。这是疏忽还是有人决定（他们是如何得出这个结论的）？
+例如，为什么没有 `IntComparator`，`LongComparator` 和 `DoubleComparator` 呢？有 `BooleanSupplier` 却没有其他表示 **Boolean** 的接口；有通用的 `BiConsumer` 却没有用于 **int**，**long** 和 **double** 的 `BiConsumers` 变体（我对他们放弃的原因表示同情）。这些选择是疏忽还是有人认为其他组合的使用情况出现得很少（他们是如何得出这个结论的）？
 
-你还可以看到基本类型给 Java 添加了多少复杂性。为了缓解效率问题，该语言的第一版中就包含了基本类型。现在，在语言的生命周期中，我们仍然受到语言设计选择不佳的影响。
+你还可以看到基本类型给 Java 添加了多少复杂性。为了缓和效率问题，该语言的第一版中就包含了基本类型。现在，在语言的生命周期中，我们仍然受到语言设计选择不佳的影响。
 
-下面枚举基于 Lambda 表达式的所有不同 Function 变体的示例：
+下面枚举了基于 Lambda 表达式的所有不同 **Function** 变体的示例：
 
 ```java
 // functional/FunctionVariants.java
@@ -745,7 +745,7 @@ public class FunctionVariants {
 }
 ```
 
-这些 Lambda 表达式尝试生成适合对应函数签名的最简代码。 在某些情况下，有必要进行强制类型转换，否则编译器会报截断错误。
+这些 Lambda 表达式尝试生成适合函数签名的最简代码。 在某些情况下，有必要进行强制类型转换，否则编译器会报截断错误。
 
 主方法中的每个测试都显示了 `Function` 接口中不同类型的 `apply()` 方法。 每个都产生一个与其关联的 Lambda 表达式的调用。
 
@@ -788,7 +788,7 @@ someOtherName()
 
 查看 `BiConsumer` 的文档，你会看到 `accept()` 方法。 实际上，如果我们将方法命名为 `accept()`，它就可以作为方法引用。 但是我们也可用不同的名称，比如 `someOtherName()`。只要参数类型、返回类型与 `BiConsumer` 的 `accept()` 相同即可。
 
-因此，在使用函数接口时，名称无关紧要——只要参数类型和返回类型相同。 Java 会将你的方法映射到接口方法。 要调用方法，可以调用接口的函数式方法（在本例中为 `accept()`），而不是你的方法名。
+因此，在使用函数接口时，名称无关紧要——只要参数类型和返回类型相同。 Java 会将你的方法映射到接口方法。 要调用方法，可以调用接口的函数式方法名（在本例中为 `accept()`），而不是你的方法名。
 
 现在我们来看看所有基于类的函数式，应用于方法引用（即那些不涉及基本类型的函数）。下例我们创建了一个最简单的函数式签名。代码示例：
 
