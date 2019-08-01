@@ -100,7 +100,7 @@ char c = ch;
 
 <!-- High-Precision Numbers -->
 
-### 高精数值的存储
+### 高精度数值
 
 在 Java 中有两种类型的数据可用于高精度的计算。它们是 `BigInteger` 和 `BigDecimal`。尽管它们大致可以划归为“包装类型”，但是它们并没有对应的基本类型。
 
