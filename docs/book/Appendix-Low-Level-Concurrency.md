@@ -631,7 +631,7 @@ No odd numbers discovered
 
 ### 字分裂
 
-当你的 Java 数据类型足够大（在 Java 中 **long** 和 **double** 类型都是 64 位），写入变量的过程分两步进行，就会发生 *Word tearing* （字分裂）情况。 JVM 被允许将64位数量的读写作为两个单独的32位操作执行 [^3] ，这增加了在读写过程中发生上下文切换的可能性，因此其他任务会看到不正确的结果。这被称为 *Word tearing* （字分裂），因为你可能只看到其中一部分修改后的值。基本上，任务有时可以在第一步之后但在第二步之前读取变量，从而产生垃圾值（对于例如 **boolean** 或 **int** 类型的小变量是没有问题的；任何 **long** 或 **double** 类型则除外）。
+当你的 Java 数据类型足够大（在 Java 中 **long** 和 **double** 类型都是 64 位），写入变量的过程分两步进行，就会发生 *Word tearing* （字分裂）情况。 JVM 被允许将64位数量的读写作为两个单独的32位操作执行[^3]，这增加了在读写过程中发生上下文切换的可能性，因此其他任务会看到不正确的结果。这被称为 *Word tearing* （字分裂），因为你可能只看到其中一部分修改后的值。基本上，任务有时可以在第一步之后但在第二步之前读取变量，从而产生垃圾值（对于例如 **boolean** 或 **int** 类型的小变量是没有问题的；任何 **long** 或 **double** 类型则除外）。
 
 在缺乏任何其他保护的情况下，用 **volatile** 修饰符定义一个 **long** 或 **double** 变量，可阻止字分裂情况。然而，如果使用 **synchronized** 或 **java.util.concurrent.atomic** 类之一保护这些变量，则 **volatile** 将被取代。此外，**volatile** 不会影响到增量操作并不是原子操作的事实。
 
@@ -701,7 +701,7 @@ public class ReOrdering implements Runnable {
 
 在 Java 线程的讨论中，经常反复提交但不正确的知识是：“原子操作不需要同步”。 一个 *原子操作* 是不能被线程调度机制中断的操作；一旦操作开始，那么它一定可以在可能发生的“上下文切换”之前（切换到其他线程执行）执行完毕。依赖于原子性是很棘手且很危险的，如果你是一个并发编程专家，或者你得到了来自这样的专家的帮助，你才应该使用原子性来代替同步，如果你认为自己足够聪明可以应付这种玩火似的情况，那么请接受下面的测试：
 
-> Goetz 测试：如果你可以编写用于现代微处理器的高性能 JVM ，那么就有资格考虑是否可以避免同步 [^4] 。
+> Goetz 测试：如果你可以编写用于现代微处理器的高性能 JVM ，那么就有资格考虑是否可以避免同步[^4] 。
 
 了解原子性是很有用的，并且知道它与其他高级技术一起用于实现一些更加巧妙的  **java.util.concurrent** 库组件。 但是要坚决抵制自己依赖它的冲动。
 
@@ -719,7 +719,7 @@ i++; // Might be atomic in C++
 i += 2; // Might be atomic in C++
 ```
 
-但是在 C++ 中，这取决于编译器和处理器。你无法编写出依赖于原子性的 C++ 跨平台代码，因为 C++ [^5] 没有像 Java 那样的一致 *内存模型* （memory model）。
+但是在 C++ 中，这取决于编译器和处理器。你无法编写出依赖于原子性的 C++ 跨平台代码，因为 C++ [^5]没有像 Java 那样的一致 *内存模型* （memory model）。
 
 在 Java 中，上面的操作肯定不是原子性的，正如下面的方法产生的 JVM 指令中可以看到的那样：
 
@@ -1488,6 +1488,155 @@ NANOSECONDS.convert(delta, MILLISECONDS);
 
 ### PriorityBlockingQueue
 
+这是一个很基础的优先级队列，它具有可阻塞的读取操作。在下面的示例中， **Prioritized** 对象会被赋予优先级编号。几个 **Producer** 任务的实例会插入 **Prioritized** 对象到 **PriorityBlockingQueue** 中，但插入之间会有随机延时。然后，单个 **Consumer** 任务在执行 `take()` 时会显示多个选项，**PriorityBlockingQueue** 会将当前具有最高优先级的 **Prioritized** 对象提供给它。
+
+在 **Prioritized** 中的静态变量 **counter** 是 **AtomicInteger** 类型。这是必要的，因为有多个 **Producer** 并行运行；如果不是 **AtomicInteger** 类型，你将会看到重复的 **id** 号。 这个问题在 [并发编程](./24-Concurrent-Programming.md) 的 [构造函数非线程安全](./24-Concurrent-Programming.md) 一节中讨论过。
+
+```java
+// lowlevel/PriorityBlockingQueueDemo.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
+import onjava.Nap;
+
+class Prioritized implements Comparable<Prioritized>  {
+  private static AtomicInteger counter =
+    new AtomicInteger();
+  private final int id = counter.getAndIncrement();
+  private final int priority;
+  private static List<Prioritized> sequence =
+    new CopyOnWriteArrayList<>();
+  Prioritized(int priority) {
+    this.priority = priority;
+    sequence.add(this);
+  }
+  @Override
+  public int compareTo(Prioritized arg) {
+    return priority < arg.priority ? 1 :
+      (priority > arg.priority ? -1 : 0);
+  }
+  @Override
+  public String toString() {
+    return String.format(
+      "[%d] Prioritized %d", priority, id);
+  }
+  public void displaySequence() {
+    int count = 0;
+    for(Prioritized pt : sequence) {
+      System.out.printf("(%d:%d)", pt.id, pt.priority);
+      if(++count % 5 == 0)
+        System.out.println();
+    }
+  }
+  public static class EndSentinel extends Prioritized {
+    EndSentinel() { super(-1); }
+  }
+}
+
+class Producer implements Runnable {
+  private static AtomicInteger seed =
+    new AtomicInteger(47);
+  private SplittableRandom rand =
+    new SplittableRandom(seed.getAndAdd(10));
+  private Queue<Prioritized> queue;
+  Producer(Queue<Prioritized> q) {
+    queue = q;
+  }
+  @Override
+  public void run() {
+    rand.ints(10, 0, 20)
+      .mapToObj(Prioritized::new)
+      .peek(p -> new Nap(rand.nextDouble() / 10))
+      .forEach(p -> queue.add(p));
+    queue.add(new Prioritized.EndSentinel());
+  }
+}
+
+class Consumer implements Runnable {
+  private PriorityBlockingQueue<Prioritized> q;
+  private SplittableRandom rand =
+    new SplittableRandom(47);
+  Consumer(PriorityBlockingQueue<Prioritized> q) {
+    this.q = q;
+  }
+  @Override
+  public void run() {
+    while(true) {
+      try {
+        Prioritized pt = q.take();
+        System.out.println(pt);
+        if(pt instanceof Prioritized.EndSentinel) {
+          pt.displaySequence();
+          break;
+        }
+        new Nap(rand.nextDouble() / 10);
+      } catch(InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+}
+
+public class PriorityBlockingQueueDemo {
+  public static void main(String[] args) {
+    PriorityBlockingQueue<Prioritized> queue =
+      new PriorityBlockingQueue<>();
+    CompletableFuture.runAsync(new Producer(queue));
+    CompletableFuture.runAsync(new Producer(queue));
+    CompletableFuture.runAsync(new Producer(queue));
+    CompletableFuture.runAsync(new Consumer(queue))
+      .join();
+  }
+}
+/* Output:
+[15] Prioritized 2
+[17] Prioritized 1
+[17] Prioritized 5
+[16] Prioritized 6
+[14] Prioritized 9
+[12] Prioritized 0
+[11] Prioritized 4
+[11] Prioritized 12
+[13] Prioritized 13
+[12] Prioritized 16
+[14] Prioritized 18
+[15] Prioritized 23
+[18] Prioritized 26
+[16] Prioritized 29
+[12] Prioritized 17
+[11] Prioritized 30
+[11] Prioritized 24
+[10] Prioritized 15
+[10] Prioritized 22
+[8] Prioritized 25
+[8] Prioritized 11
+[8] Prioritized 10
+[6] Prioritized 31
+[3] Prioritized 7
+[2] Prioritized 20
+[1] Prioritized 3
+[0] Prioritized 19
+[0] Prioritized 8
+[0] Prioritized 14
+[0] Prioritized 21
+[-1] Prioritized 28
+(0:12)(2:15)(1:17)(3:1)(4:11)
+(5:17)(6:16)(7:3)(8:0)(9:14)
+(10:8)(11:8)(12:11)(13:13)(14:0)
+(15:10)(16:12)(17:12)(18:14)(19:0)
+(20:2)(21:0)(22:10)(23:15)(24:11)
+(25:8)(26:18)(27:-1)(28:-1)(29:16)
+(30:11)(31:6)(32:-1)
+*/
+```
+
+与前面的示例一样，**Prioritized** 对象的创建顺序在 **sequence** 的 **list** 对象上所记入，以便与实际执行顺序进行比较。 **EndSentinel** 是用于告知 **Consumer** 对象关闭的特殊类型。
+
+**Producer** 使用 **AtomicInteger** 变量为 **SplittableRandom** 设置随机生成种子，以便不同的 **Producer** 生成不同的队列。 这是必需的，因为多个生产者并行创建，如果不是这样，创建过程并不会是线程安全的。
+
+**Producer** 和 **Consumer** 通过 **PriorityBlockingQueue** 相互连接。因为阻塞队列的性质提供了所有必要的同步，因为阻塞队列的性质提供了所有必要的同步，请注意，显式同步是并不需要的 — 从队列中读取数据时，你不用考虑队列中是否有任何元素，因为队列在没有元素时将阻塞读取。
+
 ### Lock-Free Collections
 
 #### The Copying Strategy
@@ -1517,7 +1666,7 @@ NANOSECONDS.convert(delta, MILLISECONDS);
 
 [^4]: 这个测试的推论是，“如果某人表示线程是容易并且简单的，请确保这个人没有对你的项目做出重要的决策。如果那个人已经做出，那么你就已经陷入麻烦之中了。”
 
-[^5]: 这在即将产生的 C++ 的标准中得到了补救
+[^5]: 这在即将产生的 C++ 的标准中得到了补救。
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
