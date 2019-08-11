@@ -760,7 +760,7 @@ Woodwind.play() MIDDLE_C
 
 ## 抽象类和接口
 
-尤其是在 Java 8 引入 **default** 方法之后，区分何时抽象类还是接口是最好的选择变得更加令人困惑。下表做了明确的区分：
+尤其是在 Java 8 引入 **default** 方法之后，选择用抽象类还是用接口变得更加令人困惑。下表做了明确的区分：
 
 |         特性         |                            接口                            |                  抽象类                  |
 | :------------------: | :--------------------------------------------------------: | :--------------------------------------: |
@@ -1076,7 +1076,7 @@ Waveform 0
 
 ![类图](../images/1562999314238.png)
 
-在一个派生类中，你不能要求必须有一个是抽象的活“具体的”（没有任何抽象方法）的基类。如果确实要继承一个非接口的类，那么只能继承一个，其余的基元素必须都是接口。需要将所有的接口名称置于 **implements** 关键字之后且用逗号分隔。可以有任意多个接口，并可以向上转型为每个接口，因为每个接口都是独立的类型。下例展示了一个组合了多接口的具体类产生了新类：
+派生类并不要求必须继承自抽象的或“具体的”（没有任何抽象方法）的基类。如果继承一个非接口的类，那么只能继承一个类，其余的基元素必须都是接口。需要将所有的接口名称置于 **implements** 关键字之后且用逗号分隔。可以有任意多个接口，并可以向上转型为每个接口，因为每个接口都是独立的类型。下例展示了一个由多个接口组合而成的具体类产生的新类：
 
 ```java
 // interfaces/Adventure.java
@@ -1299,7 +1299,7 @@ import java.nio.*;
 import java.util.*;
 
 public class RandomStrings implements Readable {
-    private statdic Random rand = new Random(47);
+    private static Random rand = new Random(47);
     private static final char[] CAPITALS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
     private static final char[] LOWERS = "abcdefghijklmnopqrstuvwxyz".toCharArray();
     private static final char[] VOWELS = "aeiou".toCharArray();

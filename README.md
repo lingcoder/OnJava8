@@ -41,7 +41,7 @@
 - [ ] [第十九章 类型信息](docs/book/19-Type-Information.md) 
 - [ ] [第二十章 泛型](docs/book/20-Generics.md)
 - [ ] [第二十一章 数组](docs/book/21-Arrays.md)
-- [ ] [第二十二章 枚举](docs/book/22-Enumerations.md)
+- [x] [第二十二章 枚举](docs/book/22-Enumerations.md)
 - [x] [第二十三章 注解](docs/book/23-Annotations.md)
 - [ ] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
 - [ ] [第二十五章 设计模式](docs/book/25-Patterns.md)
@@ -53,8 +53,8 @@
 - [ ] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
 - [x] [附录:新IO](docs/book/Appendix-New-IO.md)
 - [ ] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
-- [ ] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
-- [ ] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
+- [x] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
+- [x] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
 - [x] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
 - [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
 - [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
@@ -90,9 +90,9 @@
 
 ## 贡献者
 
-* 主译：[LingCoder](https://github.com/LingCoder)，[sjsdfg](https://github.com/sjsdfg)
-* 参译：[xiangflight](https://github.com/xiangflight)，[1326670425](https://github.com/1326670425)，[LortSir](https://github.com/LortSir)
-* 校对：[LingCoder](https://github.com/LingCoder)，[xiangflight](https://github.com/xiangflight)，[nickChenyx](https://github.com/nickChenyx)
+* 主译：[LingCoder](https://github.com/LingCoder)，[sjsdfg](https://github.com/sjsdfg)，[xiangflight](https://github.com/xiangflight)
+* 参译：[Langdon-Chen](https://github.com/Langdon-Chen)，[1326670425](https://github.com/1326670425)，[LortSir](https://github.com/LortSir)
+* 校对：[LingCoder](https://github.com/LingCoder)，[jason31520](https://github.com/jason31520)，[xiangflight](https://github.com/xiangflight)，[nickChenyx](https://github.com/nickChenyx)
 
 
 ## 翻译说明
