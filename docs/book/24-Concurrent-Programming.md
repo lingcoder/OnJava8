@@ -1192,16 +1192,247 @@ Lambda2
 ```
 
 这里，前两个**submit()**调用可以改为调用**execute()**。所有**submit()**调用都返回**Futures**，您可以在后两次调用的情况下提取结果。
+
 <!-- Terminating Long-Running Tasks -->
 ## 终止耗时任务
 
+并发程序通常使用长时间运行的任务。可调用任务在完成时返回值;虽然这给它一个有限的寿命，但仍然可能很长。可运行的任务有时被设置为永远运行的后台进程。您经常需要一种方法在正常完成之前停止**Runnable**和**Callable**任务，例如当您关闭程序时。
+
+最初的Java设计提供了中断运行任务的机制（为了向后兼容，仍然存在）;中断机制包括阻塞问题。中断任务既乱又复杂，因为您必须了解可能发生中断的所有可能状态，以及可能导致的数据丢失。使用中断被视为反对模式，但我们仍然被迫接受。
+
+InterruptedException，因为设计的向后兼容性残留。
+
+任务终止的最佳方法是设置任务周期性检查的标志。然后任务可以通过自己的shutdown进程并正常终止。不是在任务中随机关闭线程，而是要求任务在到达了一个较好时自行终止。这总是产生比中断更好的结果，以及更容易理解的更合理的代码。
+
+以这种方式终止任务听起来很简单：设置任务可以看到的**boolean** flag。编写任务，以便定期检查标志并执行正常终止。这实际上就是你所做的，但是有一个复杂的问题：我们的旧克星，共同的可变状态。如果该标志可以被另一个任务操纵，则存在碰撞可能性。
+
+在研究Java文献时，你会发现很多解决这个问题的方法，经常使用**volatile**关键字。我们将使用更简单的技术并避免所有易变的参数，这些都在[附录：低级并发](./Appendix-Low-Level-Concurrency.md)中有所涉及。
+
+Java 5引入了**Atomic**类，它提供了一组可以使用的类型，而不必担心并发问题。我们将添加**AtomicBoolean**标志，告诉任务清理自己并退出。
+
+```java
+// concurrent/QuittableTask.java
+import java.util.concurrent.atomic.AtomicBoolean;import onjava.Nap;
+public class QuittableTask implements Runnable {
+    final int id;
+    public QuittableTask(int id) {
+        this.id = id;
+    }
+    private AtomicBoolean running =
+        new AtomicBoolean(true);
+    public void quit() {
+        running.set(false);
+    }
+    @Override
+    public void run() {
+        while(running.get())         // [1]
+            new Nap(0.1);
+        System.out.print(id + " ");  // [2]
+    }
+}
+
+```
+
+虽然多个任务可以在同一个实例上成功调用**quit()**，但是**AtomicBoolean**可以防止多个任务同时实际修改**running**，从而使**quit()**方法成为线程安全的。
+
+- [1]:只要运行标志为true，此任务的run（）方法将继续。
+- [2]: 显示仅在任务退出时发生。
+
+需要**running AtomicBoolean**证明编写Java program并发时最基本的困难之一是，如果**running**是一个普通的布尔值，你可能无法在执行程序中看到问题。实际上，在这个例子中，你可能永远不会有任何问题 - 但是代码仍然是不安全的。编写表明该问题的测试可能很困难或不可能。因此，您没有任何反馈来告诉您已经做错了。通常，您编写线程安全代码的唯一方法就是通过了解事情可能出错的所有细微之处。
+
+作为测试，我们将启动很多QuittableTasks然后关闭它们。尝试使用较大的COUNT值
+
+```java
+// concurrent/QuittingTasks.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.concurrent.*;
+import onjava.Nap;
+public class QuittingTasks {
+    public static final int COUNT = 150;
+    public static void main(String[] args) {
+    ExecutorService es =
+    Executors.newCachedThreadPool();
+    List<QuittableTask> tasks =
+    IntStream.range(1, COUNT)
+        .mapToObj(QuittableTask::new)
+        .peek(qt -> es.execute(qt))
+        .collect(Collectors.toList());
+    new Nap(1);
+    tasks.forEach(QuittableTask::quit);    es.shutdown();
+    }
+}
+/* Output:24 27 31 8 11 7 19 12 16 4 23 3 28 32 15 20 63 60 68 6764 39 47 52 51 55 40 43 48 59 44 56 36 35 71 72 83 10396 92 88 99 100 87 91 79 75 84 76 115 108 112 104 107111 95 80 147 120 127 119 123 144 143 116 132 124 128
+136 131 135 139 148 140 2 126 6 5 1 18 129 17 14 13 2122 9 10 30 33 58 37 125 26 34 133 145 78 137 141 138 6274 142 86 65 73 146 70 42 149 121 110 134 105 82 117106 113 122 45 114 118 38 50 29 90 101 89 57 53 94 4161 66 130 69 77 81 85 93 25 102 54 109 98 49 46 97
+*/
+```
+
+我使用**peek()**将**QuittableTasks**传递给**ExecutorService**，然后将这些任务收集到**List.main()**中，只要任何任务仍在运行，就会阻止程序退出。即使为每个任务按顺序调用quit（）方法，任务也不会按照它们创建的顺序关闭。独立运行的任务不会确定性地响应信号。
 
 <!-- CompletableFutures -->
 ## CompletableFuture类
 
+作为介绍，这里是使用CompletableFutures在QuittingTasks.java中：
+
+```java
+// concurrent/QuittingCompletable.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.concurrent.*;
+import onjava.Nap;
+public class QuittingCompletable {
+    public static void main(String[] args) {
+    List<QuittableTask> tasks =
+        IntStream.range(1, QuittingTasks.COUNT)
+            .mapToObj(QuittableTask::new)
+            .collect(Collectors.toList());
+        List<CompletableFuture<Void>> cfutures =
+        tasks.stream()
+            .map(CompletableFuture::runAsync)
+            .collect(Collectors.toList());
+        new Nap(1);
+        tasks.forEach(QuittableTask::quit);
+        cfutures.forEach(CompletableFuture::join);
+    }
+}
+/* Output:7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 2526 27 28 29 30 31 32 33 34 6 35 4 38 39 40 41 42 43 4445 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 6263 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 8081 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 9899 100 101 102 103 104 105 106 107 108 109 110 111 1121 113 114 116 117 118 119 120 121 122 123 124 125 126127 128 129 130 131 132 133 134 135 136 137 138 139 140141 142 143 144 145 146 147 148 149 5 115 37 36 2 3*/
+```
+
+任务是一个**List <QuittableTask>**，就像在**QuittingTasks.java**中一样，但是在这个例子中，没有**peek()**将每个**QuittableTask**提交给**ExecutorService**。相反，在创建cfutures期间，每个任务都交给**CompletableFuture::runAsync**。这执行**VerifyTask.run(**)并返回**CompletableFuture <Void>**。因为**run()**不返回任何内容，所以在这种情况下我只使用**CompletableFuture**调用**join()**来等待它完成。
+
+在此示例中需要注意的重要事项是，运行任务不需要**ExecutorService**。这由**CompletableFuture**管理（尽管有提供自己的**ExecutorService**的选项）。你也不需要调用**shutdown()**;事实上，除非你像我这样明确地调用**join()**，程序将尽快退出，而不必等待任务完成。
+
+这个例子只是一个起点。你很快就会看到ComplempleFutures能够做得更多。
+
+### 基本用法
+
+这是一个带有静态方法**work()**的类，它对该类的对象执行某些工作：
+
+```java
+// concurrent/Machina.java
+import onjava.Nap;
+public class Machina {
+    public enum State {
+        START, ONE, TWO, THREE, END;
+        State step() {
+            if(equals(END))
+            return END;
+            return values()[ordinal() + 1];
+        }
+    }
+    private State state = State.START;
+    private final int id;
+    public Machina(int id) {
+        this.id = id;
+    }
+    public static Machina work(Machina m) {
+        if(!m.state.equals(State.END)){
+            new Nap(0.1);
+            m.state = m.state.step();
+        }
+        System.out.println(m);return m;
+    }
+    @Override
+    public StringtoString() {
+        return"Machina" + id + ": " +      (state.equals(State.END)? "complete" : state);
+    }
+}
+
+```
+
+这是一个有限状态机，一个微不足道的机器，因为它没有分支......它只是从头到尾遍历一条路径。**work()**方法将机器从一个状态移动到下一个状态，并且需要100毫秒才能完成“工作”。
+
+我们可以用**CompletableFuture**做的一件事是使用**completedFuture()**将它包装在感兴趣的对象中
+
+```java
+// concurrent/CompletedMachina.java
+import java.util.concurrent.*;
+public class CompletedMachina {
+    public static void main(String[] args) {
+        CompletableFuture<Machina> cf =
+        CompletableFuture.completedFuture(
+            new Machina(0));
+        try {
+            Machina m = cf.get();  // Doesn't block
+        } catch(InterruptedException |
+            ExecutionException e) {
+        throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+**completedFuture()**创建一个“已经完成”的**CompletableFuture**。对这样一个未来做的唯一有用的事情是**get()**里面的对象，所以这看起来似乎没有用。注意**CompletableFuture**被输入到它包含的对象。这个很重要。
+
+通常，**get()**在等待结果时阻塞调用线程。此块可以通过**InterruptedException**或**ExecutionException**中断。在这种情况下，阻止永远不会发生，因为CompletableFutureis已经完成，所以答案立即可用。
+
+当我们将Machina包装在CompletableFuture中时，我们发现我们可以在CompletableFuture上添加操作来处理所包含的对象，事情变得更加有趣：
+
+```java
+// concurrent/CompletableApply.java
+import java.util.concurrent.*;
+public class CompletableApply {
+    public static void main(String[] args) {
+        CompletableFuture<Machina> cf =
+        CompletableFuture.completedFuture(
+            new Machina(0));
+        CompletableFuture<Machina> cf2 =
+            cf.thenApply(Machina::work);
+        CompletableFuture<Machina> cf3 =
+            cf2.thenApply(Machina::work);
+        CompletableFuture<Machina> cf4 =
+            cf3.thenApply(Machina::work);
+        CompletableFuture<Machina> cf5 =
+            cf4.thenApply(Machina::work);
+    }
+}
+/* Output:
+Machina0: ONE
+Machina0: TWO
+Machina0: THREE
+Machina0: complete
+*/
+
+```
+
+**thenApply()**应用一个接受输入并产生输出的函数。在这种情况下，**work()**函数产生与它相同的类型，因此每个得到的**CompletableFuture**仍然被输入为**Machina**，但是（类似于**Streams**中的**map()**）**Function**也可以返回不同的类型，这将反映在返回类型
+
+您可以在此处看到有关CompletableFutures的重要信息：它们会在您执行操作时自动解包并重新包装它们所携带的对象。这样你就不会陷入麻烦的细节，这使得编写和理解代码变得更加简单。
+
+我们可以消除中间变量并将操作链接在一起，就像我们使用Streams一样：
+
+```java
+// concurrent/CompletableApplyChained.javaimport java.util.concurrent.*;
+import onjava.Timer;
+public class CompletableApplyChained {
+    public static void main(String[] args) {
+        Timer timer = new Timer();
+        CompletableFuture<Machina> cf =
+        CompletableFuture.completedFuture(
+            new Machina(0))
+                  .thenApply(Machina::work)
+                  .thenApply(Machina::work)
+                  .thenApply(Machina::work)
+                  .thenApply(Machina::work);
+        System.out.println(timer.duration());
+    }
+}
+/* Output:
+Machina0: ONE
+Machina0: TWO
+Machina0: THREE
+Machina0: complete
+514
+*/
+
+```
+
+在这里，我们还添加了一个**Timer**，它向我们展示每一步增加100毫秒，还有一些额外的开销。
+**CompletableFutures**的一个重要好处是它们鼓励使用私有子类原则（不分享任何东西）。默认情况下，使用**thenApply()**来应用一个不与任何人通信的函数 - 它只需要一个参数并返回一个结果。这是函数式编程的基础，并且它在并发性方面非常有效。并行流和ComplempleFutures旨在支持这些原则。只要您不决定共享数据（共享非常容易，甚至意外）您可以编写相对安全的并发程序。
 
 <!-- Deadlock -->
 ## 死锁
+
 
 
 <!-- Constructors are not Thread-Safe -->
