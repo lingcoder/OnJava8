@@ -1192,9 +1192,82 @@ Lambda2
 ```
 
 这里，前两个**submit()**调用可以改为调用**execute()**。所有**submit()**调用都返回**Futures**，您可以在后两次调用的情况下提取结果。
+
 <!-- Terminating Long-Running Tasks -->
 ## 终止耗时任务
 
+并发程序通常使用长时间运行的任务。可调用任务在完成时返回值;虽然这给它一个有限的寿命，但仍然可能很长。可运行的任务有时被设置为永远运行的后台进程。您经常需要一种方法在正常完成之前停止**Runnable**和**Callable**任务，例如当您关闭程序时。
+
+最初的Java设计提供了中断运行任务的机制（为了向后兼容，仍然存在）;中断机制包括阻塞问题。中断任务既乱又复杂，因为您必须了解可能发生中断的所有可能状态，以及可能导致的数据丢失。使用中断被视为反对模式，但我们仍然被迫接受。
+
+InterruptedException，因为设计的向后兼容性残留。
+
+任务终止的最佳方法是设置任务周期性检查的标志。然后任务可以通过自己的shutdown进程并正常终止。不是在任务中随机关闭线程，而是要求任务在到达了一个较好时自行终止。这总是产生比中断更好的结果，以及更容易理解的更合理的代码。
+
+以这种方式终止任务听起来很简单：设置任务可以看到的**boolean** flag。编写任务，以便定期检查标志并执行正常终止。这实际上就是你所做的，但是有一个复杂的问题：我们的旧克星，共同的可变状态。如果该标志可以被另一个任务操纵，则存在碰撞可能性。
+
+在研究Java文献时，你会发现很多解决这个问题的方法，经常使用**volatile**关键字。我们将使用更简单的技术并避免所有易变的参数，这些都在[附录：低级并发](./Appendix-Low-Level-Concurrency.md)中有所涉及。
+
+Java 5引入了**Atomic**类，它提供了一组可以使用的类型，而不必担心并发问题。我们将添加**AtomicBoolean**标志，告诉任务清理自己并退出。
+
+```java
+// concurrent/QuittableTask.java
+import java.util.concurrent.atomic.AtomicBoolean;import onjava.Nap;
+public class QuittableTask implements Runnable {
+    final int id;
+    public QuittableTask(int id) {
+        this.id = id;
+    }
+    private AtomicBoolean running =
+        new AtomicBoolean(true);
+    public void quit() {
+        running.set(false);
+    }
+    @Override
+    public void run() {
+        while(running.get())         // [1]
+            new Nap(0.1);
+        System.out.print(id + " ");  // [2]
+    }
+}
+
+```
+
+虽然多个任务可以在同一个实例上成功调用**quit()**，但是**AtomicBoolean**可以防止多个任务同时实际修改**running**，从而使**quit()**方法成为线程安全的。
+
+- [1]:只要运行标志为true，此任务的run（）方法将继续。
+- [2]: 显示仅在任务退出时发生。
+
+需要**running AtomicBoolean**证明编写Java program并发时最基本的困难之一是，如果**running**是一个普通的布尔值，你可能无法在执行程序中看到问题。实际上，在这个例子中，你可能永远不会有任何问题 - 但是代码仍然是不安全的。编写表明该问题的测试可能很困难或不可能。因此，您没有任何反馈来告诉您已经做错了。通常，您编写线程安全代码的唯一方法就是通过了解事情可能出错的所有细微之处。
+
+作为测试，我们将启动很多QuittableTasks然后关闭它们。尝试使用较大的COUNT值
+
+```java
+// concurrent/QuittingTasks.java
+import java.util.*;
+import java.util.stream.*;
+import java.util.concurrent.*;
+import onjava.Nap;
+public class QuittingTasks {
+    public static final int COUNT = 150;
+    public static void main(String[] args) {
+    ExecutorService es =
+    Executors.newCachedThreadPool();
+    List<QuittableTask> tasks =
+    IntStream.range(1, COUNT)
+        .mapToObj(QuittableTask::new)
+        .peek(qt -> es.execute(qt))
+        .collect(Collectors.toList());
+    new Nap(1);
+    tasks.forEach(QuittableTask::quit);    es.shutdown();
+    }
+}
+/* Output:24 27 31 8 11 7 19 12 16 4 23 3 28 32 15 20 63 60 68 6764 39 47 52 51 55 40 43 48 59 44 56 36 35 71 72 83 10396 92 88 99 100 87 91 79 75 84 76 115 108 112 104 107111 95 80 147 120 127 119 123 144 143 116 132 124 128
+136 131 135 139 148 140 2 126 6 5 1 18 129 17 14 13 2122 9 10 30 33 58 37 125 26 34 133 145 78 137 141 138 6274 142 86 65 73 146 70 42 149 121 110 134 105 82 117106 113 122 45 114 118 38 50 29 90 101 89 57 53 94 4161 66 130 69 77 81 85 93 25 102 54 109 98 49 46 97
+*/
+```
+
+我使用**peek()**将**QuittableTasks**传递给**ExecutorService**，然后将这些任务收集到**List.main()**中，只要任何任务仍在运行，就会阻止程序退出。即使为每个任务按顺序调用quit（）方法，任务也不会按照它们创建的顺序关闭。独立运行的任务不会确定性地响应信号。
 
 <!-- CompletableFutures -->
 ## CompletableFuture类
