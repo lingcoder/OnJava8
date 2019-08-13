@@ -644,15 +644,210 @@ evt.kind(): ENTRY_DELETE
 
 <!-- Finding Files -->
 ## 文件查找
+到目前为止，为了找到文件，我们一直使用相当粗糙的方法，在 `path` 上调用 `toString()`，然后使用 `string` 操作查看结果。事实证明，`java.nio.file` 有更好的解决方案：通过在 `FileSystem` 对象上调用 `getPathMatcher()` 获得一个 `PathMatcher`，然后传入您感兴趣的模式。模式有两个选项：`glob` 和 `regex`。`glob` 比较简单，实际上功能非常强大，因此您可以使用 `glob` 解决许多问题。如果您的问题更复杂，可以使用 `regex`，这将在接下来的 `Strings` 一章中解释。
 
+在这里，我们使用 `glob` 查找以 `.tmp` 或 `.txt` 结尾的所有 `Path`：
+
+```java
+// files/Find.java
+// {ExcludeFromGradle}
+import java.nio.file.*;
+
+public class Find {
+  public static void
+  main(String[] args) throws Exception {
+    Path test = Paths.get("test");
+    Directories.refreshTestDir();
+    Directories.populateTestDir();
+    // Creating a *directory*, not a file:
+    Files.createDirectory(test.resolve("dir.tmp"));
+
+    PathMatcher matcher = FileSystems.getDefault()
+      .getPathMatcher("glob:**/*.{tmp,txt}");
+    Files.walk(test)
+      .filter(matcher::matches)
+      .forEach(System.out::println);
+    System.out.println("***************");
+
+    PathMatcher matcher2 = FileSystems.getDefault()
+      .getPathMatcher("glob:*.tmp");
+    Files.walk(test)
+      .map(Path::getFileName)
+      .filter(matcher2::matches)
+      .forEach(System.out::println);
+    System.out.println("***************");
+
+    Files.walk(test) // Only look for files
+      .filter(Files::isRegularFile)
+      .map(Path::getFileName)
+      .filter(matcher2::matches)
+      .forEach(System.out::println);
+  }
+}
+/* Output:
+test\bag\foo\bar\baz\5208762845883213974.tmp
+test\bag\foo\bar\baz\File.txt
+test\bar\baz\bag\foo\7918367201207778677.tmp
+test\bar\baz\bag\foo\File.txt
+test\baz\bag\foo\bar\8016595521026696632.tmp
+test\baz\bag\foo\bar\File.txt
+test\dir.tmp
+test\foo\bar\baz\bag\5832319279813617280.tmp
+test\foo\bar\baz\bag\File.txt
+***************
+5208762845883213974.tmp
+7918367201207778677.tmp
+8016595521026696632.tmp
+dir.tmp
+5832319279813617280.tmp
+***************
+5208762845883213974.tmp
+7918367201207778677.tmp
+8016595521026696632.tmp
+5832319279813617280.tmp
+*/
+```
+
+在 `matcher` 中，`glob` 表达式开头的 `**/` 表示“当前目录及所有子目录”，这在当你不仅仅要匹配当前目录下特定结尾的 `Path` 时非常有用。单 `*` 表示“任何东西”，然后是一个点，然后大括号表示一系列的可能性---我们正在寻找以`.tmp` 或 `.txt` 结尾的东西。您可以在 `getPathMatcher()` 文档中找到更多详细信息。
+
+`matcher2` 只使用 `*.tmp`，通常不匹配任何内容，但是添加 `map()` 操作会将完整路径减少到末尾的名称。
+
+注意，在这两种情况下，输出中都会出现 `dir.tmp`，即使它是一个目录而不是一个文件。要只查找文件，必须像在最后 `files.walk()` 中那样对其进行筛选。
 
 <!-- Reading & Writing Files -->
 ## 文件读写
+此时，我们可以对路径和目录做任何事情。 现在让我们看一下操纵文件本身的内容。
 
+如果一个文件很“小”，也就是说“它运行得足够快且占用内存小”，那么 `java.nio.file.Files` 类中的实用程序将帮助你轻松读写文本和二进制文件。
+
+`Files.readAllLines()` 一次读取整个文件（因此，“小”文件很有必要），产生一个`List<String>`。 对于示例文件，我们将重用`streams/Cheese.dat`：
+
+```java
+// files/ListOfLines.java
+import java.util.*;
+import java.nio.file.*;
+
+public class ListOfLines {
+  public static void
+  main(String[] args) throws Exception {
+    Files.readAllLines(
+      Paths.get("../streams/Cheese.dat"))
+      .stream()
+      .filter(line -> !line.startsWith("//"))
+      .map(line ->
+        line.substring(0, line.length()/2))
+      .forEach(System.out::println);
+  }
+}
+/* Output:
+Not much of a cheese
+Finest in the
+And what leads you
+Well, it's
+It's certainly uncon
+*/
+```
+
+跳过注释行，其余的内容每行只打印一半。 这实现起来很简单：你只需将 `Path` 传递给 `readAllLines()` （以前的 java 实现这个功能很复杂）。 有一个 `readAllLines()` 的重载版本，它包含一个 `Charset` 参数来存储文件的Unicode编码。
+
+`Files.write()` 被重载以写入 `byte` 数组或任何 `Iterable` 对象（它也有 `Charset` 选项）：
+
+```java
+// files/Writing.java
+import java.util.*;
+import java.nio.file.*;
+
+public class Writing {
+  static Random rand = new Random(47);
+  static final int SIZE = 1000;
+  public static void
+  main(String[] args) throws Exception {
+    // Write bytes to a file:
+    byte[] bytes = new byte[SIZE];
+    rand.nextBytes(bytes);
+    Files.write(Paths.get("bytes.dat"), bytes);
+    System.out.println("bytes.dat: " +
+      Files.size(Paths.get("bytes.dat")));
+
+    // Write an iterable to a file:
+    List<String> lines = Files.readAllLines(
+      Paths.get("../streams/Cheese.dat"));
+    Files.write(Paths.get("Cheese.txt"), lines);
+    System.out.println("Cheese.txt: " +
+      Files.size(Paths.get("Cheese.txt")));
+  }
+}
+/* Output:
+bytes.dat: 1000
+Cheese.txt: 199
+*/
+```
+
+我们使用 `Random` 来创建一个随机的 `byte` 数组; 你可以看到生成的文件大小是1000。
+
+一个 `List` 被写入文件，任何 `Iterable` 对象也可以这么做。
+
+如果文件大小有问题怎么办？ 比如说：
+
+1.文件太大，如果你一次读完整个文件，你可能会耗尽内存。
+
+2.您只需要在文件的中途工作以获得所需的结果，因此读取整个文件会浪费时间。
+
+`Files.lines()` 方便地将文件转换为行的 `Stream`：
+
+```java
+// files/ReadLineStream.java
+import java.nio.file.*;
+
+public class ReadLineStream {
+  public static void
+  main(String[] args) throws Exception {
+    Files.lines(Paths.get("PathInfo.java"))
+      .skip(13)
+      .findFirst()
+      .ifPresent(System.out::println);
+  }
+}
+/* Output:
+    show("RegularFile", Files.isRegularFile(p));
+*/
+```
+
+这本章中的第一个流式传输的示例，跳过13行，然后选择下一行并将其打印出来。
+
+`Files.lines()` 对于处理行作为 *incoming* `Stream` 非常有用，但是如果你想在 `Stream` 中读，操作或写怎么办？这就需要稍微复杂的代码：
+
+```java
+// files/StreamInAndOut.java
+import java.io.*;
+import java.nio.file.*;
+import java.util.stream.*;
+
+public class StreamInAndOut {
+  public static void main(String[] args) {
+    try(
+      Stream<String> input =
+        Files.lines(Paths.get("StreamInAndOut.java"));
+      PrintWriter output =
+        new PrintWriter("StreamInAndOut.txt")
+    ) {
+      input
+        .map(String::toUpperCase)
+        .forEachOrdered(output::println);
+    } catch(Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+}
+```
+
+因为我们在同一个块中执行所有操作，所以这两个文件都可以在相同的try-with-resources语句中打开。`PrintWriter` 是一个旧式的`java.io` 类，允许你“打印”到一个文件，所以它是这个应用程序的理想选择。如果你看一下 `StreamInAndOut.txt`，你会发现它确实是大写的。
 
 <!-- Summary -->
 ## 本章小结
+虽然这是对文件和目录操作的相当全面的介绍，但是库中仍然有没被介绍的功能 - 一定要研究 `java.nio.file` 的Javadocs，尤其是`java.nio.file.Files` 的。
 
+Java 7和8对于处理文件和目录的库中做了大量改进。如果您刚刚开始使用Java，那么您很幸运。在过去，它非常令人不愉快，我确信Java 设计者以前对于文件操作不够重视才没做简化。对于初学者来说这是一件很棒的事，对于教学者来说也一样。我不明白为什么花了这么长时间来解决这个明显的问题，但不过它被解决了，我很高兴。使用文件现在很简单，甚至很有趣，这是以前你永远想不到的。
 
 
 <!-- 分页 -->
