@@ -36,7 +36,7 @@
 - [x] [第十四章 流式编程](docs/book/14-Streams.md) 
 - [x] [第十五章 异常](docs/book/15-Exceptions.md)
 - [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
-- [ ] [第十七章 文件](docs/book/17-Files.md)
+- [x] [第十七章 文件](docs/book/17-Files.md)
 - [x] [第十八章 字符串](docs/book/18-Strings.md)
 - [ ] [第十九章 类型信息](docs/book/19-Type-Information.md) 
 - [ ] [第二十章 泛型](docs/book/20-Generics.md)
