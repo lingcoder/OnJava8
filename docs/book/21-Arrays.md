@@ -306,10 +306,270 @@ a = d;
 <!-- Returning an Array -->
 ## 返回数组
 
+假设你写了一个方法，这个方法不是返回一个元素，而是返回多个元素。对C++/C这样的语言来说这是很困难的，因为你无法返回一个数组，只能是返回一个指向数组的指针。这会带来一些问题，因为对数组生存期的控制变得很混乱，这会导致内存泄露。
+
+而在Java中，你只需返回数组，你永远不用为数组担心，只要你需要它，它就可用，垃圾收集器会在你用完后把它清理干净。
+
+下面，我们返回一个 **字符串** 数组：
+
+```Java
+// arrays/IceCreamFlavors.java
+// Returning arrays from methods
+import java.util.*;
+import static onjava.ArrayShow.*;
+
+public class IceCreamFlavors {
+  private static SplittableRandom rand =
+    new SplittableRandom(47);
+  static final String[] FLAVORS = {
+    "Chocolate", "Strawberry", "Vanilla Fudge Swirl",
+    "Mint Chip", "Mocha Almond Fudge", "Rum Raisin",
+    "Praline Cream", "Mud Pie"
+  };
+  public static String[] flavorSet(int n) {
+    if(n > FLAVORS.length)
+      throw new IllegalArgumentException("Set too big");
+    String[] results = new String[n];
+    boolean[] picked = new boolean[FLAVORS.length];
+    for(int i = 0; i < n; i++) {
+      int t;
+      do
+        t = rand.nextInt(FLAVORS.length);
+      while(picked[t]);
+      results[i] = FLAVORS[t];
+      picked[t] = true;
+    }
+    return results;
+  }
+  public static void main(String[] args) {
+    for(int i = 0; i < 7; i++)
+      show(flavorSet(3));
+  }
+}
+/* Output:
+[Praline Cream, Mint Chip, Vanilla Fudge Swirl]
+[Strawberry, Vanilla Fudge Swirl, Mud Pie]
+[Chocolate, Strawberry, Vanilla Fudge Swirl]
+[Rum Raisin, Praline Cream, Chocolate]
+[Mint Chip, Rum Raisin, Mocha Almond Fudge]
+[Mocha Almond Fudge, Mud Pie, Vanilla Fudge Swirl]
+[Mocha Almond Fudge, Mud Pie, Mint Chip]
+*/
+```
+
+
+
+**flaverset()** 创建名为 **results** 的 **String** 类型的数组。 这个数组的大小 **n** 取决于你传进方法的参数。然后选择从数组 **FLAVORS** 中随机选择flavors并且把它们放进 **results** 里并返回。返回一个数组就像返回其他任何的对象一样，实际上返回的是引用。数组是在 **flavorSet()** 中或者在其他的什么地方创建的并不重要。垃圾收集器会清理你用完的数组，你需要的数组则会保留。
+
+如果你必须要返回一系列不同类型的元素，你可以使用 [泛型](book/generics) 中介绍的 **元组** 。
+
+注意，当 **flavorSet()** 随机选择 flavors，它应该确保某个特定的选项被选中。这在一个 **do** 循环中执行，它将一直做出随机选择直到它发现一个元素不在 **picked** 数组中。（一个字符串
+
+比较将显示出随机选中的元素是不是已经存在于 **results** 数组中）。如果成功了，它将添加条目并且寻找下一个（ **i** 递增）。输出结果显示 **flvorSet()** 每一次都是按照随机顺序选择 flavors。
+
+直到书中的这个点，随机数通过 **java.util.Random** 类生成的，这个类从Java 1.0就有，甚至被更新以提供Java 8 流。现在我们可以介绍Java 8中的 **SplittableRandom** ,它不只是以线性操作工作（你最终会学到），还提供了一个高质量的随机数。我们将在这本书的后面部分使用  **SplittableRandom**  。
 
 <!-- Multidimensional Arrays -->
 ## 多维数组
 
+要创建多维的基元数组，你要用大括号来界定数组中的向量：
+
+```Java
+// arrays/MultidimensionalPrimitiveArray.java
+import java.util.*;
+
+public class MultidimensionalPrimitiveArray {
+  public static void main(String[] args) {
+    int[][] a = {
+      { 1, 2, 3, },
+      { 4, 5, 6, },
+    };
+    System.out.println(Arrays.deepToString(a));
+  }
+}
+/* Output:
+[[1, 2, 3], [4, 5, 6]]
+*/。
+```
+
+每个嵌套的大括号都代表了数组的一个维度。
+
+这个例子使用 **array.deepToString（）** 方法，这将多维数组转换成 **String**  类型，就像在输出中显示的那样。
+
+你也可以使用 **new** 分配数组。 这是一个使用 **new** 表达式分配的三维数组：
+
+```Java
+// arrays/ThreeDWithNew.java
+import java.util.*;
+
+public class ThreeDWithNew {
+  public static void main(String[] args) {
+    // 3-D array with fixed length:
+    int[][][] a = new int[2][2][4];
+    System.out.println(Arrays.deepToString(a));
+  }
+}
+/* Output:
+[[[0, 0, 0, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 0, 0,
+0]]]
+*/
+```
+
+倘若你不对基元数组进行显式的初始化，它的值会自动初始化。而对象数组将被初始化为 **null** 。
+
+组成矩阵的数组中每一个向量都可以是任意长度的（这叫做不规则数组）：
+
+```Java
+// arrays/RaggedArray.java
+import java.util.*;
+
+public class RaggedArray {
+  static int val = 1;
+  public static void main(String[] args) {
+    SplittableRandom rand = new SplittableRandom(47);
+    // 3-D array with varied-length vectors:
+    int[][][] a = new int[rand.nextInt(7)][][];
+    for(int i = 0; i < a.length; i++) {
+      a[i] = new int[rand.nextInt(5)][];
+      for(int j = 0; j < a[i].length; j++) {
+        a[i][j] = new int[rand.nextInt(5)];
+        Arrays.setAll(a[i][j], n -> val++); // [1]
+      }
+    }
+    System.out.println(Arrays.deepToString(a));
+  }
+}
+/* Output:
+[[[1], []], [[2, 3, 4, 5], [6]], [[7, 8, 9], [10, 11,
+12], []]]
+*/
+```
+
+第一个 **new** 创建了一个数组，这个数组首元素长度随机，其余的则不确定。第二个在for循环中的 **new**  给数组填充了元素，第三个 **new**  为数组的最后一个索引填充元素。
+
+* **[1]** Java 8 增加了 **Arrays.setAll()**  方法,其使用生成器来生成插入数组中的值。此生成器符合函数接口 **IntunaryOperator** ，只使用一个非 **默认** 的方法 **ApplyAsint(int操作数)** 。 **Arrays.setAll（）** 传递当前数组索引作为操作数，因此一个选项是提供 **n -> n** 的lambda表达式来显示数组的索引（在上面的代码中很容易尝试）。这里，我们忽略索引，只是插入递增计数器的值。
+
+非基元的对象数组也可以定义为不规则数组。这里，我们收集了许多使用大括号的 **new** 表达式：
+
+```Java
+// arrays/MultidimensionalObjectArrays.java
+import java.util.*;
+
+public class MultidimensionalObjectArrays {
+  public static void main(String[] args) {
+    BerylliumSphere[][] spheres = {
+      { new BerylliumSphere(), new BerylliumSphere() },
+      { new BerylliumSphere(), new BerylliumSphere(),
+        new BerylliumSphere(), new BerylliumSphere() },
+      { new BerylliumSphere(), new BerylliumSphere(),
+        new BerylliumSphere(), new BerylliumSphere(),
+        new BerylliumSphere(), new BerylliumSphere(),
+        new BerylliumSphere(), new BerylliumSphere() },
+    };
+    System.out.println(Arrays.deepToString(spheres));
+  }
+}
+/* Output:
+[[Sphere 0, Sphere 1], [Sphere 2, Sphere 3, Sphere 4,
+Sphere 5], [Sphere 6, Sphere 7, Sphere 8, Sphere 9,
+Sphere 10, Sphere 11, Sphere 12, Sphere 13]]
+*/
+```
+
+数组初始化时使用自动装箱技术：
+
+```Java
+// arrays/AutoboxingArrays.java
+import java.util.*;
+
+public class AutoboxingArrays {
+  public static void main(String[] args) {
+    Integer[][] a = { // Autoboxing:
+      { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 },
+      { 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 },
+      { 51, 52, 53, 54, 55, 56, 57, 58, 59, 60 },
+      { 71, 72, 73, 74, 75, 76, 77, 78, 79, 80 },
+    };
+    System.out.println(Arrays.deepToString(a));
+  }
+}
+/* Output:
+[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [21, 22, 23, 24, 25,
+26, 27, 28, 29, 30], [51, 52, 53, 54, 55, 56, 57, 58,
+59, 60], [71, 72, 73, 74, 75, 76, 77, 78, 79, 80]]
+*/
+```
+
+以下是如何逐个构建非基元的对象数组：
+
+```Java
+// arrays/AssemblingMultidimensionalArrays.java
+// Creating multidimensional arrays
+import java.util.*;
+
+public class AssemblingMultidimensionalArrays {
+  public static void main(String[] args) {
+    Integer[][] a;
+    a = new Integer[3][];
+    for(int i = 0; i < a.length; i++) {
+      a[i] = new Integer[3];
+      for(int j = 0; j < a[i].length; j++)
+        a[i][j] = i * j; // Autoboxing
+    }
+    System.out.println(Arrays.deepToString(a));
+  }
+}
+/* Output:
+[[0, 0, 0], [0, 1, 2], [0, 2, 4]]
+*/
+```
+
+**i  * j** 在这里只是为了向 **Integer** 中添加有趣的值。
+
+**Arrays.deepToString（）** 方法同时适用于基元数组和对象数组：
+
+```JAVA
+// arrays/MultiDimWrapperArray.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+// Multidimensional arrays of "wrapper" objects
+import java.util.*;
+
+public class MultiDimWrapperArray {
+  public static void main(String[] args) {
+    Integer[][] a1 = { // Autoboxing
+      { 1, 2, 3, },
+      { 4, 5, 6, },
+    };
+    Double[][][] a2 = { // Autoboxing
+      { { 1.1, 2.2 }, { 3.3, 4.4 } },
+      { { 5.5, 6.6 }, { 7.7, 8.8 } },
+      { { 9.9, 1.2 }, { 2.3, 3.4 } },
+    };
+    String[][] a3 = {
+      { "The", "Quick", "Sly", "Fox" },
+      { "Jumped", "Over" },
+      { "The", "Lazy", "Brown", "Dog", "&", "friend" },
+    };
+    System.out.println(
+      "a1: " + Arrays.deepToString(a1));
+    System.out.println(
+      "a2: " + Arrays.deepToString(a2));
+    System.out.println(
+      "a3: " + Arrays.deepToString(a3));
+  }
+}
+/* Output:
+a1: [[1, 2, 3], [4, 5, 6]]
+a2: [[[1.1, 2.2], [3.3, 4.4]], [[5.5, 6.6], [7.7,
+8.8]], [[9.9, 1.2], [2.3, 3.4]]]
+a3: [[The, Quick, Sly, Fox], [Jumped, Over], [The,
+Lazy, Brown, Dog, &, friend]]
+*/
+```
+
+同样的，在 **Integer** 和 **Double** 数组中，自动装箱为可为你创建包装器对象。
 
 <!-- Arrays and Generics -->
 ## 泛型数组
