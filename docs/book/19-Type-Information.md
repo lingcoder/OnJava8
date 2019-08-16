@@ -850,6 +850,184 @@ Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
 
 `instanceof` 有一个严格的限制：只可以将它与命名类型进行比较，而不能与 `Class` 对象作比较。在前面的例子中，你可能会觉得写出一大堆 `instanceof` 表达式很乏味，事实也是如此。但是，也没有办法让 `instanceof` 聪明起来，让它能够自动地创建一个 `Class` 对象的数组，然后将目标与这个数组中的对象逐一进行比较（稍后会看到一种替代方案）。其实这并不是那么大的限制，如果你在程序中写了大量的 `instanceof`，那就说明你的设计可能存在瑕疵。
 
+## 使用类字面量
+
+如果我们使用类字面量重新实现 `PetCreator` 类的话，其结果在很多方面都会更清晰：
+
+
+```java
+// typeinfo/pets/LiteralPetCreator.java
+// 使用类字面量
+// {java typeinfo.pets.LiteralPetCreator}
+package typeinfo.pets;
+import java.util.*;
+
+public class LiteralPetCreator extends PetCreator {
+  // try 代码块不再需要
+  @SuppressWarnings("unchecked")
+  public static
+  final List<Class<? extends Pet>> ALL_TYPES =
+    Collections.unmodifiableList(Arrays.asList(
+      Pet.class, Dog.class, Cat.class, Rodent.class,
+      Mutt.class, Pug.class, EgyptianMau.class,
+      Manx.class, Cymric.class, Rat.class,
+      Mouse.class, Hamster.class));
+  // 用于随机创建的类型:
+  private static final
+  List<Class<? extends Pet>> TYPES =
+    ALL_TYPES.subList(ALL_TYPES.indexOf(Mutt.class),
+      ALL_TYPES.size());
+  @Override
+  public List<Class<? extends Pet>> types() {
+    return TYPES;
+  }
+  public static void main(String[] args) {
+    System.out.println(TYPES);
+  }
+}
+/* 输出:
+[class typeinfo.pets.Mutt, class typeinfo.pets.Pug,
+class typeinfo.pets.EgyptianMau, class
+typeinfo.pets.Manx, class typeinfo.pets.Cymric, class
+typeinfo.pets.Rat, class typeinfo.pets.Mouse, class
+typeinfo.pets.Hamster]
+*/
+```
+
+在即将到来的 `PetCount3.java` 示例中，我们用所有 `Pet` 类型预先加载一个 `Map`（不仅仅是随机生成的），因此 `ALL_TYPES` 类型的列表是必要的。`types` 列表是 `ALL_TYPES` 类型（使用 `List.subList()` 创建）的一部分，它包含精确的宠物类型，因此用于随机生成 `Pet`。
+
+这次，`types` 的创建没有被 `try` 块包围，因为它是在编译时计算的，因此不会引发任何异常，不像 `Class.forName()`。
+
+我们现在在 `typeinfo.pets` 库中有两个 `PetCreator` 的实现。为了提供第二个作为默认实现，我们可以创建一个使用 `LiteralPetCreator` 的 *外观模式*：
+
+We now have two implementations of `PetCreator` in the `typeinfo.pets` library. To provide the second one as a default implementation, we can create a *Façade* that utilizes `LiteralPetCreator`:
+
+```java
+// typeinfo/pets/Pets.java
+// Facade to produce a default PetCreator
+package typeinfo.pets;
+import java.util.*;
+import java.util.stream.*;
+
+public class Pets {
+  public static final PetCreator CREATOR =
+    new LiteralPetCreator();
+
+  public static Pet get() {
+    return CREATOR.get();
+  }
+
+  public static Pet[] array(int size) {
+    Pet[] result = new Pet[size];
+    for(int i = 0; i < size; i++)
+      result[i] = CREATOR.get();
+    return result;
+  }
+
+  public static List<Pet> list(int size) {
+    List<Pet> result = new ArrayList<>();
+    Collections.addAll(result, array(size));
+    return result;
+  }
+
+  public static Stream<Pet> stream() {
+    return Stream.generate(CREATOR);
+  }
+}
+```
+
+这还提供了对 `get()`、`array()` 和 `list()` 的间接调用，以及生成 `Stream<Pet>` 的新方法。
+
+因为 `PetCount.countPets()` 采用了 `PetCreator` 参数，所以我们可以很容易地测试 `LiteralPetCreator`（通过上面的外观模式）：
+
+```java
+// typeinfo/PetCount2.java
+import typeinfo.pets.*;
+
+public class PetCount2 {
+  public static void main(String[] args) {
+    PetCount.countPets(Pets.CREATOR);
+  }
+}
+/* 输出:
+Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
+EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
+Pug Mouse Cymric
+{EgyptianMau=2, Pug=3, Rat=2, Cymric=5, Mouse=2, Cat=9,
+Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
+*/
+```
+
+输出与 `PetCount.java` 的输出相同。
+
+## 一个动态 `instanceof` 函数
+
+`Class.isInstance()` 方法提供了一种动态测试对象类型的方法。因此，所有这些繁琐的 `instanceof` 语句都可以从 `PetCount.java` 中删除：
+
+```java
+// typeinfo/PetCount3.java
+// 使用 isInstance() 方法
+import java.util.*;
+import java.util.stream.*;
+import onjava.*;
+import typeinfo.pets.*;
+
+public class PetCount3 {
+  static class Counter extends
+  LinkedHashMap<Class<? extends Pet>, Integer> {
+
+    Counter() {
+      super(LiteralPetCreator.ALL_TYPES.stream()
+        .map(lpc -> Pair.make(lpc, 0))
+        .collect(
+          Collectors.toMap(Pair::key, Pair::value)));
+    }
+
+    public void count(Pet pet) {
+      // Class.isInstance() 替换 instanceof:
+      entrySet().stream()
+        .filter(pair -> pair.getKey().isInstance(pet))
+        .forEach(pair ->
+          put(pair.getKey(), pair.getValue() + 1));
+    }
+
+    @Override
+    public String toString() {
+      String result = entrySet().stream()
+        .map(pair -> String.format("%s=%s",
+          pair.getKey().getSimpleName(),
+          pair.getValue()))
+        .collect(Collectors.joining(", "));
+      return "{" + result + "}";
+    }
+  }
+
+  public static void main(String[] args) {
+    Counter petCount = new Counter();
+    Pets.stream()
+      .limit(20)
+      .peek(petCount::count)
+      .forEach(p -> System.out.print(
+        p.getClass().getSimpleName() + " "));
+    System.out.println("\n" + petCount);
+  }
+}
+/* 输出:
+Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
+EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
+Pug Mouse Cymric
+{Rat=2, Pug=3, Mutt=3, Mouse=2, Cat=9, Dog=6, Cymric=5,
+EgyptianMau=2, Rodent=5, Hamster=1, Manx=7, Pet=20}
+*/
+```
+
+为了计算所有不同类型的 `Pet`，`Counter Map` 预先加载了来自 `LiteralPetCreator.ALL_TYPES` 的类型。如果不预先加载 `Map`，将只计数随机生成的类型，而不是像 `Pet` 和 `Cat` 这样的基本类型。
+
+`isInstance()` 方法消除了对 `instanceof` 表达式的需要。此外，这意味着你可以通过更改 `LiteralPetCreator.types` 数组来添加新类型的 `Pet`；程序的其余部分不需要修改（就像使用 `instanceof` 表达式时那样）。
+
+`toString()` 方法被重载，以便更容易读取输出，该输出仍与打印 `Map` 时看到的典型输出匹配。
+
+### Counting Recursively
 
 ## 类型转换检测
 
