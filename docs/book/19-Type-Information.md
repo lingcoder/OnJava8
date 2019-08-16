@@ -5,22 +5,21 @@
 
 > RTTI（RunTime Type Information，运行时类型信息）能够在程序运行时发现和使用类型信息
 
-RTTI把我们从只能在编译期进行面向类型操作的禁锢中解脱了出来，并且让我们可以使用某些非常强大的程序。对RTTI的需要，揭示了面向对象设计中许多有趣（并且复杂）的特性，同时也带来了关于如何组织程序的基本问题。
+RTTI 把我们从只能在编译期进行面向类型操作的禁锢中解脱了出来，并且让我们可以使用某些非常强大的程序。对 RTTI 的需要，揭示了面向对象设计中许多有趣（并且复杂）的特性，同时也带来了关于如何组织程序的基本问题。
 
-本章将讨论Java是如何在运行时识别对象和类信息的。主要有两种方式：
+本章将讨论 Java 是如何在运行时识别对象和类信息的。主要有两种方式：
 
 1. “传统的” RTTI：假定我们在编译时已经知道了所有的类型；
 2. “反射”机制：允许我们在运行时发现和使用类的信息。
 
 <!-- The Need for RTTI -->
+## 为什么需要 RTTI
 
-## 为什么需要RTTI
-
-下面看一下我们已经很熟悉的一个例子，它使用了多态的类层次结构。基类`Shape`是泛化的类型，从它派生出了三个具体类： `Circle` 、`Square` 和 `Triangle` （见下图所示）。
+下面看一下我们已经很熟悉的一个例子，它使用了多态的类层次结构。基类 `Shape` 是泛化的类型，从它派生出了三个具体类： `Circle` 、`Square` 和 `Triangle`（见下图所示）。
 
 ![多态例子Shape的类层次结构图](../images/image-20190409114913825-4781754.png)
 
-这是一个典型的类层次结构图，基类位于顶部，派生类向下扩展。面向对象编程的一个基本目的是：让代码只操纵对基类(这里即 `Shape` )的引用。这样，如果你想添加一个新类(比如从`Shape`派生出`Rhomboid`)来扩展程序，就不会影响原来的代码。在这个例子中，`Shape`接口中动态绑定了`draw()`方法，这样做的目的就是让客户端程序员可以使用泛化的`Shape`引用来调用`draw()`。`draw()`方法在所有派生类里都会被覆盖，而且由于它是动态绑定的，所以它可以使用`Shape`引用来调用，这就是多态。
+这是一个典型的类层次结构图，基类位于顶部，派生类向下扩展。面向对象编程的一个基本目的是：让代码只操纵对基类(这里即 `Shape` )的引用。这样，如果你想添加一个新类(比如从 `Shape` 派生出 `Rhomboid`)来扩展程序，就不会影响原来的代码。在这个例子中，`Shape`接口中动态绑定了 `draw()` 方法，这样做的目的就是让客户端程序员可以使用泛化的 `Shape` 引用来调用 `draw()`。`draw()` 方法在所有派生类里都会被覆盖，而且由于它是动态绑定的，所以它可以使用 `Shape` 引用来调用，这就是多态。
 
 因此，我们通常会创建一个具体的对象(`Circle`、`Square` 或者 `Triangle`)，把它向上转型成 `Shape` (忽略对象的具体类型)，并且在后面的程序中使用 `Shape` 引用来调用在具体对象中被重载的方法（如 `draw()`）。
 
@@ -76,36 +75,35 @@ Triangle.draw()
 
 另外在这个例子中，类型转换并不彻底：`Object` 被转型为 `Shape` ，而不是 `Circle`、`Square` 或者 `Triangle`。这是因为目前我们只能确保这个 `Stream<Shape>` 保存的都是 `Shape`：
 
-- 编译期，`stream` 和  Java  泛型系统确保放入 `stream` 的都是 `Shape` 对象（`Shape` 子类的对象也可视为 `Shape` 的对象），否则编译器会报错；
+- 编译期，`stream` 和 Java 泛型系统确保放入 `stream` 的都是 `Shape` 对象（`Shape` 子类的对象也可视为 `Shape` 的对象），否则编译器会报错；
 - 运行时，自动类型转换确保了从 `stream` 中取出的对象都是 `Shape` 类型。
 
 接下来就是多态机制的事了，`Shape` 对象实际执行什么样的代码，是由引用所指向的具体对象（`Circle`、`Square` 或者 `Triangle`）决定的。这也符合我们编写代码的一般需求，通常，我们希望大部分代码尽可能少了解对象的具体类型，而是只与对象家族中的一个通用表示打交道（本例中即为 `Shape`）。这样，代码会更容易写，更易读和维护；设计也更容易实现，更易于理解和修改。所以多态是面向对象的基本目标。
 
-但是，有时你会碰到一些编程问题，在这些问题中如果你能知道某个泛化引用的具体类型，就可以把问题轻松解决。例如，假设我们允许用户将某些几何形状高亮显示，现在希望找到屏幕上所有高亮显示的三角形；或者，我们现在需要旋转所有图形，但是想跳过圆形(因为圆形旋转没有意义)。这时我们就希望知道 `Stream<Shape>` 里边的形状具体是什么类型，而Java 实际上也满足了我们的这种需求。使用 RTTI，我们可以查询某个 `Shape` 引用所指向对象的确切类型，然后选择或者剔除特例。
+但是，有时你会碰到一些编程问题，在这些问题中如果你能知道某个泛化引用的具体类型，就可以把问题轻松解决。例如，假设我们允许用户将某些几何形状高亮显示，现在希望找到屏幕上所有高亮显示的三角形；或者，我们现在需要旋转所有图形，但是想跳过圆形(因为圆形旋转没有意义)。这时我们就希望知道 `Stream<Shape>` 里边的形状具体是什么类型，而 Java 实际上也满足了我们的这种需求。使用 RTTI，我们可以查询某个 `Shape` 引用所指向对象的确切类型，然后选择或者剔除特例。
 
 <!-- The Class Object -->
-
 ## `Class` 对象
 
-要理解 RTTI 在 Java 中的工作原理，首先必须知道类型信息在运行时是如何表示的。这项工作是由称为 **`Class`对象** 的特殊对象完成的，它包含了与类有关的信息。实际上，`Class` 对象就是用来创建该类所有"常规"对象的。Java 使用 `Class` 对象来实现 RTTI，即便是类型转换这样的操作都是用 `Class` 对象实现的。不仅如此，`Class` 类还提供了很多使用RTTI的其它方式。
+要理解 RTTI 在 Java 中的工作原理，首先必须知道类型信息在运行时是如何表示的。这项工作是由称为 **`Class`对象** 的特殊对象完成的，它包含了与类有关的信息。实际上，`Class` 对象就是用来创建该类所有"常规"对象的。Java 使用 `Class` 对象来实现 RTTI，即便是类型转换这样的操作都是用 `Class` 对象实现的。不仅如此，`Class` 类还提供了很多使用 RTTI 的其它方式。
 
-类是程序的一部分，每个类都有一个 `Class` 对象。换言之，每当我们编写并且编译了一个新类，就会产生一个 `Class` 对象（更恰当的说，是被保存在一个同名的 `.class` 文件中）。为了生成这个类的对象，Java虚拟机(JVM)先会调用"类加载器"子系统把这个类加载到内存中。
+类是程序的一部分，每个类都有一个 `Class` 对象。换言之，每当我们编写并且编译了一个新类，就会产生一个 `Class` 对象（更恰当的说，是被保存在一个同名的 `.class` 文件中）。为了生成这个类的对象，Java 虚拟机 (JVM) 先会调用"类加载器"子系统把这个类加载到内存中。
 
-类加载器子系统可能包含一条类加载器链，但有且只有一个**原生类加载器**，它是JVM实现的一部分。原生类加载器加载的是”可信类”（包括Java API类）。它们通常是从本地盘加载的。在这条链中，通常不需要添加额外的类加载器，但是如果你有特殊需求（例如以某种特殊的方式加载类，以支持Web服务器应用，或者通过网络下载类），也可以挂载额外的类加载器。
+类加载器子系统可能包含一条类加载器链，但有且只有一个**原生类加载器**，它是JVM实现的一部分。原生类加载器加载的是”可信类”（包括 Java API 类）。它们通常是从本地盘加载的。在这条链中，通常不需要添加额外的类加载器，但是如果你有特殊需求（例如以某种特殊的方式加载类，以支持 Web 服务器应用，或者通过网络下载类），也可以挂载额外的类加载器。
 
-所有的类都是第一次使用时动态加载到JVM中的，当程序创建第一个对类的静态成员的引用时，就会加载这个类。
+所有的类都是第一次使用时动态加载到 JVM 中的，当程序创建第一个对类的静态成员的引用时，就会加载这个类。
 
 > 其实构造器也是类的静态方法，虽然构造器前面并没有 `static` 关键字。所以，使用 `new` 操作符创建类的新对象，这个操作也算作对类的静态成员引用。
 
-因此，Java 程序在它开始运行之前并没有被完全加载，很多部分是在需要时才会加载。这一点与许多传统编程语言不同，动态加载使得Java具有一些静态加载语言（如C++）很难或者根本不可能实现的特性。
+因此，Java 程序在它开始运行之前并没有被完全加载，很多部分是在需要时才会加载。这一点与许多传统编程语言不同，动态加载使得 Java 具有一些静态加载语言（如 C++）很难或者根本不可能实现的特性。
 
-类加载器首先会检查这个类的 `Class` 对象是否已经加载，如果尚未加载，默认的类加载器就会根据类名查找 `.class` 文件（如果有附加的类加载器，这时候可能就会在数据库中或者通过其它方式获得字节码）。这个类的字节码被加载后，JVM会对其进行验证，确保它没有损坏，并且不包含不良的Java代码(这是Java安全防范的一种措施)。
+类加载器首先会检查这个类的 `Class` 对象是否已经加载，如果尚未加载，默认的类加载器就会根据类名查找 `.class` 文件（如果有附加的类加载器，这时候可能就会在数据库中或者通过其它方式获得字节码）。这个类的字节码被加载后，JVM 会对其进行验证，确保它没有损坏，并且不包含不良的 Java 代码(这是 Java 安全防范的一种措施)。
 
 一旦某个类的 `Class` 对象被载入内存，它就可以用来创建这个类的所有对象。下面的示范程序可以证明这点：
 
 ```java
 // typeinfo/SweetShop.java
-// Examination of the way the class loader works
+// 检查类加载器工作方式
 class Cookie {
     static { System.out.println("Loading Cookie"); }
 }
@@ -157,7 +155,7 @@ After creating Cookie
 Class.forName("Gum");
 ```
 
-所有 `Class` 对象都属于 `Class` 类，而且它跟其他普通对象一样，我们可以获取和操控它的引用(这也是类加载器的工作)。`forName()` 是 `Class` 类的一个静态方法，我们可以使用 `forName()` 根据目标类的类名（`String`）得到该类的 `Class` 对象。上面的代码忽略了 `forName()` 的返回值，因为那个调用是为了得到它产生的“副作用”。从结果可以看出，`forName()` 执行的副作用是如果`Gum`类没有被加载就加载它，而在加载的过程中，`Gum` 的 `static` 初始化块被执行了。
+所有 `Class` 对象都属于 `Class` 类，而且它跟其他普通对象一样，我们可以获取和操控它的引用(这也是类加载器的工作)。`forName()` 是 `Class` 类的一个静态方法，我们可以使用 `forName()` 根据目标类的类名（`String`）得到该类的 `Class` 对象。上面的代码忽略了 `forName()` 的返回值，因为那个调用是为了得到它产生的“副作用”。从结果可以看出，`forName()` 执行的副作用是如果 `Gum` 类没有被加载就加载它，而在加载的过程中，`Gum` 的 `static` 初始化块被执行了。
 
 还需要注意的是，如果 `Class.forName()` 找不到要加载的类，它就会抛出异常 `ClassNotFoundException`。上面的例子中我们只是简单地报告了问题，但在更严密的程序里，就要考虑在异常处理程序中把问题解决掉（具体例子详见[设计模式](./25-Patterns)章节）。
 
@@ -165,7 +163,7 @@ Class.forName("Gum");
 
 ```java
 // typeinfo/toys/ToyTest.java
-// Testing class Class
+// 测试 Class 类
 // {java typeinfo.toys.ToyTest}
 package typeinfo.toys;
 
@@ -174,8 +172,7 @@ interface Waterproof {}
 interface Shoots {}
 
 class Toy {
-    // Comment out the following no-arg
-    // constructor to see NoSuchMethodError
+    // 注释下面的无参数构造器会引起 NoSuchMethodError 错误
     Toy() {}
     Toy(int i) {}
 }
@@ -194,6 +191,7 @@ public class ToyTest {
         System.out.println(
             "Canonical name : " + cc.getCanonicalName());
     }
+
     public static void main(String[] args) {
         Class c = null;
         try {
@@ -202,11 +200,14 @@ public class ToyTest {
             System.out.println("Can't find FancyToy");
             System.exit(1);
         }
+
         printInfo(c);
         for(Class face : c.getInterfaces())
             printInfo(face);
+
         Class up = c.getSuperclass();
         Object obj = null;
+
         try {
             // Requires no-arg constructor:
             obj = up.newInstance();
@@ -217,6 +218,7 @@ public class ToyTest {
             System.out.println("Cannot access");
             System.exit(1);
         }
+
         printInfo(obj.getClass());
     }
 }
@@ -245,7 +247,7 @@ Simple name: Toy
 Canonical name : typeinfo.toys.Toy
 ```
 
-`FancyToy` 继承自 `Toy` 并实现了 `HasBatteries`、`Waterproof` 和 `Shoots` 接口。在 主方法中，我们创建了一个 `Class` 引用，然后在 `try` 语句里边用 `forName()` 方法创建了一个 `FancyToy` 的类对象并赋值给该引用。需要注意的是，传递给 `forName()` 的字符串必须使用类的全限定名（包含包名）。
+`FancyToy` 继承自 `Toy` 并实现了 `HasBatteries`、`Waterproof` 和 `Shoots` 接口。在 `main` 方法中，我们创建了一个 `Class` 引用，然后在 `try` 语句里边用 `forName()` 方法创建了一个 `FancyToy` 的类对象并赋值给该引用。需要注意的是，传递给 `forName()` 的字符串必须使用类的全限定名（包含包名）。
 
 `printInfo()` 函数使用 `getName()` 来产生完整类名，使用 `getSimpleName()` 产生不带包名的类名，`getCanonicalName()` 也是产生完整类名（除内部类和数组外，对大部分类产生的结果与 `getName()` 相同）。`isInterface()` 用于判断某个 `Class` 对象代表的是否为一个接口。因此，通过 `Class` 对象，你可以得到关于该类型的所有信息。
 
@@ -253,7 +255,7 @@ Canonical name : typeinfo.toys.Toy
 
 另外，你还可以调用 `getSuperclass()` 方法来得到父类的 `Class` 对象，再用父类的 `Class` 对象调用该方法，重复多次，你就可以得到一个对象完整的类继承结构。
 
-`Class` 对象的 `newInstance()` 方法是实现“虚拟构造器”的一种途径，虚拟构造器可以让你在不知道一个类的确切类型的时候，创建这个类的对象。在前面的例子中，`up` 只是一个 `Class` 对象的引用，在编译期并不知道这个引用会指向哪个类的 `Class` 对象。当你创建新实例时，会得到一个 `Object` 引用，但是这个引用指向的是 `Toy` 对象。当然，由于得到的是 `Object` 引用，目前你只能给它发送 `Object` 对象能够接受的调用。而如果你想请求具体对象才有的调用，你就得先获取该对象更多的类型信息，并执行某种转型。另外，使用 `newInstance()` 来创建的类，必须带有无参数的构造书。在本章稍后部分，你将会看到如何通过Java的反射API，用任意的构造器来动态的创建类的对象。
+`Class` 对象的 `newInstance()` 方法是实现“虚拟构造器”的一种途径，虚拟构造器可以让你在不知道一个类的确切类型的时候，创建这个类的对象。在前面的例子中，`up` 只是一个 `Class` 对象的引用，在编译期并不知道这个引用会指向哪个类的 `Class` 对象。当你创建新实例时，会得到一个 `Object` 引用，但是这个引用指向的是 `Toy` 对象。当然，由于得到的是 `Object` 引用，目前你只能给它发送 `Object` 对象能够接受的调用。而如果你想请求具体对象才有的调用，你就得先获取该对象更多的类型信息，并执行某种转型。另外，使用 `newInstance()` 来创建的类，必须带有无参数的构造书。在本章稍后部分，你将会看到如何通过 Java 的反射 API，用任意的构造器来动态的创建类的对象。
 
 ### 类字面常量
 
@@ -308,11 +310,12 @@ Java还提供了另一种方法来生成类对象的引用：**类字面常量**
   </tbody>
 </table>
 </figure>
-我的建议是使用 `.class` 的形式， 以保持与普通类的一致性。
+
+我的建议是使用 `.class` 的形式，以保持与普通类的一致性。
 
 注意，有一点很有趣：当使用 `.class` 来创建对 `Class` 对象的引用时，不会自动地初始化该`Class` 对象。为了使用类而做的准备工作实际包含三个步骤：
 
-1. **加载**，这是由类加载器执行的。该步骤将查找字节码（通常在classpath所指定的路径中查找，但这并非是必须的），并从这些字节码中创建一个 `Class` 对象。
+1. **加载**，这是由类加载器执行的。该步骤将查找字节码（通常在 classpath 所指定的路径中查找，但这并非是必须的），并从这些字节码中创建一个 `Class` 对象。
 
 2. **链接**。在链接阶段将验证类中的字节码，为 `static` 域分配存储空间，并且如果需要的话，将解析这个类创建的对其他类的所有引用。
 
@@ -392,7 +395,7 @@ After creating Initable3 ref
 
 <!-- > 译者的理解： `Class` 对象是 `Class` 类产生的对象，而再往深一点说，`Class` 类的 `Class` 对象（`Class.class`）也是其本类产生的对象。即一切皆对象，类也是一种对象。 -->
 
-但是，Java设计者看准机会，将它的类型变得更具体了一些。Java引入泛型语法之后，我们可以使用泛型对 `Class` 引用所指向的 `Class` 对象的类型进行限定。在下面的实例中，两种语法都是正确的：
+但是，Java 设计者看准机会，将它的类型变得更具体了一些。Java 引入泛型语法之后，我们可以使用泛型对 `Class` 引用所指向的 `Class` 对象的类型进行限定。在下面的实例中，两种语法都是正确的：
 
 ```java
 // typeinfo/GenericClassReferences.java
@@ -401,9 +404,9 @@ public class GenericClassReferences {
     public static void main(String[] args) {
         Class intClass = int.class;
         Class<Integer> genericIntClass = int.class;
-        genericIntClass = Integer.class; // Same thing
+        genericIntClass = Integer.class; // 同一个东西
         intClass = double.class;
-        // genericIntClass = double.class; // Illegal
+        // genericIntClass = double.class; // 非法
     }
 }
 ```
@@ -418,7 +421,7 @@ Class<Number> geenericNumberClass = int.class;
 
 这看起来似乎是起作用的，因为 `Integer` 继承自 `Number`。但事实却是不行，因为 `Integer` 的 `Class` 对象并不是 `Number`的 `Class` 对象的子类（这看起来可能有点诡异，我们将在[泛型](./20-Generics)这一章详细讨论）。
 
-为了在使用 `Class` 引用时放松限制，我们使用了通配符，它是Java泛型中的一部分。通配符就是 `?`，表示“任何事物”。因此，我们可以在上例的普通 `Class` 引用中添加通配符，并产生相同的结果：
+为了在使用 `Class` 引用时放松限制，我们使用了通配符，它是 Java 泛型中的一部分。通配符就是 `?`，表示“任何事物”。因此，我们可以在上例的普通 `Class` 引用中添加通配符，并产生相同的结果：
 
 ```java
 // typeinfo/WildcardClassReferences.java
@@ -503,7 +506,7 @@ public class DynamicSupplier<T> implements Supplier<T> {
 
 ```java
 // typeinfo/toys/GenericToyTest.java
-// Testing class Class
+// 测试 Class 类
 // {java typeinfo.toys.GenericToyTest}
 package typeinfo.toys;
 
@@ -527,7 +530,7 @@ public class GenericToyTest {
 
 ### `cast()` 方法
 
-Java中还有用于 `Class` 引用的转型语法，即 `cast()` 方法：
+Java 中还有用于 `Class` 引用的转型语法，即 `cast()` 方法：
 
 ```java
 // typeinfo/ClassCasts.java
@@ -540,26 +543,26 @@ public class ClassCasts {
         Building b = new House();
         Class<House> houseType = House.class;
         House h = houseType.cast(b);
-        h = (House)b; // ... or just do this.
+        h = (House)b; // ... 或者这样做.
     }
 }
 ```
 
-`cast()` 方法接受参数对象，并将其转型为 `Class` 引用的类型。但是，如果观察上面的代码，你就会发现，与实现了相同功能的主方法中最后一行相比，这种转型好像做了很多额外的工作。
+`cast()` 方法接受参数对象，并将其类型转换为 `Class` 引用的类型。但是，如果观察上面的代码，你就会发现，与实现了相同功能的 `main` 方法中最后一行相比，这种转型好像做了很多额外的工作。
 
-`cast()` 在无法使用普通转型的情况下会显得非常有用，在你编写泛型代码（你将在[泛型](./20-Generics)这一章学习到）时，如果你保存了 `Class` 引用，并希望以后通过这个引用来执行转型，你就需要用到 `cast()`。但事实却是这种情况并不常见，我发现整个Java类库中，只有一处使用了 `cast()`（在 `com.sun.mirror.util.DeclarationFilter` 中）。
+`cast()` 在无法使用普通类型转换的情况下会显得非常有用，在你编写泛型代码（你将在[泛型](./20-Generics)这一章学习到）时，如果你保存了 `Class` 引用，并希望以后通过这个引用来执行转型，你就需要用到 `cast()`。但事实却是这种情况非常少见，我发现整个 Java 类库中，只有一处使用了 `cast()`（在 `com.sun.mirror.util.DeclarationFilter` 中）。
 
-Java类库中另一个没有任何用处的特性就是 `Class.asSubclass()`，该方法允许你将一个 `Class` 对象转型为更加具体的类型。
+Java 类库中另一个没有任何用处的特性就是 `Class.asSubclass()`，该方法允许你将一个 `Class` 对象转型为更加具体的类型。
 
-## 类型转换前先做检查
+## 类型转换检测
 
 直到现在，我们已知的RTTI类型包括:
 
-1.  传统的类型转换，如 “`(Shape)`”，由RTTI确保转换的正确性，如果执行了一个错误的类型转换，就会抛出一个 `ClassCastException` 异常。
+1.  传统的类型转换，如 “`(Shape)`”，由 RTTI 确保转换的正确性，如果执行了一个错误的类型转换，就会抛出一个 `ClassCastException` 异常。
 
 2.  代表对象类型的 `Class` 对象. 通过查询 `Class` 对象可以获取运行时所需的信息.
 
-在C++中，经典的类型转换 “`(Shape)`” 并不使用 RTTI. 它只是简单地告诉编译器将这个对象作为新的类型对待. 而 Java 会进行类型检查，这种类型转换一般被称作“类型安全的向下转型”。之所以称作“向下转型”，是因为传统上类继承图是这么画的。将 `Circle` 转换为 `Shape` 是一次向上转型, 将 `Shape` 转换为 `Circle` 是一次向下转型。但是, 因为我们知道 `Circle` 肯定是一个 `Shape`，所以编译器允许我们自由地做向上转型的赋值操作，且不需要任何显示的转型操作。当你给编译器一个 `Shape` 的时候，编译器并不知道它到底是什么类型的 `Shape`——它可能是 `Shape`，也可能是 `Shape` 的子类型，例如 `Circle`、`Square`、`Triangle` 或某种其他的类型。在编译期，编译器只能知道它是 `Shape`。因此，你需要使用显式的类型转换，以告知编译器你想转换的特定类型，否则编译器就不允许你执行向下转型赋值。 （编译器将会检查向下转型是否合理，因此它不允许向下转型到实际上不是待转型类型的子类的类型上）。
+在 C++ 中，经典的类型转换 “`(Shape)`” 并不使用 RTTI. 它只是简单地告诉编译器将这个对象作为新的类型对待. 而 Java 会进行类型检查，这种类型转换一般被称作“类型安全的向下转型”。之所以称作“向下转型”，是因为传统上类继承图是这么画的。将 `Circle` 转换为 `Shape` 是一次向上转型, 将 `Shape` 转换为 `Circle` 是一次向下转型。但是, 因为我们知道 `Circle` 肯定是一个 `Shape`，所以编译器允许我们自由地做向上转型的赋值操作，且不需要任何显示的转型操作。当你给编译器一个 `Shape` 的时候，编译器并不知道它到底是什么类型的 `Shape`——它可能是 `Shape`，也可能是 `Shape` 的子类型，例如 `Circle`、`Square`、`Triangle` 或某种其他的类型。在编译期，编译器只能知道它是 `Shape`。因此，你需要使用显式的类型转换，以告知编译器你想转换的特定类型，否则编译器就不允许你执行向下转型赋值。 （编译器将会检查向下转型是否合理，因此它不允许向下转型到实际上不是待转型类型的子类的类型上）。
 
 RTTI 在 Java 中还有第三种形式，那就是关键字 `instanceof`。它返回一个布尔值，告诉我们对象是不是某个特定类型的实例，可以用提问的方式使用它，就像这个样子：
 
@@ -568,7 +571,7 @@ if(x instanceof Dog)
   ((Dog)x).bark();
 ```
 
-在将 `x` 转型为 `Dog` 之前，`if` 语句会先检查 `x` 是否是 `Dog` 类型的对象。进行向下转型前，如果没有其他信息可以告诉你这个对象是什么类型，那么使用 `instanceof` 是非常重要的，否则会得到一个 `ClassCastException` 异常。
+在将 `x` 的类型转换为 `Dog` 之前，`if` 语句会先检查 `x` 是否是 `Dog` 类型的对象。进行向下转型前，如果没有其他信息可以告诉你这个对象是什么类型，那么使用 `instanceof` 是非常重要的，否则会得到一个 `ClassCastException` 异常。
 
 一般，可能想要查找某种类型（比如要找三角形，并填充为紫色），这时可以轻松地使用 `instanceof` 来计数所有对象。举个例子，假如你有一个类的继承体系，描述了 `Pet`（以及它们的主人，在后面一个例子中会用到这个特性）。在这个继承体系中的每个 `Individual` 都有一个 `id` 和一个可选的名字。尽管下面的类都继承自 `Individual`，但是 `Individual` 类复杂性较高，因此其代码将放在[附录：容器](./Appendix-Collection-Topics)中进行解释说明。正如你所看到的，此处并不需要去了解 `Individual` 的代码——你只需了解你可以创建其具名或不具名的对象，并且每个 `Individual` 都有一个 `id()` 方法，如果你没有为 `Individual` 提供名字，`toString()` 方法只产生类型名。
 
@@ -746,7 +749,8 @@ import java.util.*;
 public class ForNameCreator extends PetCreator {
   private static List<Class<? extends Pet>> types =
     new ArrayList<>();
-  // Types you want randomly created:
+
+  // 需要随机生成的类型名:
   private static String[] typeNames = {
     "typeinfo.pets.Mutt",
     "typeinfo.pets.Pug",
@@ -757,6 +761,7 @@ public class ForNameCreator extends PetCreator {
     "typeinfo.pets.Mouse",
     "typeinfo.pets.Hamster"
   };
+
   @SuppressWarnings("unchecked")
   private static void loader() {
     try {
@@ -767,6 +772,7 @@ public class ForNameCreator extends PetCreator {
       throw new RuntimeException(e);
     }
   }
+
   static { loader(); }
   @Override
   public List<Class<? extends Pet>> types() {
@@ -775,15 +781,15 @@ public class ForNameCreator extends PetCreator {
 }
 ```
 
-`loader()` 方法使用 `Class.forName()` 创建了 `Class` 对象的 `List`。这可能会导致 `ClassNotFoundException`，因为你传入的是一个 `String`，它不能再编译期间被确认是否合理。由于 `Pet` 相关的文件在 `typeinfo` 包里面，所以使用它们的时候需要填写完整的包名。
+`loader()` 方法使用 `Class.forName()` 创建了 `Class` 对象的 `List`。这可能会导致 `ClassNotFoundException` 异常，因为你传入的是一个 `String` 类型的参数，它不能再编译期间被确认是否合理。由于 `Pet` 相关的文件在 `typeinfo` 包里面，所以使用它们的时候需要填写完整的包名。
 
-为了使得 `List` 装入的是具体的 `Class` 对象，转型是必须的，它会产生一个编译时警告。`loader()` 方法是分开编写的，然后它被放入到一个静态代码块里，因为 `@SuppressWarning` 注解不能够直接放置在静态代码块之上。
+为了使得 `List` 装入的是具体的 `Class` 对象，类型转换是必须的，它会产生一个编译时警告。`loader()` 方法是分开编写的，然后它被放入到一个静态代码块里，因为 `@SuppressWarning` 注解不能够直接放置在静态代码块之上。
 
 为了对 `Pet` 进行计数，我们需要一个能跟踪不同类型的 `Pet` 的工具。`Map` 的是这个需求的首选，我们将 `Pet` 类型名作为键，将保存 `Pet` 数量的 `Integer` 作为值。通过这种方式，你就看可以询问：“有多少个 `Hamster` 对象？”我们可以使用 `instanceof` 来对 `Pet` 进行计数：
 
 ```java
 // typeinfo/PetCount.java
-// Using instanceof
+// 使用 instanceof
 import typeinfo.pets.*;
 import java.util.*;
 
@@ -850,10 +856,9 @@ Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
 
 `instanceof` 有一个严格的限制：只可以将它与命名类型进行比较，而不能与 `Class` 对象作比较。在前面的例子中，你可能会觉得写出一大堆 `instanceof` 表达式很乏味，事实也是如此。但是，也没有办法让 `instanceof` 聪明起来，让它能够自动地创建一个 `Class` 对象的数组，然后将目标与这个数组中的对象逐一进行比较（稍后会看到一种替代方案）。其实这并不是那么大的限制，如果你在程序中写了大量的 `instanceof`，那就说明你的设计可能存在瑕疵。
 
-## 使用类字面量
+### 使用类字面量
 
 如果我们使用类字面量重新实现 `PetCreator` 类的话，其结果在很多方面都会更清晰：
-
 
 ```java
 // typeinfo/pets/LiteralPetCreator.java
@@ -899,8 +904,6 @@ typeinfo.pets.Hamster]
 这次，`types` 的创建没有被 `try` 块包围，因为它是在编译时计算的，因此不会引发任何异常，不像 `Class.forName()`。
 
 我们现在在 `typeinfo.pets` 库中有两个 `PetCreator` 的实现。为了提供第二个作为默认实现，我们可以创建一个使用 `LiteralPetCreator` 的 *外观模式*：
-
-We now have two implementations of `PetCreator` in the `typeinfo.pets` library. To provide the second one as a default implementation, we can create a *Façade* that utilizes `LiteralPetCreator`:
 
 ```java
 // typeinfo/pets/Pets.java
@@ -960,7 +963,7 @@ Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
 
 输出与 `PetCount.java` 的输出相同。
 
-## 一个动态 `instanceof` 函数
+### 一个动态 `instanceof` 函数
 
 `Class.isInstance()` 方法提供了一种动态测试对象类型的方法。因此，所有这些繁琐的 `instanceof` 语句都可以从 `PetCount.java` 中删除：
 
@@ -1027,12 +1030,86 @@ EgyptianMau=2, Rodent=5, Hamster=1, Manx=7, Pet=20}
 
 `toString()` 方法被重载，以便更容易读取输出，该输出仍与打印 `Map` 时看到的典型输出匹配。
 
-### Counting Recursively
+### 递归计数
 
-## 类型转换检测
+`PetCount3.Counter` 中的 `Map` 预先加载了所有不同的 `Pet` 类。我们可以使用 `Class.isAssignableFrom()` 而不是预加载地图，并创建一个不限于计数 `Pet` 的通用工具：
+
+```java
+// onjava/TypeCounter.java
+// 计算类型家族的实例数
+package onjava;
+import java.util.*;
+import java.util.stream.*;
+
+public class
+TypeCounter extends HashMap<Class<?>, Integer> {
+  private Class<?> baseType;
+
+  public TypeCounter(Class<?> baseType) {
+    this.baseType = baseType;
+  }
+
+  public void count(Object obj) {
+    Class<?> type = obj.getClass();
+    if(!baseType.isAssignableFrom(type))
+      throw new RuntimeException(
+        obj + " incorrect type: " + type +
+        ", should be type or subtype of " + baseType);
+    countClass(type);
+  }
+
+  private void countClass(Class<?> type) {
+    Integer quantity = get(type);
+    put(type, quantity == null ? 1 : quantity + 1);
+    Class<?> superClass = type.getSuperclass();
+    if(superClass != null &&
+       baseType.isAssignableFrom(superClass))
+      countClass(superClass);
+  }
+
+  @Override
+  public String toString() {
+    String result = entrySet().stream()
+      .map(pair -> String.format("%s=%s",
+        pair.getKey().getSimpleName(),
+        pair.getValue()))
+      .collect(Collectors.joining(", "));
+    return "{" + result + "}";
+  }
+}
+```
+
+`count()` 方法获取其参数的 `Class`，并使用 `isAssignableFrom()` 进行运行时检查，以验证传递的对象实际上属于感兴趣的层次结构。`countClass()` 首先计算类的确切类型。然后，如果 `baseType` 可以从超类赋值，则在超类上递归调用 `countClass()`。
+
+```java
+// typeinfo/PetCount4.java
+import typeinfo.pets.*;
+import onjava.*;
+
+public class PetCount4 {
+  public static void main(String[] args) {
+    TypeCounter counter = new TypeCounter(Pet.class);
+    Pets.stream()
+      .limit(20)
+      .peek(counter::count)
+      .forEach(p -> System.out.print(
+        p.getClass().getSimpleName() + " "));
+    System.out.println("\n" + counter);
+  }
+}
+/* 输出:
+Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
+EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
+Pug Mouse Cymric
+{Dog=6, Manx=7, Cat=9, Rodent=5, Hamster=1, Rat=2,
+Pug=3, Mutt=3, Cymric=5, EgyptianMau=2, Pet=20,
+Mouse=2}
+*/
+```
+
+输出表明两个基类型以及精确类型都被计数了。
 
 <!-- Registered Factories -->
-
 ## 注册工厂
 
 
@@ -1041,7 +1118,7 @@ EgyptianMau=2, Rodent=5, Hamster=1, Manx=7, Pet=20}
 
 <!-- Reflection: Runtime Class Information -->
 
-## 反射运行时类信息
+## 内省：反射运行时类信息
 
 
 <!-- Dynamic Proxies -->
