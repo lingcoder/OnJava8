@@ -6,17 +6,15 @@
 
 在开始学习 Java 之前，你必须要先安装好 Java 和本书的源代码示例。因为考虑到可能有“专门的初学者”从本书开始学习编程，所以我会详细地教你如何使用命令行。 如果你已经有此方面的经验了，可以跳过这段安装说明。如果你对此处描述的任何术语或过程仍不清楚，还可以通过 [Google](https://google.com/) 搜索找到答案。具体的问题或困难请试着在 [StackOverflow](https://stackoverflow.com/) 上提问。或者去 [YouTube](https://youtube.com) 看有没有相关的安装说明。
 
-
 ## 编辑器
 
 首先你需要安装一个编辑器来创建和修改本书用例里的 Java 代码。有可能你还需要使用编辑器来更改系统配置文件。
 
-相比一些重量级的 IDE（Integrated Development Environments，集成开发环境），如Eclipse、NetBeans和IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种更纯粹的文本编辑器。如果你已经有了一个用着顺手的 IDE，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](https://atom.io) 上下载。
+相比一些重量级的 IDE（Integrated Development Environments，集成开发环境），如 Eclipse、NetBeans 和 IntelliJ IDEA (译者注：做项目强烈推荐IDEA)，编辑器是一种更纯粹的文本编辑器。如果你已经有了一个用着顺手的 IDE，那就可以直接用了。为了方便后面的学习和统一下教学环境，我推荐大家使用 Atom 这个编辑器。大家可以在 [atom.io](https://atom.io) 上下载。
 
 Atom 是一个免费开源、易于安装且跨平台（支持 Window、Mac和Linux）的文本编辑器。内置支持 Java 文件。相比 IDE 的厚重，它比较轻量级，是学习本书的理想工具。Atom 包含了许多方便的编辑功能，相信你一定会爱上它！更多关于 Atom 使用的细节问题可以到它的网站上寻找。
 
 还有很多其他的编辑器。有一种亚文化的群体，他们热衷于争论哪个更好用！如果你找到一个你更喜欢的编辑器，换一种使用也没什么难度。重要的是，你要找一个用着舒服的。
-
 
 ## Shell
 
@@ -150,7 +148,6 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
 ```
 如果提示命令找不到或者无法被识别，请根据安装说明重试；如果还不行，尝试到 [StackOverflow](https://stackoverflow.com/search?q=installing+java) 寻找答案。
 
-
 ## 安装和运行代码示例
 
 当 Java 安装完毕，下一步就是安装本书的代码示例了。安装步骤所有平台一致：
@@ -173,7 +170,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.112-b15, mixed mode)
 
 **注意**： 第一次运行 gradlew 命令时必须连接互联网。
 
-**Gradle基础任务**
+**Gradle 基础任务**
 
 本书构建的大量 Gradle 任务都可以自动运行。Gradle 使用约定大于配置的方式，简单设置即可具备高可用性。本书中“一起去骑行”的某些任务不适用于此或无法执行成功。以下是你通常会使用上的 Gradle 任务列表：
 

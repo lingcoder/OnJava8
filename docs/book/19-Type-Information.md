@@ -1112,14 +1112,295 @@ Mouse=2}
 <!-- Registered Factories -->
 ## 注册工厂
 
+从 `Pet` 层次结构生成对象的问题是，每当向层次结构中添加一种新类型的 `Pet` 时，必须记住将其添加到 `LiteralPetCreator.java` 中的条目中。在一个定期添加更多类的系统中，这可能会成为问题。
+
+你可能会考虑向每个子类添加静态初始值设定项，因此初始值设定项会将其类添加到某个列表中。不幸的是，静态初始值设定项仅在首次加载类时调用，因此存在鸡和蛋的问题：生成器的列表中没有类，因此它无法创建该类的对象，因此类不会被加载并放入列表中。
+
+基本上，你必须自己手工创建列表（除非你编写了一个工具来搜索和分析源代码，然后创建和编译列表）。所以你能做的最好的事情就是把列表集中放在一个明显的地方。层次结构的基类可能是最好的地方。
+
+我们在这里所做的另一个更改是使用*工厂方法*设计模式将对象的创建推迟到类本身。工厂方法可以以多态方式调用，并为你创建适当类型的对象。事实证明，`java.util.function.Supplier` 用 `T get()` 描述了原型工厂方法。协变返回类型允许 `get()` 为 `Supplier` 的每个子类实现返回不同的类型。
+
+在本例中，基类 `Part` 包含一个工厂对象的静态列表，列表成员类型为 `Supplier<Part>`。对于应该由 `get()` 方法生成的类型的工厂，通过将它们添加到 `prototypes` 列表向基类“注册”。奇怪的是，这些工厂本身就是对象的实例。此列表中的每个对象都是用于创建其他对象的*原型*：
+
+```java
+// typeinfo/RegisteredFactories.java
+// 注册工厂到基础类
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+
+class Part implements Supplier<Part> {
+  @Override
+  public String toString() {
+    return getClass().getSimpleName();
+  }
+
+  static List<Supplier<? extends Part>> prototypes =
+    Arrays.asList(
+      new FuelFilter(),
+      new AirFilter(),
+      new CabinAirFilter(),
+      new OilFilter(),
+      new FanBelt(),
+      new PowerSteeringBelt(),
+      new GeneratorBelt()
+    );
+
+  private static Random rand = new Random(47);
+  public Part get() {
+    int n = rand.nextInt(prototypes.size());
+    return prototypes.get(n).get();
+  }
+}
+
+class Filter extends Part {}
+
+class FuelFilter extends Filter {
+  @Override
+  public FuelFilter get() { return new FuelFilter(); }
+}
+
+class AirFilter extends Filter {
+  @Override
+  public AirFilter get() { return new AirFilter(); }
+}
+
+class CabinAirFilter extends Filter {
+  @Override
+  public CabinAirFilter get() {
+    return new CabinAirFilter();
+  }
+}
+
+class OilFilter extends Filter {
+  @Override
+  public OilFilter get() { return new OilFilter(); }
+}
+
+class Belt extends Part {}
+
+class FanBelt extends Belt {
+  @Override
+  public FanBelt get() { return new FanBelt(); }
+}
+
+class GeneratorBelt extends Belt {
+  @Override
+  public GeneratorBelt get() {
+    return new GeneratorBelt();
+  }
+}
+
+class PowerSteeringBelt extends Belt {
+  @Override
+  public PowerSteeringBelt get() {
+    return new PowerSteeringBelt();
+  }
+}
+
+public class RegisteredFactories {
+  public static void main(String[] args) {
+    Stream.generate(new Part())
+      .limit(10)
+      .forEach(System.out::println);
+  }
+}
+
+/* 输出:
+GeneratorBelt
+CabinAirFilter
+GeneratorBelt
+AirFilter
+PowerSteeringBelt
+CabinAirFilter
+FuelFilter
+PowerSteeringBelt
+PowerSteeringBelt
+FuelFilter
+*/
+```
+
+并非层次结构中的所有类都应实例化；这里的 `Filter` 和 `Belt` 只是分类器，这样你就不会创建任何一个类的实例，而是只创建它们的子类（请注意，如果尝试这样做，你将获得 `Part` 基类的行为）。
+
+因为 `Part implements Supplier<Part>`，`Part` 通过其 `get()` 方法供应其他 `Part`。如果为基类 `Part` 调用 `get()`（或者如果 `generate()` 调用 `get()`），它将创建随机特定的 `Part` 子类型，每个子类型最终都从 `Part` 继承，并重写相应的 `get()` 以生成它们中的一个。
 
 <!-- Instanceof vs. Class Equivalence -->
 ## 类的等价比较
 
+When you are querying for type information, there's an important difference between either form of `instanceof` (that is, `instanceof` or `isInstance()`, which produce equivalent results) and the direct comparison of the `Class` objects. Here's an example that demonstrates the difference:
+
+```java
+// typeinfo/FamilyVsExactType.java
+// instanceof 与 class 的差别
+// {java typeinfo.FamilyVsExactType}
+package typeinfo;
+
+class Base {}
+class Derived extends Base {}
+
+public class FamilyVsExactType {
+  static void test(Object x) {
+    System.out.println(
+      "Testing x of type " + x.getClass());
+    System.out.println(
+      "x instanceof Base " + (x instanceof Base));
+    System.out.println(
+      "x instanceof Derived " + (x instanceof Derived));
+    System.out.println(
+      "Base.isInstance(x) " + Base.class.isInstance(x));
+    System.out.println(
+      "Derived.isInstance(x) " +
+      Derived.class.isInstance(x));
+    System.out.println(
+      "x.getClass() == Base.class " +
+      (x.getClass() == Base.class));
+    System.out.println(
+      "x.getClass() == Derived.class " +
+      (x.getClass() == Derived.class));
+    System.out.println(
+      "x.getClass().equals(Base.class)) "+
+      (x.getClass().equals(Base.class)));
+    System.out.println(
+      "x.getClass().equals(Derived.class)) " +
+      (x.getClass().equals(Derived.class)));
+  }
+  public static void main(String[] args) {
+    test(new Base());
+    test(new Derived());
+  }
+}
+/* 输出:
+Testing x of type class typeinfo.Base
+x instanceof Base true
+x instanceof Derived false
+Base.isInstance(x) true
+Derived.isInstance(x) false
+x.getClass() == Base.class true
+x.getClass() == Derived.class false
+x.getClass().equals(Base.class)) true
+x.getClass().equals(Derived.class)) false
+Testing x of type class typeinfo.Derived
+x instanceof Base true
+x instanceof Derived true
+Base.isInstance(x) true
+Derived.isInstance(x) true
+x.getClass() == Base.class false
+x.getClass() == Derived.class true
+x.getClass().equals(Base.class)) false
+x.getClass().equals(Derived.class)) true
+*/
+```
+
+`test()` 方法使用两种形式的 `instanceof` 对其参数执行类型检查。然后，它获取 `Class` 引用，并使用 `==` 和 `equals()` 测试 `Class` 对象的相等性。令人放心的是，`instanceof` 和 `isInstance()` 产生的结果与 `equals()` 和 `==` 完全相同。但测试本身得出了不同的结论。与类型的概念一致，`instanceof` 说的是“你是这个类，还是从这个类派生的类？”。另一方面，如果使用 `==` 比较实际的 `Class` 对象，则与继承无关 —— 它要么是确切的类型，要么不是。
+
 <!-- Reflection: Runtime Class Information -->
+## 反射：运行时类信息
 
-## 内省：反射运行时类信息
+如果你不知道对象的确切类型，RTTI 会告诉你。但是，有一个限制：必须在编译时知道类型，才能使用 RTTI 检测它，并对信息做一些有用的事情。换句话说，编译器必须知道你使用的所有类。
 
+起初，这看起来并没有那么大的限制，但是假设你被赋予了一个对不在程序空间中的对象的引用。实际上，该对象的类在编译时甚至对程序都不可用。也许你从磁盘文件或网络连接中获得了大量的字节，并被告知这些字节代表一个类。由于这个类在编译器为你的程序生成代码后很长时间才会出现，你如何使用这样的类？
+
+在传统编程环境中，这是一个牵强的场景。但是，当我们进入一个更大的编程世界时，会有一些重要的情况发生。第一个是基于组件的编程，你可以在应用程序构建器*集成开发环境*中使用*快速应用程序开发*（RAD）构建项目。这是一种通过将表示组件的图标移动到窗体上来创建程序的可视化方法。然后，通过在程序时设置这些组件的一些值来配置这些组件。这种设计时配置要求任何组件都是可实例化的，它公开自己的部分，并且允许读取和修改其属性。此外，处理*图形用户界面*（GUI）事件的组件必须公开有关适当方法的信息，以便 IDE 可以帮助程序员覆盖这些事件处理方法。反射提供了检测可用方法并生成方法名称的机制。
+
+在运行时发现类信息的另一个令人信服的动机是提供跨网络在远程平台上创建和执行对象的能力。这称为*远程方法调用*（RMI），它使 Java 程序的对象分布在许多机器上。这种分布有多种原因。如果你想加速一个计算密集型的任务，你可以把它分解成小块放到空闲的机器上。或者你可以将处理特定类型任务的代码（例如，多层次客户机/服务器体系结构中的“业务规则”）放在特定的机器上，这样机器就成为描述这些操作的公共存储库，并且可以很容易地更改它以影响系统中的每个人。分布式计算还支持专门的硬件，这些硬件可能擅长于某个特定的任务——例如矩阵转换——但对于通用编程来说不合适或过于昂贵。
+
+类 `Class` 支持*反射*的概念，以及 `java.lang.reflect` 库，其中包含类 `Field`、`Method` 和 `Constructor`（每一个都实现了 `Member` 接口）。这些类型的对象由 JVM 在运行时创建，以表示未知类中的对应成员。然后，可以使用 `Constructor` 创建新对象，`get()` 和 `set()` 方法读取和修改与 `Field` 对象关联的字段，`invoke()` 方法调用与 `Method` 对象关联的方法。此外，还可以调用便利方法 `getFields()`、`getMethods()`、`getConstructors()` 等，以返回表示字段、方法和构造函数的对象数组。（你可以通过在 JDK 文档中查找类 `Class` 来了解更多信息。）因此，匿名对象的类信息可以在运行时完全确定，编译时不需要知道任何信息。
+
+重要的是要意识到反射没有什么魔力。当你使用反射与未知类型的对象交互时，JVM 将查看该对象，并看到它属于特定的类（就像普通的 RTTI）。在对其执行任何操作之前，必须加载 `Class` 对象。因此，该特定类型的 `.class` 文件必须在本地计算机上或通过网络对 JVM 仍然可用。因此，RTTI 和反射的真正区别在于，使用 RTTI 时，编译器在编译时会打开并检查 `.class` 文件。换句话说，你可以用“正常”的方式调用一个对象的所有方法。通过反射，`.class` 文件在编译时不可用；它由运行时环境打开并检查。
+
+### 类方法提取器
+
+通常，你不会直接使用反射工具，但它们可以帮助你创建更多的动态代码。反射是用来支持其他 Java 特性的，例如对象序列化（参见[附录：对象序列化](#ch040.xhtml#appendix-object-serialization)）。但是，有时动态提取有关类的信息很有用。
+
+考虑一个类方法提取器。查看类定义的源代码或 JDK 文档，只显示*在该类定义中*定义或重写的方法。但是，可能还有几十个来自基类的可用方法。找到它们既单调又费时。
+
+```java
+// typeinfo/ShowMethods.java
+// 使用反射展示一个类的所有方法，甚至包括定义在基类中方法
+// {java ShowMethods ShowMethods}
+import java.lang.reflect.*;
+import java.util.regex.*;
+
+public class ShowMethods {
+  private static String usage =
+    "usage:\n" +
+    "ShowMethods qualified.class.name\n" +
+    "To show all methods in class or:\n" +
+    "ShowMethods qualified.class.name word\n" +
+    "To search for methods involving 'word'";
+
+  private static Pattern p = Pattern.compile("\\w+\\.");
+  public static void main(String[] args) {
+
+    if(args.length < 1) {
+      System.out.println(usage);
+      System.exit(0);
+    }
+    int lines = 0;
+    try {
+      Class<?> c = Class.forName(args[0]);
+      Method[] methods = c.getMethods();
+      Constructor[] ctors = c.getConstructors();
+      if(args.length == 1) {
+        for(Method method : methods)
+          System.out.println(
+            p.matcher(
+              method.toString()).replaceAll(""));
+        for(Constructor ctor : ctors)
+          System.out.println(
+            p.matcher(ctor.toString()).replaceAll(""));
+        lines = methods.length + ctors.length;
+      } else {
+        for(Method method : methods)
+          if(method.toString().contains(args[1])) {
+            System.out.println(p.matcher(
+              method.toString()).replaceAll(""));
+            lines++;
+          }
+        for(Constructor ctor : ctors)
+          if(ctor.toString().contains(args[1])) {
+            System.out.println(p.matcher(
+              ctor.toString()).replaceAll(""));
+            lines++;
+          }
+      }
+    } catch(ClassNotFoundException e) {
+      System.out.println("No such class: " + e);
+    }
+  }
+}
+/* 输出:
+public static void main(String[])
+public final void wait() throws InterruptedException
+public final void wait(long,int) throws
+InterruptedException
+public final native void wait(long) throws
+InterruptedException
+public boolean equals(Object)
+public String toString()
+public native int hashCode()
+public final native Class getClass()
+public final native void notify()
+public final native void notifyAll()
+public ShowMethods()
+*/
+```
+
+`Class` 方法 `getmethods()` 和'getconstructors()`  分别返回 `Method` 数组和 `Constructor` 数组。这些类中的每一个都有进一步的方法来解析它们所表示的方法的名称、参数和返回值。但你也可以像这里所做的那样，使用 `toString()`，生成带有整个方法签名的 `String`。代码的其余部分提取命令行信息，确定特定签名是否与目标 `String`（使用 `indexOf()`）匹配，并使用正则表达式（在 [Strings](#ch021.xhtml#strings) 一章中介绍）删除名称限定符。
+
+编译时无法知道 `Class.forName()` 生成的结果，因此所有方法签名信息都是在运行时提取的。如果你研究 JDK 反射文档，你将看到有足够的支持来实际设置和对编译时完全未知的对象进行方法调用（本书后面有这样的例子）。虽然最初你可能认为你永远都不需要这样做，但是反射的全部价值可能会令人惊讶。
+
+上面的输出来自命令行：
+
+```java
+java ShowMethods ShowMethods
+```
+
+输出包含一个 `public` 无参数构造函数，即使未定义构造函数。你看到的构造函数是由编译器自动合成的。如果将 `ShowMethods` 设置为非 `public` 类（即只有包级访问权），则合成的无参数构造函数将不再显示在输出中。自动为合成的无参数构造函数授予与类相同的访问权。
+
+尝试运行 `java ShowMethods java.lang.String`，并附加一个 `char`、`int`、`String` 等参数。
+
+编程时，当你不记得某个类是否有特定的方法，并且不想在 JDK 文档中搜索索引或类层次结构时，或者如果你不知道该类是否可以对 `Color` 对象执行任何操作时，该工具能节省不少时间。
 
 <!-- Dynamic Proxies -->
 ## 动态代理
