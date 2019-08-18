@@ -1,6 +1,6 @@
 [TOC]
 
-# 第二章 安装 Java 和本书用例
+# 第二章 安装Java和本书用例
 
 现在，我们来为这次阅读之旅做些准备吧！
 
@@ -89,7 +89,7 @@ Linux: 在 home 目录打开 Shell。
 ```
 
 
-## Java 安装
+## Java安装
 
 为了编译和运行代码示例，首先你必须安装 JDK（Java Development Kit，JAVA 软件开发工具包）。本书中采用的是 JDK 8。
 
