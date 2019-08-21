@@ -73,12 +73,12 @@ public class ImperativeRandoms {
 
 **注意**，你必须要研究程序的真正意图，而在 `Randoms.java` 中，代码只是告诉了你它正在做什么。这种语义清晰性也是 Java 8 的流式编程更受推崇的重要原因。
 
-在 `ImperativeRandoms.java` 中显式地编写迭代机制称之为外部迭代。而在 `Randoms.java` 中，流式编程采用内部迭代。这种机制使得编写的代码可读性更强，也更能利用多核处理器的优势。通过放弃对迭代过程的控制，我们把控制权交给并行化机制。在[并发编程](24-Concurrent-Programming.md)这一章了解这一点。
+在 `ImperativeRandoms.java` 中显式地编写迭代机制称为外部迭代。而在 `Randoms.java` 中，流式编程采用内部迭代，这是流式编程的核心特性之一。这种机制使得编写的代码可读性更强，也更能利用多核处理器的优势。通过放弃对迭代过程的控制，我们把控制权交给并行化机制。我们将在[并发编程](24-Concurrent-Programming.md)一章中学习这部分内容。
 
 另一个重要方面，流是懒加载的。这代表着它只在绝对必要时才计算。你可以将流看作“延迟列表”。由于计算延迟，流使我们能够表示非常大（甚至无限）的序列，而不需要考虑内存问题。
 
-
 <!-- Java 8 Stream Support -->
+
 ## 流支持
 
 Java 设计者面临着这样一个难题：现存的大量类库不仅为 Java 所用，同时也被应用在整个 Java 生态圈数百万行的代码中。如何将一个全新的流的概念融入到现有类库中呢？
@@ -94,7 +94,7 @@ Java 8 采用的解决方案是：在[接口](10-Interfaces.md)中添加被 `def
 <!-- Stream Creation -->
 ## 流创建
 
-你可以通过 `Stream.of()` 很容易地将一组元素转化成为流（`Bubble` 类在之前的章节中已经定义过了）：
+你可以通过 `Stream.of()` 很容易地将一组元素转化成为流（`Bubble` 类在本章的后面定义）：
 
 ```java
 // streams/StreamOf.java
@@ -164,11 +164,11 @@ e: 2.718
 pi: 3.14159
 ```
 
-在创建 `List<Bubble>` 对象之后，我们只需要简单地调用所有集合中都有的 `stream()`。中间操作 `map()` 会获取流中的所有元素，并且对流中元素应用操作从而产生新的元素，并将其传递到流中。通常 `map()` 会获取对象并产生新的对象，但是这里有特殊版本的方法用于数值类型的流。例如，`mapToInt()` 方法将一个对象流（objects stream）转换成为包含整形数字的 `IntStream`。同样，针对 `Float` 和 `Double` 也有类似名字的操作。
+在创建 `List<Bubble>` 对象之后，我们只需要简单地调用所有集合中都有的 `stream()`。中间操作 `map()` 会获取流中的所有元素，并且对流中元素应用操作从而产生新的元素，并将其传递到后续的流中。通常 `map()` 会获取对象并产生新的对象，但在这里产生了特殊的用于数值类型的流。例如，`mapToInt()` 方法将一个对象流（object stream）转换成为包含整型数字的 `IntStream`。同样，针对 `Float` 和 `Double` 也有类似名字的操作。
 
 我们通过调用字符串的 `split()`（该方法会根据参数来拆分字符串）来获取元素用于定义变量 `w`。稍后你会知道 `split()` 参数可以是十分复杂，但在这里我们只是根据空格来分割字符串。
 
-为了从 **Map** 集合中产生流数据，我们首先调用 `entrySet()` 去产生一个对象流，每个对象都包含一个 `key` 键以及与其相关联的 `value` 值。然后调用 `getKey()` 和 `getValue()` 将其分开。
+为了从 **Map** 集合中产生流数据，我们首先调用 `entrySet()` 产生一个对象流，每个对象都包含一个 `key` 键以及与其相关联的 `value` 值。然后分别调用 `getKey()` 和 `getValue()` 获取值。
 
 ### 随机数流
 
@@ -265,7 +265,7 @@ public class RandomGenerators {
 
 为了消除冗余代码，我创建了一个泛型方法 `show(Stream<T> stream)` （在讲解泛型之前就使用这个特性，确实有点作弊，但是回报是值得的）。类型参数 `T` 可以是任何类型，所以这个方法对 **Integer**、**Long** 和 **Double** 类型都生效。但是 **Random** 类只能生成基本类型 **int**， **long**， **double** 的流。幸运的是， `boxed()` 流操作将会自动地把基本类型包装成为对应的装箱类型，从而使得 `show()` 能够接受流。
 
-我们可以使用 **Random** 为任意对象集合创建 **Supplier**。如下是一个从文本文件提供字符串对象的例子。
+我们可以使用 **Random** 为任意对象集合创建 **Supplier**。如下是一个文本文件提供字符串对象的例子。
 
 Cheese.dat 文件内容：
 
@@ -299,7 +299,7 @@ public class RandomWords implements Supplier<String> {
         }
     }
     public String get() {
-        return words.get(rand.nextint(words.size()));
+        return words.get(rand.nextInt(words.size()));
     }
     @Override
     public String toString() {
@@ -323,18 +323,18 @@ it shop sir the much cheese by conclusion district is
 
 在这里你可以看到更为复杂的 `split()` 运用。在构造器中，每一行都被 `split()` 通过空格或者被方括号包裹的任意标点符号进行分割。在结束方括号后面的 `+` 代表 `+` 前面的东西可以出现一次或者多次。
 
-我们注意到在构造函数中循环体使用命令式编程（外部迭代）。在以后的例子中，你会看到我们如何消除这一点。这种旧的形式虽不是特别糟糕，但使用流会让你的代码更好看一些。
+我们注意到在构造函数中循环体使用命令式编程（外部迭代）。在以后的例子中，你甚至会看到我们如何消除这一点。这种旧的形式虽不是特别糟糕，但使用流会让人感觉更好。
 
 在 `toString()` 和主方法中你看到了 `collect()` 收集操作，它根据参数来组合所有流中的元素。
 
-当你使用 **Collectors.**`joining()`，你将会得到一个 `String` 类型的结果，每个元素都根据 `joining()` 的参数来进行分割。还有许多不同的 `Collectors` 用于获取不同的结果。
+当你使用 **Collectors.**`joining()`，你将会得到一个 `String` 类型的结果，每个元素都根据 `joining()` 的参数来进行分割。还有许多不同的 `Collectors` 用于产生不同的结果。
 
-在主方法中，我们看到了 **Stream.**`generate()` 的预览版本，它可以把任意  `Supplier<T>` 用于生成 `T` 类型的流。
+在主方法中，我们提前看到了 **Stream.**`generate()` 的用法，它可以把任意  `Supplier<T>` 用于生成 `T` 类型的流。
 
 
 ### int 类型的范围
 
-`IntStream` 类提供了  `range()` 方法用于生成整数序列的流。编写循环时，这个方法会更加便利：
+`IntStream` 类提供了  `range()` 方法用于生成整型序列的流。编写循环时，这个方法会更加便利：
 
 ```java
 // streams/Ranges.java
