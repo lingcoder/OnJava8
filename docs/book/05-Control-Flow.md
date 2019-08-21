@@ -444,7 +444,7 @@ public class BreakAndContinue {
 <!--The Infamous “Goto”-->
 ## 臭名昭著的 goto
 
-[**goto** 关键字](https://en.wikipedia.org/wiki/Goto) 很早就在程序设计语言中出现。事实上，**goto** 起源于[汇编](https://en.wikipedia.org/wiki/Assembly_language)（assembly language）语言中的程序控制：“若条件 A 成立，则跳到这里；否则跳到那里”。如果你读过由由编译器编译后的代码，你会发现在其程序控制中充斥了大量的跳转。较之汇编产生的代码直接运行在硬件 CPU 中，Java 也会产生自己的“汇编代码”（字节码），只不过它是运行在 Java 虚拟机里的（Java Virtual Machine）。
+[**goto** 关键字](https://en.wikipedia.org/wiki/Goto) 很早就在程序设计语言中出现。事实上，**goto** 起源于[汇编](https://en.wikipedia.org/wiki/Assembly_language)（assembly language）语言中的程序控制：“若条件 A 成立，则跳到这里；否则跳到那里”。如果你读过由编译器编译后的代码，你会发现在其程序控制中充斥了大量的跳转。较之汇编产生的代码直接运行在硬件 CPU 中，Java 也会产生自己的“汇编代码”（字节码），只不过它是运行在 Java 虚拟机里的（Java Virtual Machine）。
 
 一个源码级别跳转的 **goto**，为何招致名誉扫地呢？若程序总是从一处跳转到另一处，还有什么办法能识别代码的控制流程呢？随着 *Edsger Dijkstra*发表著名的 “Goto 有害” 论（*Goto considered harmful*）以后，**goto** 便从此失宠。甚至有人建议将它从关键字中剔除。
 
