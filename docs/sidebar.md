@@ -9,7 +9,7 @@
   * [服务提供](book/01-What-is-an-Object.md#服务提供)
   * [封装](book/01-What-is-an-Object.md#封装)
   * [复用](book/01-What-is-an-Object.md#复用)
-## [继承](book/01-What-is-an-Object.md#继承)
+  * [继承](book/01-What-is-an-Object.md#继承)
   * [多态](book/01-What-is-an-Object.md#多态)
   * [单继承](book/01-What-is-an-Object.md#单继承)
   * [集合](book/01-What-is-an-Object.md#集合)
