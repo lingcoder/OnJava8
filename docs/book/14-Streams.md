@@ -607,7 +607,7 @@ Not much of a cheese shop really
 
 **注意**，构造器会添加文件中的所有单词（除了第一行，它是包含文件路径信息的注释），但是其并没有调用 `build()`。只要你不调用 `stream()` 方法，就可以继续向 `builder` 对象中添加单词。
 
-在该类的更完整版本中，你可以添加一个标志位用于查看 `build()` 是否被调用，并且可能的话增加一个可以添加更多单词的方法。在 `Stream.Builder` 调用 `build()` 方法后继续尝试添加单词会产生一个异常。
+在该类的更完整形式中，你可以添加一个标志位用于查看 `build()` 是否被调用，并且可能的话增加一个可以添加更多单词的方法。在 `Stream.Builder` 调用 `build()` 方法后继续尝试添加单词会产生一个异常。
 
 ### Arrays
 
@@ -796,9 +796,9 @@ you what to the that sir leads in district And
 
 ### 移除元素
 
-* `distinct()`：在 `Randoms.java` 中 `distinct()` 用于去除流中的重复元素。相比创建一个 **Set** 集合，该方法的工作量要少得多。
+* `distinct()`：在 `Randoms.java` 类中的 `distinct()` 可用于消除流中的重复元素。相比创建一个 **Set** 集合，该方法的工作量要少得多。
 
-* `filter(Predicate)`：过滤操作只会保留那些与传递进去的过滤器函数计算结果为 `true` 元素。
+* `filter(Predicate)`：过滤操作会保留与传递进去的过滤器函数计算结果为 `true` 元素。
 
 在下例中，`isPrime()` 作为过滤器函数，用于检测质数。
 
@@ -835,7 +835,7 @@ public class Prime {
 467 479 487 491 499 503 509 521 523 541
 ```
 
-`rangeClosed()` 包含了上限值。如果不能整除，即余数不等于 0，则 `noneMatch()` 操作返回 ture，如果出现任何等于 0 的则返回 `false`。 `noneMatch()` 操作在首次失败之后就会退出，而不是尝试匹配所有。
+`rangeClosed()` 包含了上限值。如果不能整除，即余数不等于 0，则 `noneMatch()` 操作返回 `true`，如果出现任何等于 0 的结果则返回 `false`。 `noneMatch()` 操作一旦有失败就会退出。
 
 ### 应用函数到元素
 
@@ -906,7 +906,7 @@ class FunctionMap {
 5
 ```
 
-在“Increment”的测试中，我们使用 **Integer.**`parseInt()` 去试图将一个字符串转化为整数。如果字符串不能转化成为整数就会抛出一个 **NumberFormatException** 异常，我们只需回过头来将原始字符串放回到输出流中。
+在上面的自增示例中，我们使用 `Integer.parseInt()` 尝试将一个字符串转化为整数。如果字符串不能转化成为整数就会抛出 **NumberFormatException** 异常，我们只须回过头来将原始字符串放回到输出流中。
 
 在以上例子中，`map()` 将一个字符串映射为另一个字符串，但是我们完全可以产生和接收类型完全不同的类型，从而改变流的数据类型。下面代码示例：
 
@@ -979,23 +979,23 @@ class FunctionMap3 {
 17.000000 1.900000 0.230000
 ```
 
-不幸的是，Java 设计者并没有尽最大努力来消除基本类型。
+遗憾的是，Java 设计者并没有尽最大努力去消除基本类型。
 
-### 在 `map()` 期间组合流
+### 在 `map()` 中组合流
 
-假设你有一个传入的元素流，并且你打算对流元素使用 `map()` 函数。现在你已经找到了一些可爱并独一无二的函数功能，但是问题来了：这个函数功能是产生一个流。你想要的只是产生流的元素，但是你生成的是一个元素流的流。
+假设我们现在有了一个传入的元素流，并且打算对流元素使用 `map()` 函数。现在你已经找到了一些可爱并独一无二的函数功能，但是问题来了：这个函数功能是产生一个流。我们想要的只是产生流的元素，生成的却是一个元素流的流。
 
-`flatMap()` 做了两件事情：它获取你的流产生（ stream-producing）函数，并将其应用于新到的元素（正如 `map()` 所做的），然后获取每一个流并将其“展平”为元素。所以它的输出只是元素。
+`flatMap()` 在这里做了两件事情：获取流产生（ stream-producing）函数，并将其应用于新到的元素（如 `map()` 所做的），然后获取每一个流并将其“扁平”为元素。所以它的输出只是元素。
 
 `flatMap(Function)`：当 `Function` 产生流时使用。
 
-`flatMapToInt(Function)`：当 `Function` 产生 `IntStream`  时使用。
+`flatMapToInt(Function)`：当 `Function` 产生 `IntStream` 时使用。
 
 `flatMapToLong(Function)`：当 `Function` 产生 `LongStream` 时使用。
 
 `flatMapToDouble(Function)`：当 `Function` 产生 `DoubleStream` 时使用。
 
-为了了解它是如何工作的，我们将从 `map()` 的一个刻意设计的函数开始，这个函数接受一个整数并产生一个字符串流：
+为了弄清它的工作原理，我们从 `map()` 的一个刻意设计的函数开。该函数接受一个整数并产生一个字符串流：
 
 ```java
 // streams/StreamOfStreams.java
@@ -1018,7 +1018,7 @@ java.util.stream.ReferencePipeline$Head
 java.util.stream.ReferencePipeline$Head
 ```
 
-我们天真的希望能够得到字符串流，但是我们得到的却是流元素为“Head”流的流。但是我们可以使用 `flatMap()` 来轻松解决这个问题：
+我们天真的希望能够得到字符串流，但是结果却是流元素为“Head”流的流。我们可以使用 `flatMap()` 解决这个问题：
 
 ```java
 // streams/FlatMap.java
@@ -1046,9 +1046,9 @@ Fozzie
 Beaker
 ```
 
-因此，从映射返回的每个流都会自动展平为其组件字符串。
+从映射返回的每个流都会自动扁平为其组件字符串。
 
-如下是另一演示，我们从一个整数流开始，然后使用每一个整数去创建许多随机数。
+如下是另一演示，我们从一个整数流开始，使用每一个整数去创建更多的随机数。
 
 ```java
 // streams/StreamOfRandoms.java
@@ -1071,13 +1071,13 @@ public class StreamOfRandoms {
 58 -1 55 93 -1 61 61 29 -1 68 0 22 7 -1 88 28 51 89 9 -1
 ```
 
-我在这里引入了`concat()`，它以参数顺序组合了两个流。 因此，在每个随机 `Integer` 流的末尾，我添加一个 -1 作为标记，因此你可以看到最终流确实是从一组展平流中创建的。
+在这里我们引入了 `concat()`，它以参数顺序组合了两个流。 如此，我们在每个随机 `Integer` 流的末尾添加一个 -1 作为标记。你可以看到最终流确实是从一组扁平流中创建的。
 
-因为 `rand.ints()` 产生了一个 `IntStream`，所以我必须使用 `flatMap()`、`concat()` 和 `of()` 的特定整数版本。
+因为 `rand.ints()` 产生的是一个 `IntStream`，所以我必须使用 `flatMap()`、`concat()` 和 `of()` 的特定整数形式。
 
-让我们再看一下将文件划分为单词流的任务。我们上一次遇到的是 **FileToWordsRegexp.java**，它的问题是它需要我们将整个文件读入行列表中 —— 因此我们需要存储该列表。我们真正想要的是创建一个不需要中间存储的单词流。
+让我们再看一下将文件划分为单词流的任务。我们最后使用到的是 **FileToWordsRegexp.java**，它的问题是需要将整个文件读入行列表中 —— 显然需要存储该列表。而我们真正想要的是创建一个不需要中间存储层的单词流。
 
-再一次，我们使用 ` flatMap()` 来解决这个问题：
+下面，我们再使用 ` flatMap()` 来解决这个问题：
 
 ```java
 // streams/FileToWords.java
@@ -1089,22 +1089,22 @@ public class FileToWords {
         return Files.lines(Paths.get(filePath))
         .skip(1) // First (comment) line
         .flatMap(line ->
-        Pattern.compile("\W+").splitAsStream(line));
+        Pattern.compile("\\W+").splitAsStream(line));
     }
 }
 ```
 
-因为 `stream()` 方法可以自己完成整个创建流的构成，所以它现在是个静态方法。
+`stream()` 现在是一个静态方法，因为它可以自己完成整个流创建过程。
 
-注意 **\\\\W+** 是一个正则表达式。**\\\\W** 的意思是 “非单词字符”，`+` 的意思是“可以出现一次或者多次”。小写版本的 “**\\\\w**” 代表“单词字符”。
+**注意**：`\\W+` 是一个正则表达式。他表示“非单词字符”，`+` 表示“可以出现一次或者多次”。小写形式的 `\\w` 表示“单词字符”。
 
-我们之前遇到的问题是 `Pattern.compile().splitAsStream()`产生的结果为流，这意味着当我们只是想要一个简单的单词流时，在传入的行流（stream of lines）上调用 `map()` 会产生一个单词流的流。幸运的是，`flatMap()`  可以将元素流的流展平为一个简单的元素流。或者，我们可以使用 `String.split()` 生成一个数组，其可以被 `Arrays.stream()` 转化成为流：
+我们之前遇到的问题是 `Pattern.compile().splitAsStream()` 产生的结果为流，这意味着当我们只是想要一个简单的单词流时，在传入的行流（stream of lines）上调用 `map()` 会产生一个单词流的流。幸运的是，`flatMap()`  可以将元素流的流扁平为一个简单的元素流。或者，我们可以使用 `String.split()` 生成一个数组，其可以被 `Arrays.stream()` 转化成为流：
 
 ```java
 .flatMap(line -> Arrays.stream(line.split("\\W+"))))
 ```
 
-因为我们拥有了一个真的流（而不是在 `FileToWordsRegexp.java` 基于集合存储的流），每一次我们想要一个新的流就必须从头创建，因为这个流并不能被重复使用：
+有了真正的、而非 `FileToWordsRegexp.java` 中基于集合存储的流，我们每次使用都必须从头创建，因为流并不能被复用：
 
 ```java
 // streams/FileToWordsTest.java
@@ -1129,7 +1129,7 @@ public class FileToWordsTest {
 Not much of a cheese shop really
 ```
 
-在 `System.out.format()` 中的 `%s` 表明参数为 String 类型。
+在 `System.out.format()` 中的 `%s` 表明参数为 **String** 类型。
 
 
 
@@ -1144,7 +1144,7 @@ Not much of a cheese shop really
 - `findAny()` 返回包含任意元素的 **Optional** 对象，如果流为空则返回 **Optional.empty**
 - `max` 和 `min()` 返回一个包含最大值或者最小值的 **Optional** 对象，如果流为空则返回 **Optional.empty**
 
- 不再以 “identity”对象开头版本的 `reduce()` 将其返回值包装在 **Optional** 中。（“identity”对象成为另一个版本的 `reduce()` 的默认结果，因此不存在空结果的风险）
+ 不再以 “identity”对象开头形式的 `reduce()` 将其返回值包装在 **Optional** 中。（“identity”对象成为另一个形式的 `reduce()` 的默认结果，因此不存在空结果的风险）
 
 对于数字流 **IntStream**、**LongStream** 和 **DoubleStream**，`average()` 会将结果包装在 **Optional** 以防止流为空。
 
@@ -1297,7 +1297,7 @@ Epithets
 Caught java.lang.Exception: Supplied
 ```
 
-` test() ` 方法通过使用与所有示例方法匹配的 **Consumer** 来防止代码重复。`orElseThrow()` 使用 **catch** 关键字来捕获 `orElseThrow()` 抛出的异常。你将会在 [异常]() 这一章节中学习细节。
+` test()` 通过使用与所有示例方法匹配的 **Consumer** 来防止代码重复。`orElseThrow()` 使用 **catch** 关键字来捕获 `orElseThrow()` 抛出的异常。你将会在 [异常]() 这一章节中学习细节。
 
 ### 创建 Optional（Creating Optionals）
 
@@ -1702,7 +1702,7 @@ public class RandInts {
 ### 对每个元素应用最终操作（Apply a Final Operation to Every Element）
 
 - `forEach(Consumer)`：你已经看到很多次 `System.out::println` 作为 **Consumer** 函数。
-- `forEachOrdered(Consumer)`： 这个版本保证了 forEach 的操作顺序是原始流顺序。
+- `forEachOrdered(Consumer)`： 这个形式保证了 forEach 的操作顺序是原始流顺序。
 
 第一种形式是显式地设计为以任何顺序操作元素，这只在引入 `parallel()` 操作时才有意义。在 [并发]() 章节之前我们不会深入研究这个问题，但是这里有一个简单的介绍：`parallel()` 告诉 Java 尝试在多个处理器上运行操作。它可以做到这一点是因为我们使用流——流可以被分割为多个流（通常一个流一个处理器）并且每个流运行在不同的处理器上。因为我们使用的是内部循环而不是外部循环，这是可行的。
 
@@ -1784,7 +1784,7 @@ stream, streams, throws, toCollection, trim, util,
 void, words2]
 ```
 
-`Files.lines()` 打开 **Path** 并将其转换成为行流。下一行代码将根据一个或者多个非单词字符（\\\\w+）作为边界对行进行分割，然后使用 `Arrays.stream()` 将其转化成为流，并将结果展平映射成为单词流。`matches(\\d+)` 寻找并移除那些全是数字的字符串（注意 **words2** 是通过的）。接下来我们使用 `String.trim()` 去除单词两边的空白，`filter()`过滤所有长度小于 3 的单词，然后只获取 100 个单词，并最终将其塞入到 **TreeSet** 中。
+`Files.lines()` 打开 **Path** 并将其转换成为行流。下一行代码将根据一个或者多个非单词字符（\\\\w+）作为边界对行进行分割，然后使用 `Arrays.stream()` 将其转化成为流，并将结果扁平映射成为单词流。`matches(\\d+)` 寻找并移除那些全是数字的字符串（注意 **words2** 是通过的）。接下来我们使用 `String.trim()` 去除单词两边的空白，`filter()`过滤所有长度小于 3 的单词，然后只获取 100 个单词，并最终将其塞入到 **TreeSet** 中。
 
 我们也可以在流中生成 **Map**：
 
@@ -1872,7 +1872,7 @@ cheese
 
 - `reduce(BinaryOperator)`：使用 **BinaryOperator** 来组合所有流中的元素。因为流可能为空，其返回值为 **Optional**。
 - `reduce(identity, BinaryOperator)`：功能同上，但是使用 **identity** 作为其组合的初始值。因此如果流为空，**identity** 就是结果。
-- `reduce(identity, BiFunction, BinaryOperator)`：这个版本更为复杂（所以我们不会介绍它），在这里被提到是因为它使用起来会更有效。通常，你可以显示的组合 `map()` 和 `reduce()` 来更简单的表达这一点。
+- `reduce(identity, BiFunction, BinaryOperator)`：这个形式更为复杂（所以我们不会介绍它），在这里被提到是因为它使用起来会更有效。通常，你可以显示的组合 `map()` 和 `reduce()` 来更简单的表达这一点。
 
 如下是一个用于演示 `reduce()` 的示例：
 
