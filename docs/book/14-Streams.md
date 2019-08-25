@@ -1136,15 +1136,15 @@ Not much of a cheese shop really
 <!-- Optional -->
 ## Optional类
 
-在我们查看终端操作之前，我们必须考虑如果你在一个空流中获取元素会发生什么。我们喜欢为了“happy path”而将流连接起来，并假设流为空时会被中断。在流中放置 `null` 是很好的中断方法。我们可以使用哪种对象作为流元素的持有者，如果我们寻找的元素并不存在也可以友好的告诉我们（也就是说，没有异常）？
+在我们查看终端操作之前，我们必须考虑如果你在一个空流中获取元素会发生什么。我们喜欢为了“happy path”而将流连接起来，并假设流为空时会被中断。在流中放置 `null` 是很好的中断方法。那么是否有某种对象，可作为流元素的持有者，即使查看的元素不存在也能友好的提示我们（也就是说，没有异常）？
 
-这个想法是通过 **Optional** 实现的。确保标准流操作返回 **Optional** 对象，因为它们并不能保证预期结果一定存在。它们包括：
+**Optional** 可以实现这样的功能。首先确保准流操作返回 **Optional** 对象，因为它们并不能保证预期结果一定存在。它们包括：
 
 - `findFirst()` 返回一个包含第一个元素的 **Optional** 对象，如果流为空则返回 **Optional.empty**
 - `findAny()` 返回包含任意元素的 **Optional** 对象，如果流为空则返回 **Optional.empty**
-- `max` 和 `min()` 返回一个包含最大值或者最小值的 **Optional** 对象，如果流为空则返回 **Optional.empty**
+- `max()` 和 `min()` 返回一个包含最大值或者最小值的 **Optional** 对象，如果流为空则返回 **Optional.empty**
 
- 不再以 “identity”对象开头形式的 `reduce()` 将其返回值包装在 **Optional** 中。（“identity”对象成为另一个形式的 `reduce()` 的默认结果，因此不存在空结果的风险）
+ `reduce()` 不再以 `identity` 形式开头，而是将其返回值包装在 **Optional** 中。（`identity` 对象成为其他形式的 `reduce()` 的默认结果，因此不存在空结果的风险）
 
 对于数字流 **IntStream**、**LongStream** 和 **DoubleStream**，`average()` 会将结果包装在 **Optional** 以防止流为空。
 
@@ -1193,7 +1193,7 @@ Stream<String> s = Stream.empty();
 
 就可以在调用 `empty()` 时推断类型。
 
-这个示例展现了 **Optional** 的两个基本用法：
+这个示例展示了 **Optional** 的两个基本用法：
 
 ```java
 // streams/OptionalBasics.java
@@ -1219,11 +1219,12 @@ Epithets
 Nothing inside!
 ```
 
-当你接收到 **Optional** 对象时，你首先调用 `isPresent()` 检查其中是否包含元素。如果存在，你可以使用 `get()` 获取。
+当你接收到 **Optional** 对象时，应首先调用 `isPresent()` 检查其中是否包含元素。如果存在，可使用 `get()` 获取。
 
-### 便利函数（Convenience Functions）
+<!-- Convenience Functions -->
+### 便利函数
 
-有许多便利函数可以解包 **Optional** ，简化了“检查并对所包含的对象执行某些操作”的上述过程：
+有许多便利函数可以解包 **Optional** ，这简化了上述“对所包含的对象的检查和执行操作”的过程：
 
 - `ifPresent(Consumer)`：当值存在时调用 **Consumer**，否则什么也不做。
 - `orElse(otherObject)`：如果值存在则直接返回，否则生成 **otherObject**。
@@ -1297,17 +1298,21 @@ Epithets
 Caught java.lang.Exception: Supplied
 ```
 
-` test()` 通过使用与所有示例方法匹配的 **Consumer** 来防止代码重复。`orElseThrow()` 使用 **catch** 关键字来捕获 `orElseThrow()` 抛出的异常。你将会在 [异常]() 这一章节中学习细节。
+`test()` 通过传入所有方法都适用的 **Consumer** 来避免重复代码。
 
-### 创建 Optional（Creating Optionals）
+`orElseThrow()` 通过 **catch** 关键字来捕获抛出的异常。更多细节，将在[异常](./15-Exceptions.md) 这一章节中学习。
 
-当你编写自己的代码生成 **Optional** 时，这里有 3 个你可以使用的静态方法：
 
-- `empty()`：生成一个内部没有任何东西的 **Optional**。
-- `of(value)`：如果你已经确定值不为空，使用这个方法将值包装成 **Optional**。
-- `ofNullable(value)`：如果你不知道值是否为空。这个方法会在值为空的时候自动生成 **Optional.empty**，否则将值包装在 **Optional** 中。
+<!-- Creating Optionals -->
+### 创建 Optional
 
-你可以查看这是如何工作的：
+当我们在自己的代码中加入 **Optional** 时，可以使用下面 3 个静态方法：
+
+- `empty()`：生成一个空 **Optional**。
+- `of(value)`：将一个非空值包装到 **Optional** 里。
+- `ofNullable(value)`：针对一个可能为空的值，为空时自动生成 **Optional.empty**，否则将值包装在 **Optional** 中。
+
+下面来看看它是如何工作的。代码示例：
 
 ```java
 // streams/CreatingOptionals.java
@@ -1347,17 +1352,20 @@ Hi
 Null
 ```
 
-如果我们试图将 `null` 传递给 `of()` 用于创建 `Optional` 对象，这就会爆炸。`ofNullable()` 会优雅地处理 `null`，所以它似乎是最安全的。
+我们不能通过传递 `null` 到 `of()` 来创建 `Optional` 对象。最安全的方法是， 使用 `ofNullable()` 来优雅地处理 `null`。
 
 ### Optional 对象操作
 
-3 个方法开启了 **Optional** 的后续操作，所以如果你的流管道生成了 **Optional** 对象，你可以在结尾做更多的事情：
+当我们的流管道生成了 **Optional** 对象，下面 3 个方法可使得 **Optional** 的后续能做更多的操作：
 
-- `filter(Predicate)`：将 **Predicate** 应用于 **Optional** 的内容，并将结果返回。如果 **Optional** 不满足 **Predicate**，则返回 **empty**。如果 **Optional** 已经为空，则将其返回。
-- `map(Function)`：如果 **Optional** 不为空，则将 **Function**  应用于 **Optional** 的内容，并将结果返回。否则，直接返回 **Optional.empty**。
-- `flatMap(Function)`：如同 `map()` ， 但是提供的映射函数将结果包装在 **Optional** 对象中，因此 `flatMap()` 不会在最后进行任何包装。
+- `filter(Predicate)`：将 **Predicate** 应用于 **Optional** 中的内容并返回结果。当 **Optional** 不满足 **Predicate** 时返回空。如果 **Optional** 为空，则直接返回。
 
-如上方法都不适用于数值型 **Optional**。普通流过滤器会在 **Predicate** 返回 false 时删除流元素。`Optional.filter()` 当 **Predicate** 失败时不会删除 **Optional**——而是把它留保留下来，但将其转化为空：
+- `map(Function)`：如果 **Optional** 不为空，应用 **Function**  于 **Optional** 中的内容，并返回结果。否则直接返回 **Optional.empty**。
+
+- `flatMap(Function)`：同 `map()`，但是提供的映射函数将结果包装在 **Optional** 对象中，因此 `flatMap()` 不会在最后进行任何包装。
+
+以上方法都不适用于数值型 **Optional**。一般来说，流的 `filter()` 会在 **Predicate** 返回 `false` 时删除流元素。而 `Optional.filter()` 在失败时不会删除 **Optional**，而是将其保留下来，并转化为空。下面请看代码示例：
+
 
 ```java
 // streams/OptionalFilter.java
@@ -1432,11 +1440,11 @@ Optional[Bingo]
 Optional.empty
 ```
 
-即使输出看起来像流，但是特别注意 `test()` 中的 for 循环。它在每一次 for 循环时重新启动流，然后根据 for 循环的索引跳过指定个数的元素，这就是它最终在流中的每个连续元素上的结果。接下来调用 `findFirst()` 获取剩余元素中的第一个元素，结果会包装在 **Optional** 中。
+即使输出看起来像流，特别是 `test()` 中的 for 循环。每一次的 for 循环时重新启动流，然后根据 for 循环的索引跳过指定个数的元素，这就是它最终在流中的每个连续元素上的结果。接下来调用 `findFirst()` 获取剩余元素中的第一个元素，结果会包装在 **Optional** 中。
 
-值得注意的是，不同于普通的 for 循环。这里的索引值范围并不是 `i < elements.length`， 而是 `i <= elements.length`，所以最后一个元素实际上超出了流。方便的是，这将自动成为 **Optional.empty**，你可以在每一个测试的结尾中看到。
+**注意**，不同于普通 for 循环，这里的索引值范围并不是 `i < elements.length`， 而是 `i <= elements.length`。所以最后一个元素实际上超出了流。方便的是，这将自动成为 **Optional.empty**，你可以在每一个测试的结尾中看到。
 
-像 `map()`一样 ， `Optional.map()` 应用函数，但是对于 **Optional**，它仅在 **Optional** 不为空时才应用映射函数。它还将 **Optional** 的内容提取到映射函数：
+同 `map()` 一样 ， `Optional.map()` 应用于函数。它仅在 **Optional** 不为空时才应用映射函数，并将 **Optional** 的内容提取到映射函数。代码示例：
 
 ```java
 // streams/OptionalMap.java
@@ -1512,9 +1520,9 @@ Optional[5]
 Optional.empty
 ```
 
-映射函数的返回结果会自动包装成为 **Optional**。正如你所看到的，**Optional.empty** 会被直接跳过不使用任何映射函数。
+映射函数的返回结果会自动包装成为 **Optional**。**Optional.empty** 会被直接跳过。
 
-对于 **Optional** 的 `flatMap()` 应用于已经生成 **Optional** 的映射函数，所以 `flatMap()` 不会像 `map()` 所做的那样将结果封装在 **Optional** 中：
+**Optional** 的 `flatMap()` 应用于已生成 **Optional** 的映射函数，所以 `flatMap()` 不会像 `map()` 那样将结果封装在 **Optional** 中。代码示例：
 
 ```java
 // streams/OptionalFlatMap.java
@@ -1592,11 +1600,12 @@ Optional[5]
 Optional.empty
 ```
 
-如同 `map()` 一样，`flatMap()` 将解压非空 **Optional** 的内容并将其应用在映射函数。唯一的区别就是 `flatMap()` 不会把结果包装在 **Optional** 中，因为映射函数已经做了这件事情。在如上的示例中，我已经在每一个映射函数中显式地完成了包装，但是很显然 `Optional.flatMap()` 是为那些自己已经生成 **Optional** 的函数而设计的。
+同 `map()`，`flatMap()` 将提取非空 **Optional** 的内容并将其应用在映射函数。唯一的区别就是 `flatMap()` 不会把结果包装在 **Optional** 中，因为映射函数已经被包装过了。在如上示例中，我们已经在每一个映射函数中显式地完成了包装，但是很显然 `Optional.flatMap()` 是为那些自己已经生成 **Optional** 的函数而设计的。
 
-### Optional 流（Streams of Optionals）
+<!-- Streams of Optionals -->
+### Optional 流
 
-假设你有一个可能产生 `null` 的生成器。如果你使用这个生成器来创建流，你会自然的想用  **Optional** 来包装元素。如下是它的样子：
+假设你的生成器可能产生 `null` 值，那么当用它来创建流时，你会自然地想到用  **Optional** 来包装元素。如下是它的样子，代码示例：
 
 ```java
 // streams/Signal.java
@@ -1626,7 +1635,7 @@ public class Signal {
 }
 ```
 
-当你想使用这个流的时候，你必须弄清楚如何解包 **Optional**：
+当我们使用这个流的时候，必须要弄清楚如何解包 **Optional**。代码示例：
 
 ```java
 // streams/StreamOfOptionals.java
@@ -1667,7 +1676,7 @@ Signal(dash)
 Signal(dash)
 ```
 
-在这里，我们使用 `filter()` 来保留那些非空 **Optional**，然后在 `map()` 中使用 `get()` 获取元素。因为每一种情况都需要你决定“空值”的含义，所以通常要为每个应用程序采用不同的方法。
+在这里，我们使用 `filter()` 来保留那些非空 **Optional**，然后在 `map()` 中使用 `get()` 获取元素。由于每种情况都需要定义“空值”的含义，所以通常我们要为每个应用程序采用不同的行为。
 
 <!-- Terminal Operations -->
 
