@@ -2,12 +2,12 @@
 
 <!-- Validating Your Code -->
 # 第十六章 代码校验
-
 ##### 你永远不能保证你的代码是正确的，你只能证明它是错的。
 
 让我们先暂停学习编程语言的知识，看看一些代码基础知识。特别是能让你的代码更加健壮的。
 
-<!-- Testing -->
+
+
 ## 测试
 
 ##### 如果没有测试过，它就是不能工作的。
@@ -203,56 +203,55 @@ Junit是Java最流行的单元测试框架，但也有其它可以替代的。�
 当您分析一个未知的代码库时，测试覆盖率作为一个粗略的度量是有用的。如果覆盖率工具报告的值特别低（比如，少于百分之40），则说明覆盖不够充分。然而，一个非常高的值也同样值得怀疑，这表明对编程领域了解不足的人迫使团队做出了武断的决定。覆盖工具的最佳用途是发现代码库中未测试的部分。但是，不要依赖覆盖率来告诉你关于测试质量的任何信息。
 
 <!-- Preconditions -->
+
 ## 前提条件
 
-
 <!-- Test-Driven Development -->
+
 ## 测试驱动开发
 
-
 <!-- Logging -->
+
 ## 日志
 
-
 <!-- Debugging -->
+
 ## 调试
 
-
 <!-- Benchmarking -->
+
 ## 基准测试
 
-
 <!-- Profiling and Optimizing -->
+
 ## 分析和优化
 
-
 <!-- Style Checking -->
+
 ## 风格检测
 
-
 <!-- Static Error Analysis -->
+
 ## 静态错误分析
 
-
 <!-- Code Reviews -->
+
 ## 代码重审
 
-
 <!-- Pair Programming -->
+
 ## 结对编程
 
-
 <!-- Refactoring -->
+
 ## 重构
 
-
 <!-- Continuous Integration -->
+
 ## 持续集成
 
-
 <!-- Summary -->
+
 ## 本章小结
 
 <!-- 分页 -->
-
-<div style="page-break-after: always;"></div>
