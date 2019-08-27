@@ -449,7 +449,467 @@ assert invariant();
 
 #### DBC + 单元测试
 
-#### 
+下面的例子演示了将契约式设计中的概念与单元测试相结合的有效性。它显示了一个简单的先进先出(FIFO)队列，该队列实现为一个“循环”数组，即以循环方式使用的数组。当到达数组的末尾时，类将回绕到开头。
+
+我们可以对这个队列做一些契约定义:
+
+**1**.   前置条件(用于put())：不允许将空元素添加到队列中。
+
+**2**.   前置条件(用于put())：将元素放入完整队列是非法的。
+
+**3**.   前置条件(用于get())：试图从空队列中获取元素是非法的。
+
+**4**.   后置条件用于get())：不能从数组中生成空元素。
+
+**5**.   不变性：包含对象的区域不能包含任何空元素。
+
+**6**.   不变性：不包含对象的区域必须只有空值。
+
+下面是实现这些规则的一种方法，为每个DbC元素类型使用显式方法调用。首先，我们创建一个专用的
+
+##### Exception:
+
+- ```java
+  // validating/CircularQueueException.java
+  package validating;
+  public class CircularQueueException extends RuntimeException {
+          public CircularQueueException(String why) {
+          super(why);
+      }
+  }
+  
+  This is used to report errors with the CircularQueue class:
+  // validating/CircularQueue.java
+  // Demonstration of Design by Contract (DbC)
+  package validating;
+  import java.util.*;
+  public class CircularQueue {
+      private Object[] data;
+      private int in = 0, // Next available storage space 
+      out = 0; // Next gettable object
+      // Has it wrapped around the circular queue?
+      private boolean wrapped = false;
+      public CircularQueue(int size) {
+      data = new Object[size];
+      // Must be true after construction:
+      assert invariant();
+  	}
+      
+      public boolean empty() {
+      	return !wrapped && in == out;
+      }
+      
+      public boolean full() {
+      	return wrapped && in == out;
+      }
+      
+  	public boolean isWrapped() { return wrapped; }
+      
+      public void put(Object item) {
+      	precondition(item != null, "put() null item");
+      	precondition(!full(),
+      	"put() into full CircularQueue");
+      	assert invariant();
+      	data[in++] = item;
+      	if(in >= data.length) {
+              in = 0;
+              wrapped = true;
+      	}
+  		assert invariant();
+  	}
+      
+      public Object get() {
+      	precondition(!empty(),
+      	"get() from empty CircularQueue");
+      	assert invariant();
+      	Object returnVal = data[out];
+      	data[out] = null;
+      	out++;
+          if(out >= data.length) {
+              out = 0;
+              wrapped = false;
+          }
+          assert postcondition(
+          returnVal != null,
+          "Null item in CircularQueue");
+          assert invariant();
+          return returnVal;
+  }
+      
+  	// Design-by-contract support methods:
+      private static void precondition(boolean cond, String msg) {
+          if(!cond) throw new CircularQueueException(msg);
+      }
+      
+      private static boolean postcondition(boolean cond, String msg) {
+      	if(!cond) throw new CircularQueueException(msg);
+      	return true;
+      }
+      
+      private boolean invariant() {
+      // Guarantee that no null values are in the
+      // region of 'data' that holds objects:
+      for(int i = out; i != in; i = (i + 1) % data.length)
+      if(data[i] == null)
+      throw new CircularQueueException(
+      "null in CircularQueue");
+      // Guarantee that only null values are outside the
+      // region of 'data' that holds objects:
+      if(full()) return true;
+      for(int i = in; i != out; i = (i + 1) % data.length)
+      if(data[i] != null)
+      throw new CircularQueueException(
+      "non-null outside of CircularQueue range: "
+          dump());
+        return true;
+        }
+      
+        public String dump() {
+        return "in = " + in +
+        ", out = " + out +
+        ", full() = " + full() +
+        ", empty() = " + empty() +
+        ", CircularQueue = " + Arrays.asList(data);
+        }
+  }
+  ```
+
+  **in** 计数器指示数组中下一个对象所在的位置。**out** 计数器指示下一个对象来自何处。**wrapped** 的flag表示 **in** 已经“绕着圆圈”走了，现在从后面出来了。当**in**和 **out** 重合时，队列为空(如果包装为 **false** )或满(如果 **wrapped** 为 **true** )。
+
+  **put()** 和 **get()** 方法调用 **precondition()** ，**postcondition()**, 和 **invariant**()，这些都是在类中定义的私有方法。前置**precondition()** 和 **postcondition()** 是用来阐明代码的辅助方法。
+
+  
+
+  注意，**precondition()** 返回 **void** , 因为它不与断言一起使用。按照之前所说的，通常你会在代码中保留前置条件。通过将它们封装在 **precondition()**  方法调用中，如果你不得不做出关掉它们的可怕举动，你会有更好的选择。
+
+  
+
+  **postcondition()** 和 **constant()** 都返回一个布尔值，因此可以在 **assert** 语句中使用它们。此外，如果出于性能考虑禁用断言，则根本不存在方法调用。**invariant()** 对对象执行内部有效性检查，如果你在每个方法调用的开始和结束都这样做，这是一个花销巨大的操作，就像 **Meyer** 建议的那样。所以， 用代码清晰地表明是有帮助的，它帮助我调试了实现。此外，如果您对代码实现做任何更改，那么 **invariant()** 将确保你没有破坏代码，将不变性测试从方法调用移到单元测试代码中是相当简单的。如果您的单元测试是足够的，那么你应当对不变性保持一定的信心。
+
+  
+
+  **dump()** helper方法返回一个包含所有数据的字符串，而不是直接打印数据。这表示你可以展示更多的信息。
+
+  
+
+  现在我们可以为类创建JUnit测试:
+
+  ```java
+  // validating/tests/CircularQueueTest.java
+  package validating;
+  import org.junit.jupiter.api.*;
+  import static org.junit.jupiter.api.Assertions.*;
+  public class CircularQueueTest {
+      private CircularQueue queue = new CircularQueue(10);
+      private int i = 0;
+      
+      @BeforeEach
+      public void initialize() {
+          while(i < 5) // Pre-load with some data
+          queue.put(Integer.toString(i++));
+  	}
+      
+      // Support methods:
+      private void showFullness() {
+          assertTrue(queue.full());
+          assertFalse(queue.empty());
+          System.out.println(queue.dump());
+      }
+      
+      private void showEmptiness() {
+          assertFalse(queue.full());
+          assertTrue(queue.empty());
+          System.out.println(queue.dump());
+      }
+      
+      @Test
+      public void full() {
+          System.out.println("testFull");
+          System.out.println(queue.dump());
+          System.out.println(queue.get());
+          System.out.println(queue.get());
+          while(!queue.full())
+              queue.put(Integer.toString(i++));
+              String msg = "";
+          try {
+          	queue.put("");
+          } catch(CircularQueueException e) {
+          	msg = e.getMessage();
+          	System.out.println(msg);
+          }
+          assertEquals(msg, "put() into full CircularQueue");
+          showFullness();
+      }
+      
+      @Test
+      public void empty() {
+          System.out.println("testEmpty");
+          while(!queue.empty())
+      		System.out.println(queue.get());
+      		String msg = "";
+          try {
+          	queue.get();
+          } catch(CircularQueueException e) {
+              msg = e.getMessage();
+              System.out.println(msg);
+          }
+          assertEquals(msg, "get() from empty CircularQueue");
+          showEmptiness();
+      }
+      @Test
+      public void nullPut() {
+          System.out.println("testNullPut");
+          	String msg = "";
+          try {
+          	queue.put(null);
+          } catch(CircularQueueException e) {
+              msg = e.getMessage();
+              System.out.println(msg);
+          }
+          	assertEquals(msg, "put() null item");
+      }
+      
+      @Test
+      public void circularity() {
+      	System.out.println("testCircularity");
+      	while(!queue.full())
+      		queue.put(Integer.toString(i++));
+      		showFullness();
+      		assertTrue(queue.isWrapped());
+          
+          while(!queue.empty())
+          	System.out.println(queue.get());
+          	showEmptiness();
+          
+          while(!queue.full())
+          	queue.put(Integer.toString(i++));
+          	showFullness();
+          
+          while(!queue.empty())
+          	System.out.println(queue.get());
+          	showEmptiness();
+      }
+  }
+  /* Output:
+  testNullPut
+  put() null item
+  testCircularity
+  in = 0, out = 0, full() = true, empty() = false,
+  CircularQueue =
+  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  0
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+  in = 0, out = 0, full() = false, empty() = true,
+  CircularQueue =
+  [null, null, null, null, null, null, null, null, null,
+  null]
+  in = 0, out = 0, full() = true, empty() = false,
+  CircularQueue =
+  [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+  10
+  11
+  12
+  13
+  14
+  15
+  16
+  17
+  18
+  19
+  in = 0, out = 0, full() = false, empty() = true,
+  CircularQueue =
+  [null, null, null, null, null, null, null, null, null,
+  null]
+  testFull
+  in = 5, out = 0, full() = false, empty() = false,
+  CircularQueue =
+  [0, 1, 2, 3, 4, null, null, null, null, null]
+  0
+  1
+  put() into full CircularQueue
+  in = 2, out = 2, full() = true, empty() = false,
+  CircularQueue =
+  [10, 11, 2, 3, 4, 5, 6, 7, 8, 9]
+  testEmpty
+  0
+  1
+  2
+  3
+  4
+  get() from empty CircularQueue
+  in = 5, out = 5, full() = false, empty() = true,
+  CircularQueue =
+  [null, null, null, null, null, null, null, null, null,
+  null]
+  */
+  ```
+
+  **initialize()** 添加了一些数据，因此每个测试的 **CircularQueue** 都是部分满的。**showFullness()** 和 **showempty()** 表明 **CircularQueue** 是满的还是空的，这四种测试方法中的每一种都确保了**CircularQueue**功能在不同地方的正确运行。
+
+通过将Dbc和单元测试结合起来，你不仅可以同时使用这两种方法，还可以有一个迁移路径—你可以将一些Dbc测试迁移到单元测试中，而不是简单地禁用它们，这样你仍然有一定程度的测试。
+
+#### 使用Guava前置条件
+
+在非严格DBC中， 我指出，前置条件是DbC中你不想删除的那一部分，因为它可以检查方法参数的有效性。那是你没有办法控制的事情，所以你需要对其检查。因为Java在默认情况下禁用断言，所以通常最好使用另外一个始终验证方法参数的库。
+
+谷歌的Guava库包含了一组很好的前置条件测试，这些测试不仅易于使用，而且命名也足够好。在这里您可以看到它们的简单用法。库的设计人员建议你静态导入前置条件:
+
+```java
+// validating/GuavaPreconditions.java
+// Demonstrating Guava Preconditions
+import java.util.function.*;
+import static com.google.common.base.Preconditions.*;
+public class GuavaPreconditions {
+    static void test(Consumer<String> c, String s) {
+        try {
+            System.out.println(s);
+            c.accept(s);
+            System.out.println("Success");
+        } catch(Exception e) {
+            String type = e.getClass().getSimpleName();
+            String msg = e.getMessage();
+            System.out.println(type +
+            (msg == null ? "" : ": " + msg));
+        }
+    }
+    
+    public static void main(String[] args) {
+        test(s -> s = checkNotNull(s), "X");
+        test(s -> s = checkNotNull(s), null);
+        test(s -> s = checkNotNull(s, "s was null"), null);
+        test(s -> s = checkNotNull(
+        s, "s was null, %s %s", "arg2", "arg3"), null);
+        test(s -> checkArgument(s == "Fozzie"), "Fozzie");
+        test(s -> checkArgument(s == "Fozzie"), "X");
+        test(s -> checkArgument(s == "Fozzie"), null);
+        test(s -> checkArgument(
+        s == "Fozzie", "Bear Left!"), null);
+        test(s -> checkArgument(
+        s == "Fozzie", "Bear Left! %s Right!", "Frog"),
+        null);
+        test(s -> checkState(s.length() > 6), "Mortimer");
+        test(s -> checkState(s.length() > 6), "Mort");
+        test(s -> checkState(s.length() > 6), null);
+        test(s ->
+        checkElementIndex(6, s.length()), "Robert");
+        test(s ->
+        checkElementIndex(6, s.length()), "Bob");
+        test(s ->
+        checkElementIndex(6, s.length()), null);
+        test(s ->
+        checkPositionIndex(6, s.length()), "Robert");
+        test(s ->
+        checkPositionIndex(6, s.length()), "Bob");
+        test(s ->
+        checkPositionIndex(6, s.length()), null);
+        test(s -> checkPositionIndexes(
+        0, 6, s.length()), "Hieronymus");
+        test(s -> checkPositionIndexes(
+        0, 10, s.length()), "Hieronymus");
+        test(s -> checkPositionIndexes(
+        0, 11, s.length()), "Hieronymus");
+        test(s -> checkPositionIndexes(
+        -1, 6, s.length()), "Hieronymus");
+        test(s -> checkPositionIndexes(
+        7, 6, s.length()), "Hieronymus");
+        test(s -> checkPositionIndexes(
+        0, 6, s.length()), null);
+    }
+}
+/* Output:
+X
+Success
+null
+NullPointerException
+null
+NullPointerException: s was null
+null
+NullPointerException: s was null, arg2 arg3
+Fozzie
+Success
+X
+IllegalArgumentException
+null
+IllegalArgumentException
+null
+IllegalArgumentException: Bear Left!
+null
+IllegalArgumentException: Bear Left! Frog Right!
+Mortimer
+Success
+Mort
+IllegalStateException
+null
+NullPointerException
+Robert
+IndexOutOfBoundsException: index (6) must be less than
+size (6)
+Bob
+IndexOutOfBoundsException: index (6) must be less than
+size (3)
+null
+NullPointerException
+Robert
+Success
+Bob
+IndexOutOfBoundsException: index (6) must not be
+greater than size (3)
+null
+NullPointerException
+Hieronymus
+Success
+Hieronymus
+Success
+Hieronymus
+IndexOutOfBoundsException: end index (11) must not be
+greater than size (10)
+Hieronymus
+IndexOutOfBoundsException: start index (-1) must not be
+negative
+Hieronymus
+IndexOutOfBoundsException: end index (6) must not be	
+less than start index (7)
+null
+NullPointerException
+*/
+```
+
+虽然Guava的前置条件适用于所有类型，但我只演示 字符串。类型。**test()**方法需要一个**Consumer<String>**，因此我们可以传递一个lambda表达式作为第一个参数字符串。以及作为第二个参数传递给lambda的字符串。它显示字符串，以便在查看输出时确定方向，然后将字符串传递给lambda表达式。try块中的第二个 **println**() 仅在lambda表达式成功时才显示; 否则catch将捕获并显示错误信息。注意 **test()** 方法消除了多少重复的代码。
+
+每个前置条件都有三种不同的重载形式：一个什么都没有，一个带有简单字符串消息，以及带有一个字符串和替换值。为了提高效率，只允许 **%s** (字符串类型)替换标记。在上面的例子中，演示了**checkNotNull()** 和 **checkArgument()** 这两种形式。但是它们对于所有前置条件方法都是相同的。注意 **checkNotNull()** 的返回参数， 所以您可以在表达式中内联使用它。下面是如何在构造函数中使用它来防止包含 **Null **值的对象构造：
+
+/
+
+```java
+/ validating/NonNullConstruction.java
+import static com.google.common.base.Preconditions.*;
+public class NonNullConstruction {
+    private Integer n;
+    private String s;
+    NonNullConstruction(Integer n, String s) {
+        this.n = checkNotNull(n);	
+        this.s = checkNotNull(s);
+    }
+    public static void main(String[] args) {
+        NonNullConstruction nnc =
+        new NonNullConstruction(3, "Trousers");
+    }
+}
+```
+
+**checkArgument()** 接受布尔表达式来对参数进行更具体的测试， 失败时抛出 **IllegalArgumentException**，**checkState()**用于测试对象的状态（例如，不变性检查），而不是检查参数，并在失败时抛出 **IllegalStateException** 。
+
+最后三个方法在失败时抛出 **IndexOutOfBoundsException**。**checkElementIndex**() 确保其第一个参数是列表、字符串或数组的有效元素索引，其大小由第二个参数指定。**checkPositionIndex()**确保它的第一个参数在 0 到第二个参数(包括第二个参数)的范围内。**checkPositionIndexes()** 检查 **[first_arg, second_arg]** 是一个列表的有效子列表，由第三个参数指定大小的字符串或数组。
+
+所有Guava前置条件对于基本类型和对象都有必要的重载。
 
 <!-- Test-Driven Development -->。
 
