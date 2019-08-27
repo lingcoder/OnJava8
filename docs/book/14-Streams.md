@@ -445,7 +445,7 @@ YNZBRNYGCFOWZNTCQRGSEGZMMJMROE
 
 使用 `Random.nextInt()` 方法来挑选字母表中的大写字母。`Random.nextInt()` 的参数代表可以接受的最大的随机数范围，所以使用数组边界是经过深思熟虑的。
 
-如果要创建包含相同对象的流，只需要传递一个生成那些对象 `lambda` 到 `generate()` 中：
+如果要创建包含相同对象的流，只需要传递一个生成那些对象的 `lambda` 到 `generate()` 中：
 
 ```java
 // streams/Duplicator.java
@@ -515,7 +515,7 @@ Bubble(3)
 Bubble(4)
 ```
 
-这是创建单独工厂类（Separate Factory class）的另一种方式。在很多方面它更加整洁，但是这对于代码组织和品味是个问题——你总是可以创建一个完全不同的工厂类。
+这是创建单独工厂类（Separate Factory class）的另一种方式。在很多方面它更加整洁，但是这是一个对于代码组织和品味的问题——你总是可以创建一个完全不同的工厂类。
 
 ### iterate()
 
@@ -579,7 +579,7 @@ public class FileToWordsBuilder {
     public FileToWordsBuilder(String filePath) throws Exception {
         Files.lines(Paths.get(filePath))
              .skip(1) // 略过开头的注释行
-              .forEach(line -> {
+             .forEach(line -> {
                   for (String w : line.split("[ .?,]+"))
                       builder.add(w);
               });
@@ -681,7 +681,7 @@ public class ArrayStreams {
 
 ### 正则表达式
 
-Java 的正则表达式已经在[字符串](18-Strings.md)这一章节介绍过了。Java 8 在 `java.util.regex.Pattern` 中增加了一个新的方法 `splitAsStream()`。这个方法可以根据传入的公式将字符序列转化为流。但是有一个限制，输入只能是 **CharSequence**，因此不能将流作为 `splitAsStream()` 的参数。
+Java 的正则表达式将在[字符串](18-Strings.md)这一章节详细介绍。Java 8 在 `java.util.regex.Pattern` 中增加了一个新的方法 `splitAsStream()`。这个方法可以根据传入的公式将字符序列转化为流。但是有一个限制，输入只能是 **CharSequence**，因此不能将流作为 `splitAsStream()` 的参数。
 
 我们再一次查看将文件处理为单词流的过程。这一次，我们使用流将文件分割为单独的字符串，接着使用正则表达式将字符串转化为单词流。
 
@@ -765,7 +765,7 @@ Well WELL well it IT it s S s so SO so
 
 `FileToWords` 稍后定义，但它的功能实现貌似和之前我们看到的差不多：产生字符串对象的流。之后在其通过管道时调用 `peek()` 进行处理。
 
-因为 `peek()` 符合无返回值的 **Consumer** 函数式接口。我们只能观察，无法使用不同的元素来替换流中的对象。
+因为 `peek()` 符合无返回值的 **Consumer** 函数式接口，所以我们只能观察，无法使用不同的元素来替换流中的对象。
 
 ### 流元素排序
 
