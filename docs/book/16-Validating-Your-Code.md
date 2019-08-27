@@ -208,7 +208,208 @@ Junit是Java最流行的单元测试框架，但也有其它可以替代的。�
 
 <!-- Preconditions -->
 
-## 前提条件
+## 前提条件。
+前置条件的概念来自于契约式设计(**Design By Contract, DbC**), 利用断言机制实现。我们从Java的断言机制开始来介绍DBC，最后使用谷歌Guava库作为前置条件。
+
+#### 断言（Assertions）
+
+断言通过验证在程序执行期间满足某些条件而增加了程序的健壮性。举例，假设在一个对象中有一个数值字段，它表示日历上的月份。这个数字总是介于1-12之间。通过断言检查，如果超出了该范围，则报告错误。如果在方法的内部，则可以使用断言检查参数的有效性。这些是确保程序正确的重要测试，但是它们不能在编译时被检查，并且它们不属于单元测试的范围。
+
+#### Java断言语法
+
+你可以通过其它程序设计架构来模拟断言的效果，因此，在Java中包含断言的意义在于它们易于编写。断言语句有两种形式 : 
+
+assert boolean-expression；
+
+assert boolean-expression: information-expression;
+
+两者似乎告诉我们 **“我断言这个布尔表达式会产生一个真正的值”**， 否则，将抛出**AssertionError**异常。
+
+这是**Throwable**的派生类，因此不需要异常规范。
+
+不幸的是，第一种断言形式的异常不会生成包含布尔表达式的任何信息（与大多数其他语言的断言机制相反）。
+
+下面是第一种形式的例子：
+
+```java
+// validating/Assert1.java
+
+// Non-informative style of assert
+// Must run using -ea flag:
+// {java -ea Assert1}
+// {ThrowsException}
+public class Assert1 {
+    public static void main(String[] args) {
+    assert false;
+    }
+}
+
+/* Output:
+___[ Error Output ]___
+Exception in thread "main" java.lang.AssertionError
+at Assert1.main(Assert1.java:9)
+*/
+```
+
+如果你正常运行程序，没有任何特殊的断言标志，则不会发生任何事情。你需要在运行程序时显式启用断言。一种简单的方法是使用 **-ea** flag， 它也可以表示为: **-enableassertion**， 这将运行程序并执行任何断言语句。
+
+输出中并没有包含多少有用的信息。另一方面，如果你使用**information-expression**， 你将生成一条有用的消息作为异常堆栈跟踪的一部分。最有用的**information-expression**通常是一串针对程序员的文本:
+
+```java
+// validating/Assert2.java
+// Assert with an information-expression
+// {java Assert2 -ea}
+// {ThrowsException}
+
+public class Assert2 {
+    public static void main(String[] args) {
+    assert false:
+    "Here's a message saying what happened";
+    }
+}
+/* Output:
+___[ Error Output ]___
+Exception in thread "main" java.lang.AssertionError:
+Here's a message saying what happened
+at Assert2.main(Assert2.java:8)
+*/
+```
+
+**information-expression**可以产生任何类型的对象，因此，通常你将构造一个包含对象值的更复杂的字符串，它是否与失败的断言有关。
+
+还可以通过类名或包名打开或关闭断言；也就是说，您可以为整个包启用或禁用断言。实现这一点的详细信息在JDK的断言文档中。您想要打开或关闭某些断言时，此特性对于使用断言进行工具化的大型项目非常有用。然而,日志记录（*Logging*）或者调试（*Debugging*）,可能是捕获这类信息的更好工具。
+
+这有另一种办法控制你的断言：编程方式，通过链接到类加载器对象（**ClassLoader**）。类加载器中有几种方法允许动态启用和禁用断言，其中**setDefaultAssertionStatus ()**,它为之后加载的所有类设置断言状态。因此，你可以认为你像下面这样悄悄地开启了断言：
+
+```java
+// validating/LoaderAssertions.java
+// Using the class loader to enable assertions
+// {ThrowsException}
+public class LoaderAssertions {
+public static void main(String[] args) {
+
+	ClassLoader.getSystemClassLoader().
+        setDefaultAssertionStatus(true);
+		new Loaded().go();
+	}
+}
+
+class Loaded {
+    public void go() {
+    assert false: "Loaded.go()";
+    }
+}
+/* Output:
+___[ Error Output ]___
+Exception in thread "main" java.lang.AssertionError:
+Loaded.go()
+at Loaded.go(LoaderAssertions.java:15)
+at
+LoaderAssertions.main(LoaderAssertions.java:9)
+*/
+```
+
+这消除了在运行程序时在命令行上使用**-ea**标志的需要，使用**-ea**标志启用断言可能同样简单。当交付独立产品时，您可能必须设置一个执行脚本让用户能够启动程序，配置其他启动参数。这是有道理的，然而，决定在程序运行时启用断言可以使用下面的**static**块来实现这一点，该语句位于系统的主类中：
+
+```java
+static {
+    boolean assertionsEnabled = false;
+    // Note intentional side effect of assignment:
+    assert assertionsEnabled = true;
+    if(!assertionsEnabled)
+    throw new RuntimeException("Assertions disabled");
+}
+```
+
+
+
+如果启用断言，然后执行**assert**语句，**assertionsEnabled**变为**true**。断言不会失败，因为分配的返回值是赋值的值。如果不启用断言，**assert**语句不执行，**assertionsEnabled**保持false，将导致异常。
+
+
+
+#### Guava断言
+
+因为启用Java本地断言很麻烦，Guava团队添加一个始终启用替换断言的**Verify**类。他们建议静态导入**Verify**方法：
+
+```java
+// validating/GuavaAssertions.java
+// Assertions that are always enabled.
+
+import com.google.common.base.*;
+import static com.google.common.base.Verify.*;
+public class GuavaAssertions {
+    public static void main(String[] args) {
+    	verify(2 + 2 == 4);
+    	try {
+    		verify(1 + 2 == 4);
+   	 	} catch(VerifyException e) {
+    		System.out.println(e);
+    	}
+        
+		try {
+			verify(1 + 2 == 4, "Bad math");
+		} catch(VerifyException e) {
+			System.out.println(e.getMessage());
+		}
+        
+		try {
+			verify(1 + 2 == 4, "Bad math: %s", "not 4");
+		} catch(VerifyException e) {
+        	System.out.println(e.getMessage());
+        }
+        
+        String s = "";
+        s = verifyNotNull(s);
+        s = null;
+        try {
+            verifyNotNull(s);
+        } catch(VerifyException e) {
+        	System.out.println(e.getMessage());
+        }
+        
+        try {
+        	verifyNotNull(
+        		s, "Shouldn't be null: %s", "arg s");
+        } catch(VerifyException e) {
+        	System.out.println(e.getMessage());
+        }
+	}
+}
+/* Output:
+com.google.common.base.VerifyException
+Bad math
+Bad math: not 4
+expected a non-null reference
+Shouldn't be null: arg s
+*/
+```
+
+
+
+这里有两个方法，使用变量**verify()**和**verifyNotNull()**来支持有用的错误消息。注意，**verifyNotNull()**内置的错误消息通常就足够了，而**verify()**太一般，没有有用的默认错误消息。
+
+
+
+#### 使用断言进行契约式设计
+
+*契约式设计(DbC)*是Bertrand Meyer提出的一个概念，Eiffel语言的发明者，通过确保对象遵循某些规则来帮助创建健壮的程序。这些规则是由正在解决的问题的性质决定的，这超出了编译器可以验证的范围。虽然断言没有直接实现**DBC**（Eiffel也是如此），但是它们创建了一种非正式的DBC编程风格。DbC假定服务供应商与该服务的消费者或客户之间存在明确指定的契约。在面向对象编程中，服务通常由对象提供，对象的边界 — 供应商和消费者之间的划分 — 是对象类的接口。当客户端调用特定的公共方法时，它们希望该调用具有特定的行为：对象状态改变，以及一个可预测的返回值。
+
+**Meyer**认为：
+
+1.应该明确指定行为，就好像它是一个契约一样。
+
+2.通过实现某些运行时检查来保证这种行为，他将这些检查称为前置条件、后置条件和不变项。
+
+不管你是否同意，第一条总是对的，在足够多的情况下，DbC确实是一种有用的方法。（我认为，与任何解决方案一样，它的有用性也有界限。但如果你知道这些界限，你就知道什么时候去尝试。）尤其是，设计过程中一个有价值的部分是特定类DbC约束的表达式；如果无法指定约束，则可能对要构建的内容了解得不够。
+
+#### check指令
+
+详细研究DbC之前，思考最简单使用断言的办法，**Meyer**称它为check指令。check指令说明你确信代码中的某个特定属性此时已经得到满足。check指令的思想是用表达代码中非明显性的结论，而不仅仅是为了验证测试，也同样为了将来能够满足阅读者而有一个文档。
+
+在化学领域，你也许会用一种纯液体去滴定测量另一种液体，当达到一个特定的点时，液体变蓝了。从两个液体的颜色上并不能明显看出；这是作为其中复杂的一部分。滴定完成后一个有用的check指令是能够断定液体变蓝了。
+
+check指令对你的代码进行补充，当您可以测试并阐明对象或程序的状态时，应该使用它。
+
 
 <!-- Test-Driven Development -->
 
