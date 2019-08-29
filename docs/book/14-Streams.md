@@ -1684,12 +1684,12 @@ Signal(dash)
 
 这些操作获取一个流并产生一个最终结果；它们不会向后端流提供任何东西。因此，终端操作总是你在管道中做的最后一件事情。
 
-### 转化成数组（Convert to an Array）
-
+<!-- Convert to an Array -->
+### 转化数组
 - `toArray()`：将流转换成适当类型的数组。
-- `toArray(generator)`：在特殊情况下，生成器用于分配你自己的数组存储。
+- `toArray(generator)`：在特殊情况下，生成器用于分配自定义的数组存储。
 
-这组方法在流操作产生的结果必须是数组形式很有用。假如我们想在流里复用获取的随机数，以便于每次都可以得到相同的流们，可以将他们保存到数组中。代码示例:
+这组方法在流操作产生的结果必须是数组形式时很有用。假如我们想在流里复用获取的随机数，可以将他们保存到数组中。代码示例:
 
 ```java
 // streams/RandInts.java
@@ -1704,18 +1704,19 @@ public class RandInts {
 }
 ```
 
-一个包含 100 个数值范围在 0 到 10000 之间的随机数流转换成为数组并将其存储在 **rints** 中，所以在每次调用 `rands()` 的时候你都可以重复地获取相同的流。
+上例将100个数值范围在0-10000之间的随机数流转换成为数组并将其存储在 `rints` 中，在每次调用 `rands()` 的时候可以重复获取相同的流。
 
-### 对每个元素应用最终操作（Apply a Final Operation to Every Element）
+<!-- Apply a Final Operation to Every Element -->
+### 应用最终操作
 
-- `forEach(Consumer)`：你已经看到很多次 `System.out::println` 作为 **Consumer** 函数。
-- `forEachOrdered(Consumer)`： 这个形式保证了 forEach 的操作顺序是原始流顺序。
+- `forEach(Consumer)`：常见的,如 `System.out::println` 作为 **Consumer** 函数。
+- `forEachOrdered(Consumer)`： 保证 `forEach` 按照原始流顺序操作。
 
-第一种形式是显式地设计为以任何顺序操作元素，这只在引入 `parallel()` 操作时才有意义。在 [并发]() 章节之前我们不会深入研究这个问题，但是这里有一个简单的介绍：`parallel()` 告诉 Java 尝试在多个处理器上运行操作。它可以做到这一点是因为我们使用流——流可以被分割为多个流（通常一个流一个处理器）并且每个流运行在不同的处理器上。因为我们使用的是内部循环而不是外部循环，这是可行的。
+第一种形式：显式设计为任意顺序操作元素，仅在引入 `parallel()` 操作时才有意义。在 [并发编程](24-Concurrent-Programming.md) 章节之前我们不会深入研究这个问。这里简单介绍下`parallel()`：可实现多处理器并行操作。实现原理为将流分割为多个（通常数目为 CPU 核心数）并在不同处理器上分别执行操作。这对内部循环是可行的。
 
-在你对 `parallel()` 的看似容易感到过于兴奋之前，它实际上相当棘手，所以请等到我们进入 [并发]() 编程章节。
+`parallel()` 看似简单，实则棘手。更多内容，在稍后学习的[并发编程](24-Concurrent-Programming.md) 编程章节。
 
-但是，我们可以通过将 `parallel()` 引入一个示例来了解 `forEachOrdered(Consumer)` 的效果和需求：
+下例引入了 `parallel()` 来帮助理解 `forEachOrdered(Consumer)` 的作用和使用场景。代码示例：
 
 ```java
 // streams/ForEach.java
@@ -1747,16 +1748,19 @@ public class ForEach {
 258 555 693 861 961 429 868 200 522 207 288 128 551 589
 ```
 
-我已经隔离了 `SZ`，以便轻松尝试不同的尺寸。 然而，即使是 14 的 `SZ` 也会产生有趣的结果。在第一个流中，我们没有使用 `parallel()` 所以按照它们从 `rands()` 出现的顺序显示结果。第二个流我们引入了 `parallel()` ，即使是很小的流，你也会看到输出结果和之前的顺序并不一样。这是由于多个处理器正在解决这个问题，如果你多次运行这个程序，你将会看到这个结果均是不同的，这是由于多个处理器同时处理该问题而产生的非确定性因素。
+为了方便测试不同大小的数组，我们抽离出了 `SZ` 变量。结果很有趣：在第一个流中，未使用 `parallel()` ，所以 `rands()` 按照元素迭代出现的顺序显示结果；在第二个流中，引入`parallel()` ，即便流很小，输出的结果顺序也和前面不一样。这是由于多处理器并行操作的原因。多次运行测试，结果熟悉均不同。多处理器并行操作带来的非确定性因素造成了这样的结果。
 
-最后一个流依旧使用了 `parallel()`，但是通过使用 `forEachOrdered()` 强制结果保留原始顺序。因此使用 `parallel()` 对于非并行流没有任何影响。
+在最后一个流中，同时使用了 `parallel()` 和 `forEachOrdered()` 来强制保持原始流顺序。因此，对非并行流使用 `forEachOrdered()` 是没有任何影响的。
 
-### 收集（Collecting）
+<!-- Collecting -->
+### 收集
 
-- `collect(Collector)`：使用 **Collector** 来累计流元素到结果集合中。
-- `collect(Supplier, BiConsumer, BiConsumer)`：同上，但是 **Supplier** 创建了一个新的结果集合，第一个 **BiConsumer** 是将下一个元素包含在结果中的函数，而第二个 **BiConsumer** 是用于将两个值组合起来。
+- `collect(Collector)`：使用 **Collector** 收集流元素到结果集合中。
+- `collect(Supplier, BiConsumer, BiConsumer)`：同上，参数1 **Supplier** 创建了一个新结果集合，参数2 **BiConsumer** 将下一个元素包含到结果中，参数3 **BiConsumer** 用于将两个值组合起来。
 
-你只看到了少数几个 **Collectors** 对象的示例。如果你查看 ` java.util.stream.Collectors`的文档，你会发现其中的一些实现非常复杂。例如，我们可以将元素收集到任意一种特定的集合中。假设我们想将我们的元素最终在 **TreeSet** 中，以保证它们总是有序的。在 **Collectors** 里面没有特定的 `toTreeSet()` 方法，但是你可以使用 ` Collectors.toCollection()`并为任何类型的Collection提供构造函数引用。 该程序将文件中的单词拉入**TreeSet** ：
+在这里我们只是简单介绍了几个 **Collectors** 的运用示例。实际上，它还有一些非常复杂的操作实现。可通过查看 `java.util.stream.Collectors` 部分的 API 文档了解。例如，我们可以将元素收集到任意一种特定的集合中。
+
+假设我们现在为了保证元素有序，将元素存储在 **TreeSet** 中。**Collectors** 里面没有特定的 `toTreeSet()`，但是我们可以通过 `Collectors.toCollection()` 来为任何类型的集合提供构造函数引用。下面我们来将一个文件中的单词收集到 **TreeSet** 集合中。代码示例：
 
 ```java
 // streams/TreeSetOfWords.java
@@ -1791,9 +1795,9 @@ stream, streams, throws, toCollection, trim, util,
 void, words2]
 ```
 
-`Files.lines()` 打开 **Path** 并将其转换成为行流。下一行代码将根据一个或者多个非单词字符（\\\\w+）作为边界对行进行分割，然后使用 `Arrays.stream()` 将其转化成为流，并将结果扁平映射成为单词流。`matches(\\d+)` 寻找并移除那些全是数字的字符串（注意 **words2** 是通过的）。接下来我们使用 `String.trim()` 去除单词两边的空白，`filter()`过滤所有长度小于 3 的单词，然后只获取 100 个单词，并最终将其塞入到 **TreeSet** 中。
+**Files.**`lines()` 打开 **Path** 并将其转换成为行流。下一行代码将匹配一个或多个非单词字符（`\\w+`）行进行分割，然后使用 **Arrays.**`stream()` 将其转化成为流，并将结果扁平映射成为单词流。使用 `matches(\\d+)` 查找并移除全数字字符串（**注意**,**words2** 是通过的）。接下来我们使用 **String.**`trim()` 去除单词两边的空白，`filter()` 过滤所有长度小于 3 的单词，紧接着只获取100个单词，最后将其保存到 **TreeSet** 中。
 
-我们也可以在流中生成 **Map**：
+我们也可以在流中生成 **Map**。代码示例：
 
 ```java
 // streams/MapCollector.java
@@ -1875,7 +1879,8 @@ cheese
 
 在这里， **ArrayList** 的方法已经执行了你所需要的操作，但是似乎更有可能的是，如果你必须使用这种形式的 `collect()`，则必须自己创建特殊的定义。
 
-### 组合所有流元素（Combining All Stream Elements）
+<!-- Combining All Stream Elements -->
+### 组合所有流元素
 
 - `reduce(BinaryOperator)`：使用 **BinaryOperator** 来组合所有流中的元素。因为流可能为空，其返回值为 **Optional**。
 - `reduce(identity, BinaryOperator)`：功能同上，但是使用 **identity** 作为其组合的初始值。因此如果流为空，**identity** 就是结果。
@@ -1934,7 +1939,8 @@ Lambda 表达式中的第一个参数 `fr0` 是上一次调用 `reduce()` 的结
 
 `reduce()` 中的 Lambda 表达式使用了三元表达式来获取结果，当其 size 小于 50 的时候获取 `fr0` 否则获取序列中的下一个值 `fr1`。因此你会取得第一个 size 小于 50 的 `Frobnitz`，只要找到了就这个结果就会紧紧地攥住它，即使有其他候选者出现。虽然这是一个非常奇怪的约束，但是它确实让你对 `reduce()` 有了更多的了解。
 
-### 匹配（Matching）
+<!-- Matching -->
+### 匹配
 
 - `allMatch(Predicate)` ：如果流的每个元素根据提供的 **Predicate** 都返回 true 时，结果返回为 true。这个操作将会在第一个 false 之后短路；也就是不会在发生 false 之后继续执行计算。
 - `anyMatch(Predicate)`：如果流中的一个元素根据提供的 **Predicate** 返回 true 时，结果返回为 true。这个操作将会在第一个 true 之后短路；也就是不会在发生 true 之后继续执行计算。
@@ -1986,7 +1992,7 @@ public class Matching {
 
 `show()` 获取两个参数，**Matcher** 匹配器和用于表示谓词测试 **n < val** 中最大值的 **val**。这个方法生成一个从 1 到 9 的整数流。`peek()` 是用于像我们展示测试在短路之前的情况。你可以在输出中发现每一次短路都会发生。
 
-### 选择元素
+### 元素查找
 
 - `findFirst()`：返回一个含有第一个流元素的 **Optional**，如果流为空返回 **Optional.empty**。
 - `findAny(`：返回含有任意流元素的 **Optional**，如果流为空返回 **Optional.empty**。
@@ -2049,7 +2055,8 @@ three
 
 `reduce()`  的参数只是用最后一个元素替换了最后两个元素，最终只生成最后一个元素。如果为数字流，你必须使用相近的数字可选类型（ numeric optional type），否则你使用的 **Optional** 类型为 `Optional<String>`。
 
-### 信息（Informational）
+<!-- Informational -->
+### 信息
 
 - `count()`：流中的元素个数。
 - `max(Comparator)`：根据所传入的 **Comparator** 所决定的“最大”元素。
@@ -2088,7 +2095,8 @@ you
 
 `min()` 和 `max()` 的返回类型为 **Optional**，这需要我们使用 `orElse()`来解包。
 
-### 数字流信息（Information for Numeric Streams）
+<!-- Information for Numeric Streams -->
+### 数字流信息
 
 - `average()` ：求取流元素平均值。
 - `max()` 和 `min()`：因为这些操作在数字流上面，所以不需要 **Comparator**。
