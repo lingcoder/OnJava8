@@ -732,6 +732,7 @@ Not much of a cheese shop really is it
 幸运的是，我们稍后就会知道如何解决这个问题。
 
 <!-- Intermediate Operations -->
+
 ## 中间操作
 
 中间操作用于从一个流中获取对象，并将对象作为另一个流从后端输出，以连接到其他操作。
@@ -983,9 +984,9 @@ class FunctionMap3 {
 
 ### 在 `map()` 中组合流
 
-假设我们现在有了一个传入的元素流，并且打算对流元素使用 `map()` 函数。现在你已经找到了一些可爱并独一无二的函数功能，但是问题来了：这个函数功能是产生一个流。我们想要的只是产生流的元素，生成的却是一个元素流的流。
+假设我们现在有了一个传入的元素流，并且打算对流元素使用 `map()` 函数。现在你已经找到了一些可爱并独一无二的函数功能，但是问题来了：这个函数功能是产生一个流。我们想要产生一个元素流，而实际却产生了一个元素流的流。
 
-`flatMap()` 在这里做了两件事情：获取流产生（ stream-producing）函数，并将其应用于新到的元素（如 `map()` 所做的），然后获取每一个流并将其“扁平”为元素。所以它的输出只是元素。
+`flatMap()` 做了两件事：将产生流的函数应用在每个元素上（与 `map()` 所做的相同），然后将每个流都扁平化为元素，因而最终产生的仅仅是元素。
 
 `flatMap(Function)`：当 `Function` 产生流时使用。
 
@@ -995,7 +996,7 @@ class FunctionMap3 {
 
 `flatMapToDouble(Function)`：当 `Function` 产生 `DoubleStream` 时使用。
 
-为了弄清它的工作原理，我们从 `map()` 的一个刻意设计的函数开。该函数接受一个整数并产生一个字符串流：
+为了弄清它的工作原理，我们从传入一个刻意设计的函数给  `map()` 开始。该函数接受一个整数并产生一个字符串流：
 
 ```java
 // streams/StreamOfStreams.java
@@ -1018,7 +1019,7 @@ java.util.stream.ReferencePipeline$Head
 java.util.stream.ReferencePipeline$Head
 ```
 
-我们天真的希望能够得到字符串流，但是结果却是流元素为“Head”流的流。我们可以使用 `flatMap()` 解决这个问题：
+我们天真地希望能够得到字符串流，但实际得到的却是“Head”流的流。我们可以使用 `flatMap()` 解决这个问题：
 
 ```java
 // streams/FlatMap.java
@@ -1046,9 +1047,9 @@ Fozzie
 Beaker
 ```
 
-从映射返回的每个流都会自动扁平为其组件字符串。
+从映射返回的每个流都会自动扁平为组成它的字符串。
 
-如下是另一演示，我们从一个整数流开始，使用每一个整数去创建更多的随机数。
+下面是另一个演示，我们从一个整数流开始，然后使用每一个整数去创建更多的随机数。
 
 ```java
 // streams/StreamOfRandoms.java
@@ -1071,7 +1072,7 @@ public class StreamOfRandoms {
 58 -1 55 93 -1 61 61 29 -1 68 0 22 7 -1 88 28 51 89 9 -1
 ```
 
-在这里我们引入了 `concat()`，它以参数顺序组合了两个流。 如此，我们在每个随机 `Integer` 流的末尾添加一个 -1 作为标记。你可以看到最终流确实是从一组扁平流中创建的。
+在这里我们引入了 `concat()`，它以参数顺序组合两个流。 如此，我们在每个随机 `Integer` 流的末尾添加一个 -1 作为标记。你可以看到最终流确实是从一组扁平流中创建的。
 
 因为 `rand.ints()` 产生的是一个 `IntStream`，所以我必须使用 `flatMap()`、`concat()` 和 `of()` 的特定整数形式。
 
@@ -1098,7 +1099,7 @@ public class FileToWords {
 
 **注意**：`\\W+` 是一个正则表达式。他表示“非单词字符”，`+` 表示“可以出现一次或者多次”。小写形式的 `\\w` 表示“单词字符”。
 
-我们之前遇到的问题是 `Pattern.compile().splitAsStream()` 产生的结果为流，这意味着当我们只是想要一个简单的单词流时，在传入的行流（stream of lines）上调用 `map()` 会产生一个单词流的流。幸运的是，`flatMap()`  可以将元素流的流扁平为一个简单的元素流。或者，我们可以使用 `String.split()` 生成一个数组，其可以被 `Arrays.stream()` 转化成为流：
+我们之前遇到的问题是 `Pattern.compile().splitAsStream()` 产生的结果为流，这意味着当我们只是想要一个简单的单词流时，在传入的行流（stream of lines）上调用 `map()` 会产生一个单词流的流。幸运的是，`flatMap()`  可以将元素流的流扁平化为一个简单的元素流。或者，我们可以使用 `String.split()` 生成一个数组，其可以被 `Arrays.stream()` 转化成为流：
 
 ```java
 .flatMap(line -> Arrays.stream(line.split("\\W+"))))
@@ -1130,8 +1131,6 @@ Not much of a cheese shop really
 ```
 
 在 `System.out.format()` 中的 `%s` 表明参数为 **String** 类型。
-
-
 
 <!-- Optional -->
 ## Optional类
