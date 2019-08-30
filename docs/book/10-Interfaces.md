@@ -422,7 +422,7 @@ secondMethod
 newMethod
 ```
 
-尽管 **Implementation2** 中定义 `newMethod()`，但是可以使用 `newMethod()` 了。 
+尽管 **Implementation2** 中未定义 `newMethod()`，但是可以使用 `newMethod()` 了。 
 
 增加默认方法的极具说服力的理由是它允许在不破坏已使用接口的代码的情况下，在接口中增加新的方法。默认方法有时也被称为*守卫方法*或*虚拟扩展方法*。
 
