@@ -574,13 +574,249 @@ Lazy, Brown, Dog, &, friend]]
 <!-- Arrays and Generics -->
 ## 泛型数组
 
+一般来说，数组和泛型并不能很好的结合。你不能实例化参数化类型的数组：
+
+```Java
+Peel<Banana>[] peels = new Peel<Banana>[10]; // Illegal
+```
+
+类型擦除需要删除参数类型信息，而且数组必须知道它们所保存的确切类型，以强制保证类型安全。
+
+但是，可以参数化数组本身的类型：
+
+```Java
+// arrays/ParameterizedArrayType.java
+
+class ClassParameter<T> {
+  public T[] f(T[] arg) { return arg; }
+}
+
+class MethodParameter {
+  public static <T> T[] f(T[] arg) { return arg; }
+}
+
+public class ParameterizedArrayType {
+  public static void main(String[] args) {
+    Integer[] ints = { 1, 2, 3, 4, 5 };
+    Double[] doubles = { 1.1, 2.2, 3.3, 4.4, 5.5 };
+    Integer[] ints2 =
+      new ClassParameter<Integer>().f(ints);
+    Double[] doubles2 =
+      new ClassParameter<Double>().f(doubles);
+    ints2 = MethodParameter.f(ints);
+    doubles2 = MethodParameter.f(doubles);
+  }
+}
+```
+
+比起使用参数化类，使用参数化方法很方便。您不必为应用它的每个不同类型都实例化一个带有参数的类，但是可以使它成为 **静态** 的。你不能总是选择使用参数化方法而不用参数化的类，但通常参数化方法是更好的选择。
+
+你不能创建泛型类型的数组，这种说法并不完全正确。是的，编译器不会让你 *实例化* 一个泛型的数组。但是，它将允许您创建对此类数组的引用。例如：
+
+```Java
+List<String>[] ls;
+```
+
+无可争议的，这可以通过编译。尽管不能创建包含泛型的实际数组对象，但是你可以创建一个非泛型的数组并对其进行强制类型转换：
+
+```Java
+// arrays/ArrayOfGenerics.java
+import java.util.*;
+
+public class ArrayOfGenerics {
+  @SuppressWarnings("unchecked")
+  public static void main(String[] args) {
+    List<String>[] ls;
+    List[] la = new List[10];
+    ls = (List<String>[])la; // Unchecked cast
+    ls[0] = new ArrayList<>();
+
+    //- ls[1] = new ArrayList<Integer>();
+    // error: incompatible types: ArrayList<Integer>
+    // cannot be converted to List<String>
+    //     ls[1] = new ArrayList<Integer>();
+    //             ^
+
+    // The problem: List<String> is a subtype of Object
+    Object[] objects = ls; // So assignment is OK
+    // Compiles and runs without complaint:
+    objects[1] = new ArrayList<>();
+
+    // However, if your needs are straightforward it is
+    // possible to create an array of generics, albeit
+    // with an "unchecked cast" warning:
+    List<BerylliumSphere>[] spheres =
+      (List<BerylliumSphere>[])new List[10];
+    Arrays.setAll(spheres, n -> new ArrayList<>());
+  }
+}
+```
+
+一旦你有了对 **List<String>[]** 的引用 , 你会发现多了一些编译时检查。问题是数组是协变的，所以 **List<String>[]** 也是一个 **Object[]**  ，你可以用这来将 **ArrayList<Integer> ** 分配进你的数组，在编译或者运行时都不会出错。
+
+如果你知道你不会进行向上类型转换，你的需求相对简单，那么可以创建一个泛型数组，它将提供基本的编译时类型检查。然而，一个泛型 **Collection** 实际上是一个比泛型数组更好的选择。
+
+一般来说，您会发现泛型在类或方法的边界上是有效的。在内部，擦除常常会使泛型不可使用。所以，就像下面的例子，不能创建泛型类型的数组：
+
+```Java
+// arrays/ArrayOfGenericType.java
+
+public class ArrayOfGenericType<T> {
+  T[] array; // OK
+  @SuppressWarnings("unchecked")
+  public ArrayOfGenericType(int size) {
+    // error: generic array creation:
+    //- array = new T[size];
+    array = (T[])new Object[size]; // unchecked cast
+  }
+  // error: generic array creation:
+  //- public <U> U[] makeArray() { return new U[10]; }
+}
+
+```
+
+擦除再次从中作梗，这个例子试图创建已经擦除的类型数组，因此它们是未知的类型。你可以创建一个 **对象** 数组，然后对其进行强制类型转换，但如果没有 **@SuppressWarnings** 注释，你将会得到一个 "unchecked" 警告，因为数组实际上不真正支持而且将对类型 **T** 动态检查 。这就是说，如果我创建了一个 **String[]** , Java将在编译时和运行时强制执行，我只能在数组中放置字符串对象。然而，如果我创建一个 **Object[]** ,我可以把除了基元类型外的任何东西放入数组。
+
+
 
 <!-- Arrays.fill() -->
 ## Arrays的fill方法
 
+通常情况下，当对数组和程序进行实验时，能够很轻易地生成充满测试数据的数组是很有帮助的。 Java 标准库 **Arrays** 类包括一个普通的 **fill()** 方法，该方法将单个值复制到整个数组，或者在对象数组的情况下，将相同的引用复制到整个数组：
+
+```Java
+// arrays/FillingArrays.java
+// Using Arrays.fill()
+import java.util.*;
+import static onjava.ArrayShow.*;
+
+public class FillingArrays {
+  public static void main(String[] args) {
+    int size = 6;
+    boolean[] a1 = new boolean[size];
+    byte[] a2 = new byte[size];
+    char[] a3 = new char[size];
+    short[] a4 = new short[size];
+    int[] a5 = new int[size];
+    long[] a6 = new long[size];
+    float[] a7 = new float[size];
+    double[] a8 = new double[size];
+    String[] a9 = new String[size];
+    Arrays.fill(a1, true);
+    show("a1", a1);
+    Arrays.fill(a2, (byte)11);
+    show("a2", a2);
+    Arrays.fill(a3, 'x');
+    show("a3", a3);
+    Arrays.fill(a4, (short)17);
+    show("a4", a4);
+    Arrays.fill(a5, 19);
+    show("a5", a5);
+    Arrays.fill(a6, 23);
+    show("a6", a6);
+    Arrays.fill(a7, 29);
+    show("a7", a7);
+    Arrays.fill(a8, 47);
+    show("a8", a8);
+    Arrays.fill(a9, "Hello");
+    show("a9", a9);
+    // Manipulating ranges:
+    Arrays.fill(a9, 3, 5, "World");
+    show("a9", a9);
+  }
+}gedan
+/* Output:
+a1: [true, true, true, true, true, true]
+a2: [11, 11, 11, 11, 11, 11]
+a3: [x, x, x, x, x, x]
+a4: [17, 17, 17, 17, 17, 17]
+a5: [19, 19, 19, 19, 19, 19]
+a6: [23, 23, 23, 23, 23, 23]
+a7: [29.0, 29.0, 29.0, 29.0, 29.0, 29.0]
+a8: [47.0, 47.0, 47.0, 47.0, 47.0, 47.0]
+a9: [Hello, Hello, Hello, Hello, Hello, Hello]
+a9: [Hello, Hello, Hello, World, World, Hello]
+*/
+
+```
+
+你既可以填充整个数组，也可以像最后两个语句所示，填充一系列的元素。但是由于你只能使用单个值调用 **Arrays.fill()** ，因此结果并非特别有用。
+
 
 <!-- Arrays.setAll() -->
 ## Arrays的setAll方法
+
+在Java 8中， 在**RaggedArray.java** 中引入并在 **ArrayOfGenerics.java.Array.setAll()** 中重用。它使用一个生成器并生成不同的值，可以选择基于数组的索引元素（通过访问当前索引，生成器可以读取数组值并对其进行修改）。 **static Arrays.setAll()** 的重载签名为：
+
+* **void setAll(int[] a, IntUnaryOperator gen)**
+* **void setAll(long[] a, IntToLongFunction gen)**
+* **void setAll(double[] a, IntToDoubleFunctiongen)**
+* **<T> void setAll(T[] a, IntFunction<? extendsT> gen)**
+
+除了 **int** , **long** , **double** 有特殊的版本，其他的一切都由泛型版本处理。生成器不是 **Supplier** 因为它们不带参数，并且必须将 **int** 数组索引作为参数。
+
+```java
+// arrays/SimpleSetAll.java
+
+import java.util.*;
+import static onjava.ArrayShow.*;
+
+class Bob {
+  final int id;
+  Bob(int n) { id = n; }
+  @Override
+  public String toString() { return "Bob" + id; }
+}
+
+public class SimpleSetAll {
+  public static final int SZ = 8;
+  static int val = 1;
+  static char[] chars = "abcdefghijklmnopqrstuvwxyz"
+    .toCharArray();
+  static char getChar(int n) { return chars[n]; }
+  public static void main(String[] args) {
+    int[] ia = new int[SZ];
+    long[] la = new long[SZ];
+    double[] da = new double[SZ];
+    Arrays.setAll(ia, n -> n); // [1]
+    Arrays.setAll(la, n -> n);
+    Arrays.setAll(da, n -> n);
+    show(ia);
+    show(la);
+    show(da);
+    Arrays.setAll(ia, n -> val++); // [2]
+    Arrays.setAll(la, n -> val++);
+    Arrays.setAll(da, n -> val++);
+    show(ia);
+    show(la);
+    show(da);
+
+    Bob[] ba = new Bob[SZ];
+    Arrays.setAll(ba, Bob::new); // [3]
+    show(ba);
+
+    Character[] ca = new Character[SZ];
+    Arrays.setAll(ca, SimpleSetAll::getChar); // [4]
+    show(ca);
+  }
+}
+/* Output:
+[0, 1, 2, 3, 4, 5, 6, 7]
+[0, 1, 2, 3, 4, 5, 6, 7]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+[1, 2, 3, 4, 5, 6, 7, 8]
+[9, 10, 11, 12, 13, 14, 15, 16]
+[17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0]
+[Bob0, Bob1, Bob2, Bob3, Bob4, Bob5, Bob6, Bob7]
+[a, b, c, d, e, f, g, h]
+*/
+
+```
+
+* **[1]** 这里，我们只是将数组索引作为值插入数组。这将自动转化为 **long** 和 **double** 版本。
+* **[2]** 这个函数只需要接受索引就能产生正确结果。这个，我们忽略索引值并且使用 **val** 生成结果。
+* **[3]** 方法引用有效，因为 **Bob** 的构造器接收一个 **int** 参数。只要我们传递的函数接收一个 **int** 参数且能产生正确的结果，就认为它完成了工作。
+* **[4]** 为了处理除了  **int** ，**long** ，**double** 之外的基元类型，请为基元创建包装类的数组。然后使用 **setAll()** 的泛型版本。请注意，**getChar（）** 生成基元类型，因此这是自动装箱到 **Character** 。
 
 
 <!-- Incremental Generators -->
