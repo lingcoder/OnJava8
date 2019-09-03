@@ -118,7 +118,146 @@ public class Diamond<T> {
 
 一般来说，你可以认为泛型和其他类型差不多，只不过它们碰巧有类型参数罢了。在使用泛型时，你只需要指定类型参数即可。
 
+### 一个元组类库
 
+有时一个方法需要能返回多个对象。而 **return** 语句只能返回单个对象，解决方法就是创建一个容器对象，用它打包想要返回的多个对象。当然，可以在每次需要的时候，专门创建一个类来完成这样的工作。但是有了泛型，我们就可以一劳永逸。同时，还获得了编译时的类型安全。
+
+这个概念称为*元组*，它是将一组对象直接打包存储于其中的一个单一对象。可以从容器对象读取其中的元素，但不允许向其中存储新对象（这个概念也称为 *数据传输对象* 或 *信使* ）。
+
+通常，元组可以具有任意长度，元组中的对象可以是不同类型的。不过，我们希望能够为每个对象指明其类型，并且从元组中读取出来时，能够得到正确的类型。要处理不同长度的问题，我们需要创建多个不同的元组。下面是一个可以存储两个对象的元组：
+
+```java
+// onjava/Tuple2.java
+package onjava;
+
+public class Tuple2<A, B> {
+  public final A a1;
+  public final B a2;
+  public Tuple2(A a, B b) { a1 = a; a2 = b; }
+  public String rep() { return a1 + ", " + a2; }
+  @Override
+  public String toString() {
+    return "(" + rep() + ")";
+  }
+}
+```
+
+构造函数传入要存储的对象。这个元组隐式地保持了其中元素的次序。
+
+初次阅读上面的代码时，你可能认为这违反了 Java 编程的封装原则。`a1` 和 `a2` 应该声明为 **private**，然后提供 `getFirst()` 和 `getSecond()` 取值方法才对呀？考虑下这样做能提供的“安全性”是什么：元组的使用程序可以读取 `a1` 和 `a2` 然后对它们执行任何操作，但无法对 `a1` 和 `a2` 重新赋值。例子中的 `final` 可以实现同样的效果，并且更为简洁明了。
+
+另一种设计思路是允许元组的用户给 `a1` 和 `a2` 重新赋值。然而，采用上例中的形式无疑更加安全，如果用户想存储不同的元素，就会强制他们创建新的 `Tuple2` 对象。
+
+我们可以利用继承机制实现长度更长的元组。添加更多的类型参数就行了：
+
+```java
+// onjava/Tuple3.java
+package onjava;
+
+public class Tuple3<A, B, C> extends Tuple2<A, B> {
+  public final C a3;
+  public Tuple3(A a, B b, C c) {
+    super(a, b);
+    a3 = c;
+  }
+  @Override
+  public String rep() {
+    return super.rep() + ", " + a3;
+  }
+}
+
+
+// onjava/Tuple4.java
+package onjava;
+
+public class Tuple4<A, B, C, D>
+  extends Tuple3<A, B, C> {
+  public final D a4;
+  public Tuple4(A a, B b, C c, D d) {
+    super(a, b, c);
+    a4 = d;
+  }
+  @Override
+  public String rep() {
+    return super.rep() + ", " + a4;
+  }
+}
+
+
+// onjava/Tuple5.java
+package onjava;
+
+public class Tuple5<A, B, C, D, E>
+  extends Tuple4<A, B, C, D> {
+  public final E a5;
+  public Tuple5(A a, B b, C c, D d, E e) {
+    super(a, b, c, d);
+    a5 = e;
+  }
+  @Override
+  public String rep() {
+    return super.rep() + ", " + a5;
+  }
+}
+```
+
+演示需要，再定义两个类：
+
+```java
+// generics/Amphibian.java
+public class Amphibian {}
+
+// generics/Vehicle.java
+public class Vehicle {}
+```
+
+使用元组时，你只需要定义一个长度适合的元组，将其作为返回值即可。注意下面例子中方法的返回类型：
+
+```java
+// generics/TupleTest.java
+import onjava.*;
+
+public class TupleTest {
+  static Tuple2<String, Integer> f() {
+    // 47 自动装箱为 Integer
+    return new Tuple2<>("hi", 47);
+  }
+  
+  static Tuple3<Amphibian, String, Integer> g() {
+    return new Tuple3<>(new Amphibian(), "hi", 47);
+  }
+  
+  static Tuple4<Vehicle, Amphibian, String, Integer> h() {
+    return new Tuple4<>(new Vehicle(), new Amphibian(), "hi", 47);
+  }
+  
+  static Tuple5<Vehicle, Amphibian, String, Integer, Double> k() {
+    return new Tuple5<>(new Vehicle(), new Amphibian(), "hi", 47, 11.1);
+  }
+  
+  public static void main(String[] args) {
+    Tuple2<String, Integer> ttsi = f();
+    System.out.println(ttsi);
+    // ttsi.a1 = "there"; // 编译错误，因为 final 不能重新赋值
+    System.out.println(g());
+    System.out.println(h());
+    System.out.println(k());
+  }
+}
+
+/* 输出：
+ (hi, 47)
+ (Amphibian@1540e19d, hi, 47)
+ (Vehicle@7f31245a, Amphibian@6d6f6e28, hi, 47)
+ (Vehicle@330bedb4, Amphibian@2503dbd3, hi, 47, 11.1)
+ */
+```
+
+有了泛型，你可以很容易地创建元组，令其返回一组任意类型的对象。
+
+通过 `ttsi.a1 = "there"` 语句的报错，我们可以看出，**final** 声明确实可以确保 **public** 字段在对象被构造出来之后就不能重新赋值了。
+
+在上面的程序中，`new` 表达式有些啰嗦。本章稍后会介绍，如何利用 *泛型方法* 简化它们。
 
 <!-- Generic Interfaces -->
 
