@@ -259,6 +259,105 @@ public class TupleTest {
 
 在上面的程序中，`new` 表达式有些啰嗦。本章稍后会介绍，如何利用 *泛型方法* 简化它们。
 
+### 一个堆栈类
+
+接下来我们看一个稍微复杂一点的例子：堆栈。在[集合](./12-Collections.md)一章中，我们用 `LinkedList` 实现了 `onjava.Stack` 类。在那个例子中，`LinkedList` 本身已经具备了创建堆栈所需的方法。`Stack` 是通过两个泛型类 `Stack<T>` 和 `LinkedList<T>` 的组合来创建。我们可以看出，泛型只不过是一种类型罢了（稍后我们会看到一些例外的情况）。
+
+这次我们不用 `LinkedList` 来实现自己的内部链式存储机制。
+
+```java
+// generics/LinkedStack.java
+// 用链式结构实现的堆栈
+
+public class LinkedStack<T> {
+  private static class Node<U> {
+    U item;
+    Node<U> next;
+    
+    Node() { item = null; next = null; }
+    Node(U item, Node<U> next) {
+      this.item = item;
+      this.next = next;
+    }
+    
+    boolean end() {
+      return item == null && next == null;
+    }
+  }
+  
+  private Node<T> top = new Node<>();  // 栈顶
+  
+  public void push(T item) {
+    top = new Node<>(item, top);
+  }
+  
+  public T pop() {
+    T result = top.item;
+    if (!top.end()) {
+      top = top.next;
+    }
+    return result;
+  }
+  
+  public static void main(String[] args) {
+    LinkedStack<String> lss = new LinkedStack<>();
+    for (String s : "Phasers on stun!".split(" ")) {
+      lss.push(s);
+    }
+    String s;
+    while ((s = lss.pop()) != null) {
+      System.out.println(s);
+    }
+  }
+}
+```
+
+输出结果：
+
+```java
+stun!
+on
+Phasers
+```
+
+内部类 `Node` 也是一个泛型，它拥有自己的类型参数。
+
+这个例子使用了一个 *末端标识* (end sentinel) 来判断栈何时为空。这个末端标识是在构造 `LinkedStack` 时创建的。然后，每次调用 `push()` 就会创建一个 `Node<T>` 对象，并将其链接到前一个 `Node<T>` 对象。当你调用 `pop()` 方法时，总是返回 `top.item`，然后丢弃当前 `top` 所指向的 `Node<T>`，并将 `top` 指向下一个 `Node<T>`，除非到达末端标识，这时就不能再移动 `top` 了。如果已经到达末端，程序还继续调用 `pop()` 方法，它只能得到 `null`，说明栈已经空了。
+
+### RandomList
+
+作为容器的另一个例子，假设我们需要一个持有特定类型对象的列表，每次调用它的 `select()` 方法时都随机返回一个元素。如果希望这种列表可以适用于各种类型，就需要使用泛型：
+
+```java
+// generics/RandomList.java
+import java.util.*;
+import java.util.stream.*;
+
+public class RandomList<T> extends ArrayList<T> {
+  private Random rand = new Random(47);
+  
+  public T select() {
+    return get(rand.nextInt(size()));
+  }
+  
+  public static void main(String[] args) {
+    RandomList<String> rs = new RandomList<>();
+    Array.stream("The quick brown fox jumped over the lazy brown dog".split(" ")).forEach(rs::add);
+    IntStream.range(0, 11).forEach(i -> 
+      System.out.print(rs.select() + " "));
+    );
+  }
+}
+```
+
+输出结果：
+
+```java
+brown over fox quick quick dog brown The brown lazy brown
+```
+
+`RandomList` 继承了 `ArrayList` 的所有方法。本例中只添加了 `select()` 这个方法。
+
 <!-- Generic Interfaces -->
 
 ## 泛型接口
