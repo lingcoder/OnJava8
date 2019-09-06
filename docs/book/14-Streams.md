@@ -1798,7 +1798,16 @@ stream, streams, throws, toCollection, trim, util,
 void, words2]
 ```
 
+<<<<<<< HEAD
 **Files.**`lines()` 打开 **Path** 并将其转换成为行流。下一行代码将匹配一个或多个非单词字符（`\\W+`）行进行分割，然后使用 **Arrays.**`stream()` 将其转化成为流，并将结果扁平映射成为单词流。使用 `matches(\\d+)` 查找并移除全数字字符串（**注意**,**words2** 是通过的）。接下来我们使用 **String.**`trim()` 去除单词两边的空白，`filter()` 过滤所有长度小于 3 的单词，紧接着只获取100个单词，最后将其保存到 **TreeSet** 中。
+=======
+**Files.**`lines()` 打开 **Path** 并将其转换成为行流。下一行代码将匹配一个或多个非单词字符（`\\w+`）行进行分割，然后使用 **Arrays.**`stream()` 将其转化成为流，并将结果扁平映射成为单词流。使用 `matches(\\d+)` 查找并移除全数字字符串（**注意**,`words2` 是通过的）。接下来我们使用 **String.**`trim()` 去除单词两边的空白，`filter()` 过滤所有长度小于3的单词，紧接着只获取100个单词，最后将其保存到 **TreeSet** 中。
+
+<!-- 
+Files.lines() opens the Path and turns it into a Stream oflines. The next line splits those lines on boundaries of one or morenon-word characters (\\W+), which produces an array which is turnedinto a Stream with Arrays.stream(), and the result is flat-mapped back into a Stream of words. The matches(\\d+) finds
+and removes Strings that are all digits (note that words2 makes itthrough). Next we apply String.trim() to shave off anysurrounding whitespace, filter() out any words less than a lengthof three, take only the first 100 words, and finally put them into aTreeSet.
+ -->
+>>>>>>> autocommit
 
 我们也可以在流中生成 **Map**。代码示例：
 
@@ -1849,11 +1858,15 @@ public class MapCollector {
 {688=W, 309=C, 293=B, 761=N, 858=N, 668=G, 622=F, 751=N}
 ```
 
-**Pair** 只是一个基础的数据对象。**RandomPair** 创建了随机生成的 **Pair** 对象流。如果能以某种方式组合两个流，那就再好不过了，但 Java 在这个问题上不如我们所愿。所以我创建了一个整数流，并且使用 `mapToObj()` 将其转化成为 **Pair** 流。 **capChars** 随机生成的大写字母迭代器从流开始，然后 `iterator()` 方法允许我们在 `stream()` 方法中使用它。就我所知，这是组合多个流以生成新的对象流的唯一方法。
+**Pair** 只是一个基础的数据对象。**RandomPair** 创建了随机生成的 **Pair** 对象流。在 Java 中，我们不能直接以某种方式组合两个流。所以这里创建了一个整数流，并且使用 `mapToObj()` 将其转化成为 **Pair** 流。 **capChars** 随机生成的大写字母迭代器从流开始，然后 `iterator()` 允许我们在 `stream()` 中使用它。就我所知，这是组合多个流以生成新的对象流的唯一方法。
 
 在这里，我们只使用最简单形式的 `Collectors.toMap()`，这个方法值需要一个可以从流中获取键值对的函数。还有其他重载形式，其中一种形式是在遇到键值冲突时，需要一个函数来处理这种情况。
 
 在大多数情况下，你可以在 `java.util.stream.Collectors`寻找到你想要的预先定义好的 **Collector**。在少数情况下当你找不到想要的时候，你可以使用第二种形式的 ` collect()`。 我基本上把它留作更高级的练习，但是这里有一个例子给出了基本想法：
+
+<!-- 
+The capChars randomly-generated Iterator of capitalletters starts as a stream, then the iterator() method allows us touse it in the stream() method
+ -->
 
 ```java
 // streams/SpecialCollector.java
