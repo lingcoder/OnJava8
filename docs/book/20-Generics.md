@@ -359,11 +359,215 @@ brown over fox quick quick dog brown The brown lazy brown
 `RandomList` 继承了 `ArrayList` 的所有方法。本例中只添加了 `select()` 这个方法。
 
 <!-- Generic Interfaces -->
-
 ## 泛型接口
 
+泛型也可以应用于接口。例如 *生成器*，这是一种专门负责创建对象的类。实际上，这是 *工厂方法* 设计模式的一种应用。不过，当使用生成器创建新的对象时，它不需要任何参数，而工厂方法一般需要参数。生成器无需额外的信息就知道如何创建新对象。
+
+一般而言，一个生成器只定义一个方法，用于创建对象。例如 `java.util.function` 类库中的 `Supplier` 就是一个生成器，调用其 `get()` 获取对象。`get()` 是泛型方法，返回值为类型参数 `T`。
+
+为了演示 `Supplier`，我们需要定义几个类。下面是个咖啡相关的继承体系：
+
+```java
+// generics/coffee/Coffee.java
+package generics.coffee;
+
+public class Coffee {
+  private static long counter = 0;
+  private final long id = counter++;
+  
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " " + id;
+  }
+}
+
+
+// generics/coffee/Latte.java
+package generics.coffee;
+public class Latte extends Coffee {}
+
+
+// generics/coffee/Mocha.java
+package generics.coffee;
+public class Mocha extends Coffee {}
+
+
+// generics/coffee/Cappuccino.java
+package generics.coffee;
+public class Cappuccino extends Coffee {}
+
+
+// generics/coffee/Americano.java
+package generics.coffee;
+public class Americano extends Coffee {}
+
+
+// generics/coffee/Breve.java
+package generics.coffee;
+public class Breve extends Coffee {}
+```
+
+现在，我们可以编写一个类，实现 `Supplier<Coffee>` 接口，它能够随机生成不同类型的 `Coffee` 对象：
+
+```java
+// generics/coffee/CoffeeSupplier.java
+// {java generics.coffee.CoffeeSupplier}
+package generics.coffee;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+
+public class CoffeeSupplier
+implements Supplier<Coffee>, Iterable<Coffee> {
+  private Class<?>[] types = { Latte.class, Mocha.class, 
+    Cappuccino.class, Americano.class, Breve.class };
+  private static Random rand = new Random(47);
+  
+  public CoffeeSupplier() {}
+  // For iteration:
+  private int size = 0;
+  public CoffeeSupplier(int sz) { size = sz; }
+  
+  @Override
+  public Coffee get() {
+    try {
+      return (Coffee) types[rand.nextInt(types.length)].newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
+  class CoffeeIterator implements Iterator<Coffee> {
+    int count = size;
+    @Override
+    public boolean hasNext() { return count > 0; }
+    @Override
+    public Coffee next() {
+      count--;
+      return CoffeeSupplier.this.get();
+    }
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+  }
+  
+  @Override
+  public Iterator<Coffee> iterator() {
+    return new CoffeeIterator();
+  }
+  
+  public static void main(String[] args) {
+    Stream.generate(new CoffeeSupplier())
+          .limit(5)
+          .forEach(System.out::println);
+    for (Coffee c : new CoffeeSupplier(5)) {
+      System.out.println(c);
+    }
+  }
+}
+```
+
+输出结果：
+
+```java
+Americano 0
+Latte 1
+Americano 2
+Mocha 3
+Mocha 4
+Breve 5
+Americano 6
+Latte 7
+Cappuccino 8
+Cappuccino 9
+```
+
+参数化的 `Supplier` 接口确保 `get()` 返回值是参数的类型。`CoffeeSupplier` 同时还实现了 `Iterable` 接口，所以能用于 *for-in* 语句。不过，它还需要知道何时终止循环，这正是第二个构造函数的作用。
+
+下面是另一个实现 `Supplier<T>` 接口的例子，它负责生成 Fibonacci 数列：
+
+```java
+// generics/Fibonacci.java
+// Generate a Fibonacci sequence
+import java.util.function.*;
+import java.util.stream.*;
+
+public class Fibonacci implements Supplier<Integer> {
+  private int count = 0;
+  @Override
+  public Integer get() { return fib(count++); }
+  
+  private int fib(int n) {
+    if(n < 2) return 1;
+    return fib(n-2) + fib(n-1);
+  }
+  
+  public static void main(String[] args) {
+    Stream.generate(new Fibonacci())
+          .limit(18)
+          .map(n -> n + " ")
+          .forEach(System.out::print);
+  }
+}
+```
+
+输出结果：
+
+```java
+1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584
+```
+
+虽然我们在 `Fibonacci` 类的里里外外使用的都是 `int` 类型，但是其参数类型却是 `Integer`。这个例子引出了 Java 泛型的一个局限性：基本类型无法作为类型参数。不过 Java 5 具备自动装箱和拆箱的功能，可以很方便地在基本类型和相应的包装类之间进行转换。通过这个例子中 `Fibonacci` 类对 `int` 的使用，我们已经看到了这种效果。
+
+如果还想更进一步，编写一个实现了 `Iterator` 的 `Fibnoacci` 生成器。我们的一个选择是重写这个类，令其实现 `Iterator` 接口。不过，你并不是总能拥有源代码的控制权，并且，除非必须这么做，否则，我们也不愿意重写一个类。而且我们还有另一种选择，就是创建一个 *适配器* (Adapter) 来实现所需的接口，我们在前面介绍过这个设计模式。
+
+有多种方法可以实现适配器。例如，可以通过继承来创建适配器类：
+
+```java
+// generics/IterableFibonacci.java
+// Adapt the Fibonacci class to make it Iterable
+import java.util.*;
+
+public class IterableFibonacci
+extends Fibonacci implements Iterable<Integer> {
+  private int n;
+  public IterableFibonacci(int count) { n = count; }
+  
+  @Override
+  public Iterator<Integer> iterator() {
+    return new Iterator<Integer>() {
+      @Override
+      public boolean hasNext() { return n > 0; }
+      @Override
+      public Integer next() {
+        n--;
+        return IterableFibonacci.this.get();
+      }
+      @Override
+      public void remove() { // Not implemented
+        throw new UnsupportedOperationException();
+      }
+    };
+  }
+  
+  public static void main(String[] args) {
+    for(int i : new IterableFibonacci(18))
+      System.out.print(i + " ");
+  }
+}
+```
+
+输出结果：
+
+```java
+1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584
+```
+
+在循环语句中使用 `IterableFibonacci`，必须在构造函数中提供一个边界值，这样 `hasNext()` 才知道何时返回 **false**，结束循环。
 
 <!-- Generic Methods -->
+
 ## 泛型方法
 
 
