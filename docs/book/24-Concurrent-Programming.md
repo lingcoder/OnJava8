@@ -248,9 +248,9 @@ Java实验告诉我们，结果是悄然灾难性的。程序员很容易陷入�
 这是我们将在本章的其余部分介绍的内容。请记住，本章的重点是使用最新的高级Java并发结构。使用这些使得您的生活比旧的替代品更加轻松。但是，您仍会在遗留代码中遇到一些低级工具。有时，你可能会被迫自己使用其中的一些。附录：[并发底层原理](./Appendix-Low-Level-Concurrency.md)包含一些更原始的Java并发元素的介绍。
 
 - Parallel Streams（并发流）
-到目前为止，我已经强调了Java 8 Streams提供的改进语法。现在您对该语法（作为一个粉丝，我希望）感到满意，您可以获得额外的好处：您可以通过简单地将parallel（）添加到表达式来并行化流。这是一种简单，强大，坦率地说是利用多处理器的惊人方式
+到目前为止，我已经强调了Java 8 Streams提供的改进语法。现在您对该语法（作为一个粉丝，我希望）感到满意，您可以获得额外的好处：您可以通过简单地将parallel()添加到表达式来并行化流。这是一种简单，强大，坦率地说是利用多处理器的惊人方式
 
-添加parallel（）来提高速度似乎是微不足道的，但是，唉，它就像你刚刚在[残酷的真相](#The-Brutal-Truth)中学到的那样简单。我将演示并解释一些盲目添加parallel（）到Stream表达式的缺陷。
+添加parallel()来提高速度似乎是微不足道的，但是，唉，它就像你刚刚在[残酷的真相](#The-Brutal-Truth)中学到的那样简单。我将演示并解释一些盲目添加parallel()到Stream表达式的缺陷。
 
 - 创建和运行任务
 任务是一段可以独立运行的代码。为了解释创建和运行任务的一些基础知识，本节介绍了一种比并行流或CompletableFutures：Executor更复杂的机制。执行者管理一些低级Thread对象（Java中最原始的并发形式）。您创建一个任务，然后将其交给Executorto运行。
@@ -666,7 +666,7 @@ current是使用线程安全的**AtomicInteger**类定义的，可以防止竞�
 
 试着想象一下这里发生了什么：一个流抽象出无限序列，按需生成。当你要求它并行产生流时，你要求所有这些线程尽可能地调用get()。添加limit()，你说“只需要这些。”基本上，当你将parallel()与limit()结合使用时，你要求随机输出 - 这可能对你正在解决的问题很好。但是当你这样做时，你必须明白。这是一个仅限专家的功能，而不是要争辩说“Java弄错了”。
 
-什么是更合理的方法来解决问题？好吧，如果你想生成一个int流，你可以使用IntStream.range（），如下所示：
+什么是更合理的方法来解决问题？好吧，如果你想生成一个int流，你可以使用IntStream.range()，如下所示：
 
 ```java
 // concurrent/ParallelStreamPuzzle3.java
@@ -702,7 +702,7 @@ public class ParallelStreamPuzzle3 {
 
 为了表明**parallel()**确实有效，我添加了一个对**peek()**的调用，这是一个主要用于调试的流函数：它从流中提取一个值并执行某些操作但不影响从流向下传递的元素。注意这会干扰线程行为，但我只是尝试在这里做一些事情，而不是实际调试任何东西。
 
-您还可以看到boxed（）的添加，它接受int流并将其转换为Integer流。
+您还可以看到boxed()的添加，它接受int流并将其转换为Integer流。
 
 现在我们得到多个线程产生不同的值，但它只产生10个请求的值，而不是1024个产生10个值。
 
@@ -860,7 +860,7 @@ NapTask[9] pool-1-thread-1
 */
 ```
 
-一旦你callexec.shutdown（），尝试提交新任务将抛出RejectedExecutionException。
+一旦你callexec.shutdown()，尝试提交新任务将抛出RejectedExecutionException。
 
 ```java
 // concurrent/MoreTasksAfterShutdown.java
@@ -1235,7 +1235,7 @@ public class QuittableTask implements Runnable {
 
 虽然多个任务可以在同一个实例上成功调用**quit()**，但是**AtomicBoolean**可以防止多个任务同时实际修改**running**，从而使**quit()**方法成为线程安全的。
 
-- [1]:只要运行标志为true，此任务的run（）方法将继续。
+- [1]:只要运行标志为true，此任务的run()方法将继续。
 - [2]: 显示仅在任务退出时发生。
 
 需要**running AtomicBoolean**证明编写Java program并发时最基本的困难之一是，如果**running**是一个普通的布尔值，你可能无法在执行程序中看到问题。实际上，在这个例子中，你可能永远不会有任何问题 - 但是代码仍然是不安全的。编写表明该问题的测试可能很困难或不可能。因此，您没有任何反馈来告诉您已经做错了。通常，您编写线程安全代码的唯一方法就是通过了解事情可能出错的所有细微之处。
@@ -1267,7 +1267,7 @@ public class QuittingTasks {
 */
 ```
 
-我使用**peek()**将**QuittableTasks**传递给**ExecutorService**，然后将这些任务收集到**List.main()**中，只要任何任务仍在运行，就会阻止程序退出。即使为每个任务按顺序调用quit（）方法，任务也不会按照它们创建的顺序关闭。独立运行的任务不会确定性地响应信号。
+我使用**peek()**将**QuittableTasks**传递给**ExecutorService**，然后将这些任务收集到**List.main()**中，只要任何任务仍在运行，就会阻止程序退出。即使为每个任务按顺序调用quit()方法，任务也不会按照它们创建的顺序关闭。独立运行的任务不会确定性地响应信号。
 
 <!-- CompletableFutures -->
 ## CompletableFuture类
@@ -1428,8 +1428,150 @@ Machina0: complete
 ```
 
 在这里，我们还添加了一个**Timer**，它向我们展示每一步增加100毫秒，还有一些额外的开销。
-**CompletableFutures**的一个重要好处是它们鼓励使用私有子类原则（不分享任何东西）。默认情况下，使用**thenApply()**来应用一个不与任何人通信的函数 - 它只需要一个参数并返回一个结果。这是函数式编程的基础，并且它在并发性方面非常有效。并行流和ComplempleFutures旨在支持这些原则。只要您不决定共享数据（共享非常容易，甚至意外）您可以编写相对安全的并发程序。
+**CompletableFutures**的一个重要好处是它们鼓励使用私有子类原则（不分享任何东西）。默认情况下，使用**thenApply()**来应用一个不与任何人通信的函数 - 它只需要一个参数并返回一个结果。这是函数式编程的基础，并且它在并发性方面非常有效[^5]。并行流和ComplempleFutures旨在支持这些原则。只要您不决定共享数据（共享非常容易，甚至意外）您可以编写相对安全的并发程序。
 
+回调**thenApply()**开始一个操作，在这种情况下，在完成所有任务之前，不会完成**e CompletableFuture**的创建。虽然这有时很有用，但是启动所有任务通常更有价值，这样就可以运行时继续前进并执行其他操作。我们通过在操作结束时添加Async来实现此目的：
+
+```java
+// concurrent/CompletableApplyAsync.java
+import java.util.concurrent.*;
+import onjava.*;
+public class CompletableApplyAsync {
+    public static void main(String[] args) {
+        Timer timer = new Timer();
+        CompletableFuture<Machina> cf =
+            CompletableFuture.completedFuture(
+                new Machina(0))
+                .thenApplyAsync(Machina::work)
+                .thenApplyAsync(Machina::work)
+                .thenApplyAsync(Machina::work)
+                .thenApplyAsync(Machina::work);
+            System.out.println(timer.duration());
+            System.out.println(cf.join());
+            System.out.println(timer.duration())
+    }
+}
+/* Output:
+116
+Machina0: ONE
+Machina0: TWO
+Machina0:THREE
+Machina0: complete
+Machina0: complete
+552
+*/
+```
+
+同步调用(我们通常使用得那种)意味着“当你完成工作时，返回”，而异步调用以意味着“立刻返回但是继续后台工作。”正如你所看到的，**cf**的创建现在发生得跟快。每次调用 **thenApplyAsync()** 都会立刻返回，因此可以进行下一次调用，整个链接序列的完成速度比以前快得快。
+
+事实上，如果没有回调**cf.join() t**方法，程序会在完成其工作之前退出（尝试取出该行）对**join()**阻止了main()进程的进行，直到cf操作完成，我们可以看到大部分时间的确在哪里度过。
+
+这种“立即返回”的异步能力需要**CompletableFuture**库进行一些秘密工作。特别是，它必须将您需要的操作链存储为一组回调。当第一个后台操作完成并返回时，第二个后台操作必须获取生成的**Machina**并开始工作，当完成后，下一个操作将接管，等等。但是没有我们普通的函数调用序列，通过程序调用栈控制，这个顺序会丢失，所以它使用回调 - 一个函数地址表来存储。
+
+幸运的是，您需要了解有关回调的所有信息。程序员将你手工造成的混乱称为“回调地狱”。通过异步调用，CompletableFuture为您管理所有回调。除非你知道关于你的系统有什么特定的改变，否则你可能想要使用异步调用。
+
+- 其他操作
+当您查看CompletableFuture的Javadoc时，您会看到它有很多方法，但这个方法的大部分来自不同操作的变体。例如，有thenApply()，thenApplyAsync()和thenApplyAsync()的第二种形式，它接受运行任务的Executor（在本书中我们忽略了Executor选项）。
+
+这是一个显示所有“基本”操作的示例，它们不涉及组合两个CompletableFutures或异常（我们将在稍后查看）。首先，我们将重复使用两个实用程序以提供简洁和方便：
+
+```java
+// concurrent/CompletableUtilities.java
+package onjava; import java.util.concurrent.*;
+public class CompletableUtilities {
+    // Get and show value stored in a CF:
+    public static void showr(CompletableFuture<?> c) {
+        try {
+            System.out.println(c.get());
+        } catch(InterruptedException
+                | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    // For CF operations that have no value:
+    public static void voidr(CompletableFuture<Void> c) {
+        try {
+            c.get(); // Returns void
+        } catch(InterruptedException
+                | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+showr()在CompletableFuture <Integer>上调用get()并显示结果，捕获两个可能的异常。voidr()是CompletableFuture <Void>的showr()版本，即CompletableFutures，仅在任务完成或失败时显示。
+
+为简单起见，以下CompletableFutures只包装整数。cfi()是一个方便的方法，它在完成的CompletableFuture <Integer>中包装一个int：
+
+```java
+// concurrent/CompletableOperations.java
+import java.util.concurrent.*;
+import static onjava.CompletableUtilities.*;
+public class CompletableOperations {
+    static CompletableFuture<Integer> cfi(int i) {
+        return CompletableFuture.completedFuture( Integer.valueOf(i));
+    }
+    public static void main(String[] args) {
+        showr(cfi(1)); // Basic test
+        voidr(cfi(2).runAsync(() ->
+            System.out.println("runAsync")));
+        voidr(cfi(3).thenRunAsync(() ->
+            System.out.println("thenRunAsync")));
+        voidr(CompletableFuture.runAsync(() ->
+            System.out.println("runAsync is static")));
+        showr(CompletableFuture.supplyAsync(() -> 99));
+        voidr(cfi(4).thenAcceptAsync(i ->
+            System.out.println("thenAcceptAsync: " + i)));
+        showr(cfi(5).thenApplyAsync(i -> i + 42));
+        showr(cfi(6).thenComposeAsync(i -> cfi(i + 99)));
+        CompletableFuture<Integer> c = cfi(7);
+        c.obtrudeValue(111);
+        showr(c);
+        showr(cfi(8).toCompletableFuture());
+        c = new CompletableFuture<>();
+        c.complete(9);
+        showr(c);
+        c = new CompletableFuture<>();
+        c.cancel(true);
+        System.out.println("cancelled: " + c.isCancelled());
+        System.out.println("completed exceptionally: " +
+            c.isCompletedExceptionally());
+        System.out.println("done: " + c.isDone());
+        System.out.println(c);
+        c = new CompletableFuture<>();
+        System.out.println(c.getNow(777));
+        c = new CompletableFuture<>();
+        c.thenApplyAsync(i -> i + 42)
+            .thenApplyAsync(i -> i * 12);
+        System.out.println("dependents: " + c.getNumberOfDependents());
+        c.thenApplyAsync(i -> i / 2);
+        System.out.println("dependents: " + c.getNumberOfDependents());
+    }
+}
+/* Output:
+1
+runAsync
+thenRunAsync
+runAsync is static
+99
+thenAcceptAsync: 4
+47
+105
+111
+8
+9
+cancelled: true
+completed exceptionally: true
+done: true
+java.util.concurrent.CompletableFuture@6d311334[Complet ed exceptionally]
+777
+dependents: 1
+dependents: 2
+*/
+```
+
+main()包含一系列可由其int值引用的测试。cfi(1)演示了showr()正常工作。cfi(2)是调用runAsync()的示例。由于Runnable不产生返回值，因此结果是CompletableFuture <Void>，因此使用voidr()。
 <!-- Deadlock -->
 ## 死锁
 
@@ -1451,6 +1593,8 @@ Machina0: complete
 [^2]:可以说，试图将并发性用于后续语言是一种注定要失败的方法，但你必须得出自己的结论
 
 [^3]:有人谈论在Java——10中围绕泛型做一些类似的基本改进，这将是非常令人难以置信的。
-<!-- 分页 -->
+[^4]:这是一种有趣的，虽然不一致的方法。通常，我们期望在公共接口上使用显式类表示不同的行为
+[^5]:不，永远不会有纯粹的功能性Java。我们所能期望的最好的是一种在JVM上运行的全新语言。
 
+<!-- 分页 -->
 <div style="page-break-after: always;"></div>
