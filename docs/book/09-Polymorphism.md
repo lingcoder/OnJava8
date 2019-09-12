@@ -585,7 +585,7 @@ public class FieldAccess {
 输出：
 
 ```
-sup.field = 0, super.getField() = 1
+sup.field = 0, sup.getField() = 1
 sub.field = 1, sub.getField() = 1, sub.getSuperField() = 0
 ```
 
