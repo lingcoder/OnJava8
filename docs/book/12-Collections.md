@@ -721,7 +721,7 @@ pets.removeLast(): Hamster
 */
 ```
 
-`Pets.list()` 的结果被传递给 **LinkedList** 的构造器，以便使用它来填充 **LinkedList** 。如果查看 **Queue** 接口就会发现，它在 **LinkedList** 的基础上添加了 `element()` ， `offer()` ， `peek()` ， `poll()` 和 `remove()` 方法，以使其可以成为一个 **Queue** 的实现。 **Queue** 的完整示例将在本章稍后给出。
+`Pets.list()` 的结果被传递给 **LinkedList** 的构造器，以便使用它来填充 **LinkedList** 。如果查看 **Queue** 接口就会发现，它在 **List** 的基础上添加了 `element()` ， `offer()` ， `peek()` ， `poll()` 和 `remove()` 方法，以使其可以成为一个 **Linkedlist** 的实现。 **Queue** 的完整示例将在本章稍后给出。
 
 <!-- Stack -->
 
