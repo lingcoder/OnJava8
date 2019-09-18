@@ -857,7 +857,7 @@ package interfaces.filters;
 
 public class Waveform {
     private static long counter;
-    private final long id = count++;
+    private final long id = counter++;
     
     @Override
     public String toString() {
@@ -1041,7 +1041,7 @@ class FilterAdapter implements Processor {
     }
 }
 
-punlic class FilterProcessor {
+public class FilterProcessor {
     public static void main(String[] args) {
         Waveform w = new Waveform();
         Applicator.apply(new FilterAdapter(new LowPass(1.0)), w);
