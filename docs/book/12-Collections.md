@@ -224,7 +224,7 @@ public class AddingGroups {
 
 `Collection.addAll()` 方法只能接受另一个 **Collection** 作为参数，因此它没有 `Arrays.asList()` 或 `Collections.addAll()` 灵活。这两个方法都使用可变参数列表。
 
-也可以直接使用 `Arrays.asList()` 的输出作为一个 **List** ，但是这里的底层实现是数组，没法调整大小。如果尝试在这个 **List** 上调用 `add()` 或 `delete()`，由于这两个方法会尝试修改数组大小，所以会在运行时得到“Unsupported Operation（不支持的操作）”错误：
+也可以直接使用 `Arrays.asList()` 的输出作为一个 **List** ，但是这里的底层实现是数组，没法调整大小。如果尝试在这个 **List** 上调用 `add()` 或 `remove()`，由于这两个方法会尝试修改数组大小，所以会在运行时得到“Unsupported Operation（不支持的操作）”错误：
 
 ```java
 // collections/AsListInference.java
