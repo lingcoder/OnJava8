@@ -822,14 +822,1069 @@ public class SimpleSetAll {
 <!-- Incremental Generators -->
 ## 增量生成
 
+这是一个方法库，用于为不同类型生成增量值。
+
+这些被作为内部类来生成容易记住的名字；比如，为了使用 **Integer** 工具你可以用 **new Conut.Interger()** , 如果你想要使用基本数据类型 **int** 工具，你可以用 **new Count.Pint()**  (基本类型的名字不能被直接使用，所以它们都在前面添加一个 **P**  来表示基本数据类型'primitive', 我们的第一选择是使用基本类型名字后面跟着下划线，比如 **int_** 和 **double_**  ,但是这种方式违背Java的命名习惯）。每个包装类的生成器都使用 **get()** 方法实现了它的 **Supplier** 。要使用**Array.setAll()** ，一个重载的 **get(int n)** 方法要接受（并忽略）其参数，以便接受 **setAll()** 传递的索引值。
+
+注意，通过使用包装类的名称作为内部类名，我们必须调用 **java.lang** 包来保证我们可以使用实际包装类的名字：
+
+```java
+// onjava/Count.java
+// Generate incremental values of different types
+package onjava;
+import java.util.*;
+import java.util.function.*;
+import static onjava.ConvertTo.*;
+
+public interface Count {
+  class Boolean
+  implements Supplier<java.lang.Boolean> {
+    private boolean b = true;
+    @Override
+    public java.lang.Boolean get() {
+      b = !b;
+      return java.lang.Boolean.valueOf(b);
+    }
+    public java.lang.Boolean get(int n) {
+      return get();
+    }
+    public java.lang.Boolean[] array(int sz) {
+      java.lang.Boolean[] result =
+        new java.lang.Boolean[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pboolean {
+    private boolean b = true;
+    public boolean get() {
+      b = !b;
+      return b;
+    }
+    public boolean get(int n) { return get(); }
+    public boolean[] array(int sz) {
+      return primitive(new Boolean().array(sz));
+    }
+  }
+  class Byte
+  implements Supplier<java.lang.Byte> {
+    private byte b;
+    @Override
+    public java.lang.Byte get() { return b++; }
+    public java.lang.Byte get(int n) {
+      return get();
+    }
+    public java.lang.Byte[] array(int sz) {
+      java.lang.Byte[] result =
+        new java.lang.Byte[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pbyte {
+    private byte b;
+    public byte get() { return b++; }
+    public byte get(int n) { return get(); }
+    public byte[] array(int sz) {
+      return primitive(new Byte().array(sz));
+    }
+  }
+  char[] CHARS =
+    "abcdefghijklmnopqrstuvwxyz".toCharArray();
+  class Character
+  implements Supplier<java.lang.Character> {
+    private int i;
+    @Override
+    public java.lang.Character get() {
+      i = (i + 1) % CHARS.length;
+      return CHARS[i];
+    }
+    public java.lang.Character get(int n) {
+      return get();
+    }
+    public java.lang.Character[] array(int sz) {
+      java.lang.Character[] result =
+        new java.lang.Character[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pchar {
+    private int i;
+    public char get() {
+      i = (i + 1) % CHARS.length;
+      return CHARS[i];
+    }
+    public char get(int n) { return get(); }
+    public char[] array(int sz) {
+      return primitive(new Character().array(sz));
+    }
+  }
+  class Short
+  implements Supplier<java.lang.Short> {
+    short s;
+    @Override
+    public java.lang.Short get() { return s++; }
+    public java.lang.Short get(int n) {
+      return get();
+    }
+    public java.lang.Short[] array(int sz) {
+      java.lang.Short[] result =
+        new java.lang.Short[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pshort {
+    short s;
+    public short get() { return s++; }
+    public short get(int n) { return get(); }
+    public short[] array(int sz) {
+      return primitive(new Short().array(sz));
+    }
+  }
+  class Integer
+  implements Supplier<java.lang.Integer> {
+    int i;
+    @Override
+    public java.lang.Integer get() { return i++; }
+    public java.lang.Integer get(int n) {
+      return get();
+    }
+    public java.lang.Integer[] array(int sz) {
+      java.lang.Integer[] result =
+        new java.lang.Integer[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pint implements IntSupplier {
+    int i;
+    public int get() { return i++; }
+    public int get(int n) { return get(); }
+    @Override
+    public int getAsInt() { return get(); }
+    public int[] array(int sz) {
+      return primitive(new Integer().array(sz));
+    }
+  }
+  class Long
+  implements Supplier<java.lang.Long> {
+    private long l;
+    @Override
+    public java.lang.Long get() { return l++; }
+    public java.lang.Long get(int n) {
+      return get();
+    }
+    public java.lang.Long[] array(int sz) {
+      java.lang.Long[] result =
+        new java.lang.Long[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Plong implements LongSupplier {
+    private long l;
+    public long get() { return l++; }
+    public long get(int n) { return get(); }
+    @Override
+    public long getAsLong() { return get(); }
+    public long[] array(int sz) {
+      return primitive(new Long().array(sz));
+    }
+  }
+  class Float
+  implements Supplier<java.lang.Float> {
+    private int i;
+    @Override
+    public java.lang.Float get() {
+      return java.lang.Float.valueOf(i++);
+    }
+    public java.lang.Float get(int n) {
+      return get();
+    }
+    public java.lang.Float[] array(int sz) {
+      java.lang.Float[] result =
+        new java.lang.Float[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pfloat {
+    private int i;
+    public float get() { return i++; }
+    public float get(int n) { return get(); }
+    public float[] array(int sz) {
+      return primitive(new Float().array(sz));
+    }
+  }
+  class Double
+  implements Supplier<java.lang.Double> {
+    private int i;
+    @Override
+    public java.lang.Double get() {
+      return java.lang.Double.valueOf(i++);
+    }
+    public java.lang.Double get(int n) {
+      return get();
+    }
+    public java.lang.Double[] array(int sz) {
+      java.lang.Double[] result =
+        new java.lang.Double[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pdouble implements DoubleSupplier {
+    private int i;
+    public double get() { return i++; }
+    public double get(int n) { return get(); }
+    @Override
+    public double getAsDouble() { return get(0); }
+    public double[] array(int sz) {
+      return primitive(new Double().array(sz));
+    }
+  }
+}
+
+```
+
+对于 **int** ，**long** ，**double** 这三个有特殊 **Supplier** 接口的原始数据类型来说，**Pint** ， **Plong** 和 **Pdouble** 实现了这些接口。
+
+这里是对 **Count** 的测试，这同样给我们提供了如何使用它的例子：
+
+```java
+// arrays/TestCount.java
+// Test counting generators
+import java.util.*;
+import java.util.stream.*;
+import onjava.*;
+import static onjava.ArrayShow.*;
+
+public class TestCount {
+  static final int SZ = 5;
+  public static void main(String[] args) {
+    System.out.println("Boolean");
+    Boolean[] a1 = new Boolean[SZ];
+    Arrays.setAll(a1, new Count.Boolean()::get);
+    show(a1);
+    a1 = Stream.generate(new Count.Boolean())
+      .limit(SZ + 1).toArray(Boolean[]::new);
+    show(a1);
+    a1 = new Count.Boolean().array(SZ + 2);
+    show(a1);
+    boolean[] a1b =
+      new Count.Pboolean().array(SZ + 3);
+    show(a1b);
+
+    System.out.println("Byte");
+    Byte[] a2 = new Byte[SZ];
+    Arrays.setAll(a2, new Count.Byte()::get);
+    show(a2);
+    a2 = Stream.generate(new Count.Byte())
+      .limit(SZ + 1).toArray(Byte[]::new);
+    show(a2);
+    a2 = new Count.Byte().array(SZ + 2);
+    show(a2);
+    byte[] a2b = new Count.Pbyte().array(SZ + 3);
+    show(a2b);
+
+    System.out.println("Character");
+    Character[] a3 = new Character[SZ];
+    Arrays.setAll(a3, new Count.Character()::get);
+    show(a3);
+    a3 = Stream.generate(new Count.Character())
+      .limit(SZ + 1).toArray(Character[]::new);
+    show(a3);
+    a3 = new Count.Character().array(SZ + 2);
+    show(a3);
+    char[] a3b = new Count.Pchar().array(SZ + 3);
+    show(a3b);
+
+    System.out.println("Short");
+    Short[] a4 = new Short[SZ];
+    Arrays.setAll(a4, new Count.Short()::get);
+    show(a4);
+    a4 = Stream.generate(new Count.Short())
+      .limit(SZ + 1).toArray(Short[]::new);
+    show(a4);
+    a4 = new Count.Short().array(SZ + 2);
+    show(a4);
+    short[] a4b = new Count.Pshort().array(SZ + 3);
+    show(a4b);
+
+    System.out.println("Integer");
+    int[] a5 = new int[SZ];
+    Arrays.setAll(a5, new Count.Integer()::get);
+    show(a5);
+    Integer[] a5b =
+      Stream.generate(new Count.Integer())
+        .limit(SZ + 1).toArray(Integer[]::new);
+    show(a5b);
+    a5b = new Count.Integer().array(SZ + 2);
+    show(a5b);
+    a5 = IntStream.generate(new Count.Pint())
+      .limit(SZ + 1).toArray();
+    show(a5);
+    a5 = new Count.Pint().array(SZ + 3);
+    show(a5);
+
+    System.out.println("Long");
+    long[] a6 = new long[SZ];
+    Arrays.setAll(a6, new Count.Long()::get);
+    show(a6);
+    Long[] a6b = Stream.generate(new Count.Long())
+      .limit(SZ + 1).toArray(Long[]::new);
+    show(a6b);
+    a6b = new Count.Long().array(SZ + 2);
+    show(a6b);
+    a6 = LongStream.generate(new Count.Plong())
+      .limit(SZ + 1).toArray();
+    show(a6);
+    a6 = new Count.Plong().array(SZ + 3);
+    show(a6);
+
+    System.out.println("Float");
+    Float[] a7 = new Float[SZ];
+    Arrays.setAll(a7, new Count.Float()::get);
+    show(a7);
+    a7 = Stream.generate(new Count.Float())
+      .limit(SZ + 1).toArray(Float[]::new);
+    show(a7);
+    a7 = new Count.Float().array(SZ + 2);
+    show(a7);
+    float[] a7b = new Count.Pfloat().array(SZ + 3);
+    show(a7b);
+
+    System.out.println("Double");
+    double[] a8 = new double[SZ];
+    Arrays.setAll(a8, new Count.Double()::get);
+    show(a8);
+    Double[] a8b =
+      Stream.generate(new Count.Double())
+        .limit(SZ + 1).toArray(Double[]::new);
+    show(a8b);
+    a8b = new Count.Double().array(SZ + 2);
+    show(a8b);
+    a8 = DoubleStream.generate(new Count.Pdouble())
+      .limit(SZ + 1).toArray();
+    show(a8);
+    a8 = new Count.Pdouble().array(SZ + 3);
+    show(a8);
+  }
+}
+/* Output:
+Boolean
+[false, true, false, true, false]
+[false, true, false, true, false, true]
+[false, true, false, true, false, true, false]
+[false, true, false, true, false, true, false, true]
+Byte
+[0, 1, 2, 3, 4]
+[0, 1, 2, 3, 4, 5]
+[0, 1, 2, 3, 4, 5, 6]
+[0, 1, 2, 3, 4, 5, 6, 7]
+Character
+[b, c, d, e, f]
+[b, c, d, e, f, g]
+[b, c, d, e, f, g, h]
+[b, c, d, e, f, g, h, i]
+Short
+[0, 1, 2, 3, 4]
+[0, 1, 2, 3, 4, 5]
+[0, 1, 2, 3, 4, 5, 6]
+[0, 1, 2, 3, 4, 5, 6, 7]
+Integer
+[0, 1, 2, 3, 4]
+[0, 1, 2, 3, 4, 5]
+[0, 1, 2, 3, 4, 5, 6]
+[0, 1, 2, 3, 4, 5]
+[0, 1, 2, 3, 4, 5, 6, 7]
+Long
+[0, 1, 2, 3, 4]
+[0, 1, 2, 3, 4, 5]
+[0, 1, 2, 3, 4, 5, 6]
+[0, 1, 2, 3, 4, 5]
+[0, 1, 2, 3, 4, 5, 6, 7]
+Float
+[0.0, 1.0, 2.0, 3.0, 4.0]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+Double
+[0.0, 1.0, 2.0, 3.0, 4.0]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0]
+[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+*/
+
+```
+
+注意到原始数组类型 **int[]** ，**long[]** ，**double[]** 可以直接被 **Arrays.setAll()** 填充，但是其他的原始类型都要求用包装器类型的数组。
+
+通过 **Stream.generate()** 创建的包装数组显示了 **toArray（）** 的重载用法，在这里你应该提供给它要创建的数组类型的构造器。
 
 <!-- Random Generators -->
 ## 随机生成
 
+我们可以按照 **Count.java** 的结构创建一个生成随机值的工具： 
+
+```java
+// onjava/Rand.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+// Generate random values of different types
+package onjava;
+import java.util.*;
+import java.util.function.*;
+import static onjava.ConvertTo.*;
+
+public interface Rand {
+  int MOD = 10_000;
+  class Boolean
+  implements Supplier<java.lang.Boolean> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Boolean get() {
+      return r.nextBoolean();
+    }
+    public java.lang.Boolean get(int n) {
+      return get();
+    }
+    public java.lang.Boolean[] array(int sz) {
+      java.lang.Boolean[] result =
+        new java.lang.Boolean[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pboolean {
+    public boolean[] array(int sz) {
+      return primitive(new Boolean().array(sz));
+    }
+  }
+  class Byte
+  implements Supplier<java.lang.Byte> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Byte get() {
+      return (byte)r.nextInt(MOD);
+    }
+    public java.lang.Byte get(int n) {
+      return get();
+    }
+    public java.lang.Byte[] array(int sz) {
+      java.lang.Byte[] result =
+        new java.lang.Byte[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pbyte {
+    public byte[] array(int sz) {
+      return primitive(new Byte().array(sz));
+    }
+  }
+  class Character
+  implements Supplier<java.lang.Character> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Character get() {
+      return (char)r.nextInt('a', 'z' + 1);
+    }
+    public java.lang.Character get(int n) {
+      return get();
+    }
+    public java.lang.Character[] array(int sz) {
+      java.lang.Character[] result =
+        new java.lang.Character[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pchar {
+    public char[] array(int sz) {
+      return primitive(new Character().array(sz));
+    }
+  }
+  class Short
+  implements Supplier<java.lang.Short> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Short get() {
+      return (short)r.nextInt(MOD);
+    }
+    public java.lang.Short get(int n) {
+      return get();
+    }
+    public java.lang.Short[] array(int sz) {
+      java.lang.Short[] result =
+        new java.lang.Short[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pshort {
+    public short[] array(int sz) {
+      return primitive(new Short().array(sz));
+    }
+  }
+  class Integer
+  implements Supplier<java.lang.Integer> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Integer get() {
+      return r.nextInt(MOD);
+    }
+    public java.lang.Integer get(int n) {
+      return get();
+    }
+    public java.lang.Integer[] array(int sz) {
+      int[] primitive = new Pint().array(sz);
+      java.lang.Integer[] result =
+        new java.lang.Integer[sz];
+      for(int i = 0; i < sz; i++)
+        result[i] = primitive[i];
+      return result;
+    }
+  }
+  class Pint implements IntSupplier {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public int getAsInt() {
+      return r.nextInt(MOD);
+    }
+    public int get(int n) { return getAsInt(); }
+    public int[] array(int sz) {
+      return r.ints(sz, 0, MOD).toArray();
+    }
+  }
+  class Long
+  implements Supplier<java.lang.Long> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Long get() {
+      return r.nextLong(MOD);
+    }
+    public java.lang.Long get(int n) {
+      return get();
+    }
+    public java.lang.Long[] array(int sz) {
+      long[] primitive = new Plong().array(sz);
+      java.lang.Long[] result =
+        new java.lang.Long[sz];
+      for(int i = 0; i < sz; i++)
+        result[i] = primitive[i];
+      return result;
+    }
+  }
+  class Plong implements LongSupplier {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public long getAsLong() {
+      return r.nextLong(MOD);
+    }
+    public long get(int n) { return getAsLong(); }
+    public long[] array(int sz) {
+      return r.longs(sz, 0, MOD).toArray();
+    }
+  }
+  class Float
+  implements Supplier<java.lang.Float> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Float get() {
+      return (float)trim(r.nextDouble());
+    }
+    public java.lang.Float get(int n) {
+      return get();
+    }
+    public java.lang.Float[] array(int sz) {
+      java.lang.Float[] result =
+        new java.lang.Float[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+  class Pfloat {
+    public float[] array(int sz) {
+      return primitive(new Float().array(sz));
+    }
+  }
+  static double trim(double d) {
+    return
+      ((double)Math.round(d * 1000.0)) / 100.0;
+  }
+  class Double
+  implements Supplier<java.lang.Double> {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public java.lang.Double get() {
+      return trim(r.nextDouble());
+    }
+    public java.lang.Double get(int n) {
+      return get();
+    }
+    public java.lang.Double[] array(int sz) {
+      double[] primitive =
+        new Rand.Pdouble().array(sz);
+      java.lang.Double[] result =
+        new java.lang.Double[sz];
+      for(int i = 0; i < sz; i++)
+        result[i] = primitive[i];
+      return result;
+    }
+  }
+  class Pdouble implements DoubleSupplier {
+    SplittableRandom r = new SplittableRandom(47);
+    @Override
+    public double getAsDouble() {
+      return trim(r.nextDouble());
+    }
+    public double get(int n) {
+      return getAsDouble();
+    }
+    public double[] array(int sz) {
+      double[] result = r.doubles(sz).toArray();
+      Arrays.setAll(result,
+        n -> result[n] = trim(result[n]));
+      return result;
+    }
+  }
+  class String
+  implements Supplier<java.lang.String> {
+    SplittableRandom r = new SplittableRandom(47);
+    private int strlen = 7; // Default length
+    public String() {}
+    public String(int strLength) {
+      strlen = strLength;
+    }
+    @Override
+    public java.lang.String get() {
+      return r.ints(strlen, 'a', 'z' + 1)
+        .collect(StringBuilder::new,
+                 StringBuilder::appendCodePoint,
+                 StringBuilder::append).toString();
+    }
+    public java.lang.String get(int n) {
+      return get();
+    }
+    public java.lang.String[] array(int sz) {
+      java.lang.String[] result =
+        new java.lang.String[sz];
+      Arrays.setAll(result, n -> get());
+      return result;
+    }
+  }
+}
+
+```
+
+对于除了 **int** 、 **long** 和 **double** 之外的所有基本类型元素生成器，只生成数组，而不是 Count 中看到的完整操作集。这只是一个设计选择，因为本书不需要额外的功能。
+
+下面是对所有 **Rand** 工具的测试：
+
+```java
+// arrays/TestRand.java
+// Test random generators
+import java.util.*;
+import java.util.stream.*;
+import onjava.*;
+import static onjava.ArrayShow.*;
+
+public class TestRand {
+  static final int SZ = 5;
+  public static void main(String[] args) {
+    System.out.println("Boolean");
+    Boolean[] a1 = new Boolean[SZ];
+    Arrays.setAll(a1, new Rand.Boolean()::get);
+    show(a1);
+    a1 = Stream.generate(new Rand.Boolean())
+      .limit(SZ + 1).toArray(Boolean[]::new);
+    show(a1);
+    a1 = new Rand.Boolean().array(SZ + 2);
+    show(a1);
+    boolean[] a1b =
+      new Rand.Pboolean().array(SZ + 3);
+    show(a1b);
+
+    System.out.println("Byte");
+    Byte[] a2 = new Byte[SZ];
+    Arrays.setAll(a2, new Rand.Byte()::get);
+    show(a2);
+    a2 = Stream.generate(new Rand.Byte())
+      .limit(SZ + 1).toArray(Byte[]::new);
+    show(a2);
+    a2 = new Rand.Byte().array(SZ + 2);
+    show(a2);
+    byte[] a2b = new Rand.Pbyte().array(SZ + 3);
+    show(a2b);
+
+    System.out.println("Character");
+    Character[] a3 = new Character[SZ];
+    Arrays.setAll(a3, new Rand.Character()::get);
+    show(a3);
+    a3 = Stream.generate(new Rand.Character())
+      .limit(SZ + 1).toArray(Character[]::new);
+    show(a3);
+    a3 = new Rand.Character().array(SZ + 2);
+    show(a3);
+    char[] a3b = new Rand.Pchar().array(SZ + 3);
+    show(a3b);
+
+    System.out.println("Short");
+    Short[] a4 = new Short[SZ];
+    Arrays.setAll(a4, new Rand.Short()::get);
+    show(a4);
+    a4 = Stream.generate(new Rand.Short())
+      .limit(SZ + 1).toArray(Short[]::new);
+    show(a4);
+    a4 = new Rand.Short().array(SZ + 2);
+    show(a4);
+    short[] a4b = new Rand.Pshort().array(SZ + 3);
+    show(a4b);
+
+    System.out.println("Integer");
+    int[] a5 = new int[SZ];
+    Arrays.setAll(a5, new Rand.Integer()::get);
+    show(a5);
+    Integer[] a5b =
+      Stream.generate(new Rand.Integer())
+        .limit(SZ + 1).toArray(Integer[]::new);
+    show(a5b);
+    a5b = new Rand.Integer().array(SZ + 2);
+    show(a5b);
+    a5 = IntStream.generate(new Rand.Pint())
+      .limit(SZ + 1).toArray();
+    show(a5);
+    a5 = new Rand.Pint().array(SZ + 3);
+    show(a5);
+
+    System.out.println("Long");
+    long[] a6 = new long[SZ];
+    Arrays.setAll(a6, new Rand.Long()::get);
+    show(a6);
+    Long[] a6b = Stream.generate(new Rand.Long())
+      .limit(SZ + 1).toArray(Long[]::new);
+    show(a6b);
+    a6b = new Rand.Long().array(SZ + 2);
+    show(a6b);
+    a6 = LongStream.generate(new Rand.Plong())
+      .limit(SZ + 1).toArray();
+    show(a6);
+    a6 = new Rand.Plong().array(SZ + 3);
+    show(a6);
+
+    System.out.println("Float");
+    Float[] a7 = new Float[SZ];
+    Arrays.setAll(a7, new Rand.Float()::get);
+    show(a7);
+    a7 = Stream.generate(new Rand.Float())
+      .limit(SZ + 1).toArray(Float[]::new);
+    show(a7);
+    a7 = new Rand.Float().array(SZ + 2);
+    show(a7);
+    float[] a7b = new Rand.Pfloat().array(SZ + 3);
+    show(a7b);
+
+    System.out.println("Double");
+    double[] a8 = new double[SZ];
+    Arrays.setAll(a8, new Rand.Double()::get);
+    show(a8);
+    Double[] a8b =
+      Stream.generate(new Rand.Double())
+        .limit(SZ + 1).toArray(Double[]::new);
+    show(a8b);
+    a8b = new Rand.Double().array(SZ + 2);
+    show(a8b);
+    a8 = DoubleStream.generate(new Rand.Pdouble())
+      .limit(SZ + 1).toArray();
+    show(a8);
+    a8 = new Rand.Pdouble().array(SZ + 3);
+    show(a8);
+
+    System.out.println("String");
+    String[] s = new String[SZ - 1];
+    Arrays.setAll(s, new Rand.String()::get);
+    show(s);
+    s = Stream.generate(new Rand.String())
+      .limit(SZ).toArray(String[]::new);
+    show(s);
+    s = new Rand.String().array(SZ + 1);
+    show(s);
+
+    Arrays.setAll(s, new Rand.String(4)::get);
+    show(s);
+    s = Stream.generate(new Rand.String(4))
+      .limit(SZ).toArray(String[]::new);
+    show(s);
+    s = new Rand.String(4).array(SZ + 1);
+    show(s);
+  }
+}
+/* Output:
+Boolean
+[true, false, true, true, true]
+[true, false, true, true, true, false]
+[true, false, true, true, true, false, false]
+[true, false, true, true, true, false, false, true]
+Byte
+[123, 33, 101, 112, 33]
+[123, 33, 101, 112, 33, 31]
+[123, 33, 101, 112, 33, 31, 0]
+[123, 33, 101, 112, 33, 31, 0, -72]
+Character
+[b, t, p, e, n]
+[b, t, p, e, n, p]
+[b, t, p, e, n, p, c]
+[b, t, p, e, n, p, c, c]
+Short
+[635, 8737, 3941, 4720, 6177]
+[635, 8737, 3941, 4720, 6177, 8479]
+[635, 8737, 3941, 4720, 6177, 8479, 6656]
+[635, 8737, 3941, 4720, 6177, 8479, 6656, 3768]
+Integer
+[635, 8737, 3941, 4720, 6177]
+[635, 8737, 3941, 4720, 6177, 8479]
+[635, 8737, 3941, 4720, 6177, 8479, 6656]
+[635, 8737, 3941, 4720, 6177, 8479]
+[635, 8737, 3941, 4720, 6177, 8479, 6656, 3768]
+Long
+[6882, 3765, 692, 9575, 4439]
+[6882, 3765, 692, 9575, 4439, 2638]
+[6882, 3765, 692, 9575, 4439, 2638, 4011]
+[6882, 3765, 692, 9575, 4439, 2638]
+[6882, 3765, 692, 9575, 4439, 2638, 4011, 9610]
+Float
+[4.83, 2.89, 2.9, 1.97, 3.01]
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18, 0.99]
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18, 0.99, 8.28]
+Double
+[4.83, 2.89, 2.9, 1.97, 3.01]
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18, 0.99]
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18, 0.99, 8.28]
+String
+[btpenpc, cuxszgv, gmeinne, eloztdv]
+[btpenpc, cuxszgv, gmeinne, eloztdv, ewcippc]
+[btpenpc, cuxszgv, gmeinne, eloztdv, ewcippc, ygpoalk]
+[btpe, npcc, uxsz, gvgm, einn, eelo]
+[btpe, npcc, uxsz, gvgm, einn]
+[btpe, npcc, uxsz, gvgm, einn, eelo]
+*/
+
+```
+
+注意（除了 **String** 部分之外），这段代码与 **TestCount.java** 中的代码相同，**Count** 被 **Rand** 替换。
 
 <!-- Generics and Primitive Arrays -->
 ## 泛型和基本数组
+在本章的前面，我们被提醒，泛型不能和基元一起工作。在这种情况下，我们必须从基元数组转换为包装类型的数组，并且还必须从另一个方向转换。下面是一个转换器可以同时对所有类型的数据执行操作：
 
+```java
+// onjava/ConvertTo.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+package onjava;
+
+public interface ConvertTo {
+  static boolean[] primitive(Boolean[] in) {
+    boolean[] result = new boolean[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i]; // Autounboxing
+    return result;
+  }
+  static char[] primitive(Character[] in) {
+    char[] result = new char[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static byte[] primitive(Byte[] in) {
+    byte[] result = new byte[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static short[] primitive(Short[] in) {
+    short[] result = new short[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static int[] primitive(Integer[] in) {
+    int[] result = new int[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static long[] primitive(Long[] in) {
+    long[] result = new long[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static float[] primitive(Float[] in) {
+    float[] result = new float[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static double[] primitive(Double[] in) {
+    double[] result = new double[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  // Convert from primitive array to wrapped array:
+  static Boolean[] boxed(boolean[] in) {
+    Boolean[] result = new Boolean[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i]; // Autoboxing
+    return result;
+  }
+  static Character[] boxed(char[] in) {
+    Character[] result = new Character[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static Byte[] boxed(byte[] in) {
+    Byte[] result = new Byte[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static Short[] boxed(short[] in) {
+    Short[] result = new Short[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static Integer[] boxed(int[] in) {
+    Integer[] result = new Integer[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static Long[] boxed(long[] in) {
+    Long[] result = new Long[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static Float[] boxed(float[] in) {
+    Float[] result = new Float[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+  static Double[] boxed(double[] in) {
+    Double[] result = new Double[in.length];
+    for(int i = 0; i < in.length; i++)
+      result[i] = in[i];
+    return result;
+  }
+}
+```
+
+**primitive()** 的每个版本都创建一个准确长度的适当基元数组，然后从包装类的 **in** 数组中复制元素。如果任何包装的数组元素是 **null** ，你将得到一个异常（这是合理的—否则无法选择有意义的值进行替换)。注意在这个任务中自动装箱如何发生。
+
+下面是对 **ConvertTo** 中所有方法的测试：
+
+```java
+// arrays/TestConvertTo.java
+import java.util.*;
+import onjava.*;
+import static onjava.ArrayShow.*;
+import static onjava.ConvertTo.*;
+
+public class TestConvertTo {
+  static final int SIZE = 6;
+  public static void main(String[] args) {
+    Boolean[] a1 = new Boolean[SIZE];
+    Arrays.setAll(a1, new Rand.Boolean()::get);
+    boolean[] a1p = primitive(a1);
+    show("a1p", a1p);
+    Boolean[] a1b = boxed(a1p);
+    show("a1b", a1b);
+
+    Byte[] a2 = new Byte[SIZE];
+    Arrays.setAll(a2, new Rand.Byte()::get);
+    byte[] a2p = primitive(a2);
+    show("a2p", a2p);
+    Byte[] a2b = boxed(a2p);
+    show("a2b", a2b);
+
+    Character[] a3 = new Character[SIZE];
+    Arrays.setAll(a3, new Rand.Character()::get);
+    char[] a3p = primitive(a3);
+    show("a3p", a3p);
+    Character[] a3b = boxed(a3p);
+    show("a3b", a3b);
+
+    Short[] a4 = new Short[SIZE];
+    Arrays.setAll(a4, new Rand.Short()::get);
+    short[] a4p = primitive(a4);
+    show("a4p", a4p);
+    Short[] a4b = boxed(a4p);
+    show("a4b", a4b);
+
+    Integer[] a5 = new Integer[SIZE];
+    Arrays.setAll(a5, new Rand.Integer()::get);
+    int[] a5p = primitive(a5);
+    show("a5p", a5p);
+    Integer[] a5b = boxed(a5p);
+    show("a5b", a5b);
+
+    Long[] a6 = new Long[SIZE];
+    Arrays.setAll(a6, new Rand.Long()::get);
+    long[] a6p = primitive(a6);
+    show("a6p", a6p);
+    Long[] a6b = boxed(a6p);
+    show("a6b", a6b);
+
+    Float[] a7 = new Float[SIZE];
+    Arrays.setAll(a7, new Rand.Float()::get);
+    float[] a7p = primitive(a7);
+    show("a7p", a7p);
+    Float[] a7b = boxed(a7p);
+    show("a7b", a7b);
+
+    Double[] a8 = new Double[SIZE];
+    Arrays.setAll(a8, new Rand.Double()::get);
+    double[] a8p = primitive(a8);
+    show("a8p", a8p);
+    Double[] a8b = boxed(a8p);
+    show("a8b", a8b);
+  }
+}
+/* Output:
+a1p: [true, false, true, true, true, false]
+a1b: [true, false, true, true, true, false]
+a2p: [123, 33, 101, 112, 33, 31]
+a2b: [123, 33, 101, 112, 33, 31]
+a3p: [b, t, p, e, n, p]
+a3b: [b, t, p, e, n, p]
+a4p: [635, 8737, 3941, 4720, 6177, 8479]
+a4b: [635, 8737, 3941, 4720, 6177, 8479]
+a5p: [635, 8737, 3941, 4720, 6177, 8479]
+a5b: [635, 8737, 3941, 4720, 6177, 8479]
+a6p: [6882, 3765, 692, 9575, 4439, 2638]
+a6b: [6882, 3765, 692, 9575, 4439, 2638]
+a7p: [4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
+a7b: [4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
+a8p: [4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
+a8b: [4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
+*/
+```
+
+在每种情况下，原始数组都是为包装类型创建的，并使用 **Arrays.setAll()** 填充，正如我们在 **TestCouner.java** 中所做的那样（这也验证了 **Arrays.setAll()** 是否能同 **Integer** ，**Long** ，和 **Double** ）。然后 **ConvertTo.primitive()**  将包装器数组转换为对应的基元数组，**ConverTo.boxed()** 将其转换回来。
 
 <!-- Modifying Existing Array Elements -->
 ## 数组元素修改
