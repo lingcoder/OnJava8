@@ -1100,7 +1100,7 @@ class ActionCharacter {
 class Hero extends ActionCharacter implements CanFight, CanSwim, CanFly {
     public void swim() {}
     
-    pubilc void fly() {}
+    public void fly() {}
 }
 
 public class Adventure {
@@ -1211,7 +1211,7 @@ public class HorrorShow {
 }
 ```
 
-接口 **DangerousMonster** 是 **Monster** 简单扩展的一个新接口，类 **DragonZilla** 实现了这个接口。
+接口 **DangerousMonster** 是 **Monster** 简单扩展的一个新接口，类 **DragonZilla** 实现了这个接口。
 
 **Vampire** 中使用的语法仅适用于接口继承。通常来说，**extends** 只能用于单一类，但是在构建接口时可以引用多个基类接口。注意到，接口名之间用逗号分隔。
 
