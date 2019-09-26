@@ -311,6 +311,12 @@ public class PrimitiveOverloading {
         f1(x);f2(x);f3(x);f4(x);f5(x);f6(x);f7(x);
         System.out.println();
     }
+    void testLong() {
+        long x = 0;
+        System.out.print("long: ");
+        f1(x);f2(x);f3(x);f4(x);f5(x);f6(x);f7(x);
+        System.out.println();
+    }
     void testFloat() {
         float x = 0;
         System.out.print("float: ");
@@ -331,6 +337,7 @@ public class PrimitiveOverloading {
         p.testByte();
         p.testShort();
         p.testInt();
+        p.testLong();
         p.testFloat();
         p.testDouble();
     }
@@ -345,6 +352,7 @@ char: f1(char)f2(int)f3(int)f4(int)f5(long)f6(float)f7(double)
 byte: f1(byte)f2(byte)f3(short)f4(int)f5(long)f6(float)f7(double)
 short: f1(short)f2(short)f3(short)f4(int)f5(long)f6(float)f7(double)
 int: f1(int)f2(int)f3(int)f4(int)f5(long)f6(float)f7(double)
+long: f1(long)f2(long)f3(long)f4(long)f5(long)f6(float)f7(double)
 float: f1(float)f2(float)f3(float)f4(float)f5(float)f6(float)f7(double)
 double: f1(double)f2(double)f3(double)f4(double)f5(double)f6(double)f7(double)
 ```
