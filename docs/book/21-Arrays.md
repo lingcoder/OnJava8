@@ -1942,7 +1942,7 @@ public class ModifyExisting {
 
 我建议您在自己的代码中采用这种方法。
 
-![http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html](要进一步了解为什么这是一个难题，请参阅Doug Lea的文章。)
+[http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html](要进一步了解为什么这是一个难题，请参阅Doug Lea的文章。)
 
 **parallelSetAll()**
 
