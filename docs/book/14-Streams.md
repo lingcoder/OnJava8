@@ -1798,16 +1798,12 @@ stream, streams, throws, toCollection, trim, util,
 void, words2]
 ```
 
-<<<<<<< HEAD
-**Files.**`lines()` 打开 **Path** 并将其转换成为行流。下一行代码将匹配一个或多个非单词字符（`\\W+`）行进行分割，然后使用 **Arrays.**`stream()` 将其转化成为流，并将结果扁平映射成为单词流。使用 `matches(\\d+)` 查找并移除全数字字符串（**注意**,**words2** 是通过的）。接下来我们使用 **String.**`trim()` 去除单词两边的空白，`filter()` 过滤所有长度小于 3 的单词，紧接着只获取100个单词，最后将其保存到 **TreeSet** 中。
-=======
 **Files.**`lines()` 打开 **Path** 并将其转换成为行流。下一行代码将匹配一个或多个非单词字符（`\\w+`）行进行分割，然后使用 **Arrays.**`stream()` 将其转化成为流，并将结果扁平映射成为单词流。使用 `matches(\\d+)` 查找并移除全数字字符串（**注意**,`words2` 是通过的）。接下来我们使用 **String.**`trim()` 去除单词两边的空白，`filter()` 过滤所有长度小于3的单词，紧接着只获取100个单词，最后将其保存到 **TreeSet** 中。
 
 <!-- 
 Files.lines() opens the Path and turns it into a Stream oflines. The next line splits those lines on boundaries of one or morenon-word characters (\\W+), which produces an array which is turnedinto a Stream with Arrays.stream(), and the result is flat-mapped back into a Stream of words. The matches(\\d+) finds
 and removes Strings that are all digits (note that words2 makes itthrough). Next we apply String.trim() to shave off anysurrounding whitespace, filter() out any words less than a lengthof three, take only the first 100 words, and finally put them into aTreeSet.
  -->
->>>>>>> autocommit
 
 我们也可以在流中生成 **Map**。代码示例：
 
