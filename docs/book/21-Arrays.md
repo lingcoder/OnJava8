@@ -2147,6 +2147,68 @@ public class ArrayCopying {
 <!-- Comparing Arrays -->
 ## 数组比较
 
+**数组** 提供了 **equals()** 来比较一维数组，以及 **deepEquals()** 来比较多维数组。对于所有原生类型和对象，这些方法都是重载的。
+
+数组相等的含义：数组必须有相同数量的元素，并且每个元素必须与另一个数组中的对应元素相等，对每个元素使用 **equals()**(对于原生类型，使用原生类型的包装类的 **equals()** 方法;例如，int的Integer.equals()。
+
+```JAVA
+// arrays/ComparingArrays.java
+// Using Arrays.equals()
+
+import java.util.*;
+import onjava.*;
+
+public class ComparingArrays {
+    public static final int SZ = 15;
+
+    static String[][] twoDArray() {
+        String[][] md = new String[5][];
+        Arrays.setAll(md, n -> new String[n]);
+        for (int i = 0; i < md.length; i++) Arrays.setAll(md[i], new Rand.String()::get);
+        return md;
+    }
+
+    public static void main(String[] args) {
+        int[] a1 = new int[SZ], a2 = new int[SZ];
+        Arrays.setAll(a1, new Count.Integer()::get);
+        Arrays.setAll(a2, new Count.Integer()::get);
+        System.out.println("a1 == a2: " + Arrays.equals(a1, a2));
+        a2[3] = 11;
+        System.out.println("a1 == a2: " + Arrays.equals(a1, a2));
+        Integer[] a1w = new Integer[SZ], a2w = new Integer[SZ];
+        Arrays.setAll(a1w, new Count.Integer()::get);
+        Arrays.setAll(a2w, new Count.Integer()::get);
+        System.out.println("a1w == a2w: " + Arrays.equals(a1w, a2w));
+        a2w[3] = 11;
+        System.out.println("a1w == a2w: " + Arrays.equals(a1w, a2w));
+        String[][] md1 = twoDArray(), md2 = twoDArray();
+        System.out.println(Arrays.deepToString(md1));
+        System.out.println("deepEquals(md1, md2): " + Arrays.deepEquals(md1, md2));
+        System.out.println("md1 == md2: " + Arrays.equals(md1, md2));
+        md1[4][1] = "#$#$#$#";
+        System.out.println(Arrays.deepToString(md1));
+        System.out.println("deepEquals(md1, md2): " + Arrays.deepEquals(md1, md2));
+    }
+}
+
+/* Output:
+a1 == a2: true
+a1 == a2: false
+a1w == a2w: true
+a1w == a2w: false
+[[], [btpenpc], [btpenpc, cuxszgv], [btpenpc, cuxszgv,
+ gmeinne], [btpenpc, cuxszgv, gmeinne, eloztdv]]
+ deepEquals(md1, md2): true
+ md1 == md2: false
+ [[], [btpenpc], [btpenpc, cuxszgv], [btpenpc, cuxszgv,
+ gmeinne], [btpenpc, #$#$#$#, gmeinne, eloztdv]]
+ deepEquals(md1, md2): false
+ */
+ ```
+
+最初，a1和a2是完全相等的，所以输出是true，但是之后其中一个元素改变了，这使得结果为false。a1w和a2w是对一个封装类型数组重复该练习。
+
+**md1** 和 **md2** 是通过 **twoDArray()** 以相同方式初始化的多维字符串数组。注意，**deepEquals()** 返回 **true**，因为它执行了适当的比较，而普通的 **equals()** 错误地返回 **false**。如果我们更改数组中的一个元素，**deepEquals()** 将检测它。
 
 <!-- Streams and Arrays -->
 ## 流和数组
