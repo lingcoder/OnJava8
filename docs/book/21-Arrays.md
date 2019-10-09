@@ -1228,7 +1228,7 @@ Double
 <!-- Random Generators -->
 ## 随机生成
 
-我们可以按照 **Count.java** 的结构创建一个生成随机值的工具： 
+我们可以按照 **Count.java** 的结构创建一个生成随机值的工具：
 
 ```java
 // onjava/Rand.java
@@ -1889,14 +1889,161 @@ a8b: [4.83, 2.89, 2.9, 1.97, 3.01, 0.18]
 <!-- Modifying Existing Array Elements -->
 ## 数组元素修改
 
+传递给 **Arrays.setAll()** 的生成器函数可以使用它接收到的数组索引修改现有的数组元素:
+
+```JAVA
+// arrays/ModifyExisting.java
+
+import java.util.*;
+import onjava.*;
+import static onjava.ArrayShow.*;
+
+public class ModifyExisting {
+    public static void main(String[] args) {
+        double[] da = new double[7];
+        Arrays.setAll(da, new Rand.Double()::get);
+        show(da);
+        Arrays.setAll(da, n -> da[n] / 100); // [1]
+        show(da);
+
+    }
+}
+
+/* Output:
+[4.83, 2.89, 2.9, 1.97, 3.01, 0.18, 0.99]
+[0.0483, 0.028900000000000002, 0.028999999999999998,
+0.0197, 0.0301, 0.0018, 0.009899999999999999]
+*/
+
+```
+
+[1] Lambdas在这里特别有用，因为数组总是在lambda表达式的范围内。
+
 
 <!-- An Aside On Parallelism -->
 ## 数组并行
+
+我们很快就不得不面对并行的主题。例如，“并行”一词在许多Java库方法中使用。您可能听说过类似“并行程序运行得更快”这样的说法，这是有道理的—当您可以有多个处理器时，为什么只有一个处理器在您的程序上工作呢? 如果您认为您应该利用其中的“并行”，这是很容易被原谅的。
+要是这么简单就好了。不幸的是，通过采用这种方法，您可以很容易地编写比非并行版本运行速度更慢的代码。在你深刻理解所有的问题之前，并行编程看起来更像是一门艺术而非科学。
+以下是简短的版本:用简单的方法编写代码。不要开始处理并行性，除非它成为一个问题。您仍然会遇到并行性。在本章中，我们将介绍一些为并行执行而编写的Java库方法。因此，您必须对它有足够的了解，以便进行基本的讨论，并避免出现错误。
+
+在阅读并发编程这一章之后，您将更深入地理解它(但是，唉，这还远远不够。只是这些的话，充分理解这个主题是不可能的)。
+在某些情况下，即使您只有一个处理器，无论您是否显式地尝试并行，并行实现是惟一的、最佳的或最符合逻辑的选择。它是一个可以一直使用的工具，所以您必须了解它的相关问题。
+
+最好从数据的角度来考虑并行性。对于大量数据(以及可用的额外处理器)，并行可能会有所帮助。但您也可能使事情变得更糟。
+
+在本书的其余部分，我们将遇到不同的情况:
+
+- 1、所提供的惟一选项是并行的。这很简单，因为我们别无选择，只能使用它。这种情况是比较罕见的。
+
+- 2、有多个选项，但是并行版本(通常是最新的版本)被设计成在任何地方都可以使用(甚至在那些不关心并行性的代码中)，如案例#1。我们将按预期使用并行版本。
+
+- 3、案例1和案例2并不经常发生。相反，您将遇到某些算法的两个版本，一个用于并行使用，另一个用于正常使用。我将描述并行的一个，但不会在普通代码中使用它，因为它也许会产生所有可能的问题。
+
+我建议您在自己的代码中采用这种方法。
+
+![http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html](要进一步了解为什么这是一个难题，请参阅Doug Lea的文章。)
+
+**parallelSetAll()**
+
+流式编程产生优雅的代码。例如，假设我们想要创建一个数值由从零开始填充的长数组：
+
+```JAVA
+// arrays/CountUpward.java
+
+import java.util.stream.LongStream;
+
+public class CountUpward {
+    static long[] fillCounted(int size) {
+        return LongStream.iterate(0, i -> i + 1).limit(size).toArray();
+    }
+
+    public static void main(String[] args) {
+        long[] l1 = fillCounted(20); // No problem
+        show(l1);
+        // On my machine, this runs out of heap space:
+        // - long[] l2 = fillCounted(10_000_000);
+    }
+}
+
+/* Output:
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+16, 17, 18, 19]
+*/
+```
+
+**流** 实际上可以存储到将近1000万，但是之后就会耗尽堆空间。常规的 **setAll()** 是有效的，但是如果我们能更快地处理如此大量的数字，那就更好了。
+我们可以使用 **setAll()** 初始化更大的数组。如果速度成为一个问题，**Arrays.parallelSetAll()** 将(可能)更快地执行初始化(请记住并行性中描述的问题)。
+
+```JAVA
+
+// arrays/ParallelSetAll.java
+
+import onjava.*;
+import java.util.Arrays;
+
+public class ParallelSetAll {
+    static final int SIZE = 10_000_000;
+
+    static void intArray() {
+        int[] ia = new int[SIZE];
+        Arrays.setAll(ia, new Rand.Pint()::get);
+        Arrays.parallelSetAll(ia, new Rand.Pint()::get);
+    }
+
+    static void longArray() {
+        long[] la = new long[SIZE];
+        Arrays.setAll(la, new Rand.Plong()::get);
+        Arrays.parallelSetAll(la, new Rand.Plong()::get);
+    }
+
+    public static void main(String[] args) {
+        intArray();
+        longArray();
+    }
+}
+```
+
+数组分配和初始化是在单独的方法中执行的，因为如果两个数组都在 **main()** 中分配，它会耗尽内存(至少在我的机器上是这样。还有一些方法可以告诉Java在启动时分配更多的内存)。
+
 
 
 <!-- Arrays Utilities -->
 ## Arrays工具类
 
+您已经看到了 **java.util.Arrays** 中的 **fill()** 和 **setAll()/parallelSetAll()** 。该类包含许多其他有用的 **静态** 程序方法，我们将对此进行研究。
+
+概述:
+
+- **asList()**: 获取任何序列或数组，并将其转换为一个 **列表集合** （集合章节介绍了此方法）。
+
+- **copyOf()**：以新的长度创建现有数组的新副本。
+
+- **copyOfRange()**：创建现有数组的一部分的新副本。
+
+- **equals()**：比较两个数组是否相等。
+
+- **deepEquals()**：多维数组的相等性比较。
+
+- **stream()**：生成数组元素的流。
+
+- **hashCode()**：生成数组的哈希值(您将在附录中了解这意味着什么:理解equals()和hashCode())。
+
+- **deepHashCode()**: 多维数组的哈希值。
+
+- **sort()**：排序数组
+
+- **parallelSort()**：对数组进行并行排序，以提高速度。
+
+- **binarySearch()**：在已排序的数组中查找元素。
+
+- **parallelPrefix()**：使用提供的函数并行累积(以获得速度)。基本上，就是数组的reduce()。
+
+- **spliterator()**：从数组中产生一个Spliterator;这是本书没有涉及到的流的高级部分。
+
+- **toString()**：为数组生成一个字符串表示。你在整个章节中经常看到这种用法。
+
+- **deepToString()**：为多维数组生成一个字符串。你在整个章节中经常看到这种用法。对于所有基本类型和对象，所有这些方法都是重载的。
 
 <!-- Copying an Array -->
 ## 数组拷贝
