@@ -1505,7 +1505,7 @@ class SimpleDynamicProxy {
     // Insert a proxy and call again:
     Interface proxy = (Interface)Proxy.newProxyInstance(
       Interface.class.getClassLoader(),
-      new Class,
+      new Class[]{ Interface.class },
       new DynamicProxyHandler(real));
     consumer(proxy);
   }
@@ -1582,7 +1582,7 @@ class SelectingMethods {
     SomeMethods proxy =
       (SomeMethods)Proxy.newProxyInstance(
         SomeMethods.class.getClassLoader(),
-        new Class,
+        new Class[]{ Interface.class },
         new MethodSelector(new Implementation()));
     proxy.boring1();
     proxy.boring2();
