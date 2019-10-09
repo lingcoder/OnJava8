@@ -2213,6 +2213,52 @@ a1w == a2w: false
 <!-- Streams and Arrays -->
 ## 流和数组
 
+**stream()** 方法很容易从某些类型的数组中生成元素流。
+
+```JAVA
+// arrays/StreamFromArray.java
+
+import java.util.*;
+import onjava.*;
+
+public class StreamFromArray {
+    public static void main(String[] args) {
+        String[] s = new Rand.String().array(10);
+        Arrays.stream(s).skip(3).limit(5).map(ss -> ss + "!").forEach(System.out::println);
+        int[] ia = new Rand.Pint().array(10);
+        Arrays.stream(ia).skip(3).limit(5)
+                .map(i -> i * 10).forEach(System.out::println);
+        Arrays.stream(new long[10]);
+        Arrays.stream(new double[10]);
+        // Only int, long and double work:
+        // - Arrays.stream(new boolean[10]);
+        // - Arrays.stream(new byte[10]);
+        // - Arrays.stream(new char[10]);
+        // - Arrays.stream(new short[10]);
+        // - Arrays.stream(new float[10]);
+        // For the other types you must use wrapped arrays:
+        float[] fa = new Rand.Pfloat().array(10);
+        Arrays.stream(ConvertTo.boxed(fa));
+        Arrays.stream(new Rand.Float().array(10));
+    }
+}
+/* Output:
+    eloztdv!
+    ewcippc!
+    ygpoalk!
+    ljlbynx!
+    taprwxz!
+    47200
+    61770
+    84790
+    66560
+    37680
+*/
+```
+
+只有“原生类型” **int**、**long** 和 **double** 可以与 **Arrays.stream()** 一起使用;对于其他的，您必须以某种方式获得一个包装类型的数组。
+
+通常，将数组转换为流来生成所需的结果要比直接操作数组容易得多。请注意，即使流已经“用完”(您不能重复使用它)，您仍然拥有该数组，因此您可以以其他方式使用它----包括生成另一个流。
 
 <!-- Sorting Arrays -->
 ## 数组排序
