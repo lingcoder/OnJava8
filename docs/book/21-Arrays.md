@@ -2263,6 +2263,163 @@ public class StreamFromArray {
 <!-- Sorting Arrays -->
 ## 数组排序
 
+根据对象的实际类型执行比较排序。一种方法是为不同的类型编写对应的排序方法，但是这样的代码不能复用。
+
+编程设计的一个主要目标是“将易变的元素与稳定的元素分开”，在这里，保持不变的代码是一般的排序算法，但是变化的是对象的比较方式。因此，使用策略设计模式而不是将比较代码放入许多不同的排序源码中。使用策略模式时，变化的代码部分被封装在一个单独的类(策略对象)中。
+
+您将一个策略对象交给相同的代码，该代码使用策略模式来实现其算法。通过这种方式，您将使用相同的排序代码，使不同的对象表达不同的比较方式。
+
+Java有两种方式提供比较功能。第一种方法是通过实现 **java.lang.Comparable** 接口的原生方法。这是一个简单的接口，只含有一个方法 **compareTo()**。该方法接受另一个与参数类型相同的对象作为参数，如果当前对象小于参数，则产生一个负值;如果参数相等，则产生零值;如果当前对象大于参数，则产生一个正值。
+
+这里有一个类，它实现了 **Comparable** 接口并演示了可比性，而且使用Java标准库方法 **Arrays.sort()**:
+
+```JAVA
+// arrays/CompType.java
+// Implementing Comparable in a class
+
+import onjava.*;
+
+import java.util.Arrays;
+import java.util.SplittableRandom;
+
+import static onjava.ArrayShow.*;
+
+public class CompType implements Comparable<CompType> {
+    private static int count = 1;
+    private static SplittableRandom r = new SplittableRandom(47);
+    int i;
+    int j;
+
+    public CompType(int n1, int n2) {
+        i = n1;
+        j = n2;
+    }
+
+    public static CompType get() {
+        return new CompType(r.nextInt(100), r.nextInt(100));
+    }
+
+    public static void main(String[] args) {
+        CompType[] a = new CompType[12];
+        Arrays.setAll(a, n -> get());
+        show("Before sorting", a);
+        Arrays.sort(a);
+        show("After sorting", a);
+    }
+
+    @Override
+    public String toString() {
+        String result = "[i = " + i + ", j = " + j + "]";
+        if (count++ % 3 == 0) result += "\n";
+        return result;
+    }
+
+    @Override
+    public int compareTo(CompType rv) {
+        return (i < rv.i ? -1 : (i == rv.i ? 0 : 1));
+    }
+}
+/* Output:
+Before sorting: [[i = 35, j = 37], [i = 41, j = 20], [i = 77, j = 79] ,
+                [i = 56, j = 68], [i = 48, j = 93],
+                [i = 70, j = 7] , [i = 0, j = 25],
+                [i = 62, j = 34], [i = 50, j = 82] ,
+                [i = 31, j = 67], [i = 66, j = 54],
+                [i = 21, j = 6] ]
+After sorting: [[i = 0, j = 25], [i = 21, j = 6], [i = 31, j = 67] ,
+               [i = 35, j = 37], [i = 41, j = 20], [i = 48, j = 93] ,
+               [i = 50, j = 82], [i = 56, j = 68], [i = 62, j = 34] ,
+               [i = 66, j = 54], [i = 70, j = 7], [i = 77, j = 79] ]
+*/
+```
+
+当您定义比较方法时，您有责任决定将一个对象与另一个对象进行比较意味着什么。这里，在比较中只使用i值和j值
+将被忽略。
+
+**get()** 方法通过使用随机值初始化CompType对象来构建它们。在 **main()** 中，**get()** 与 **Arrays.setAll()** 一起使用，以填充一个 **CompType类型** 数组，然后对其排序。如果没有实现 **Comparable接口**，那么当您试图调用 **sort()** 时，您将在运行时获得一个 **ClassCastException** 。这是因为 **sort()** 将其参数转换为 **Comparable类型**。
+
+现在假设有人给了你一个没有实现 **Comparable接口** 的类，或者给了你一个实现 **Comparable接口** 的类，但是你不喜欢它的工作方式而愿意有一个不同的对于此类型的比较方法。为了解决这个问题，创建一个实现 **Comparator** 接口的单独的类(在集合一章中简要介绍)。它有两个方法，**compare()** 和 **equals()**。但是，除了特殊的性能需求外，您不需要实现 **equals()**，因为无论何时创建一个类，它都是隐式地继承自 **Object**，**Object** 有一个equals()。您可以只使用默认的 **Object equals()** 来满足接口的规范。
+
+集合类(注意复数;我们将在下一章节讨论它) 包含一个方法 **reverseOrder()**，它生成一个来 **Comparator**（比较器）反转自然排序顺序。这可以应用到比较对象：
+
+```JAVA
+// arrays/Reverse.java
+// The Collections.reverseOrder() Comparator
+
+import onjava.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static onjava.ArrayShow.*;
+
+public class Reverse {
+    public static void main(String[] args) {
+        CompType[] a = new CompType[12];
+        Arrays.setAll(a, n -> CompType.get());
+        show("Before sorting", a);
+        Arrays.sort(a, Collections.reverseOrder());
+        show("After sorting", a);
+    }
+}
+/* Output:
+Before sorting: [[i = 35, j = 37], [i = 41, j = 20],
+                [i = 77, j = 79] , [i = 56, j = 68],
+                [i = 48, j = 93], [i = 70, j = 7],
+                [i = 0, j = 25], [i = 62, j = 34],
+                [i = 50, j = 82] , [i = 31, j = 67],
+                [i = 66, j = 54], [i = 21, j = 6] ]
+After sorting: [[i = 77, j = 79], [i = 70, j = 7],
+                [i = 66, j = 54] , [i = 62, j = 34],
+                [i = 56, j = 68], [i = 50, j = 82] ,
+                [i = 48, j = 93], [i = 41, j = 20],
+                [i = 35, j = 37] , [i = 31, j = 67],
+                [i = 21, j = 6], [i = 0, j = 25] ]
+*/
+```
+
+您还可以编写自己的比较器。这个比较CompType对象基于它们的j值而不是它们的i值:
+
+```JAVA
+// arrays/ComparatorTest.java
+// Implementing a Comparator for a class
+
+import onjava.*;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+import static onjava.ArrayShow.*;
+
+class CompTypeComparator implements Comparator<CompType> {
+    public int compare(CompType o1, CompType o2) {
+        return (o1.j < o2.j ? -1 : (o1.j == o2.j ? 0 : 1));
+    }
+}
+
+public class ComparatorTest {
+    public static void main(String[] args) {
+        CompType[] a = new CompType[12];
+        Arrays.setAll(a, n -> CompType.get());
+        show("Before sorting", a);
+        Arrays.sort(a, new CompTypeComparator());
+        show("After sorting", a);
+    }
+}
+/* Output:
+Before sorting:[[i = 35, j = 37], [i = 41, j = 20], [i = 77, j = 79] ,
+                [i = 56, j = 68], [i = 48, j = 93], [i = 70, j = 7] ,
+                [i = 0, j = 25], [i = 62, j = 34], [i = 50, j = 82],
+                [i = 31, j = 67], [i = 66, j = 54], [i = 21, j = 6] ]
+After sorting: [[i = 21, j = 6], [i = 70, j = 7], [i = 41, j = 20] ,
+                [i = 0, j = 25], [i = 62, j = 34], [i = 35, j = 37] ,
+                [i = 66, j = 54], [i = 31, j = 67], [i = 56, j = 68] ,
+                [i = 77, j = 79], [i = 50, j = 82], [i = 48, j = 93] ]
+*/
+```
+
+
+
 
 <!-- Searching with Arrays.binarySearch() -->
 ## binarySearch二分查找
