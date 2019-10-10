@@ -2418,8 +2418,64 @@ After sorting: [[i = 21, j = 6], [i = 70, j = 7], [i = 41, j = 20] ,
 */
 ```
 
+<!-- Using Arrays.sort() -->
+## Arrays.sort()的使用
+
+使用内置的排序方法，您可以对实现了 **Comparable** 接口或具有 **Comparator** 的任何对象数组 或 任何原生数组进行排序。这里我们生成一个随机字符串对象数组并对其排序:
+
+```JAVA
+// arrays/StringSorting.java
+// Sorting an array of Strings
+
+import onjava.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static onjava.ArrayShow.*;
+
+public class StringSorting {
+    public static void main(String[] args) {
+        String[] sa = new Rand.String().array(20);
+        show("Before sort", sa);
+        Arrays.sort(sa);
+        show("After sort", sa);
+        Arrays.sort(sa, Collections.reverseOrder());
+        show("Reverse sort", sa);
+        Arrays.sort(sa, String.CASE_INSENSITIVE_ORDER);
+        show("Case-insensitive sort", sa);
+    }
+}
+/* Output:
+Before sort: [btpenpc, cuxszgv, gmeinne, eloztdv, ewcippc,
+            ygpoalk, ljlbynx, taprwxz, bhmupju, cjwzmmr,
+            anmkkyh, fcjpthl, skddcat, jbvlgwc, mvducuj,
+            ydpulcq, zehpfmm, zrxmclh, qgekgly, hyoubzl]
+
+After sort: [anmkkyh, bhmupju, btpenpc, cjwzmmr, cuxszgv,
+            eloztdv, ewcippc, fcjpthl, gmeinne, hyoubzl,
+            jbvlgwc, ljlbynx, mvducuj, qgekgly, skddcat,
+            taprwxz, ydpulcq, ygpoalk, zehpfmm, zrxmclh]
+
+Reverse sort: [zrxmclh, zehpfmm, ygpoalk, ydpulcq,taprwxz,
+            skddcat, qgekgly, mvducuj, ljlbynx, jbvlgwc,
+            hyoubzl, gmeinne, fcjpthl, ewcippc, eloztdv,
+            cuxszgv, cjwzmmr, btpenpc, bhmupju, anmkkyh]
+
+Case-insensitive sort: [anmkkyh, bhmupju, btpenpc, cjwzmmr,
+                cuxszgv, eloztdv, ewcippc, fcjpthl, gmeinne,
+                hyoubzl, jbvlgwc, ljlbynx, mvducuj, qgekgly,
+                skddcat, taprwxz, ydpulcq, ygpoalk, zehpfmm, zrxmclh]
+*/
+```
+
+注意字符串排序算法中的输出。它是字典式的，所以它把所有以大写字母开头的单词放在前面，然后是所有以小写字母开头的单词。(电话簿通常是这样分类的。)无论大小写，要将单词组合在一起，请使用 **String.CASE_INSENSITIVE_ORDER** ，如对sort()的最后一次调用所示。
+
+Java标准库中使用的排序算法被设计为最适合您正在排序的类型----原生类型的快速排序和对象的归并排序。
 
 
+<!-- Sorting in Parallel -->
+## 并行排序
 
 <!-- Searching with Arrays.binarySearch() -->
 ## binarySearch二分查找
