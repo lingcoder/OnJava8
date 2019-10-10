@@ -1942,7 +1942,7 @@ public class ModifyExisting {
 
 我建议您在自己的代码中采用这种方法。
 
-![http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html](要进一步了解为什么这是一个难题，请参阅Doug Lea的文章。)
+[http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html](要进一步了解为什么这是一个难题，请参阅Doug Lea的文章。)
 
 **parallelSetAll()**
 
@@ -2048,14 +2048,217 @@ public class ParallelSetAll {
 <!-- Copying an Array -->
 ## 数组拷贝
 
+与使用for循环手工执行复制相比，**copyOf()** 和 **copyOfRange()** 复制数组要快得多。这些方法被重载以处理所有类型。
+
+我们开始复制数组的整数和整数:
+```JAVA
+// arrays/ArrayCopying.java
+// Demonstrate Arrays.copy() and Arrays.copyOf()
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+class Sup {
+    // Superclass
+    private int id;
+
+    Sup(int n) {
+        id = n;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + id;
+    }
+}
+
+class Sub extends Sup { // Subclass
+
+    Sub(int n) {
+        super(n);
+    }
+}
+
+public class ArrayCopying {
+    public static final int SZ = 15;
+
+    public static void main(String[] args) {
+        int[] a1 = new int[SZ];
+        Arrays.setAll(a1, new Count.Integer()::get);
+        show("a1", a1);
+        int[] a2 = Arrays.copyOf(a1, a1.length); // [1]
+        // Prove they are distinct arrays:
+        Arrays.fill(a1, 1);
+        show("a1", a1);
+        show("a2", a2);
+        // Create a shorter result:
+        a2 = Arrays.copyOf(a2, a2.length / 2); // [2]
+        show("a2", a2);
+        // Allocate more space:
+        a2 = Arrays.copyOf(a2, a2.length + 5);
+        show("a2", a2);
+        // Also copies wrapped arrays:
+        Integer[] a3 = new Integer[SZ]; // [3]
+        Arrays.setAll(a3, new Count.Integer()::get);
+        Integer[] a4 = Arrays.copyOfRange(a3, 4, 12);
+        show("a4", a4);
+        Sub[] d = new Sub[SZ / 2];
+        Arrays.setAll(d, Sub::new); // Produce Sup[] from Sub[]:
+        Sup[] b = Arrays.copyOf(d, d.length, Sup[].class); // [4]
+        show(b); // This "downcast" works fine:
+        Sub[] d2 = Arrays.copyOf(b, b.length, Sub[].class); // [5]
+        show(d2); // Bad "downcast" compiles but throws exception:
+        Sup[] b2 = new Sup[SZ / 2];
+        Arrays.setAll(b2, Sup::new);
+        try {
+            Sub[] d3 = Arrays.copyOf(b2, b2.length, Sub[].class); // [6]
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+/* Output: a1: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] a1: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+           a2:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]a2:[0, 1, 2, 3, 4, 5, 6]a2:[
+           0, 1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0]a4:[4, 5, 6, 7, 8, 9, 10, 11][Sub0, Sub1, Sub2, Sub3, Sub4, Sub5, Sub6][
+           Sub0, Sub1, Sub2, Sub3, Sub4, Sub5, Sub6]java.lang.ArrayStoreException */
+
+```
+
+[1] 这是复制的基本方法;只需给出返回的复制数组的大小。这对于编写需要调整存储大小的算法很有帮助。复制之后，我们把a1的所有元素都设为1，以证明a1的变化不会影响a2中的任何东西。
+
+[2] 通过更改最后一个参数，我们可以缩短或延长返回的复制数组。
+
+[3] **copyOf()** 和 **copyOfRange()** 也可以使用包装类型。**copyOfRange()** 需要一个开始和结束索引。
+
+[4] **copyOf()** 和 **copyOfRange()** 都有一个版本，该版本通过在方法调用的末尾添加目标类型来创建不同类型的数组。我首先想到的是，这可能是一种从原生数组生成包装数组的方法，反之亦然。
+但这没用。它的实际用途是“向上转换”和“向下转换”数组。也就是说，如果您有一个子类型(派生类型)的数组，而您想要一个基类型的数组，那么这些方法将生成所需的数组。
+
+[5] 您甚至可以成功地“向下强制转换”，并从超类型的数组生成子类型的数组。这个版本运行良好，因为我们只是“upcast”。
+
+[6] 这个“数组转换”将编译，但是如果类型不兼容，您将得到一个运行时异常。在这里，强制将基类型转换为派生类型是非法的，因为派生对象中可能有基对象中没有的属性和方法。
+
+实例表明，原生数组和对象数组都可以被复制。但是，如果复制对象的数组，那么只复制引用—不复制对象本身。这称为浅拷贝(有关更多细节，请参阅附录:传递和返回对象)。
+
+还有一个方法 **System.arraycopy()** ，它将一个数组复制到另一个已经分配的数组中。这将不会执行自动装箱或自动卸载—两个数组必须是完全相同的类型。
 
 <!-- Comparing Arrays -->
 ## 数组比较
 
+**数组** 提供了 **equals()** 来比较一维数组，以及 **deepEquals()** 来比较多维数组。对于所有原生类型和对象，这些方法都是重载的。
+
+数组相等的含义：数组必须有相同数量的元素，并且每个元素必须与另一个数组中的对应元素相等，对每个元素使用 **equals()**(对于原生类型，使用原生类型的包装类的 **equals()** 方法;例如，int的Integer.equals()。
+
+```JAVA
+// arrays/ComparingArrays.java
+// Using Arrays.equals()
+
+import java.util.*;
+import onjava.*;
+
+public class ComparingArrays {
+    public static final int SZ = 15;
+
+    static String[][] twoDArray() {
+        String[][] md = new String[5][];
+        Arrays.setAll(md, n -> new String[n]);
+        for (int i = 0; i < md.length; i++) Arrays.setAll(md[i], new Rand.String()::get);
+        return md;
+    }
+
+    public static void main(String[] args) {
+        int[] a1 = new int[SZ], a2 = new int[SZ];
+        Arrays.setAll(a1, new Count.Integer()::get);
+        Arrays.setAll(a2, new Count.Integer()::get);
+        System.out.println("a1 == a2: " + Arrays.equals(a1, a2));
+        a2[3] = 11;
+        System.out.println("a1 == a2: " + Arrays.equals(a1, a2));
+        Integer[] a1w = new Integer[SZ], a2w = new Integer[SZ];
+        Arrays.setAll(a1w, new Count.Integer()::get);
+        Arrays.setAll(a2w, new Count.Integer()::get);
+        System.out.println("a1w == a2w: " + Arrays.equals(a1w, a2w));
+        a2w[3] = 11;
+        System.out.println("a1w == a2w: " + Arrays.equals(a1w, a2w));
+        String[][] md1 = twoDArray(), md2 = twoDArray();
+        System.out.println(Arrays.deepToString(md1));
+        System.out.println("deepEquals(md1, md2): " + Arrays.deepEquals(md1, md2));
+        System.out.println("md1 == md2: " + Arrays.equals(md1, md2));
+        md1[4][1] = "#$#$#$#";
+        System.out.println(Arrays.deepToString(md1));
+        System.out.println("deepEquals(md1, md2): " + Arrays.deepEquals(md1, md2));
+    }
+}
+
+/* Output:
+a1 == a2: true
+a1 == a2: false
+a1w == a2w: true
+a1w == a2w: false
+[[], [btpenpc], [btpenpc, cuxszgv], [btpenpc, cuxszgv,
+ gmeinne], [btpenpc, cuxszgv, gmeinne, eloztdv]]
+ deepEquals(md1, md2): true
+ md1 == md2: false
+ [[], [btpenpc], [btpenpc, cuxszgv], [btpenpc, cuxszgv,
+ gmeinne], [btpenpc, #$#$#$#, gmeinne, eloztdv]]
+ deepEquals(md1, md2): false
+ */
+ ```
+
+最初，a1和a2是完全相等的，所以输出是true，但是之后其中一个元素改变了，这使得结果为false。a1w和a2w是对一个封装类型数组重复该练习。
+
+**md1** 和 **md2** 是通过 **twoDArray()** 以相同方式初始化的多维字符串数组。注意，**deepEquals()** 返回 **true**，因为它执行了适当的比较，而普通的 **equals()** 错误地返回 **false**。如果我们更改数组中的一个元素，**deepEquals()** 将检测它。
 
 <!-- Streams and Arrays -->
 ## 流和数组
 
+**stream()** 方法很容易从某些类型的数组中生成元素流。
+
+```JAVA
+// arrays/StreamFromArray.java
+
+import java.util.*;
+import onjava.*;
+
+public class StreamFromArray {
+    public static void main(String[] args) {
+        String[] s = new Rand.String().array(10);
+        Arrays.stream(s).skip(3).limit(5).map(ss -> ss + "!").forEach(System.out::println);
+        int[] ia = new Rand.Pint().array(10);
+        Arrays.stream(ia).skip(3).limit(5)
+                .map(i -> i * 10).forEach(System.out::println);
+        Arrays.stream(new long[10]);
+        Arrays.stream(new double[10]);
+        // Only int, long and double work:
+        // - Arrays.stream(new boolean[10]);
+        // - Arrays.stream(new byte[10]);
+        // - Arrays.stream(new char[10]);
+        // - Arrays.stream(new short[10]);
+        // - Arrays.stream(new float[10]);
+        // For the other types you must use wrapped arrays:
+        float[] fa = new Rand.Pfloat().array(10);
+        Arrays.stream(ConvertTo.boxed(fa));
+        Arrays.stream(new Rand.Float().array(10));
+    }
+}
+/* Output:
+    eloztdv!
+    ewcippc!
+    ygpoalk!
+    ljlbynx!
+    taprwxz!
+    47200
+    61770
+    84790
+    66560
+    37680
+*/
+```
+
+只有“原生类型” **int**、**long** 和 **double** 可以与 **Arrays.stream()** 一起使用;对于其他的，您必须以某种方式获得一个包装类型的数组。
+
+通常，将数组转换为流来生成所需的结果要比直接操作数组容易得多。请注意，即使流已经“用完”(您不能重复使用它)，您仍然拥有该数组，因此您可以以其他方式使用它----包括生成另一个流。
 
 <!-- Sorting Arrays -->
 ## 数组排序
