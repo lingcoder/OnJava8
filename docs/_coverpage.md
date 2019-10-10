@@ -15,7 +15,7 @@
 </span>
 
 [GitHub](https://github.com/lingcoder/onJava8/)
-[Get Started](README.md)
+[Get Started](sidebar.md)
 
 
 

@@ -53,7 +53,7 @@
 
 本书出版自美国，版权所有，翻版必究。未经授权不得非法存储在检索系统中，或以电子，机械，影印，录制任何形式传输等。制造商和销售商使用商标用来区分其产品标识。如果这些名称出现在这本书中，并且出版商知道商标要求，则这些名称已经用大写字母或所有大写字母打印。
 
-Java 是甲骨文公司（Oracle. Inc.）的商标。Windows 95，Windows NT，Windows 2000，Windows XP，Windows 7，Windows 8和 Windows 10是微软公司（Microsoft Corporation）的商标。
+Java 是甲骨文公司（Oracle. Inc.）的商标。Windows 95，Windows NT，Windows 2000，Windows XP，Windows 7，Windows 8 和 Windows 10 是微软公司（Microsoft Corporation）的商标。
 此处提及的所有其他产品名称和公司名称均为其各自所有者的财产。作者和出版商在编写本书时已经仔细校对过，但不作任何明示或暗示的保证，对错误或遗漏不承担任何责任。对于因使用此处包含的信息或程序而产生的偶然或间接损失，我们不承担任何责任。
 
 这本书是以平板电脑和计算机为载体的电子书，非传统纸质版书籍。 

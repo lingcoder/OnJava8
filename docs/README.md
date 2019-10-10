@@ -4,7 +4,7 @@
 
 本翻译项目的 GITHUB 开源地址：[https://github.com/LingCoder/OnJava8](https://github.com/LingCoder/OnJava8)
 
-如果您在阅读本书的过程中有发现不明白或者错误的地方，请随时到项目地址发布 issue 或者 fork 项目后发布 pr 帮助译者改善！不胜感激！
+如果你在阅读本书的过程中有发现不明白或者错误的地方，请随时到项目地址发布 issue 或者 fork 项目后发布 pr 帮助译者改善！不胜感激！
 
 ## 书籍简介
 
@@ -37,6 +37,10 @@
 ## 开源协议
 
 本项目基于 MIT 协议开源。
+
+## 友情链接
+
+Effective Java 第 3 版： https://github.com/sjsdfg/effective-java-3rd-chinese
 
 ## 联系方式
 
