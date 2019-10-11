@@ -2477,6 +2477,44 @@ Java标准库中使用的排序算法被设计为最适合您正在排序的类�
 <!-- Sorting in Parallel -->
 ## 并行排序
 
+如果排序性能是一个问题，那么可以使用 **Java 8 parallelSort()**，它为所有不可预见的情况(包括数组的排序区域或使用了比较器)提供了重载版本。为了查看相比于普通的sort(), **parallelSort()** 的优点，我们使用了用来验证代码时的 **JMH**：
+
+```java
+// arrays/jmh/ParallelSort.java
+package arrays.jmh;
+
+import onjava.*;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.Arrays;
+
+@State(Scope.Thread)
+public class ParallelSort {
+    private long[] la;
+
+    @Setup
+    public void setup() {
+        la = new Rand.Plong().array(100_000);
+    }
+
+    @Benchmark
+    public void sort() {
+        Arrays.sort(la);
+    }
+
+    @Benchmark
+    public void parallelSort() {
+        Arrays.parallelSort(la);
+    }
+}
+```
+
+**parallelSort()** 算法将大数组拆分成更小的数组，直到数组大小达到极限，然后使用普通的 **Arrays .sort()** 方法。然后合并结果。该算法需要不大于原始数组的额外工作空间。
+
+您可能会看到不同的结果，但是在我的机器上，并行排序将速度提高了大约3倍。由于并行版本使用起来很简单，所以很容易考虑在任何地方使用它，而不是
+**Arrays.sort ()**。当然，它可能不是那么简单—看看微基准测试。
+
+
 <!-- Searching with Arrays.binarySearch() -->
 ## binarySearch二分查找
 
