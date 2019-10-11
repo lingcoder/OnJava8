@@ -2518,6 +2518,81 @@ public class ParallelSort {
 <!-- Searching with Arrays.binarySearch() -->
 ## binarySearch二分查找
 
+一旦数组被排序，您就可以通过使用 **Arrays.binarySearch()** 来执行对特定项的快速搜索。但是，如果尝试在未排序的数组上使用 **binarySearch()**，结果是不可预测的。下面的示例使用 **Rand.Pint** 类来创建一个填充随机整形值的数组，然后调用 **getAsInt()** (因为 **Rand.Pint** 是一个 **IntSupplier**)来产生搜索值:
+
+```JAVA
+// arrays/ArraySearching.java
+// Using Arrays.binarySearch()
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class ArraySearching {
+    public static void main(String[] args) {
+        Rand.Pint rand = new Rand.Pint();
+        int[] a = new Rand.Pint().array(25);
+        Arrays.sort(a);
+        show("Sorted array", a);
+        while (true) {
+            int r = rand.getAsInt();
+            int location = Arrays.binarySearch(a, r);
+            if (location >= 0) {
+                System.out.println("Location of " + r + " is " + location + ", a[" + location + "] is " + a[location]);
+                break; // Out of while loop
+            }
+        }
+    }
+}
+/* Output:
+Sorted array: [125, 267, 635, 650, 1131, 1506, 1634, 2400, 2766,
+               3063, 3768, 3941, 4720, 4762, 4948, 5070, 5682,
+               5807, 6177, 6193, 6656, 7021, 8479, 8737, 9954]
+Location of 635 is 2, a[2] is 635
+*/
+```
+
+在while循环中，随机值作为搜索项生成，直到在数组中找到其中一个为止。
+
+如果找到了搜索项，**Arrays.binarySearch()** 将生成一个大于或等于零的值。否则，它将产生一个负值，表示如果手动维护已排序的数组，则应该插入元素的位置。产生的值是 -(插入点) - 1 。插入点是大于键的第一个元素的索引，如果数组中的所有元素都小于指定的键，则是 **a.size()** 。
+
+如果数组包含重复的元素，则无法保证找到其中的那些重复项。搜索算法不是为了支持重复的元素，而是为了容忍它们。如果需要没有重复元素的排序列表，可以使用 **TreeSet** (用于维持排序顺序)或 **LinkedHashSet** (用于维持插入顺序)。这些类自动为您处理所有的细节。只有在出现性能瓶颈的情况下，才应该使用手工维护的数组替换这些类中的一个。
+
+如果使用比较器(原语数组不允许使用比较器进行排序)对对象数组进行排序，那么在执行 **binarySearch()** (使用重载版本的binarySearch())时必须包含相同的比较器。例如，可以修改 **StringSorting.java** 来执行搜索:
+
+```JAVA
+// arrays/AlphabeticSearch.java
+// Searching with a Comparator
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class AlphabeticSearch {
+    public static void main(String[] args) {
+        String[] sa = new Rand.String().array(30);
+        Arrays.sort(sa, String.CASE_INSENSITIVE_ORDER);
+        show(sa);
+        int index = Arrays.binarySearch(sa, sa[10], String.CASE_INSENSITIVE_ORDER);
+        System.out.println("Index: " + index + "\n" + sa[index]);
+    }
+}
+/* Output:
+[anmkkyh, bhmupju, btpenpc, cjwzmmr, cuxszgv, eloztdv, ewcippc,
+ezdeklu, fcjpthl, fqmlgsh, gmeinne, hyoubzl, jbvlgwc, jlxpqds,
+ljlbynx, mvducuj, qgekgly, skddcat, taprwxz, uybypgp, vjsszkn,
+vniyapk, vqqakbm, vwodhcf, ydpulcq, ygpoalk, yskvett, zehpfmm,
+zofmmvm, zrxmclh]
+Index: 10 gmeinne
+*/
+```
+比较器必须作为第三个参数传递给重载的 **binarySearch()** 。在本例中，成功是有保证的，因为搜索项是从数组本身中选择的。
+
+
 
 <!-- Accumulating with parallelPrefix() -->
 ## parallelPrefix并行前缀
