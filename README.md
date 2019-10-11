@@ -40,7 +40,7 @@
 - [x] [第十八章 字符串](docs/book/18-Strings.md)
 - [ ] [第十九章 类型信息](docs/book/19-Type-Information.md) 
 - [ ] [第二十章 泛型](docs/book/20-Generics.md)
-- [ ] [第二十一章 数组](docs/book/21-Arrays.md)
+- [x] [第二十一章 数组](docs/book/21-Arrays.md)
 - [x] [第二十二章 枚举](docs/book/22-Enumerations.md)
 - [x] [第二十三章 注解](docs/book/23-Annotations.md)
 - [ ] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
