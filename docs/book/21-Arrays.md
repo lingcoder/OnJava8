@@ -2592,10 +2592,94 @@ Index: 10 gmeinne
 ```
 比较器必须作为第三个参数传递给重载的 **binarySearch()** 。在本例中，成功是有保证的，因为搜索项是从数组本身中选择的。
 
-
-
 <!-- Accumulating with parallelPrefix() -->
 ## parallelPrefix并行前缀
+
+没有“prefix()”方法，只有 **parallelPrefix()**。这类似于 **Stream** 类中的 **reduce()** 方法:它对前一个元素和当前元素执行一个操作，并将结果放入当前元素位置:
+
+```JAVA
+// arrays/ParallelPrefix1.java
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class ParallelPrefix1 {
+    public static void main(String[] args) {
+        int[] nums = new Count.Pint().array(10);
+        show(nums);
+        System.out.println(Arrays.stream(nums).reduce(Integer::sum).getAsInt());
+        Arrays.parallelPrefix(nums, Integer::sum);
+        show(nums);
+        System.out.println(Arrays.stream(new Count.Pint().array(6)).reduce(Integer::sum).getAsInt());
+    }
+}
+/* Output:
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+45
+[0, 1, 3, 6, 10, 15, 21, 28, 36, 45]
+15
+*/
+```
+
+这里我们对数组应用Integer::sum。在位置0中，它将先前计算的值(因为没有先前的值)与原始数组位置0中的值组合在一起。在位置1中，它获取之前计算的值(它只是存储在位置0中)，并将其与位置1中先前计算的值相结合。依次往复。
+
+使用 **Stream.reduce()**，您只能得到最终结果，而使用 **Arrays.parallelPrefix()**，您还可以得到所有中间计算，以确保它们是有用的。注意，第二个 **Stream.reduce()** 计算的结果已经在 **parallelPrefix()** 计算的数组中。
+
+使用字符串可能更清楚:
+
+```JAVA
+// arrays/ParallelPrefix2.java
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class ParallelPrefix2 {
+    public static void main(String[] args) {
+        String[] strings = new Rand.String(1).array(8);
+        show(strings);
+        Arrays.parallelPrefix(strings, (a, b) -> a + b);
+        show(strings);
+    }
+}
+/* Output:
+[b, t, p, e, n, p, c, c]
+[b, bt, btp, btpe, btpen, btpenp, btpenpc, btpenpcc]
+*/
+```
+
+如前所述，使用流进行初始化非常优雅，但是对于大型数组，这种方法可能会耗尽堆空间。使用 **setAll()** 执行初始化更节省内存:
+
+```JAVA
+// arrays/ParallelPrefix3.java
+// {ExcludeFromTravisCI}
+
+import java.util.Arrays;
+
+public class ParallelPrefix3 {
+    static final int SIZE = 10_000_000;
+
+    public static void main(String[] args) {
+        long[] nums = new long[SIZE];
+        Arrays.setAll(nums, n -> n);
+        Arrays.parallelPrefix(nums, Long::sum);
+        System.out.println("First 20: " + nums[19]);
+        System.out.println("First 200: " + nums[199]);
+        System.out.println("All: " + nums[nums.length - 1]);
+    }
+}
+/* Output:
+First 20: 190
+First 200: 19900
+All: 49999995000000
+*/
+```
+因为正确使用 **parallelPrefix()** 可能相当复杂，所以通常应该只在存在内存或速度问题(或两者都有)时使用。否则，**Stream.reduce()** 应该是您的首选。
 
 
 <!-- Summary -->
