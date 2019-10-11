@@ -2477,17 +2477,270 @@ Java标准库中使用的排序算法被设计为最适合您正在排序的类�
 <!-- Sorting in Parallel -->
 ## 并行排序
 
+如果排序性能是一个问题，那么可以使用 **Java 8 parallelSort()**，它为所有不可预见的情况(包括数组的排序区域或使用了比较器)提供了重载版本。为了查看相比于普通的sort(), **parallelSort()** 的优点，我们使用了用来验证代码时的 **JMH**：
+
+```java
+// arrays/jmh/ParallelSort.java
+package arrays.jmh;
+
+import onjava.*;
+import org.openjdk.jmh.annotations.*;
+
+import java.util.Arrays;
+
+@State(Scope.Thread)
+public class ParallelSort {
+    private long[] la;
+
+    @Setup
+    public void setup() {
+        la = new Rand.Plong().array(100_000);
+    }
+
+    @Benchmark
+    public void sort() {
+        Arrays.sort(la);
+    }
+
+    @Benchmark
+    public void parallelSort() {
+        Arrays.parallelSort(la);
+    }
+}
+```
+
+**parallelSort()** 算法将大数组拆分成更小的数组，直到数组大小达到极限，然后使用普通的 **Arrays .sort()** 方法。然后合并结果。该算法需要不大于原始数组的额外工作空间。
+
+您可能会看到不同的结果，但是在我的机器上，并行排序将速度提高了大约3倍。由于并行版本使用起来很简单，所以很容易考虑在任何地方使用它，而不是
+**Arrays.sort ()**。当然，它可能不是那么简单—看看微基准测试。
+
+
 <!-- Searching with Arrays.binarySearch() -->
 ## binarySearch二分查找
 
+一旦数组被排序，您就可以通过使用 **Arrays.binarySearch()** 来执行对特定项的快速搜索。但是，如果尝试在未排序的数组上使用 **binarySearch()**，结果是不可预测的。下面的示例使用 **Rand.Pint** 类来创建一个填充随机整形值的数组，然后调用 **getAsInt()** (因为 **Rand.Pint** 是一个 **IntSupplier**)来产生搜索值:
+
+```JAVA
+// arrays/ArraySearching.java
+// Using Arrays.binarySearch()
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class ArraySearching {
+    public static void main(String[] args) {
+        Rand.Pint rand = new Rand.Pint();
+        int[] a = new Rand.Pint().array(25);
+        Arrays.sort(a);
+        show("Sorted array", a);
+        while (true) {
+            int r = rand.getAsInt();
+            int location = Arrays.binarySearch(a, r);
+            if (location >= 0) {
+                System.out.println("Location of " + r + " is " + location + ", a[" + location + "] is " + a[location]);
+                break; // Out of while loop
+            }
+        }
+    }
+}
+/* Output:
+Sorted array: [125, 267, 635, 650, 1131, 1506, 1634, 2400, 2766,
+               3063, 3768, 3941, 4720, 4762, 4948, 5070, 5682,
+               5807, 6177, 6193, 6656, 7021, 8479, 8737, 9954]
+Location of 635 is 2, a[2] is 635
+*/
+```
+
+在while循环中，随机值作为搜索项生成，直到在数组中找到其中一个为止。
+
+如果找到了搜索项，**Arrays.binarySearch()** 将生成一个大于或等于零的值。否则，它将产生一个负值，表示如果手动维护已排序的数组，则应该插入元素的位置。产生的值是 -(插入点) - 1 。插入点是大于键的第一个元素的索引，如果数组中的所有元素都小于指定的键，则是 **a.size()** 。
+
+如果数组包含重复的元素，则无法保证找到其中的那些重复项。搜索算法不是为了支持重复的元素，而是为了容忍它们。如果需要没有重复元素的排序列表，可以使用 **TreeSet** (用于维持排序顺序)或 **LinkedHashSet** (用于维持插入顺序)。这些类自动为您处理所有的细节。只有在出现性能瓶颈的情况下，才应该使用手工维护的数组替换这些类中的一个。
+
+如果使用比较器(原语数组不允许使用比较器进行排序)对对象数组进行排序，那么在执行 **binarySearch()** (使用重载版本的binarySearch())时必须包含相同的比较器。例如，可以修改 **StringSorting.java** 来执行搜索:
+
+```JAVA
+// arrays/AlphabeticSearch.java
+// Searching with a Comparator
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class AlphabeticSearch {
+    public static void main(String[] args) {
+        String[] sa = new Rand.String().array(30);
+        Arrays.sort(sa, String.CASE_INSENSITIVE_ORDER);
+        show(sa);
+        int index = Arrays.binarySearch(sa, sa[10], String.CASE_INSENSITIVE_ORDER);
+        System.out.println("Index: " + index + "\n" + sa[index]);
+    }
+}
+/* Output:
+[anmkkyh, bhmupju, btpenpc, cjwzmmr, cuxszgv, eloztdv, ewcippc,
+ezdeklu, fcjpthl, fqmlgsh, gmeinne, hyoubzl, jbvlgwc, jlxpqds,
+ljlbynx, mvducuj, qgekgly, skddcat, taprwxz, uybypgp, vjsszkn,
+vniyapk, vqqakbm, vwodhcf, ydpulcq, ygpoalk, yskvett, zehpfmm,
+zofmmvm, zrxmclh]
+Index: 10 gmeinne
+*/
+```
+比较器必须作为第三个参数传递给重载的 **binarySearch()** 。在本例中，成功是有保证的，因为搜索项是从数组本身中选择的。
 
 <!-- Accumulating with parallelPrefix() -->
 ## parallelPrefix并行前缀
+
+没有“prefix()”方法，只有 **parallelPrefix()**。这类似于 **Stream** 类中的 **reduce()** 方法:它对前一个元素和当前元素执行一个操作，并将结果放入当前元素位置:
+
+```JAVA
+// arrays/ParallelPrefix1.java
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class ParallelPrefix1 {
+    public static void main(String[] args) {
+        int[] nums = new Count.Pint().array(10);
+        show(nums);
+        System.out.println(Arrays.stream(nums).reduce(Integer::sum).getAsInt());
+        Arrays.parallelPrefix(nums, Integer::sum);
+        show(nums);
+        System.out.println(Arrays.stream(new Count.Pint().array(6)).reduce(Integer::sum).getAsInt());
+    }
+}
+/* Output:
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+45
+[0, 1, 3, 6, 10, 15, 21, 28, 36, 45]
+15
+*/
+```
+
+这里我们对数组应用Integer::sum。在位置0中，它将先前计算的值(因为没有先前的值)与原始数组位置0中的值组合在一起。在位置1中，它获取之前计算的值(它只是存储在位置0中)，并将其与位置1中先前计算的值相结合。依次往复。
+
+使用 **Stream.reduce()**，您只能得到最终结果，而使用 **Arrays.parallelPrefix()**，您还可以得到所有中间计算，以确保它们是有用的。注意，第二个 **Stream.reduce()** 计算的结果已经在 **parallelPrefix()** 计算的数组中。
+
+使用字符串可能更清楚:
+
+```JAVA
+// arrays/ParallelPrefix2.java
+
+import onjava.*;
+
+import java.util.Arrays;
+
+import static onjava.ArrayShow.*;
+
+public class ParallelPrefix2 {
+    public static void main(String[] args) {
+        String[] strings = new Rand.String(1).array(8);
+        show(strings);
+        Arrays.parallelPrefix(strings, (a, b) -> a + b);
+        show(strings);
+    }
+}
+/* Output:
+[b, t, p, e, n, p, c, c]
+[b, bt, btp, btpe, btpen, btpenp, btpenpc, btpenpcc]
+*/
+```
+
+如前所述，使用流进行初始化非常优雅，但是对于大型数组，这种方法可能会耗尽堆空间。使用 **setAll()** 执行初始化更节省内存:
+
+```JAVA
+// arrays/ParallelPrefix3.java
+// {ExcludeFromTravisCI}
+
+import java.util.Arrays;
+
+public class ParallelPrefix3 {
+    static final int SIZE = 10_000_000;
+
+    public static void main(String[] args) {
+        long[] nums = new long[SIZE];
+        Arrays.setAll(nums, n -> n);
+        Arrays.parallelPrefix(nums, Long::sum);
+        System.out.println("First 20: " + nums[19]);
+        System.out.println("First 200: " + nums[199]);
+        System.out.println("All: " + nums[nums.length - 1]);
+    }
+}
+/* Output:
+First 20: 190
+First 200: 19900
+All: 49999995000000
+*/
+```
+因为正确使用 **parallelPrefix()** 可能相当复杂，所以通常应该只在存在内存或速度问题(或两者都有)时使用。否则，**Stream.reduce()** 应该是您的首选。
 
 
 <!-- Summary -->
 ## 本章小结
 
+Java为固定大小的低级数组提供了合理的支持。这种数组强调的是性能而不是灵活性，就像C和c++数组模型一样。在Java的最初版本中，固定大小的低级数组是绝对必要的，这不仅是因为Java设计人员选择包含原生类型(也考虑到性能)，还因为那个版本对集合的支持非常少。因此，在早期的Java版本中，选择数组总是合理的。
+
+在Java的后续版本中，集合支持得到了显著的改进，现在集合在除性能外的所有方面都优于数组，即使这样，集合的性能也得到了显著的改进。正如本书其他部分所述，无论如何，性能问题通常不会出现在您设想的地方。
+
+使用自动装箱和泛型，在集合中保存原生类型是毫不费力的，这进一步鼓励您用集合替换低级数组。由于泛型产生类型安全的集合，数组在这方面也不再有优势。
+
+如本章所述，当您尝试使用泛型时，您将看到泛型对数组是相当不友好的。通常，即使可以让泛型和数组以某种形式一起工作(在下一章中您将看到)，在编译期间仍然会出现“unchecked”警告。
+
+有几次，当我们讨论特定的例子时，我直接从Java语言设计人员那里听到我应该使用集合而不是数组(我使用数组来演示特定的技术，所以我没有这个选项)。
+
+所有这些问题都表明，在使用Java的最新版本进行编程时，应该“优先选择集合而不是数组”。只有当您证明性能是一个问题(并且切换到一个数组实际上会有很大的不同)时，才应该重构到数组。这是一个相当大胆的声明，但是有些语言根本没有固定大小的低级数组。它们只有可调整大小的集合，而且比C/C++/java风格的数组功能多得多。例如，Python有一个使用基本数组语法的列表类型，但是具有更大的功能—您甚至可以从它继承:
+
+```Python
+# arrays/PythonLists.py
+
+aList=[1,2,3,4,5]print(type(aList)) #<type 'list'>
+print(aList) # [1,2,3,4,5]
+        print(aList[4]) # 5Basic list indexing
+        aList.append(6) # lists can be resized
+        aList+=[7,8] # Add a list to a list
+        print(aList) # [1,2,3,4,5,6,7,8]
+        aSlice=aList[2:4]
+        print(aSlice) # [3,4]
+
+class MyList(list): # Inherit from list
+        # Define a method;'this'pointer is explicit:
+        def getReversed(self):
+            reversed=self[:] # Copy list using slices
+            reversed.reverse() # Built-in list method
+            return reversed
+        # No'new'necessary for object creation:
+        list2=MyList(aList)
+        print(type(list2)) #<class '__main__.MyList'>
+        print(list2.getReversed()) # [8,7,6,5,4,3,2,1]
+        output="""
+        <class 'list'>
+        [1, 2, 3, 4, 5]
+        5
+        [1, 2, 3, 4, 5, 6, 7, 8]
+        [3, 4]
+        <class '__main__.MyList'>
+        [8, 7, 6, 5, 4, 3, 2, 1]
+        """
+
+```
+前一章介绍了基本的Python语法。在这里，通过用方括号包围以逗号分隔的对象序列来创建列表。结果是一个运行时类型为list的对象(print语句的输出显示为同一行中的注释)。打印列表的结果与在Java中使用Arrays.toString()的结果相同。
+通过将 : 操作符放在索引操作中，通过切片来创建列表的子序列。list类型有更多的内置操作，通常只需要序列类型。
+MyList是一个类定义;基类放在括号内。在类内部，def语句生成方法，该方法的第一个参数在Java中自动与之等价，除了在Python中它是显式的，而且标识符self是按约定使用的(它不是关键字)。注意构造函数是如何自动继承的。
+
+虽然一切在Python中真的是一个对象(包括整数和浮点类型),你仍然有一个安全门,因为你可以优化性能关键型的部分代码编写扩展的C, c++或使用特殊的工具设计容易加速您的Python代码(有很多)。通过这种方式，可以在不影响性能改进的情况下保持对象的纯度。
+
+PHP甚至更进一步，它只有一个数组类型，既充当int索引数组，又充当关联数组(Map)。
+
+在经历了这么多年的Java发展之后，我们可以很有趣地推测，如果重新开始，设计人员是否会将原生类型和低级数组放在该语言中(同样在JVM上运行的Scala语言不包括这些)。如果不考虑这些，就有可能开发出一种真正纯粹的面向对象语言(尽管有这样的说法，Java并不是一种纯粹的面向对象语言，这正是因为它的底层缺陷)。关于效率的最初争论总是令人信服的，但是随着时间的推移，我们已经看到了从这个想法向更高层次的组件(如集合)的演进。此外，如果集合可以像在某些语言中一样构建到核心语言中，那么编译器就有更好的机会进行优化。
+
+撇开““Green-fields”的推测不谈，我们肯定会被数组所困扰，当你阅读代码时就会看到它们。然而，集合几乎总是更好的选择。
 
 
 <!-- 分页 -->
