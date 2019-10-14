@@ -198,23 +198,23 @@ JUnit 是 Java 最流行的单元测试框架，但也有其它可以替代的�
 
 ## 前置条件
 
-前置条件的概念来自于契约式设计(**Design By Contract, DbC**), 利用断言机制实现。我们从Java的断言机制开始来介绍DBC，最后使用谷歌Guava库作为前置条件。
+前置条件的概念来自于契约式设计(**Design By Contract, DbC**), 利用断言机制实现。我们从 Java 的断言机制开始来介绍 DBC，最后使用谷歌的 Guava 库作为前置条件。
 
 #### 断言（Assertions）
 
-断言通过验证在程序执行期间满足某些条件而增加了程序的健壮性。举例，假设在一个对象中有一个数值字段，它表示日历上的月份。这个数字总是介于1-12之间。通过断言检查，如果超出了该范围，则报告错误。如果在方法的内部，则可以使用断言检查参数的有效性。这些是确保程序正确的重要测试，但是它们不能在编译时被检查，并且它们不属于单元测试的范围。
+断言通过验证在程序执行期间满足某些条件，从而增加了程序的健壮性。举例，假设在一个对象中有一个数值字段表示日历上的月份。这个数字总是介于 1-12 之间。断言可以检查这个数字，如果超出了该范围，则报告错误。如果在方法的内部，则可以使用断言检查参数的有效性。这些是确保程序正确的重要测试，但是它们不能在编译时被检查，并且它们不属于单元测试的范围。
 
-#### Java断言语法
+#### Java 断言语法
 
-你可以通过其它程序设计架构来模拟断言的效果，因此，在Java中包含断言的意义在于它们易于编写。断言语句有两种形式 : 
+你可以通过其它程序设计架构来模拟断言的效果，因此，在 Java 中包含断言的意义在于它们易于编写。断言语句有两种形式 : 
 
 assert boolean-expression；
 
 assert boolean-expression: information-expression;
 
-两者似乎告诉我们 **“我断言这个布尔表达式会产生一个真正的值”**， 否则，将抛出**AssertionError**异常。
+两者似乎告诉我们 **“我断言这个布尔表达式会产生 true”**， 否则，将抛出 **AssertionError** 异常。
 
-这是**Throwable**的派生类，因此不需要异常规范。
+**AssertionError** 是 **Throwable** 的派生类，因此不需要异常说明。
 
 不幸的是，第一种断言形式的异常不会生成包含布尔表达式的任何信息（与大多数其他语言的断言机制相反）。
 
@@ -229,7 +229,7 @@ assert boolean-expression: information-expression;
 // {ThrowsException}
 public class Assert1 {
     public static void main(String[] args) {
-    assert false;
+        assert false;
     }
 }
 
@@ -240,9 +240,9 @@ at Assert1.main(Assert1.java:9)
 */
 ```
 
-如果你正常运行程序，没有任何特殊的断言标志，则不会发生任何事情。你需要在运行程序时显式启用断言。一种简单的方法是使用 **-ea** flag， 它也可以表示为: **-enableassertion** ， 这将运行程序并执行任何断言语句。
+如果你正常运行程序，没有任何特殊的断言标志，则不会发生任何事情。你需要在运行程序时显式启用断言。一种简单的方法是使用 **-ea** 标志， 它也可以表示为: **-enableassertion**， 这将运行程序并执行任何断言语句。
 
-输出中并没有包含多少有用的信息。另一方面，如果你使用 **information-expression** ， 将生成一条有用的消息作为异常堆栈跟踪的一部分。最有用的 **information-expression** 通常是一串针对程序员的文本:
+输出中并没有包含多少有用的信息。另一方面，如果你使用 **information-expression** ， 将生成一条有用的消息作为异常堆栈跟踪的一部分。最有用的 **information-expression** 通常是一串针对程序员的文本：
 
 ```java
 // validating/Assert2.java
@@ -264,11 +264,11 @@ at Assert2.main(Assert2.java:8)
 */
 ```
 
-**information-expression** 可以产生任何类型的对象，因此，通常将构造一个包含对象值的更复杂的字符串，它是否与失败的断言有关。
+**information-expression** 可以产生任何类型的对象，因此，通常将构造一个包含对象值的更复杂的字符串，它包含失败的断言。
 
-还可以通过类名或包名打开或关闭断言；也就是说，你可以为整个包启用或禁用断言。实现这一点的详细信息在JDK的断言文档中。你想要打开或关闭某些断言时，此特性对于使用断言进行工具化的大型项目非常有用。但是，日志记录（*Logging*）或者调试（*Debugging*）,可能是捕获这类信息的更好工具。
+你还可以基于类名或包名打开或关闭断言；也就是说，你可以对整个包启用或禁用断言。实现这一点的详细信息在 JDK 的断言文档中。此特性对于使用断言的大型项目来说很有用当你想打开或关闭某些断言时。但是，日志记录（*Logging*）或者调试（*Debugging*）,可能是捕获这类信息的更好工具。
 
-这有另一种办法控制你的断言：编程方式，通过链接到类加载器对象（**ClassLoader**）。类加载器中有几种方法允许动态启用和禁用断言，其中 **setDefaultAssertionStatus ()** ,它为之后加载的所有类设置断言状态。因此，你可以认为你像下面这样悄悄地开启了断言：
+你还可以通过编程的方式通过链接到类加载器对象（**ClassLoader**）来控制断言。类加载器中有几种方法允许动态启用和禁用断言，其中 **setDefaultAssertionStatus ()** ,它为之后加载的所有类设置断言状态。因此，你可以像下面这样悄悄地开启断言：
 
 ```java
 // validating/LoaderAssertions.java
@@ -298,7 +298,7 @@ LoaderAssertions.main(LoaderAssertions.java:9)
 */
 ```
 
-这消除了在运行程序时在命令行上使用 **-ea** 标志的需要，使用 **-ea** 标志启用断言可能同样简单。当交付独立产品时，可能必须设置一个执行脚本让用户能够启动程序，配置其他启动参数。这是有道理的，然而，决定在程序运行时启用断言可以使用下面的 **static** 块来实现这一点，该语句位于系统的主类中：
+这消除了在运行程序时在命令行上使用 **-ea** 标志的需要，使用 **-ea** 标志启用断言可能同样简单。当交付独立产品时，可能必须设置一个执行脚本让用户能够启动程序，配置其他启动参数，这么做是有意义的。然而，决定在程序运行时启用断言可以使用下面的 **static** 块来实现这一点，该语句位于系统的主类中：
 
 ```java
 static {
@@ -306,19 +306,15 @@ static {
     // Note intentional side effect of assignment:
     assert assertionsEnabled = true;
     if(!assertionsEnabled)
-    throw new RuntimeException("Assertions disabled");
+        throw new RuntimeException("Assertions disabled");
 }
 ```
 
-
-
 如果启用断言，然后执行 **assert** 语句，**assertionsEnabled** 变为 **true** 。断言不会失败，因为分配的返回值是赋值的值。如果不启用断言，**assert** 语句不执行，**assertionsEnabled** 保持false，将导致异常。
-
-
 
 #### Guava断言
 
-因为启用Java本地断言很麻烦，Guava团队添加一个始终启用替换断言的 **Verify** 类。他们建议静态导入 **Verify** 方法：
+因为启用 Java 本地断言很麻烦，Guava 团队添加一个始终启用的用来替换断言的 **Verify** 类。他们建议静态导入 **Verify** 方法：
 
 ```java
 // validating/GuavaAssertions.java
@@ -373,11 +369,7 @@ Shouldn't be null: arg s
 */
 ```
 
-
-
 这里有两个方法，使用变量 **verify()** 和 **verifyNotNull()** 来支持有用的错误消息。注意，**verifyNotNull()** 内置的错误消息通常就足够了，而 **verify()** 太一般，没有有用的默认错误消息。
-
-
 
 #### 使用断言进行契约式设计
 
