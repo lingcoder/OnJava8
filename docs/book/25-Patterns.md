@@ -149,11 +149,79 @@ Hello World!
 
 ![](images/designproxy.png)
 
-
-
-
 <!-- Fronting for an Implementation -->
-## 面向实施
+## 面向实现
+
+代理模式和桥接模式都提供了在代码中使用的代理类;完成工作的真正类隐藏在这个代理类的后面。当您在代理中调用一个方法时，它只是反过来调用实现类中的方法。这两种模式非常相似，所以代理模式只是桥接模式的一种特殊情况。人们倾向于将两者合并,称为代理模式，但是术语“代理”有一个长期的和专门的含义，这可能解释了这两种模式不同的原因。基本思想很简单:从基类派生代理，同时派生一个或多个提供实现的类:创建代理对象时，给它一个可以调用实际工作类的方法的实现。
+
+
+在结构上，代理模式和桥接模式的区别很简单:代理模式只有一个实现，而桥接模式有多个实现。在设计模式中被认为是不同的:代理模式用于控制对其实现的访问，而桥接模式允许您动态更改实现。但是，如果您扩展了“控制对实现的访问”的概念，那么这两者就可以完美地结合在一起
+
+**代理模式**
+
+如果我们按照上面的关系图实现，它看起来是这样的:
+
+```Java
+// patterns/ProxyDemo.java
+// Simple demonstration of the Proxy pattern
+interface ProxyBase {
+    void f();
+
+    void g();
+
+    void h();
+}
+
+class Proxy implements ProxyBase {
+    private ProxyBase implementation;
+
+    Proxy() {
+        implementation = new Implementation();
+    }
+    // Pass method calls to the implementation:
+    @Override
+    public void f() { implementation.f(); }
+    @Override
+    public void g() { implementation.g(); }
+    @Override
+    public void h() { implementation.h(); }
+}
+
+class Implementation implements ProxyBase {
+    public void f() {
+        System.out.println("Implementation.f()");
+    }
+
+    public void g() {
+        System.out.println("Implementation.g()");
+    }
+
+    public void h() {
+        System.out.println("Implementation.h()");
+    }
+}
+
+public class ProxyDemo {
+    public static void main(String[] args) {
+        Proxy p = new Proxy();
+        p.f();
+        p.g();
+        p.h();
+    }
+}
+/*
+Output:
+Implementation.f()
+Implementation.g()
+Implementation.h()
+*/
+```
+
+具体实现不需要与代理对象具有相同的接口;只要代理对象以某种方式“代表具体实现的方法调用，那么基本思想就算实现了。然而，拥有一个公共接口是很方便的，因此具体实现必须实现代理对象调用的所有方法。
+
+**状态模式**
+
+
 
 
 <!-- Factories: Encapsulating Object Creation -->
