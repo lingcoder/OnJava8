@@ -78,7 +78,7 @@ public class SingletonPattern {
              } catch(Exception e) {      
                  throw new RuntimeException(e);    
              }  
-        } 
+        }
 } /* Output: 47 9 */
 ```
 创建单例的关键是防止客户端程序员直接创建对象。 在这里，这是通过在Singleton类中将Resource的实现作为私有类来实现的。
@@ -103,9 +103,125 @@ public class SingletonPattern {
 <!-- Building Application Frameworks -->
 ## 构建应用程序框架
 
+应用程序框架允许您从一个类或一组类开始，创建一个新的应用程序，重用现有类中的大部分代码，并根据需要覆盖一个或多个方法来定制应用程序。
+
+**模板方法模式**
+
+应用程序框架中的一个基本概念是模板方法模式，它通常隐藏在底层，通过调用基类中的各种方法来驱动应用程序(为了创建应用程序，您已经覆盖了其中的一些方法)。
+
+模板方法模式的一个重要特性是它是在基类中定义的，并且不能更改。它有时是一个 **private** 方法，但实际上总是 **final**。它调用其他基类方法(您覆盖的那些)来完成它的工作,但是它通常只作为初始化过程的一部分被调用(因此框架使用者不一定能够直接调用它)。
+
+```Java
+// patterns/TemplateMethod.java
+// Simple demonstration of Template Method
+
+abstract class ApplicationFramework {
+    ApplicationFramework() {
+        templateMethod();
+    }
+
+    abstract void customize1();
+
+    abstract void customize2(); // "private" means automatically "final": private void templateMethod() { IntStream.range(0, 5).forEach( n -> { customize1(); customize2(); }); }}// Create a new "application": class MyApp extends ApplicationFramework { @Override void customize1() { System.out.print("Hello "); }@Override
+
+    void customize2() {
+        System.out.println("World!");
+    }
+}
+
+public class TemplateMethod {
+    public static void main(String[] args) {
+        new MyApp();
+    }
+}
+/*
+Output:
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+Hello World!
+*/
+```
+
+基类构造函数负责执行必要的初始化，然后启动运行应用程序的“engine”(模板方法模式)(在GUI应用程序中，这个“engine”是主事件循环)。框架使用者只提供
+**customize1()** 和 **customize2()** 的定义，然后“应用程序”已经就绪运行。
+
+![](images/designproxy.png)
 
 <!-- Fronting for an Implementation -->
-## 面向实施
+## 面向实现
+
+代理模式和桥接模式都提供了在代码中使用的代理类;完成工作的真正类隐藏在这个代理类的后面。当您在代理中调用一个方法时，它只是反过来调用实现类中的方法。这两种模式非常相似，所以代理模式只是桥接模式的一种特殊情况。人们倾向于将两者合并,称为代理模式，但是术语“代理”有一个长期的和专门的含义，这可能解释了这两种模式不同的原因。基本思想很简单:从基类派生代理，同时派生一个或多个提供实现的类:创建代理对象时，给它一个可以调用实际工作类的方法的实现。
+
+
+在结构上，代理模式和桥接模式的区别很简单:代理模式只有一个实现，而桥接模式有多个实现。在设计模式中被认为是不同的:代理模式用于控制对其实现的访问，而桥接模式允许您动态更改实现。但是，如果您扩展了“控制对实现的访问”的概念，那么这两者就可以完美地结合在一起
+
+**代理模式**
+
+如果我们按照上面的关系图实现，它看起来是这样的:
+
+```Java
+// patterns/ProxyDemo.java
+// Simple demonstration of the Proxy pattern
+interface ProxyBase {
+    void f();
+
+    void g();
+
+    void h();
+}
+
+class Proxy implements ProxyBase {
+    private ProxyBase implementation;
+
+    Proxy() {
+        implementation = new Implementation();
+    }
+    // Pass method calls to the implementation:
+    @Override
+    public void f() { implementation.f(); }
+    @Override
+    public void g() { implementation.g(); }
+    @Override
+    public void h() { implementation.h(); }
+}
+
+class Implementation implements ProxyBase {
+    public void f() {
+        System.out.println("Implementation.f()");
+    }
+
+    public void g() {
+        System.out.println("Implementation.g()");
+    }
+
+    public void h() {
+        System.out.println("Implementation.h()");
+    }
+}
+
+public class ProxyDemo {
+    public static void main(String[] args) {
+        Proxy p = new Proxy();
+        p.f();
+        p.g();
+        p.h();
+    }
+}
+/*
+Output:
+Implementation.f()
+Implementation.g()
+Implementation.h()
+*/
+```
+
+具体实现不需要与代理对象具有相同的接口;只要代理对象以某种方式“代表具体实现的方法调用，那么基本思想就算实现了。然而，拥有一个公共接口是很方便的，因此具体实现必须实现代理对象调用的所有方法。
+
+**状态模式**
+
+
 
 
 <!-- Factories: Encapsulating Object Creation -->
