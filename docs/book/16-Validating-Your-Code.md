@@ -373,21 +373,21 @@ Shouldn't be null: arg s
 
 #### 使用断言进行契约式设计
 
-*契约式设计(DbC)*是Bertrand Meyer提出的一个概念，Eiffel语言的发明者，通过确保对象遵循某些规则来帮助创建健壮的程序。这些规则是由正在解决的问题的性质决定的，这超出了编译器可以验证的范围。虽然断言没有直接实现 **DBC**（Eiffel也是如此），但是它们创建了一种非正式的DBC编程风格。DbC假定服务供应商与该服务的消费者或客户之间存在明确指定的契约。在面向对象编程中，服务通常由对象提供，对象的边界 — 供应商和消费者之间的划分 — 是对象类的接口。当客户端调用特定的公共方法时，它们希望该调用具有特定的行为：对象状态改变，以及一个可预测的返回值。
+*契约式设计(DbC)*是 Eiffel 语言的发明者 Bertrand Meyer 提出的一个概念，通过确保对象遵循某些规则来帮助创建健壮的程序。这些规则是由正在解决的问题的性质决定的，这超出了编译器可以验证的范围。虽然断言没有直接实现 **DBC**（Eiffel 语言也是如此），但是它们创建了一种非正式的 DbC 编程风格。DbC 假定服务供应者与该服务的消费者或客户之间存在明确指定的契约。在面向对象编程中，服务通常由对象提供，对象的边界 — 供应者和消费者之间的划分 — 是对象类的接口。当客户端调用特定的公共方法时，它们希望该调用具有特定的行为：对象状态改变，以及一个可预测的返回值。
 
-**Meyer**认为：
+**Meyer** 认为：
 
 1.应该明确指定行为，就好像它是一个契约一样。
 
 2.通过实现某些运行时检查来保证这种行为，他将这些检查称为前置条件、后置条件和不变项。
 
-不管你是否同意，第一条总是对的，在大多数情况下，DbC确实是一种有用的方法。（我认为，与任何解决方案一样，它的有用性也有界限。但如果你知道这些界限，你就知道什么时候去尝试。）尤其是，设计过程中一个有价值的部分是特定类DbC约束的表达式；如果无法指定约束，则可能对要构建的内容了解得不够。
+不管你是否同意，第一条总是对的，在大多数情况下，DbC 确实是一种有用的方法。（我认为，与任何解决方案一样，它的有用性也有界限。但如果你知道这些界限，你就知道什么时候去尝试。）尤其是，设计过程中一个有价值的部分是特定类 DbC 约束的表达式；如果无法指定约束，则你可能对要构建的内容了解得不够。
 
 #### 检查指令
 
-详细研究DbC之前，思考最简单使用断言的办法，**Meyer**称它为检查指令。检查指令说明你确信代码中的某个特定属性此时已经得到满足。检查指令的思想是在代码中表达非明显性的结论，而不仅仅是为了验证测试，也同样为了将来能够满足阅读者而有一个文档。
+详细研究 DbC 之前，思考最简单使用断言的办法，**Meyer** 称它为检查指令。检查指令说明你确信代码中的某个特定属性此时已经得到满足。检查指令的思想是在代码中表达非明显性的结论，而不仅仅是为了验证测试，也同样为了将来能够满足阅读者而有一个文档。
 
-在化学领域，你也许会用一种纯液体去滴定测量另一种液体，当达到一个特定的点时，液体变蓝了。从两个液体的颜色上并不能明显看出；这是作为其中复杂的一部分。滴定完成后一个有用的检查指令是能够断定液体变蓝了。
+在化学领域，你也许会用一种纯液体去滴定测量另一种液体，当达到一个特定的点时，液体变蓝了。从两个液体的颜色上并不能明显看出；这是复杂反应的一部分。滴定完成后一个有用的检查指令是能够断定液体变蓝了。
 
 检查指令是对你的代码进行补充，当你可以测试并阐明对象或程序的状态时，应该使用它。
 
@@ -397,7 +397,7 @@ Shouldn't be null: arg s
 
 #### 后置条件
 
-后置条件测试你在方法中所做的操作的结果。这段代码放在方法调用的末尾，在**return**语句之前(如果有的话)。对于长时间、复杂的方法，在返回计算结果之前需要对计算结果进行验证（也就是说，在某些情况下，由于某种原因，你不能总是相信结果)，后置条件很重要，但是任何时候你可以描述方法结果上的约束时，最好将这些约束在代码中表示为后置条件。
+后置条件测试你在方法中所做的操作的结果。这段代码放在方法调用的末尾，在 **return** 语句之前(如果有的话)。对于长时间、复杂的方法，在返回计算结果之前需要对计算结果进行验证（也就是说，在某些情况下，由于某种原因，你不能总是相信结果)，后置条件很重要，但是任何时候你可以描述方法结果上的约束时，最好将这些约束在代码中表示为后置条件。
 
 #### 不变性
 
@@ -407,17 +407,17 @@ Shouldn't be null: arg s
 
 **2**.  在离开方法之前。
 
-此外，不变性是关于构造后对象状态的保证。
+此外，不变性是构造后对于对象状态的保证。
 
-根据这个描述，一个有效的不变性被定义为一个方法，可能被命名为 **invariant()** ，它在构造之后以及每个方法的开始和结束时调用。方法可调用如下：
+根据这个描述，一个有效的不变性被定义为一个方法，可能被命名为 **invariant()** ，它在构造之后以及每个方法的开始和结束时调用。方法以如下方式调用：
 
 assert invariant();
 
 这样，如果出于性能原因禁用断言，就不会产生开销。
 
-#### 放松DBC检查 或  非严格的DBC
+#### 放松 DbC 检查或非严格的 DbC
 
-尽管他强调了前置条件、后置条件和不变性的价值所在，以及在开发过程中使用它们的重要性，Meyer承认在一个产品中包含所有DbC代码并不总是实用的。你可以放松DbC检查，它基于在特定的地方，你可以对代码的信任程度。以下是放松检查的顺序，最安全到最不安全：
+尽管 Meyer 强调了前置条件、后置条件和不变性的价值以及在开发过程中使用它们的重要性，他承认在一个产品中包含所有 DbC 代码并不总是实际的。你可以基于对特定位置的代码的信任程度放松 DbC 检查。以下是放松检查的顺序，最安全到最不安全：
 
 **1**. 不变性检查在每个方法一开始的时候是不能进行的，因为在每个方法结束的时候进行不变性检查能保证一开始的时候对象处于有效状态。也就是说，通常情况下，你可以相信对象的状态不会在方法调用之间发生变化。这是一个非常安全的假设，你可以只在代码末尾使用不变性检查来编写代码。
 
@@ -425,11 +425,11 @@ assert invariant();
 
 **3**. 如果你确信方法主体没有把对象改成无效状态，则可以禁用方法调用末尾的不变性检查。可以通过白盒单元测试(通过访问私有字段的单元测试来验证对象状态)来验证这一点。尽管它可能没有调用 **invariant()** 那么稳妥，可以将不变性检查从运行时测试 “迁移” 到构建时测试(通过单元测试)，就像使用后置条件一样。
 
-**4**. 禁用前置条件检查，但除非这是万不得已的情况下。因为这是最不安全、最不明智的选择，因为尽管你知道并且可以控制自己的代码，但是你无法控制客户端可能会传递给方法的参数。**（A）** 在迫切需要性能和概要分析的情况下，将前置条件检查作为瓶颈，**(B)** 并且你有某种合理的保证，即客户端不会违反前置条件(如你自己编写客户端代码的情况)。禁用前置条件检查是可以接受的。
+**4**. 禁用前置条件检查，但除非这是万不得已的情况下。因为这是最不安全、最不明智的选择，因为尽管你知道并且可以控制自己的代码，但是你无法控制客户端可能会传递给方法的参数。然而，某些情况下对性能要求很高，通过分析得到前置条件造成了这个瓶颈，而且你有某种合理的保证客户端不会违反前置条件(比如自己编写客户端的情况下)，那么禁用前置条件检查是可接受的。
 
-不应该直接删除检查的代码，因为只需要禁用检查(添加注释)。这样如果发现错误，就可以轻松地恢复检查以快速发现问题。
+你不应该直接删除检查的代码，而只需要禁用检查(添加注释)。这样如果发现错误，就可以轻松地恢复检查以快速发现问题。
 
-#### DBC + 单元测试
+#### DbC + 单元测试
 
 下面的例子演示了将契约式设计中的概念与单元测试相结合的有效性。它显示了一个简单的先进先出(FIFO)队列，该队列实现为一个“循环”数组，即以循环方式使用的数组。当到达数组的末尾时，将绕回到开头。
 
@@ -447,11 +447,10 @@ assert invariant();
 
 **6**.   不变性：不包含对象的区域必须只有空值。
 
-下面是实现这些规则的一种方法，为每个DbC元素类型使用显式方法调用。首先，我们创建一个专用的
+下面是实现这些规则的一种方式，为每个 DbC 元素类型使用显式的方法调用。
 
-##### Exception:
-
-- ```java
+首先，我们创建一个专用的 **Exception**：
+```java
   // validating/CircularQueueException.java
   package validating;
   public class CircularQueueException extends RuntimeException {
@@ -459,8 +458,10 @@ assert invariant();
           super(why);
       }
   }
-  
-  This is used to report errors with the CircularQueue class:
+```
+它用来报告 **CircularQueue** 中出现的错误：
+
+```java
   // validating/CircularQueue.java
   // Demonstration of Design by Contract (DbC)
   package validating;
@@ -469,44 +470,44 @@ assert invariant();
       private Object[] data;
       private int in = 0, // Next available storage space 
       out = 0; // Next gettable object
-      // Has it wrapped around the circular queue?
+               // Has it wrapped around the circular queue?
       private boolean wrapped = false;
       public CircularQueue(int size) {
-      data = new Object[size];
-      // Must be true after construction:
-      assert invariant();
-  	}
+          data = new Object[size];
+          // Must be true after construction:
+          assert invariant();
+      }
       
       public boolean empty() {
-      	return !wrapped && in == out;
+          return !wrapped && in == out;
       }
       
       public boolean full() {
-      	return wrapped && in == out;
+      	  return wrapped && in == out;
       }
       
-  	public boolean isWrapped() { return wrapped; }
+  	  public boolean isWrapped() { return wrapped; }
       
       public void put(Object item) {
-      	precondition(item != null, "put() null item");
-      	precondition(!full(),
-      	"put() into full CircularQueue");
-      	assert invariant();
-      	data[in++] = item;
-      	if(in >= data.length) {
+      	  precondition(item != null, "put() null item");
+      	  precondition(!full(),
+      	  "put() into full CircularQueue");
+      	  assert invariant();
+      	  data[in++] = item;
+      	  if(in >= data.length) {
               in = 0;
               wrapped = true;
-      	}
-  		assert invariant();
-  	}
+      	  }
+  		  assert invariant();
+  	  }
       
       public Object get() {
-      	precondition(!empty(),
-      	"get() from empty CircularQueue");
-      	assert invariant();
-      	Object returnVal = data[out];
-      	data[out] = null;
-      	out++;
+      	  precondition(!empty(),
+      	  "get() from empty CircularQueue");
+      	  assert invariant();
+      	  Object returnVal = data[out];
+      	  data[out] = null;
+      	  out++;
           if(out >= data.length) {
               out = 0;
               wrapped = false;
@@ -516,65 +517,55 @@ assert invariant();
           "Null item in CircularQueue");
           assert invariant();
           return returnVal;
-  }
+      }
       
-  	// Design-by-contract support methods:
+  	  // Design-by-contract support methods:
       private static void precondition(boolean cond, String msg) {
           if(!cond) throw new CircularQueueException(msg);
       }
       
       private static boolean postcondition(boolean cond, String msg) {
-      	if(!cond) throw new CircularQueueException(msg);
-      	return true;
+          if(!cond) throw new CircularQueueException(msg);
+      	  return true;
       }
       
       private boolean invariant() {
-      // Guarantee that no null values are in the
-      // region of 'data' that holds objects:
-      for(int i = out; i != in; i = (i + 1) % data.length)
-      if(data[i] == null)
-      throw new CircularQueueException(
-      "null in CircularQueue");
-      // Guarantee that only null values are outside the
-      // region of 'data' that holds objects:
-      if(full()) return true;
-      for(int i = in; i != out; i = (i + 1) % data.length)
-      if(data[i] != null)
-      throw new CircularQueueException(
-      "non-null outside of CircularQueue range: "
-          dump());
-        return true;
-        }
+          // Guarantee that no null values are in the
+          // region of 'data' that holds objects:
+          for(int i = out; i != in; i = (i + 1) % data.length)
+              if(data[i] == null)
+                  throw new CircularQueueException("null in CircularQueue");
+                  // Guarantee that only null values are outside the
+                  // region of 'data' that holds objects:
+          if(full()) return true;
+          for(int i = in; i != out; i = (i + 1) % data.length)
+               if(data[i] != null)
+                   throw new CircularQueueException(
+                        "non-null outside of CircularQueue range: " + dump());
+          return true;
+      }
       
-        public String dump() {
-        return "in = " + in +
-        ", out = " + out +
-        ", full() = " + full() +
-        ", empty() = " + empty() +
-        ", CircularQueue = " + Arrays.asList(data);
-        }
+      public String dump() {
+          return "in = " + in +
+              ", out = " + out +
+              ", full() = " + full() +
+              ", empty() = " + empty() +
+              ", CircularQueue = " + Arrays.asList(data);
+      }
   }
-  ```
+```
 
-  **in** 计数器指示数组中下一个对象所在的位置。**out** 计数器指示下一个对象来自何处。**wrapped** 的flag表示 **in** 已经“绕着圆圈”走了，现在从后面出来了。当**in**和 **out** 重合时，队列为空(如果包装为 **false** )或满(如果 **wrapped** 为 **true** )。
+**in** 计数器指示数组中下一个对象所在的位置。**out** 计数器指示下一个对象来自何处。**wrapped** 的flag表示 **in** 已经“绕着圆圈”走了，现在从后面出来了。当**in**和 **out** 重合时，队列为空(如果包装为 **false** )或满(如果 **wrapped** 为 **true** )。
 
-  **put()** 和 **get()** 方法调用 **precondition()** ，**postcondition()**, 和 **invariant**()，这些都是在类中定义的私有方法。前置**precondition()** 和 **postcondition()** 是用来阐明代码的辅助方法。
+**put()** 和 **get()** 方法调用 **precondition()** ，**postcondition()**, 和 **invariant**()，这些都是在类中定义的私有方法。前置**precondition()** 和 **postcondition()** 是用来阐明代码的辅助方法。
 
-  
+注意，**precondition()** 返回 **void** , 因为它不与断言一起使用。按照之前所说的，通常你会在代码中保留前置条件。通过将它们封装在 **precondition()**  方法调用中，如果你不得不做出关掉它们的可怕举动，你会有更好的选择。
 
-  注意，**precondition()** 返回 **void** , 因为它不与断言一起使用。按照之前所说的，通常你会在代码中保留前置条件。通过将它们封装在 **precondition()**  方法调用中，如果你不得不做出关掉它们的可怕举动，你会有更好的选择。
+**postcondition()** 和 **constant()** 都返回一个布尔值，因此可以在 **assert** 语句中使用它们。此外，如果出于性能考虑禁用断言，则根本不存在方法调用。**invariant()** 对对象执行内部有效性检查，如果你在每个方法调用的开始和结束都这样做，这是一个花销巨大的操作，就像 **Meyer** 建议的那样。所以， 用代码清晰地表明是有帮助的，它帮助我调试了实现。此外，如果你对代码实现做任何更改，那么 **invariant()** 将确保你没有破坏代码，将不变性测试从方法调用移到单元测试代码中是相当简单的。如果你的单元测试是足够的，那么你应当对不变性保持一定的信心。
 
-  
+**dump()** 帮助方法返回一个包含所有数据的字符串，而不是直接打印数据。这允许我们用这部分信息做更多事。  
 
-  **postcondition()** 和 **constant()** 都返回一个布尔值，因此可以在 **assert** 语句中使用它们。此外，如果出于性能考虑禁用断言，则根本不存在方法调用。**invariant()** 对对象执行内部有效性检查，如果你在每个方法调用的开始和结束都这样做，这是一个花销巨大的操作，就像 **Meyer** 建议的那样。所以， 用代码清晰地表明是有帮助的，它帮助我调试了实现。此外，如果你对代码实现做任何更改，那么 **invariant()** 将确保你没有破坏代码，将不变性测试从方法调用移到单元测试代码中是相当简单的。如果你的单元测试是足够的，那么你应当对不变性保持一定的信心。
-
-  
-
-  **dump()** helper方法返回一个包含所有数据的字符串，而不是直接打印数据。这表示你可以展示更多的信息。
-
-  
-
-  现在我们可以为类创建JUnit测试:
+现在我们可以为类创建 JUnit 测试:
 
   ```java
   // validating/tests/CircularQueueTest.java
@@ -588,8 +579,8 @@ assert invariant();
       @BeforeEach
       public void initialize() {
           while(i < 5) // Pre-load with some data
-          queue.put(Integer.toString(i++));
-  	}
+              queue.put(Integer.toString(i++));
+  	  }
       
       // Support methods:
       private void showFullness() {
@@ -614,10 +605,10 @@ assert invariant();
               queue.put(Integer.toString(i++));
               String msg = "";
           try {
-          	queue.put("");
+          	  queue.put("");
           } catch(CircularQueueException e) {
-          	msg = e.getMessage();
-          	System.out.println(msg);
+          	  msg = e.getMessage();
+          	  ∂System.out.println(msg);
           }
           assertEquals(msg, "put() into full CircularQueue");
           showFullness();
@@ -627,10 +618,10 @@ assert invariant();
       public void empty() {
           System.out.println("testEmpty");
           while(!queue.empty())
-      		System.out.println(queue.get());
-      		String msg = "";
+      		  System.out.println(queue.get());
+      		  String msg = "";
           try {
-          	queue.get();
+              queue.get();
           } catch(CircularQueueException e) {
               msg = e.getMessage();
               System.out.println(msg);
@@ -641,37 +632,37 @@ assert invariant();
       @Test
       public void nullPut() {
           System.out.println("testNullPut");
-          	String msg = "";
+          String msg = "";
           try {
-          	queue.put(null);
+          	  queue.put(null);
           } catch(CircularQueueException e) {
               msg = e.getMessage();
               System.out.println(msg);
           }
-          	assertEquals(msg, "put() null item");
+          assertEquals(msg, "put() null item");
       }
       
       @Test
       public void circularity() {
-      	System.out.println("testCircularity");
-      	while(!queue.full())
-      		queue.put(Integer.toString(i++));
-      		showFullness();
-      		assertTrue(queue.isWrapped());
+      	  System.out.println("testCircularity");
+      	  while(!queue.full())
+      		  queue.put(Integer.toString(i++));
+      		  showFullness();
+      		  assertTrue(queue.isWrapped());
           
           while(!queue.empty())
-          	System.out.println(queue.get());
-          	showEmptiness();
+          	  System.out.println(queue.get());
+          	  showEmptiness();
           
           while(!queue.full())
-          	queue.put(Integer.toString(i++));
-          	showFullness();
+          	  queue.put(Integer.toString(i++));
+          	  showFullness();
           
           while(!queue.empty())
-          	System.out.println(queue.get());
-          	showEmptiness();
-      }
-  }
+          	  System.out.println(queue.get());
+          	  showEmptiness();
+       }
+   }
   /* Output:
   testNullPut
   put() null item
@@ -734,15 +725,15 @@ assert invariant();
   */
   ```
 
-  **initialize()** 添加了一些数据，因此每个测试的 **CircularQueue** 都是部分满的。**showFullness()** 和 **showempty()** 表明 **CircularQueue** 是满的还是空的，这四种测试方法中的每一种都确保了**CircularQueue**功能在不同地方的正确运行。
+**initialize()** 添加了一些数据，因此每个测试的 **CircularQueue** 都是部分满的。**showFullness()** 和 **showempty()** 表明 **CircularQueue** 是满的还是空的，这四种测试方法中的每一种都确保了 **CircularQueue** 功能在不同的地方正确运行。
 
-通过将Dbc和单元测试结合起来，你不仅可以同时使用这两种方法，还可以有一个迁移路径—你可以将一些Dbc测试迁移到单元测试中，而不是简单地禁用它们，这样你仍然有一定程度的测试。
+通过将 Dbc 和单元测试结合起来，你不仅可以同时使用这两种方法，还可以有一个迁移路径—你可以将一些 Dbc 测试迁移到单元测试中，而不是简单地禁用它们，这样你仍然有一定程度的测试。
 
 #### 使用Guava前置条件
 
-在非严格DBC中，前置条件是DbC中你不想删除的那一部分，因为它可以检查方法参数的有效性。那是你没有办法控制的事情，所以你需要对其检查。因为Java在默认情况下禁用断言，所以通常最好使用另外一个始终验证方法参数的库。
+在非严格的 DbC 中，前置条件是 DbC 中你不想删除的那一部分，因为它可以检查方法参数的有效性。那是你没有办法控制的事情，所以你需要对其检查。因为 Java 在默认情况下禁用断言，所以通常最好使用另外一个始终验证方法参数的库。
 
-谷歌的Guava库包含了一组很好的前置条件测试，这些测试不仅易于使用，而且命名也足够好。在这里你可以看到它们的简单用法。库的设计人员建议静态导入前置条件:
+谷歌的 Guava 库包含了一组很好的前置条件测试，这些测试不仅易于使用，而且命名也足够好。在这里你可以看到它们的简单用法。库的设计人员建议静态导入前置条件:
 
 ```java
 // validating/GuavaPreconditions.java
@@ -864,11 +855,9 @@ NullPointerException
 */
 ```
 
-虽然Guava的前置条件适用于所有类型，但我只演示 **字符串（String）** 类型。**test()** 方法需要一个Consumer<String>，因此我们可以传递一个lambda表达式作为第一个参数字符串。以及作为第二个参数传递给lambda的字符串。它显示字符串，以便在查看输出时确定方向，然后将字符串传递给lambda表达式。try块中的第二个 **println**() 仅在lambda表达式成功时才显示; 否则catch将捕获并显示错误信息。注意 **test()** 方法消除了多少重复的代码。
+虽然 Guava 的前置条件适用于所有类型，但我这里只演示 **字符串（String）** 类型。**test()** 方法需要一个Consumer<String>，因此我们可以传递一个 lambda 表达式作为第一个参数，传递给 lambda 表达式的字符串作为第二个参数。它显示字符串，以便在查看输出时确定方向，然后将字符串传递给 lambda 表达式。try 块中的第二个 **println**() 仅在 lambda 表达式成功时才显示; 否则 catch 块将捕获并显示错误信息。注意 **test()** 方法消除了多少重复的代码。
 
 每个前置条件都有三种不同的重载形式：一个什么都没有，一个带有简单字符串消息，以及带有一个字符串和替换值。为了提高效率，只允许 **%s** (字符串类型)替换标记。在上面的例子中，演示了**checkNotNull()** 和 **checkArgument()** 这两种形式。但是它们对于所有前置条件方法都是相同的。注意 **checkNotNull()** 的返回参数， 所以你可以在表达式中内联使用它。下面是如何在构造函数中使用它来防止包含 **Null** 值的对象构造：
-
-/
 
 ```java
 / validating/NonNullConstruction.java
@@ -887,11 +876,11 @@ public class NonNullConstruction {
 }
 ```
 
-**checkArgument()** 接受布尔表达式来对参数进行更具体的测试， 失败时抛出 **IllegalArgumentException**，**checkState()** 用于测试对象的状态（例如，不变性检查），而不是检查参数，并在失败时抛出 **IllegalStateException** 。
+**checkArgument()** 接受布尔表达式来对参数进行更具体的测试， 失败时抛出  **IllegalArgumentException**，**checkState()** 用于测试对象的状态（例如，不变性检查），而不是检查参数，并在失败时抛出 **IllegalStateException** 。
 
 最后三个方法在失败时抛出 **IndexOutOfBoundsException**。**checkElementIndex**() 确保其第一个参数是列表、字符串或数组的有效元素索引，其大小由第二个参数指定。**checkPositionIndex()** 确保它的第一个参数在 0 到第二个参数(包括第二个参数)的范围内。 **checkPositionIndexes()**  检查 **[first_arg, second_arg]** 是一个列表的有效子列表，由第三个参数指定大小的字符串或数组。
 
-所有Guava前置条件对于基本类型和对象都有必要的重载。
+所有的 Guava 前置条件对于基本类型和对象都有必要的重载。
 
 <!-- Test-Driven Development -->
 
