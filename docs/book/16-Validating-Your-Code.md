@@ -888,9 +888,9 @@ public class NonNullConstruction {
 
 之所以可以有测试驱动开发（TDD）这种开发方式，是因为如果你在设计和编写代码时考虑到了测试，那么你不仅可以写出可测试性更好的代码，而且还可以得到更好的代码设计。 一般情况下这个说法都是正确的。 一旦我想到“我将如何测试我的代码？”，这个想法将使我的代码产生变化，并且往往是从“可测试”转变为“可用”。
 
-纯粹的TDD主义者会在实现新功能之前就为其编写测试，这称为测试优先的开发。 我们采用一个简易的示例程序来进行说明，它的功能是反转 **String** 中字符的大小写。 让我们随意添加一些约束：**String** 必须小于或等于30个字符，并且必须只包含字母，空格，逗号和句号(英文)。
+纯粹的 TDD 主义者会在实现新功能之前就为其编写测试，这称为测试优先的开发。 我们采用一个简易的示例程序来进行说明，它的功能是反转 **String** 中字符的大小写。 让我们随意添加一些约束：**String** 必须小于或等于30个字符，并且必须只包含字母，空格，逗号和句号(英文)。
 
-此示例与标准TDD不同，因为它的作用在于接收 **StringInverter** 的不同实现，以便在我们逐步满足测试的过程中来体现类的演变。 所以 **StringInverter** 将作为接口来满足这个要求：
+此示例与标准 TDD 不同，因为它的作用在于接收 **StringInverter** 的不同实现，以便在我们逐步满足测试的过程中来体现类的演变。 为了满足这个要求，将 **StringInverter** 作为接口：
 
 ```java
 // validating/StringInverter.java
@@ -901,7 +901,7 @@ interface StringInverter {
 }
 ```
 
-现在我们通过可以编写测试来表述我们的要求。 以下所述通常不是你编写测试的方式，但由于我们在此处有一个特殊的约束：我们要对 **StringInverter **多个版本的实现进行测试，为此，我们利用了JUnit5中最复杂的新功能之一：动态测试生成。 顾名思义，通过它你可以使你所编写的代码在运行时生成测试，而不需要你对每个测试显式编码。 这带来了许多新的可能性，特别是在明确地需要编写一整套测试而令人望而却步的情况下。
+现在我们通过可以编写测试来表述我们的要求。 以下所述通常不是你编写测试的方式，但由于我们在此处有一个特殊的约束：我们要对 **StringInverter **多个版本的实现进行测试，为此，我们利用了 JUnit5 中最复杂的新功能之一：动态测试生成。 顾名思义，通过它你可以使你所编写的代码在运行时生成测试，而不需要你对每个测试显式编码。 这带来了许多新的可能性，特别是在明确地需要编写一整套测试而令人望而却步的情况下。
 
 JUnit5 提供了几种动态生成测试的方法，但这里使用的方法可能是最复杂的。  **DynamicTest.stream() **方法采用了：
 
@@ -1118,7 +1118,7 @@ public class Inverter4 implements StringInverter {
 
 你将从测试输出中看到，每个版本的 **Inverter** 都几乎能通过所有测试。 当你在进行测试优先的开发时会有相同的体验。
 
-**DynamicStringInverterTests.java** 仅是为了显示TDD过程中不同 **StringInverter** 实现的开发。 通常，你只需编写一组如下所示的测试，并修改单个 **StringInverter** 类直到它满足所有测试：
+**DynamicStringInverterTests.java** 仅是为了显示 TDD 过程中不同 **StringInverter** 实现的开发。 通常，你只需编写一组如下所示的测试，并修改单个 **StringInverter** 类直到它满足所有测试：
 
 ```java
 // validating/tests/StringInverterTests.java
@@ -1199,7 +1199,7 @@ public class StringInverterTests {
 
 ### 日志会给出正在运行的程序的各种信息。
 
-在调试程序中，日志可以是显示程序运行过程中的普通状态数据（例如，安装程序可能会记录安装过程中采取的步骤，存储文件的目录，程序的启动值等）。
+在调试程序中，日志可以是普通状态数据，用于显示程序运行过程（例如，安装程序可能会记录安装过程中采取的步骤，存储文件的目录，程序的启动值等）。
 
 在调试期间，日志也能带来好处。 如果没有日志，你可能会尝试通过插入 **println()** 语句来打印出程序的行为。 本书中的一些例子使用了这种技术，并且在没有调试器的情况下（下文中很快就会介绍这样一个主题），它就是你唯一的工具。 但是，一旦你确定程序正常运行，你可能会将 **println()** 语句注释或者删除。 然而，如果你遇到更多错误，你可能又需要运行它们。因此，如果能够只在需要时轻松启用输出程序状态就好多了。
 
@@ -1235,7 +1235,7 @@ public class SLF4JLogging {
 
 日志输出中的格式和信息，甚至输出是否正常或“错误”都取决于 SLF4J 所连接的后端程序包是怎样实现的。 在上面的示例中，它连接到的是 **logback** 库（通过本书的 **build.gradle** 文件），并显示为标准输出。
 
-如果我们修改 **build.gradle **从而不使用内置在 JDK 中的日志包作为后端，则输出显示为错误输出，如下所示：
+如果我们修改 **build.gradle** 从而使用内置在 JDK 中的日志包作为后端，则输出显示为错误输出，如下所示：
 
 **Aug 16, 2016 5:40:31 PM InfoLogging main**
 **INFO: hello logging**
@@ -1302,6 +1302,62 @@ public class SLF4JLevels {
 <!-- Debugging -->
 
 ## 调试
+
+尽管聪明地使用 **System.out** 或日志信息能给我们带来对程序行为的有效见解，但对于困难问题来说，这种方式就显得笨拙且耗时了。
+
+你也可能需要更加深入地理解程序，仅依靠打印日志做不到。此时你需要调试器。除了比打印语句更快更轻易地展示信息以外，调试器还可以设置断点，并在程序运行到这些断点处暂停程序。
+
+使用调试器，可以展示任何时刻的程序状态，查看变量的值，一步一步运行程序，连接远程运行的程序等等。特别是当你构建较大规模的系统（bug 容易被掩埋）时，熟练使用调试器是值得的。
+
+#### 使用 JDB 调试
+
+Java 调试器（JDB）是 JDK 内置的命令行工具。从调试的指令和命令行接口两方面看的话，JDB 至少从概念上是 GNU 调试器（GDB，受 Unix DB 的影响）的继承者。JDB 对于学习调试和执行简单的调试任务来说是有用的，而且知道只要安装了 JDK 就可以使用 JDB 是有帮助的。然而，对于大型项目来说，你可能想要一个图形化的调试器，这在后面会描述。
+
+假设你写了如下程序：
+
+```java
+// validating/SimpleDebugging.java
+// {ThrowsException}
+public class SimpleDebugging {
+    private static void foo1() {
+        System.out.println("In foo1");
+        foo2();
+    }
+    
+    private static void foo2() {
+        System.out.println("In foo2");
+        foo3();
+    }
+    
+    private static void foo3() {
+        System.out.println("In foo3");
+        int j = 1;
+        j--;
+        int i = 5 / j;
+    }
+    
+    public static void main(String[] args) {
+        foo1();
+    }
+}
+/* Output
+In foo1
+In foo2
+In foo3
+__[Error Output]__
+Exception in thread "main"
+java.lang.ArithmeticException: /by zero 
+at 
+SimpleDebugging.foo3(SimpleDebugging.java:17)
+at 
+SimpleDebugging.foo2(SimpleDebugging.java:11)
+at
+SimpleDebugging.foo1(SimpleDebugging.java:7)
+at
+SimpleDebugging.main(SimpleDebugging.java:20)
+```
+
+首先看方法 `foo3()`，问题很明显：除数是 0。但是假如这段代码被埋没在大型程序中（像这里的调用序列暗示的那样）而且你不知道从哪儿开始查找问题。结果呢，异常会给出足够的信息让你定位问题。然而，假设事情更加复杂，你必须更加深入程序中来获得比异常提供的更多的信息。
 
 <!-- Benchmarking -->
 
