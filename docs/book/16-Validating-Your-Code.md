@@ -1309,7 +1309,7 @@ public class SLF4JLevels {
 
 使用调试器，可以展示任何时刻的程序状态，查看变量的值，一步一步运行程序，连接远程运行的程序等等。特别是当你构建较大规模的系统（bug 容易被掩埋）时，熟练使用调试器是值得的。
 
-#### 使用 JDB 调试
+### 使用 JDB 调试
 
 Java 调试器（JDB）是 JDK 内置的命令行工具。从调试的指令和命令行接口两方面看的话，JDB 至少从概念上是 GNU 调试器（GDB，受 Unix DB 的影响）的继承者。JDB 对于学习调试和执行简单的调试任务来说是有用的，而且知道只要安装了 JDK 就可以使用 JDB 是有帮助的。然而，对于大型项目来说，你可能想要一个图形化的调试器，这在后面会描述。
 
@@ -1359,9 +1359,123 @@ SimpleDebugging.main(SimpleDebugging.java:20)
 
 首先看方法 `foo3()`，问题很明显：除数是 0。但是假如这段代码被埋没在大型程序中（像这里的调用序列暗示的那样）而且你不知道从哪儿开始查找问题。结果呢，异常会给出足够的信息让你定位问题。然而，假设事情更加复杂，你必须更加深入程序中来获得比异常提供的更多的信息。
 
+为了运行 JDB，你需要在编译 **SimpleDebugging.java** 时加上 **-g** 标记，从而告诉编译器生成编译信息。然后使用如下命令开始调试程序：
+
+**jdb SimpleDebugging**
+
+接着 JDB 就会运行，出现命令行提示。你可以输入 **?** 查看可用的 JDB 命令。
+
+这里展示了如何使用交互式追踪一个问题的调试历程：
+
+**Initializing jdb...**
+
+**> catch Exception**
+
+`>` 表明 JDB 在等待输入命令。命令 **catch Exception** 在任何抛出异常的地方设置断点（然而，即使你不显式地设置断点，调试器也会停止— JDB 中好像是默认在异常抛出处设置了异常）。接着命令行会给出如下响应：
+
+**Deferring exception catch Exception.**
+
+**It will be set after the class is loaded.**
+
+继续输入：
+
+**> run**
+
+现在程序将运行到下个断点处，在这个例子中就是异常发生的地方。下面是运行 **run** 命令的结果：
+
+**run SimpleDebugging**
+
+**Set uncaught java.lang.Throwable**
+
+**Set deferred uncaught java.lang.Throwable**
+
+**>**
+
+**VM Started: In foo1**
+
+**In foo2**
+
+**In foo3**
+
+**Exception occurred: java.lang.ArithmeticException**
+
+**(uncaught)"thread=main",**
+
+**SimpleDebugging.foo3(),line=16 bci=15**
+
+**16 int i = 5 / j**
+
+程序运行到第16行时发生异常，但是 JDB 在异常发生时就不复存在。调试器还展示了是哪一行导致了异常。你可以使用 **list** 将导致程序终止的执行点列出来：
+
+**main[1] list**
+
+**12 private static void foo3() {**
+
+**13 System.out.println("In foo3");**
+
+**14 int j = 1;**
+
+**15 j--;**
+
+**16 => int i = 5 / j;**
+
+**17 }**
+
+**18 public static void main(String[] args) {**
+
+**19 foo1();**
+
+**20 }**
+
+**21 }**
+
+**/* Output:**
+
+上述 `=>` 展示了程序将继续运行的执行点。你可以使用命令 **cont**(continue) 继续运行，但是会导致 JDB 在异常发生时退出并打印出栈轨迹信息。
+
+命令 **locals** 能转储所有的局部变量值：
+
+**main[1] locals**
+
+**Method arguments:**
+
+**Local variables:**
+
+**j = 0**
+
+命令 **wherei** 打印进入当前线程的方法栈中的栈帧信息：
+
+**main[1] wherei**
+
+**[1] SimpleDebugging.foo3(SimpleDebugging.java:16), pc =15**
+
+**[2] SimpleDebugging.foo2(SimpleDebugging.java:10), pc = 8**
+
+**[3] SimpleDebugging.foo1(SimpleDebugging.java:6), pc = 8**
+
+**[4] SimpleDebugging.main(SimpleDebugging.java:19), pc = 10**
+
+**wherei** 后的每一行代表一个方法调用和调用返回点（由程序计数器显示数值）。这里的调用序列是 **main()**, **foo1()**, **foo2()** 和 **foo3()**。
+
+因为命令 **list** 展示了执行停止的地方，所以你通常有足够的信息得知发生了什么并修复它。命令 **help** 将会告诉你更多关于 **jdb** 的用法，但是在花更多的时间学习它之前必须明白命令行调试器往往需要花费更多的精力得到结果。使用 **jdb** 学习调试的基础部分，然后转而学习图形界面调试器。
+
+### 图形化调试器
+
+使用类似 JDB 的命令行调试器是不方便的。它需要显式的命令去查看变量的状态(**locals**, **dump**)，列出源代码中的执行点(**list**)，查找系统中的线程(**threads**)，设置断点(**stop in**, **stop at**)等等。使用图形化调试器只需要点击几下，不需要使用显式的命令就能使用这些特性，而且能查看被调试程序的最新细节。
+
+因此，尽管你可能一开始用 JDB 尝试调试，但是你将发现使用图形化调试器能更加高效、更快速地追踪 bug。IBM 的 Eclipse，Oracle 的 NetBeans 和 JetBrains 的 IntelliJ 这些集成开发环境都含有面向  Java 语言的好用的图形化调试器。
+
 <!-- Benchmarking -->
 
 ## 基准测试
+
+> 我们应该忘掉微小的效率，说的就是这些 97% 的时间：过早的优化是万恶之源。
+>
+> ​                                                                                                                                              —— Donald Knuth
+
+如果你发现自己正在过早优化的滑坡上，你可能浪费了几个月的时间(如果你雄心勃勃的话)。通常，一个简单直接的编码方法就足够好了。如果你进行了不必要的优化，就会使你的代码变得无谓的复杂和难以理解。
+
+基准测试意味着对代码或算法片段进行计时看哪个跑得更快，与下一节的分析和优化截然相反，分析优化是观察整个程序，找到程序中最耗时的部分。
 
 <!-- Profiling and Optimizing -->
 
