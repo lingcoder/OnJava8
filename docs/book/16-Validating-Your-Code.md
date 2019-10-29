@@ -1469,13 +1469,107 @@ SimpleDebugging.main(SimpleDebugging.java:20)
 
 ## 基准测试
 
-> 我们应该忘掉微小的效率，说的就是这些 97% 的时间：过早的优化是万恶之源。
+> 我们应该忘掉微小的效率提升，说的就是这些 97% 的时间做的事：过早的优化是万恶之源。
 >
 > ​                                                                                                                                              —— Donald Knuth
 
 如果你发现自己正在过早优化的滑坡上，你可能浪费了几个月的时间(如果你雄心勃勃的话)。通常，一个简单直接的编码方法就足够好了。如果你进行了不必要的优化，就会使你的代码变得无谓的复杂和难以理解。
 
 基准测试意味着对代码或算法片段进行计时看哪个跑得更快，与下一节的分析和优化截然相反，分析优化是观察整个程序，找到程序中最耗时的部分。
+
+可以简单地对一个代码片段的执行计时吗？在像 C 这样直接的编程语言中，这个方法的确可行。在像 Java 这样拥有复杂的运行时系统的编程语言中，基准测试变得更有挑战性。为了生成可靠的数据，环境设置必须控制诸如 CPU 频率，节能特性，其他运行在相同机器上的进程，优化器选项等等。
+
+### 微基准测试
+
+写一个计时工具类从而比较不同代码块的执行速度是具有吸引力的。看上去这会产生一些有用的数据。比如，这里有一个简单的 **Timer** 类，可以用以下两种方式使用它：
+
+1. 创建一个 **Timer** 对象，执行一些操作然后调用 **Timer** 的 **duration()** 方法产生以毫秒为单位的运行时间。
+2. 向静态的 **duration()** 方法中传入 **Runnable**。任何符合 **Runnable** 接口的类都有一个函数式方法 **run()**，该方法没有入参，且没有返回。
+
+```java
+// onjava/Timer.java
+package onjava;
+import static java.util.concurrent.TimeUnit.*;
+
+public class Timer {
+    private long start = System.nanoTime();
+    
+    public long duration() {
+        return NANOSECONDS.toMillis(System.nanoTime() - start);
+    }
+    
+    public static long duration(Runnable test) {
+        Timer timer = new Timer();
+        test.run();
+        return timer.duration();
+    }
+}
+```
+
+这是一个很直接的计时方式。难道我们不能只运行一些代码然后看它的运行时长吗？
+
+有许多因素会影响你的结果，即使是生成提示符也会造成计时的混乱。这里举一个看上去天真的例子，它使用了 标准的 Java **Arrays** 库（后面会详细介绍）：
+
+```java
+// validating/BadMicroBenchmark.java
+// {ExcludeFromTravisCI}
+import java.util.*;
+import onjava.Timer;
+
+public class BadMicroBenchmark {
+    static final int SIZE = 250_000_000;
+    
+    public static void main(String[] args) {
+        try { // For machines with insufficient memory
+            long[] la = new long[SIZE];
+            System.out.println("setAll: " + Timer.duration(() -> Arrays.setAll(la, n -> n)));
+            System.out.println("parallelSetAll: " + Timer.duration(() -> Arrays.parallelSetAll(la, n -> n)));
+        } catch (OutOfMemoryError e) {
+            System.out.println("Insufficient memory");
+            System.exit(0);
+        }
+    }
+    
+}
+/* Output
+setAll: 272
+parallelSetAll: 301
+```
+
+**main()** 方法的主体包含在 **try** 语句块中，因为一台机器用光内存后会导致构建停止。
+
+对于一个长度为 250,000,000 的 **long** 型（仅仅差一点就会让大部分机器内存溢出）数组，我们比较了 **Arrays.setAll()** 和 **Arrays.parallelSetAll()** 的性能。这个并行的版本会尝试使用多个处理器加快完成任务（尽管我在这一节谈到了一些并行的概念，但是在 [并发编程](./24-Concurrent-Programming.md) 章节我们才会详细讨论这些 ）。然而非并行的版本似乎运行得更快，尽管在不同的机器上结果可能不同。
+
+**BadMicroBenchmark.java** 中的每一步操作都是独立的，但是如果你的操作依赖于同一资源，那么并行版本运行的速度会骤降，因为不同的进程会竞争相同的那个资源。
+
+```java
+// validating/BadMicroBenchmark2.java
+// Relying on a common resource
+
+import java.util.*;
+import onjava.Timer;
+
+public class BadMicroBenchmark2 {
+    static final int SIZE = 5_000_000;
+    
+    public static void main(String[] args) {
+        long[] la = new long[SIZE];
+        Random r = new Random();
+        System.out.println("parallelSetAll: " + Timer.duration(() -> Arrays.parallelSetAll(la, n -> r.nextLong())));
+        System.out.println("setAll: " + Timer.duration(() -> Arrays.setAll(la, n -> r.nextLong())));
+        SplittableRandom sr = new SplittableRandom();
+        System.out.println("parallelSetAll: " + Timer.duration(() -> Arrays.parallelSetAll(la, n -> sr.nextLong())));
+        System.out.println("setAll: " + Timer.duration(() -> Arrays.setAll(la, n -> sr.nextLong())));
+    }
+}
+/* Output
+parallelSetAll: 1147
+setAll: 174
+parallelSetAll: 86
+setAll: 39
+```
+
+
 
 <!-- Profiling and Optimizing -->
 
