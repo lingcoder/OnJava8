@@ -1471,7 +1471,7 @@ SimpleDebugging.main(SimpleDebugging.java:20)
 
 > 我们应该忘掉微小的效率提升，说的就是这些 97% 的时间做的事：过早的优化是万恶之源。
 >
-> ​                                                                                                                                              —— Donald Knuth
+> ​                                                                                                                       —— Donald Knuth
 
 如果你发现自己正在过早优化的滑坡上，你可能浪费了几个月的时间(如果你雄心勃勃的话)。通常，一个简单直接的编码方法就足够好了。如果你进行了不必要的优化，就会使你的代码变得无谓的复杂和难以理解。
 
@@ -1569,11 +1569,175 @@ parallelSetAll: 86
 setAll: 39
 ```
 
+**SplittableRandom** 是为并行算法设计的，它当然看起来比普通的 **Random** 在 **parallelSetAll()** 中运行得更快。 但是看上去还是比非并发的 **setAll()** 运行时间更长，有点难以置信（也许是真的，但我们不能通过一个坏的微基准测试得到这个结论）。
+
+这只考虑了微基准测试的问题。Java 虚拟机 Hotspot 也非常影响性能。如果你在测试前没有通过运行代码给 JVM 预热，那么你就会得到“冷”的结果，不能反映出代码在 JVM 预热之后的运行速度（假如你运行的应用没有在预热的 JVM 上运行，你就可能得不到所预期的性能，甚至可能减缓速度）。
+
+优化器有时可以检测出你创建了没有使用的东西，或者是部分代码的运行结果对程序没有影响。如果它优化掉你的测试，那么你可能得到不好的结果。
+
+一个良好的微基准测试系统能自动地弥补像这样的问题（和很多其他的问题）从而产生合理的结果，但是创建这么一套系统是非常棘手，需要深入的知识。
+
+### JMH 的引入
+
+截止目前为止，唯一能产生像样结果的 Java 微基准测试系统就是 Java Microbenchmarking Harness，简称 JMH。本书的 **build.gradle** 自动引入了 JMH 的设置，所以你可以轻松地使用它。
+
+你可以在命令行编写 JMH 代码并运行它，但是推荐的方式是让 JMH 系统为你运行测试；**build.gradle** 文件已经配置成只需要一条命令就能运行 JMH 测试。
+
+JMH 尝试使基准测试变得尽可能简单。例如，我们将使用 JMH 重新编写 **BadMicroBenchmark.java**。这里只有 **@State** 和 **@Benchmark** 这两个注解是必要的。其余的注解要么是为了产生更多易懂的输出，要么是加快基准测试的运行速度（JMH 基准测试通常需要运行很长时间）：
+
+```java
+// validating/jmh/JMH1.java
+package validating.jmh;
+import java.util.*;
+import org.openjdk.jmh.annotations.*;
+import java.util.concurrent.TimeUnit;
+
+@State(Scope.Thread)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+// Increase these three for more accuracy:
+@Warmup(iterations = 5)
+@Measurement(iterations = 5)
+@Fork(1)
+public class JMH1 {
+    private long[] la;
+    
+    @Setup
+    public void setup() {
+        la = new long[250_000_000];
+    }
+    
+    @Benchmark
+    public void setAll() {
+        Arrays.setAll(la, n -> n);
+    }
+    
+    public void parallelSetAll() {
+        Arrays.parallelSetAll(la, n -> n);
+    }
+}
+```
+
+“forks” 的默认值是 10，意味着每个测试都运行 10 次。为了减少运行时间，这里使用了 **@Fork** 注解来减少这个次数到 1。我还使用了 **@Warmup** 和 **@Measurement** 注解将它们默认的运行次数从 20 减少到 5 次。尽管这降低了整体的准确率，但是结果几乎与使用默认值相同。可以尝试将 **@Warmup**、**@Measurement** 和 **@Fork** 都注释掉然后看使用它们的默认值，结果会有多大显著的差异；一般来说，你应该只能看到长期运行的测试使错误因素减少，而结果没有多大变化。
+
+需要使用显式的 gradle 命令才能运行基准测试（在示例代码的根目录处运行）。这能防止耗时的基准测试运行其他的 **gradlew** 命令：
+
+**gradlew validating:jmh**
+
+这会花费几分钟的时间，取决于你的机器(如果没有注解上的调整，可能需要几个小时)。控制台会显示 **results.txt** 文件的路径，这个文件统计了运行结果。注意，**results.txt** 包含这一章所有 **jmh** 测试的结果：**JMH1.java**，**JMH2.java** 和 **JMH3.java**。
+
+因为输出是绝对时间，所以在不同的机器和操作系统上结果各不相同。重要的因素不是绝对时间，我们真正观察的是一个算法和另一个算法的比较，尤其是哪一个运行得更快，快多少。如果你在自己的机器上运行测试，你将看到不同的结果却有着相同的模式。
+
+我在大量的机器上运行了这些测试，尽管不同的机器上得到的绝对值结果不同，但是相对值保持着合理的稳定性。我只列出了 **results.txt** 中适当的片段并加以编辑使输出更加易懂，而且内容大小适合页面。所有测试中的 **Mode** 都以 **avgt** 展示，代表 “平均时长”。**Cnt**（测试的数目）的值是 200，尽管这里的一个例子中配置的 **Cnt** 值是 5。**Units** 是 **us/op**，是 “Microseconds per operation” 的缩写，因此，这个值越小代表性能越高。
+
+我同样也展示了使用 warmups、measurements 和 forks 默认值的输出。我删除了示例中相应的注解，就是为了获取更加准确的测试结果（这将花费数小时）。结果中数字的模式应该仍然看起来相同，不论你如何运行测试。
+
+下面是 **JMH1.java** 的运行结果：
+
+**Benchmark Score**
+
+**JMH1.setAll 196280.2**
+
+**JMH1.parallelSetAll 195412.9**
+
+即使像 JMH 这么高级的基准测试工具，基准测试的过程也不容易，练习时需要倍加小心。这里测试产生了反直觉的结果：并行的版本 **parallelSetAll()** 花费了与非并行版本的 **setAll()** 相同的时间，两者似乎都运行了相当长的时间。
+
+当创建这个示例时，我假设如果我们要测试数组初始化的话，那么使用非常大的数组是有意义的。所以我选择了尽可能大的数组；如果你实验的话会发现一旦数组的大小超过 2亿5000万，你就开始会得到内存溢出的异常。然而，在这么大的数组上执行大量的操作从而震荡内存系统，产生无法预料的结果是有可能的。不管这个假设是否正确，看上去我们正在测试的并非是我们想测试的内容。
+
+考虑其他的因素：
+
+C：客户端执行操作的线程数量
+
+P：并行算法使用的并行数量
+
+N：数组的大小：**10^(2*k)**，通常来说，**k=1..7** 足够来练习不同的缓存占用。
+
+Q：setter 的操作成本
+
+这个 C/P/N/Q 模型在早期 JDK 8 的 Lambda 开发期间付出水面，大多数并行的 Stream 操作(**parallelSetAll()** 也基本相似)都满足这些结论：**N*Q**(主要工作量)对于并发性能尤为重要。并行算法在工作量较少时可能实际运行得更慢。
+
+在一些情况下操作竞争如此激烈使得并行毫无帮助，而不管 **N*Q** 有多大。当 **C** 很大时，**P** 就变得不太相关（内部并行在大量的外部并行面前显得多余）。此外，在一些情况下，并行分解会让相同的 **C** 个客户端运行得比它们顺序运行代码更慢。
+
+基于这些信息，我们重新运行测试，并在这些测试中使用不同大小的数组（改变 **N**）：
+
+```java
+// validating/jmh/JMH2.java
+package validating.jmh;
+import java.util.*;
+import org.openjdk.jmh.annotations.*;
+import java.util.concurrent.TimeUnit;
+@State(Scope.Thread)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@Warmup(iterations = 5)
+@Measurement(iterations = 5)
+@Fork(1)
+public class JMH2 {
+
+    private long[] la;
+
+    @Param({
+            "1",
+            "10",
+            "100",
+            "1000",
+            "10000",
+            "100000",
+            "1000000",
+            "10000000",
+            "100000000",
+            "250000000"
+    })
+    int size;
+
+    @Setup
+    public void setup() {
+        la = new long[size];
+    }
+
+    @Benchmark
+    public void setAll() {
+        Arrays.setAll(la, n -> n);
+    }
+
+    @Benchmark
+    public void parallelSetAll() {
+        Arrays.parallelSetAll(la, n -> n);
+    }
+}
+```
+
+**@Param** 会自动地将其自身的值注入到变量中。其自身的值必须是字符串类型，并可以转化为适当的类型，在这个例子中是 **int** 类型。
+
+下面是已经编辑过的结果，包含精确计算出的加速数值：
+
+| JMH2 Benchmark     | Size      | Score %    | Speedup |
+| ------------------ | --------- | ---------- | ------- |
+| **setAll**         | 1         | 0.001      |         |
+| **parallelSetAll** | 1         | 0.036      | 0.028   |
+| **setAll**         | 10        | 0.005      |         |
+| **parallelSetAll** | 10        | 3.965      | 0.001   |
+| **setAll**         | 100       | 0.031      |         |
+| **parallelSetAll** | 100       | 3.145      | 0.010   |
+| **setAll**         | 1000      | 0.302      |         |
+| **parallelSetAll** | 1000      | 3.285      | 0.092   |
+| **setAll**         | 10000     | 3.152      |         |
+| **parallelSetAll** | 10000     | 9.669      | 0.326   |
+| **setAll**         | 100000    | 34.971     |         |
+| **parallelSetAll** | 100000    | 20.153     | 1.735   |
+| **setAll**         | 1000000   | 420.581    |         |
+| **parallelSetAll** | 1000000   | 165.388    | 2.543   |
+| **setAll**         | 10000000  | 8160.054   |         |
+| **parallelSetAll** | 10000000  | 7610.190   | 1.072   |
+| **setAll**         | 100000000 | 79128.752  |         |
+| **parallelSetAll** | 100000000 | 76734.671  | 1.031   |
+| **setAll**         | 250000000 | 199552.121 |         |
+| **parallelSetAll** | 250000000 | 191791.927 | 1.040   |
 
 
 <!-- Profiling and Optimizing -->
 
-## 分析和优化
+## 剖析和优化
 
 <!-- Style Checking -->
 
