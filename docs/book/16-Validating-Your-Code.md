@@ -1666,6 +1666,7 @@ package validating.jmh;
 import java.util.*;
 import org.openjdk.jmh.annotations.*;
 import java.util.concurrent.TimeUnit;
+
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -1733,11 +1734,100 @@ public class JMH2 {
 | **parallelSetAll** | 100000000 | 76734.671  | 1.031   |
 | **setAll**         | 250000000 | 199552.121 |         |
 | **parallelSetAll** | 250000000 | 191791.927 | 1.040   |
+可以看到当数组大小达到 10 万左右时，**parallelSetAll()** 开始反超，而后趋于与非并行的运行速度相同。即使它运行速度上胜了，看起来也不足以证明由于并行的存在而使速度变快。
 
+**setAll()/parallelSetAll()** 中工作的计算量起很大影响吗？在前面的例子中，我们所做的只有对数组的赋值操作，这可能是最简单的任务。所以即使 **N** 值变大，**N*Q** 也仍然没有达到巨大，所以看起来像是我们没有为并行提供足够的机会（JMH 提供了一种模拟变量 Q 的途径；如果想了解更多的话，可搜索 **Blackhole.consumeCPU**）。
+
+我们通过使方法 **f()** 中的任务变得更加复杂，从而产生更多的并行机会：
+
+```java
+// validating/jmh/JMH3.java
+package validating.jmh;
+import java.util.*;
+import org.openjdk.jmh.annotations.*;
+import java.util.concurrent.TimeUnit;
+
+@State(Scope.Thread)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@Warmup(iterations = 5)
+@Measurement(iterations = 5)
+@Fork(1)
+public class JMH3 {
+    private long[] la;
+
+    @Param({
+            "1",
+            "10",
+            "100",
+            "1000",
+            "10000",
+            "100000",
+            "1000000",
+            "10000000",
+            "100000000",
+            "250000000"
+    })
+    int size;
+
+    @Setup
+    public void setup() {
+        la = new long[size];
+    }
+
+    public static long f(long x) {
+        long quadratic = 42 * x * x + 19 * x + 47;
+        return Long.divideUnsigned(quadratic, x + 1);
+    }
+
+    @Benchmark
+    public void setAll() {
+        Arrays.setAll(la, n -> f(n));
+    }
+
+    @Benchmark
+    public void parallelSetAll() {
+        Arrays.parallelSetAll(la, n -> f(n));
+    }
+}
+```
+
+**f()** 方法提供了更加复杂且耗时的操作。现在除了简单的给数组赋值外，setAll() 和 parallelSetAll() 都有更多的工作去做，这肯定会影响结果。
+
+| JMH2 Benchmark     | Size      | Score %     | Speedup |
+| ------------------ | --------- | ----------- | ------- |
+| **setAll**         | 1         | 0.012       |         |
+| **parallelSetAll** | 1         | 0.047       | 0.255   |
+| **setAll**         | 10        | 0.107       |         |
+| **parallelSetAll** | 10        | 3.894       | 0.027   |
+| **setAll**         | 100       | 0.990       |         |
+| **parallelSetAll** | 100       | 3.708       | 0.267   |
+| **setAll**         | 1000      | 133.814     |         |
+| **parallelSetAll** | 1000      | 11.747      | 11.391  |
+| **setAll**         | 10000     | 97.954      |         |
+| **parallelSetAll** | 10000     | 37.259      | 2.629   |
+| **setAll**         | 100000    | 988.475     |         |
+| **parallelSetAll** | 100000    | 276.264     | 3.578   |
+| **setAll**         | 1000000   | 9203.103    |         |
+| **parallelSetAll** | 1000000   | 2826.974    | 3.255   |
+| **setAll**         | 10000000  | 92144.951   |         |
+| **parallelSetAll** | 10000000  | 28126.202   | 3.276   |
+| **setAll**         | 100000000 | 921701.863  |         |
+| **parallelSetAll** | 100000000 | 266750.543  | 3.455   |
+| **setAll**         | 250000000 | 2299127.273 |         |
+| **parallelSetAll** | 250000000 | 538173.425  | 4.272   |
+
+可以看到当数组的大小达到 1000 左右时，**parallelSetAll()** 的运行速度反超了 **setAll()**。看来 **parallelSetAll()** 严重依赖数组中计算的复杂度。这正是基准测试的价值所在，因为我们已经得到了关于 **setAll()** 和 **parallelSetAll()** 间微妙的信息，知道在何时使用它们。
+
+这显然不是从阅读 Javadocs 就能得到的。
+
+大多数时候，JMH 的简单应用会产生好的结果（正如你将在本书后面例子中所见），但是我们从这里知道，你不能一直假定 JMH 会产生好的结果。 JMH 网站上的范例可以帮助你开始。
 
 <!-- Profiling and Optimizing -->
 
 ## 剖析和优化
+
+
 
 <!-- Style Checking -->
 
