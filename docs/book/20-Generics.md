@@ -1083,7 +1083,7 @@ Serializable]
 */
 ```
 
-在[第十二章 集合](https://github.com/LingCoder/OnJava8/blob/master/docs/book/12-Collections.md)的[本章小结](https://github.com/LingCoder/OnJava8/blob/master/docs/book/12-Collections.md#本章小结)部分将会用到这里的输出结果。
+在[第十二章 集合](./12-Collections.md)的[本章小结](./12-Collections.md#本章小结)部分将会用到这里的输出结果。
 
 <!-- Building Complex Models -->
 ## 复杂模型构建
