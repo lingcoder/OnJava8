@@ -570,6 +570,520 @@ extends Fibonacci implements Iterable<Integer> {
 
 ## 泛型方法
 
+到目前为止，我们已经研究了参数化整个类。其实还可以参数化类中的方法。类本身可能是泛型的，也可能不是，不过这与它的方法是否是泛型的并没有什么关系。
+
+泛型方法独立于类而改变方法。作为准则，请“尽可能”使用泛型方法。通常将单个方法泛型化要比将整个类泛型化更清晰易懂。
+
+如果方法是 **static** 的，则无法访问该类的泛型类型参数，因此，如果使用了泛型类型参数，则它必须是泛型方法。
+
+要定义泛型方法，请将泛型参数列表放置在返回值之前，如下所示：
+
+```java
+// generics/GenericMethods.java
+
+public class GenericMethods {
+    public <T> void f(T x) {
+        System.out.println(x.getClass().getName());
+    }
+
+    public static void main(String[] args) {
+        GenericMethods gm = new GenericMethods();
+        gm.f("");
+        gm.f(1);
+        gm.f(1.0);
+        gm.f(1.0F);
+        gm.f('c');
+        gm.f(gm);
+    }
+}
+/* Output:
+java.lang.String
+java.lang.Integer
+java.lang.Double
+java.lang.Float
+java.lang.Character
+GenericMethods
+*/
+```
+
+尽管可以同时对类及其方法进行参数化，但这里未将 **GenericMethods** 类参数化。只有方法 `f()` 具有类型参数，该参数由方法返回类型之前的参数列表指示。
+
+对于泛型类，必须在实例化该类时指定类型参数。使用泛型方法时，通常不需要指定参数类型，因为编译器会找出这些类型。 这称为 *类型参数推断*。因此，对`f()` 的调用看起来像普通的方法调用，并且 `f()` 看起来像被重载了无数次一样。它甚至会接受 **GenericMethods** 类型的参数。
+
+如果使用基本类型调用 `f()` ，自动装箱就开始起作用，自动将基本类型包装在它们对应的包装类型中。
+
+<!-- Varargs and Generic Methods -->
+### 变量和泛型方法
+
+泛型方法和变长参数列表可以很好地共存：
+
+```java
+// generics/GenericVarargs.java
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class GenericVarargs {
+    @SafeVarargs
+    public static <T> List<T> makeList(T... args) {
+        List<T> result = new ArrayList<>();
+        for (T item : args)
+            result.add(item);
+        return result;
+    }
+
+    public static void main(String[] args) {
+        List<String> ls = makeList("A");
+        System.out.println(ls);
+        ls = makeList("A", "B", "C");
+        System.out.println(ls);
+        ls = makeList(
+                "ABCDEFFHIJKLMNOPQRSTUVWXYZ".split(""));
+        System.out.println(ls);
+    }
+}
+/* Output:
+[A]
+[A, B, C]
+[A, B, C, D, E, F, F, H, I, J, K, L, M, N, O, P, Q, R,
+S, T, U, V, W, X, Y, Z]
+*/
+```
+
+此处显示的 `makeList()` 方法产生的功能与标准库的 `java.util.Arrays.asList()` 方法相同。
+
+`@SafeVarargs` 注解保证我们不会对变长参数列表进行任何修改，这是正确的，因为我们只从中读取。如果没有此注解，编译器将无法知道这些并会发出警告。
+
+<!-- A General-Purpose Supplier -->
+### 一个泛型的Supplier
+
+这是一个为任意具有无参构造方法的类生成 **Supplier** 的类。为了减少键入，它还包括一个用于生成 **BasicSupplier** 的泛型方法：
+
+```java
+// onjava/BasicSupplier.java
+// Supplier from a class with a no-arg constructor
+package onjava;
+
+import java.util.function.Supplier;
+
+public class BasicSupplier<T> implements Supplier<T> {
+    private Class<T> type;
+
+    public BasicSupplier(Class<T> type) {
+        this.type = type;
+    }
+
+    @Override
+    public T get() {
+        try {
+            // Assumes type is a public class:
+            return type.newInstance();
+        } catch (InstantiationException |
+                IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Produce a default Supplier from a type token:
+    public static <T> Supplier<T> create(Class<T> type) {
+        return new BasicSupplier<>(type);
+    }
+}
+```
+
+此类提供了产生以下对象的基本实现：
+
+1. 是 **public** 的。 因为 **BasicSupplier** 在单独的包中，所以相关的类必须具有 **public** 权限，而不仅仅是包级访问权限。
+
+2. 具有无参构造方法。要创建一个这样的 **BasicSupplier** 对象，请调用 `create()` 方法，并将要生成类型的类型令牌传递给它。通用的 `create()` 方法提供了 `BasicSupplier.create(MyType.class)` 这种较简洁的语法来代替较笨拙的 `new BasicSupplier <MyType>(MyType.class)`。
+
+例如，这是一个具有无参构造方法的简单类：
+
+```java
+// generics/CountedObject.java
+
+public class CountedObject {
+    private static long counter = 0;
+    private final long id = counter++;
+
+    public long id() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return "CountedObject " + id;
+    }
+}
+```
+
+**CountedObject** 类可以跟踪自身创建了多少个实例，并通过 `toString()` 报告这些实例的数量。 **BasicSupplier** 可以轻松地为 **CountedObject** 创建 **Supplier**：
+
+```java
+  // generics/BasicSupplierDemo.java
+
+import onjava.BasicSupplier;
+
+import java.util.stream.Stream;
+
+public class BasicSupplierDemo {
+    public static void main(String[] args) {
+        Stream.generate(
+                BasicSupplier.create(CountedObject.class))
+                .limit(5)
+                .forEach(System.out::println);
+    }
+}
+/* Output:
+CountedObject 0
+CountedObject 1
+CountedObject 2
+CountedObject 3
+CountedObject 4
+*/
+```
+
+泛型方法减少了产生 **Supplier** 对象所需的代码量。 Java 泛型强制传递 **Class** 对象，以便在 `create()` 方法中将其用于类型推断。
+
+<!-- Simplifying Tuple Use -->
+### 简化元组的使用
+
+使用类型参数推断和静态导入，我们将把早期的元组重写为更通用的库。在这里，我们使用重载的静态方法创建元组：
+
+```java
+// onjava/Tuple.java
+// Tuple library using type argument inference
+package onjava;
+
+public class Tuple {
+    public static <A, B> Tuple2<A, B> tuple(A a, B b) {
+        return new Tuple2<>(a, b);
+    }
+
+    public static <A, B, C> Tuple3<A, B, C>
+    tuple(A a, B b, C c) {
+        return new Tuple3<>(a, b, c);
+    }
+
+    public static <A, B, C, D> Tuple4<A, B, C, D>
+    tuple(A a, B b, C c, D d) {
+        return new Tuple4<>(a, b, c, d);
+    }
+
+    public static <A, B, C, D, E>
+    Tuple5<A, B, C, D, E> tuple(A a, B b, C c, D d, E e) {
+        return new Tuple5<>(a, b, c, d, e);
+    }
+}
+```
+
+我们修改 **TupleTest.java** 来测试 **Tuple.java** :
+
+```java
+// generics/TupleTest2.java
+
+import onjava.Tuple2;
+import onjava.Tuple3;
+import onjava.Tuple4;
+import onjava.Tuple5;
+
+import static onjava.Tuple.tuple;
+
+public class TupleTest2 {
+    static Tuple2<String, Integer> f() {
+        return tuple("hi", 47);
+    }
+
+    static Tuple2 f2() {
+        return tuple("hi", 47);
+    }
+
+    static Tuple3<Amphibian, String, Integer> g() {
+        return tuple(new Amphibian(), "hi", 47);
+    }
+
+    static Tuple4<Vehicle, Amphibian, String, Integer> h() {
+        return tuple(
+                new Vehicle(), new Amphibian(), "hi", 47);
+    }
+
+    static Tuple5<Vehicle, Amphibian,
+            String, Integer, Double> k() {
+        return tuple(new Vehicle(), new Amphibian(),
+                "hi", 47, 11.1);
+    }
+
+    public static void main(String[] args) {
+        Tuple2<String, Integer> ttsi = f();
+        System.out.println(ttsi);
+        System.out.println(f2());
+        System.out.println(g());
+        System.out.println(h());
+        System.out.println(k());
+    }
+}
+/* Output:
+(hi, 47)
+(hi, 47)
+(Amphibian@14ae5a5, hi, 47)
+(Vehicle@135fbaa4, Amphibian@45ee12a7, hi, 47)
+(Vehicle@4b67cf4d, Amphibian@7ea987ac, hi, 47, 11.1)
+*/
+```
+
+请注意，`f()` 返回一个参数化的 **Tuple2** 对象，而 `f2()` 返回一个未参数化的 **Tuple2** 对象。编译器不会在这里警告 `f2()` ，因为返回值未以参数化方式使用。从某种意义上说，它被“向上转型”为一个未参数化的 **Tuple2** 。 但是，如果如果尝试将 `f2()` 的结果放入到参数化的 **Tuple2** 中，则编译器将发出警告。
+
+<!-- A Set Utility -->
+### 一个Set工具
+
+对于泛型方法的另一个示例，请考虑由 **Set** 表示的数学关系。这些被方便地定义为可用于所有不同类型的泛型方法：
+
+```java
+// onjava/Sets.java
+
+package onjava;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class Sets {
+    public static <T> Set<T> union(Set<T> a, Set<T> b) {
+        Set<T> result = new HashSet<>(a);
+        result.addAll(b);
+        return result;
+    }
+
+    public static <T>
+    Set<T> intersection(Set<T> a, Set<T> b) {
+        Set<T> result = new HashSet<>(a);
+        result.retainAll(b);
+        return result;
+    }
+
+    // Subtract subset from superset:
+    public static <T> Set<T>
+    difference(Set<T> superset, Set<T> subset) {
+        Set<T> result = new HashSet<>(superset);
+        result.removeAll(subset);
+        return result;
+    }
+
+    // Reflexive--everything not in the intersection:
+    public static <T> Set<T> complement(Set<T> a, Set<T> b) {
+        return difference(union(a, b), intersection(a, b));
+    }
+}
+```
+
+前三个方法通过将第一个参数的引用复制到新的 **HashSet** 对象中来复制第一个参数，因此不会直接修改参数集合。因此，返回值是一个新的 **Set** 对象。
+
+这四种方法代表数学集合操作： `union()` 返回一个包含两个参数并集的 **Set** ， `intersection()` 返回一个包含两个参数集合交集的 **Set** ， `difference()` 从 **superset** 中减去 **subset** 的元素 ，而 `complement()` 返回所有不在交集中的元素的 **Set**。作为显示这些方法效果的简单示例的一部分，下面是一个包含不同水彩名称的 **enum** ：
+
+```java
+// generics/watercolors/Watercolors.java
+
+package watercolors;
+
+public enum Watercolors {
+    ZINC, LEMON_YELLOW, MEDIUM_YELLOW, DEEP_YELLOW,
+    ORANGE, BRILLIANT_RED, CRIMSON, MAGENTA,
+    ROSE_MADDER, VIOLET, CERULEAN_BLUE_HUE,
+    PHTHALO_BLUE, ULTRAMARINE, COBALT_BLUE_HUE,
+    PERMANENT_GREEN, VIRIDIAN_HUE, SAP_GREEN,
+    YELLOW_OCHRE, BURNT_SIENNA, RAW_UMBER,
+    BURNT_UMBER, PAYNES_GRAY, IVORY_BLACK
+}
+```
+
+为了方便起见（不必全限定所有名称），将其静态导入到以下示例中。本示例使用 **EnumSet** 轻松从 **enum** 中创建 **Set** 。（可以在[第二十二章 枚举](https://github.com/LingCoder/OnJava8/blob/master/docs/book/22-Enumerations.md)一章中了解有关 **EnumSet** 的更多信息。）在这里，静态方法 `EnumSet.range()` 要求提供所要在结果 **Set** 中创建的元素范围的第一个和最后一个元素：
+
+```java
+// generics/WatercolorSets.java
+
+import watercolors.*;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+import static watercolors.Watercolors.*;
+import static onjava.Sets.*;
+
+public class WatercolorSets {
+    public static void main(String[] args) {
+        Set<Watercolors> set1 =
+                EnumSet.range(BRILLIANT_RED, VIRIDIAN_HUE);
+        Set<Watercolors> set2 =
+                EnumSet.range(CERULEAN_BLUE_HUE, BURNT_UMBER);
+        System.out.println("set1: " + set1);
+        System.out.println("set2: " + set2);
+        System.out.println(
+                "union(set1, set2): " + union(set1, set2));
+        Set<Watercolors> subset = intersection(set1, set2);
+        System.out.println(
+                "intersection(set1, set2): " + subset);
+        System.out.println("difference(set1, subset): " +
+                difference(set1, subset));
+        System.out.println("difference(set2, subset): " +
+                difference(set2, subset));
+        System.out.println("complement(set1, set2): " +
+                complement(set1, set2));
+    }
+}
+/* Output:
+set1: [BRILLIANT_RED, CRIMSON, MAGENTA, ROSE_MADDER,
+VIOLET, CERULEAN_BLUE_HUE, PHTHALO_BLUE, ULTRAMARINE,
+COBALT_BLUE_HUE, PERMANENT_GREEN, VIRIDIAN_HUE]
+set2: [CERULEAN_BLUE_HUE, PHTHALO_BLUE, ULTRAMARINE,
+COBALT_BLUE_HUE, PERMANENT_GREEN, VIRIDIAN_HUE,
+SAP_GREEN, YELLOW_OCHRE, BURNT_SIENNA, RAW_UMBER,
+BURNT_UMBER]
+union(set1, set2): [BURNT_SIENNA, BRILLIANT_RED,
+YELLOW_OCHRE, MAGENTA, SAP_GREEN, CERULEAN_BLUE_HUE,
+ULTRAMARINE, VIRIDIAN_HUE, VIOLET, RAW_UMBER,
+ROSE_MADDER, PERMANENT_GREEN, BURNT_UMBER,
+PHTHALO_BLUE, CRIMSON, COBALT_BLUE_HUE]
+intersection(set1, set2): [PERMANENT_GREEN,
+CERULEAN_BLUE_HUE, ULTRAMARINE, VIRIDIAN_HUE,
+PHTHALO_BLUE, COBALT_BLUE_HUE]
+difference(set1, subset): [BRILLIANT_RED, MAGENTA,
+VIOLET, CRIMSON, ROSE_MADDER]
+difference(set2, subset): [BURNT_SIENNA, YELLOW_OCHRE,
+BURNT_UMBER, SAP_GREEN, RAW_UMBER]
+complement(set1, set2): [BURNT_SIENNA, BRILLIANT_RED,
+YELLOW_OCHRE, MAGENTA, SAP_GREEN, VIOLET, RAW_UMBER,
+ROSE_MADDER, BURNT_UMBER, CRIMSON]
+*/
+```
+
+接下来的例子使用 `Sets.difference()` 方法来展示 **java.util** 包中各种 **Collection** 和 **Map** 类之间的方法差异：
+
+```java
+// onjava/CollectionMethodDifferences.java
+// {java onjava.CollectionMethodDifferences}
+
+package onjava;
+
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class CollectionMethodDifferences {
+    static Set<String> methodSet(Class<?> type) {
+        return Arrays.stream(type.getMethods())
+                .map(Method::getName)
+                .collect(Collectors.toCollection(TreeSet::new));
+    }
+
+    static void interfaces(Class<?> type) {
+        System.out.print("Interfaces in " +
+                type.getSimpleName() + ": ");
+        System.out.println(
+                Arrays.stream(type.getInterfaces())
+                        .map(Class::getSimpleName)
+                        .collect(Collectors.toList()));
+    }
+
+    static Set<String> object = methodSet(Object.class);
+
+    static {
+        object.add("clone");
+    }
+
+    static void
+    difference(Class<?> superset, Class<?> subset) {
+        System.out.print(superset.getSimpleName() +
+                " extends " + subset.getSimpleName() +
+                ", adds: ");
+        Set<String> comp = Sets.difference(
+                methodSet(superset), methodSet(subset));
+        comp.removeAll(object); // Ignore 'Object' methods
+        System.out.println(comp);
+        interfaces(superset);
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Collection: " +
+                methodSet(Collection.class));
+        interfaces(Collection.class);
+        difference(Set.class, Collection.class);
+        difference(HashSet.class, Set.class);
+        difference(LinkedHashSet.class, HashSet.class);
+        difference(TreeSet.class, Set.class);
+        difference(List.class, Collection.class);
+        difference(ArrayList.class, List.class);
+        difference(LinkedList.class, List.class);
+        difference(Queue.class, Collection.class);
+        difference(PriorityQueue.class, Queue.class);
+        System.out.println("Map: " + methodSet(Map.class));
+        difference(HashMap.class, Map.class);
+        difference(LinkedHashMap.class, HashMap.class);
+        difference(SortedMap.class, Map.class);
+        difference(TreeMap.class, Map.class);
+    }
+}
+/* Output:
+Collection: [add, addAll, clear, contains, containsAll,
+equals, forEach, hashCode, isEmpty, iterator,
+parallelStream, remove, removeAll, removeIf, retainAll,
+size, spliterator, stream, toArray]
+Interfaces in Collection: [Iterable]
+Set extends Collection, adds: []
+Interfaces in Set: [Collection]
+HashSet extends Set, adds: []
+Interfaces in HashSet: [Set, Cloneable, Serializable]
+LinkedHashSet extends HashSet, adds: []
+Interfaces in LinkedHashSet: [Set, Cloneable,
+Serializable]
+TreeSet extends Set, adds: [headSet,
+descendingIterator, descendingSet, pollLast, subSet,
+floor, tailSet, ceiling, last, lower, comparator,
+pollFirst, first, higher]
+Interfaces in TreeSet: [NavigableSet, Cloneable,
+Serializable]
+List extends Collection, adds: [replaceAll, get,
+indexOf, subList, set, sort, lastIndexOf, listIterator]
+Interfaces in List: [Collection]
+ArrayList extends List, adds: [trimToSize,
+ensureCapacity]
+Interfaces in ArrayList: [List, RandomAccess,
+Cloneable, Serializable]
+LinkedList extends List, adds: [offerFirst, poll,
+getLast, offer, getFirst, removeFirst, element,
+removeLastOccurrence, peekFirst, peekLast, push,
+pollFirst, removeFirstOccurrence, descendingIterator,
+pollLast, removeLast, pop, addLast, peek, offerLast,
+addFirst]
+Interfaces in LinkedList: [List, Deque, Cloneable,
+Serializable]
+Queue extends Collection, adds: [poll, peek, offer,
+element]
+Interfaces in Queue: [Collection]
+PriorityQueue extends Queue, adds: [comparator]
+Interfaces in PriorityQueue: [Serializable]
+Map: [clear, compute, computeIfAbsent,
+computeIfPresent, containsKey, containsValue, entrySet,
+equals, forEach, get, getOrDefault, hashCode, isEmpty,
+keySet, merge, put, putAll, putIfAbsent, remove,
+replace, replaceAll, size, values]
+HashMap extends Map, adds: []
+Interfaces in HashMap: [Map, Cloneable, Serializable]
+LinkedHashMap extends HashMap, adds: []
+Interfaces in LinkedHashMap: [Map]
+SortedMap extends Map, adds: [lastKey, subMap,
+comparator, firstKey, headMap, tailMap]
+Interfaces in SortedMap: [Map]
+TreeMap extends Map, adds: [descendingKeySet,
+navigableKeySet, higherEntry, higherKey, floorKey,
+subMap, ceilingKey, pollLastEntry, firstKey, lowerKey,
+headMap, tailMap, lowerEntry, ceilingEntry,
+descendingMap, pollFirstEntry, lastKey, firstEntry,
+floorEntry, comparator, lastEntry]
+Interfaces in TreeMap: [NavigableMap, Cloneable,
+Serializable]
+*/
+```
+
+在[第十二章 集合](https://github.com/LingCoder/OnJava8/blob/master/docs/book/12-Collections.md)的[本章小结](https://github.com/LingCoder/OnJava8/blob/master/docs/book/12-Collections.md#本章小结)部分将会用到这里的输出结果。
 
 <!-- Building Complex Models -->
 ## 复杂模型构建
