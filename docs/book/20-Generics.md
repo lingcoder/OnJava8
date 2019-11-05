@@ -1086,8 +1086,145 @@ Serializable]
 在[第十二章 集合](./12-Collections.md)的[本章小结](./12-Collections.md#本章小结)部分将会用到这里的输出结果。
 
 <!-- Building Complex Models -->
-## 复杂模型构建
+## 构建复杂模型
 
+泛型的一个重要好处是能够简单安全地创建复杂模型。例如，我们可以地轻松创建一个元组列表：
+
+```java
+// generics/TupleList.java
+// Combining generic types to make complex generic types
+
+import onjava.Tuple4;
+
+import java.util.ArrayList;
+
+public class TupleList<A, B, C, D>
+        extends ArrayList<Tuple4<A, B, C, D>> {
+    public static void main(String[] args) {
+        TupleList<Vehicle, Amphibian, String, Integer> tl =
+                new TupleList<>();
+        tl.add(TupleTest2.h());
+        tl.add(TupleTest2.h());
+        tl.forEach(System.out::println);
+    }
+}
+/* Output:
+(Vehicle@7cca494b, Amphibian@7ba4f24f, hi, 47)
+(Vehicle@3b9a45b3, Amphibian@7699a589, hi, 47)
+*/
+```
+
+这将产生一个功能强大的数据结构，而无需太多代码。
+
+下面是第二个例子。每个类都是组成块，总体包含很多个块。在这里，该模型是一个具有过道，货架和产品的零售商店：
+
+```java
+// generics/Store.java
+// Building a complex model using generic collections
+
+import onjava.Suppliers;
+
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.function.Supplier;
+
+class Product {
+    private final int id;
+    private String description;
+    private double price;
+
+    Product(int idNumber, String descr, double price) {
+        id = idNumber;
+        description = descr;
+        this.price = price;
+        System.out.println(toString());
+    }
+
+    @Override
+    public String toString() {
+        return id + ": " + description +
+                ", price: $" + price;
+    }
+
+    public void priceChange(double change) {
+        price += change;
+    }
+
+    public static Supplier<Product> generator =
+            new Supplier<Product>() {
+                private Random rand = new Random(47);
+
+                @Override
+                public Product get() {
+                    return new Product(rand.nextInt(1000), "Test",
+                            Math.round(
+                                    rand.nextDouble() * 1000.0) + 0.99);
+                }
+            };
+}
+
+class Shelf extends ArrayList<Product> {
+    Shelf(int nProducts) {
+        Suppliers.fill(this, Product.generator, nProducts);
+    }
+}
+
+class Aisle extends ArrayList<Shelf> {
+    Aisle(int nShelves, int nProducts) {
+        for (int i = 0; i < nShelves; i++)
+            add(new Shelf(nProducts));
+    }
+}
+
+class CheckoutStand {
+}
+
+class Office {
+}
+
+public class Store extends ArrayList<Aisle> {
+    private ArrayList<CheckoutStand> checkouts =
+            new ArrayList<>();
+    private Office office = new Office();
+
+    public Store(
+            int nAisles, int nShelves, int nProducts) {
+        for (int i = 0; i < nAisles; i++)
+            add(new Aisle(nShelves, nProducts));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        for (Aisle a : this)
+            for (Shelf s : a)
+                for (Product p : s) {
+                    result.append(p);
+                    result.append("\n");
+                }
+        return result.toString();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Store(5, 4, 3));
+    }
+}
+/* Output: (First 8 Lines)
+258: Test, price: $400.99
+861: Test, price: $160.99
+868: Test, price: $417.99
+207: Test, price: $268.99
+551: Test, price: $114.99
+278: Test, price: $804.99
+520: Test, price: $554.99
+140: Test, price: $530.99
+                  ...
+*/
+```
+
+`Store.toString()` 显示了结果：尽管有复杂的层次结构，但多层的集合仍然是类型安全的和可管理的。令人印象深刻的是，组装这样的模型在理论上并不是禁止的。
+
+**Shelf** 使用 `Suppliers.fill()` 这个实用程序，该实用程序接受 **Collection** （第一个参数），并使用 **Supplier** （第二个参数），以元素的数量为 **n** （第三个参数）来填充它。 **Suppliers** 类将会在本章末尾定义，其中的方法都是在执行某种填充操作，并在本章的其他示例中使用。
 
 <!-- The Mystery of Erasure -->
 ## 泛型擦除
