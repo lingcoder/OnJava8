@@ -1,15 +1,16 @@
 [TOC]
 
 <!-- Strings -->
+
 # 第十八章 字符串
->可以证明，字符串操作是计算机程序设计中最常见的行为之一。
+>字符串操作毫无疑问是计算机程序设计中最常见的行为之一。
 
-在Java大展拳脚的Web系统中更是如此。在本章中，我们将深入学习在Java语言中应用最广泛的`String`类，并研究与之相关的类及工具。
-
+在 Java 大展拳脚的 Web 系统中更是如此。在本章中，我们将深入学习在 Java 语言中应用最广泛的 `String` 类，并研究与之相关的类及工具。
 
 <!-- Immutable Strings -->
+
 ## 字符串的不可变
-`String`对象是不可变的。查看JDK文档你就会发现，`String`类中每一个看起来会修改`String`值的方法，实际上都是创建了一个全新的`String`对象,以包含修改后的字符串内容。而最初的`String`对象则丝毫未动。
+`String` 对象是不可变的。查看 JDK 文档你就会发现，`String` 类中每一个看起来会修改 `String` 值的方法，实际上都是创建了一个全新的 `String` 对象，以包含修改后的字符串内容。而最初的`String` 对象则丝毫未动。
 
 看看下面的代码：
 ```java
@@ -32,25 +33,26 @@ HOWDY
 howdy
 */ 
 ```
-当把`q`传递给`upcase()`方法时，实际传递的是引用的一个拷贝。其实，每当把String对象作为方法的参数时，都会复制一份引用，而该引用所指向的对象其实一直待在单一的物理位置上，从未动过。
+当把 `q` 传递给 `upcase()` 方法时，实际传递的是引用的一个拷贝。其实，每当把 String 对象作为方法的参数时，都会复制一份引用，而该引用所指向的对象其实一直待在单一的物理位置上，从未动过。
 
-回到`upcase()`的定义，传入其中的引用有了名字`s`，只有`upcase()`运行的时候，局部引用`s`才存在。一旦`upcase()`运行结束，`s`就消失了。当然了，`upcase()`的返回值，其实是最终结果的引用。这足以说明，`upcase()`返回的引用已经指向了一个新的对象，而`q`仍然在原来的位置。
+回到 `upcase()` 的定义，传入其中的引用有了名字 `s`，只有 `upcase()` 运行的时候，局部引用 `s` 才存在。一旦 `upcase()` 运行结束，`s` 就消失了。当然了，`upcase()` 的返回值，其实是最终结果的引用。这足以说明，`upcase()` 返回的引用已经指向了一个新的对象，而 `q` 仍然在原来的位置。
 
-`String`的这种行为正是我们想要的。例如：
+`String` 的这种行为正是我们想要的。例如：
+
 ```java
 String s = "asdf";
 String x = Immutable.upcase(s);
 ```
-难道你真的希望`upcase()`方法改变其参数吗？对于一个方法而言，参数是为该方法提供信息的，而不是想让该方法改变自己的。在阅读这段代码时，读者自然会有这样的感觉。这一点很重要，正是有了这种保障，才使得代码易于编写和阅读。
+难道你真的希望 `upcase()` 方法改变其参数吗？对于一个方法而言，参数是为该方法提供信息的，而不是想让该方法改变自己的。在阅读这段代码时，读者自然会有这样的感觉。这一点很重要，正是有了这种保障，才使得代码易于编写和阅读。
 
 
 <!-- Overloading + vs. StringBuilder -->
-## `+`的重载与`StringBuilder`
-`String`对象是不可变的，你可以给一个`String`对象添加任意多的别名。因为`String`是只读的，所以指向它的任何引用都不可能改它的值，因此，也就不会影响到其他引用。
+## `+` 的重载与 `StringBuilder`
+`String` 对象是不可变的，你可以给一个 `String` 对象添加任意多的别名。因为 `String` 是只读的，所以指向它的任何引用都不可能修改它的值，因此，也就不会影响到其他引用。
 
-不可变性会带来一定的效率问题。为`String`对象重载的`+`操作符就是一个例子。重载的意思是，一个操作符在用于特定的类时，被赋予了特殊的意义（用于`String`的`+`与`+=`是Java中仅有的两个重载过的操作符，Java不允许程序员重载任何其他的操作符 [^1]）。
+不可变性会带来一定的效率问题。为 `String` 对象重载的 `+` 操作符就是一个例子。重载的意思是，一个操作符在用于特定的类时，被赋予了特殊的意义（用于 `String` 的 `+` 与 `+=` 是 Java 中仅有的两个重载过的操作符，Java 不允许程序员重载任何其他的操作符 [^1]）。
 
-操作符`+`可以用来连接`String`：
+操作符 `+` 可以用来连接 `String`：
 ```java
 // strings/Concatenation.java
 
@@ -65,15 +67,15 @@ public class Concatenation {
 abcmangodef47 
 */
 ```
-可以想象一下，这段代码可能是这样工作的：`String`可能有一个`append()`方法，它会生成一个新的`String`对象，以包含“abc”与`mango`连接后的字符串。该对象会再创建另一个新的`String`对象，然后与“def”相连，生成另一个新的对象，依此类推。
+可以想象一下，这段代码是这样工作的：`String` 可能有一个 `append()` 方法，它会生成一个新的 `String` 对象，以包含“abc”与 `mango` 连接后的字符串。该对象会再创建另一个新的 `String` 对象，然后与“def”相连，生成另一个新的对象，依此类推。
 
-这种方式当然是可行的，但是为了生成最终的`String`对象，会产生一大堆需要垃圾回收的中间对象。我猜想，Java设计者一开始就是这么做的（这也是软件设计中的一个教训：除非你用代码将系统实现，并让它运行起来，否则你无法真正了解它会有什么问题），然后他们发现其性能相当糟糕。
+这种方式当然是可行的，但是为了生成最终的 `String` 对象，会产生一大堆需要垃圾回收的中间对象。我猜想，Java 设计者一开始就是这么做的（这也是软件设计中的一个教训：除非你用代码将系统实现，并让它运行起来，否则你无法真正了解它会有什么问题），然后他们发现其性能相当糟糕。
 
-想看看以上代码到底是如何工作的吗？可以用JDK自带的`javap`工具来反编译以上代码。命令如下：
+想看看以上代码到底是如何工作的吗？可以用JDK自带的 `javap` 工具来反编译以上代码。命令如下：
 ```java
 javap -c Concatenation
 ```
-这里的`-c`标志表示将生成JVM字节码。我们剔除不感兴趣的部分，然后做细微的修改，于是有了一下的字节码：
+这里的 `-c` 标志表示将生成 JVM 字节码。我们剔除不感兴趣的部分，然后做细微的修改，于是有了以下的字节码：
 ```x86asm
 public static void main(java.lang.String[]); 
  Code:
@@ -98,11 +100,11 @@ public static void main(java.lang.String[]);
   37: invokevirtual #11; //PrintStream.println:(String) 
   40: return
 ```
-如果你有汇编语言的经验，以上代码应该很眼熟(其中的`dup`和`invokevirtual`语句相当于Java虚拟机上的汇编语句。即使你完全不了解汇编语言也无需担心)。需要重点注意的是：编译器自动引入了`java.lang.StringBuilder`类。虽然源代码中并没有使用`StringBuilder`类，但是编译器却自作主张地使用了它，就因为它更高效。
+如果你有汇编语言的经验，以上代码应该很眼熟(其中的 `dup` 和 `invokevirtual` 语句相当于Java虚拟机上的汇编语句。即使你完全不了解汇编语言也无需担心)。需要重点注意的是：编译器自动引入了 `java.lang.StringBuilder` 类。虽然源代码中并没有使用 `StringBuilder` 类，但是编译器却自作主张地使用了它，就因为它更高效。
 
-在这里，编译器创建了一个`StringBuilder`对象，用于构建最终的`String`，并对每个字符串调用了一次`append`()方法，共计4次。最后调用`toString()`生成结果，并存为`s`(使用的命令为`astore_2`)。
+在这里，编译器创建了一个 `StringBuilder` 对象，用于构建最终的 `String`，并对每个字符串调用了一次 `append()` 方法，共计 4 次。最后调用 `toString()` 生成结果，并存为 `s` (使用的命令为 `astore_2`)。
 
-现在，也许你会觉得可以随意使用`String`对象，反正编译器会自动为你做性能优化。可是在这之前，让我们更深入地看看编译器能为我们优化到什么程度。下面的例子采用两种方式生成一个`String`：方法一使用了多个`String`对象；方法二在代码中使用了`StringBuilder`。
+现在，也许你会觉得可以随意使用 `String` 对象，反正编译器会自动为你做性能优化。可是在这之前，让我们更深入地看看编译器能为我们优化到什么程度。下面的例子采用两种方式生成一个 `String`：方法一使用了多个 `String` 对象；方法二在代码中使用了 `StringBuilder`。
 ```java
 // strings/WhitherStringBuilder.java
 
@@ -123,11 +125,11 @@ public class WhitherStringBuilder {
     }
 }
 ```
-现在运行`javap -c WitherStringBuilder`，可以看到两种不同方法（我已经去掉不相关的细节）对应的字节码。首先是`implicit`()方法：
+现在运行 `javap -c WitherStringBuilder`，可以看到两种不同方法（我已经去掉不相关的细节）对应的字节码。首先是 `implicit()` 方法：
 ```x86asm
 public java.lang.String implicit(java.lang.String[]); 
 0: ldc #2 // String 
-2: astore_2 
+2: astore_2
 3: aload_1 
 4: astore_3 
 5: aload_3 
@@ -156,7 +158,7 @@ public java.lang.String implicit(java.lang.String[]);
 51: aload_2 
 52: areturn
 ```
-注意从第16行到第48行构成了一个循环体。第16行：对堆栈中的操作数进行“大于或等于的整数比较运算”，循环结束时跳转到第51行。第48行：返回循环体的起始位置（第12行）。注意：`StringBuilder`是在循环内构造的，这意味着每进行一次循环，会创建一个新的`StringBuilder`对象。
+注意从第 16 行到第 48 行构成了一个循环体。第 16 行：对堆栈中的操作数进行“大于或等于的整数比较运算”，循环结束时跳转到第 51 行。第 48 行：重新回到循环体的起始位置（第 12 行）。注意：`StringBuilder` 是在循环内构造的，这意味着每进行一次循环，会创建一个新的`StringBuilder`对象。
 
 下面是`explicit()`方法对应的字节码：
 ```x86asm
@@ -189,9 +191,9 @@ public java.lang.String explicit(java.lang.String[]);
 44: invokevirtual #6 // StringBuilder.toString:() 
 47: areturn
 ```
-可以看到，不仅循环部分的代码更简短、更简单，而且它只生成了一个`StringBuilder`对象。显式地创建`StringBuilder`还允许你预先为其指定大小。如果你已经知道最终字符串的大概长度，那预先指定`StringBuilder`的大小可以避免频繁地重新分配缓冲。
+可以看到，不仅循环部分的代码更简短、更简单，而且它只生成了一个 `StringBuilder` 对象。显式地创建 `StringBuilder` 还允许你预先为其指定大小。如果你已经知道最终字符串的大概长度，那预先指定 `StringBuilder` 的大小可以避免频繁地重新分配缓冲。
 
-因此，当你为一个类编写`toString()`方法时，如果字符串操作比较简单，那就可以信赖编译器，它会为你合理地构造最终的字符串结果。但是，如果你要在`toString()`方法中使用循环，且可能有性能问题，那么最好自己创建一个`StringBuilder`对象，用它来构建最终结果。请参考以下示例：
+因此，当你为一个类编写 `toString()` 方法时，如果字符串操作比较简单，那就可以信赖编译器，它会为你合理地构造最终的字符串结果。但是，如果你要在 `toString()` 方法中使用循环，且可能有性能问题，那么最好自己创建一个 `StringBuilder` 对象，用它来构建最终结果。请参考以下示例：
 ```java
 // strings/UsingStringBuilder.java 
 
@@ -228,18 +230,18 @@ public class UsingStringBuilder {
 9, 78, 98, 61, 20, 58, 16, 40, 11, 22, 4] 
 */ 
 ```
-在方法`string1()`中，最终结果是用`append()`语句拼接起来的。如果你想走捷径，例如：`append(a + ": " + c)`，编译器就会掉入陷阱，从而为你另外创建一个`StringBuilder`对象处理括号内的字符串操作。如果拿不准该用哪种方式，随时可以用`javap`来分析你的程序。
+在方法 `string1()` 中，最终结果是用 `append()` 语句拼接起来的。如果你想走捷径，例如：`append(a + ": " + c)`，编译器就会掉入陷阱，从而为你另外创建一个 `StringBuilder` 对象处理括号内的字符串操作。如果拿不准该用哪种方式，随时可以用 `javap` 来分析你的程序。
 
-`StringBuilder`提供了丰富而全面的方法，包括`insert()`、`replace()`、`substring()`，甚至还有`reserve()`，但是最常用的还是`append()`和`toString()`。还有`delete()`，上面的例子中我们用它删除最后一个逗号和空格，以便添加右括号。
+`StringBuilder` 提供了丰富而全面的方法，包括 `insert()`、`replace()`、`substring()`，甚至还有`reverse()`，但是最常用的还是 `append()` 和 `toString()`。还有 `delete()`，上面的例子中我们用它删除最后一个逗号和空格，以便添加右括号。
 
-`string2()`使用了`Stream`，这样代码更加简洁美观。可以证明，`Collectors.joining()`内部也是使用的`StringBuilder`，这种写法不会影响性能！
+`string2()` 使用了 `Stream`，这样代码更加简洁美观。可以证明，`Collectors.joining()` 内部也是使用的 `StringBuilder`，这种写法不会影响性能！
 
-`StringBuilder`是Java SE5引入的，在这之前用的是`StringBuffer`。后者是线程安全的（参见[并发编程](#)），因此开销也会大些。使用`StringBuilder`进行字符串操作更快一点。
-
+`StringBuilder `是 Java SE5 引入的，在这之前用的是 `StringBuffer`。后者是线程安全的（参见[并发编程](./24-Concurrent-Programming.md)），因此开销也会大些。使用 `StringBuilder` 进行字符串操作更快一点。
 
 <!-- Unintended Recursion -->
+
 ## 意外递归
-Java中的每个类从根本上都是继承自`Object`，标准集合类也是如此，集合类都有`toString()`方法，并且覆盖了该方法，使得它生成的`String`结果能够表达集合自身，以及集合包含的对象。例如`ArrayList.toString()`，它会遍历`ArrayList`中包含的所有对象，调用每个元素上的`toString()`方法：
+Java 中的每个类从根本上都是继承自 `Object`，标准集合类也是如此，它们都有 `toString()` 方法，并且覆盖了该方法，使得它生成的 `String` 结果能够表达集合自身，以及集合包含的对象。例如 `ArrayList.toString()`，它会遍历 `ArrayList` 中包含的所有对象，调用每个元素上的 `toString()` 方法：
 ```java
 // strings/ArrayListDisplay.java 
 import java.util.*;
@@ -259,7 +261,7 @@ public class ArrayListDisplay {
 Breve 5, Americano 6, Latte 7, Cappuccino 8, Cappuccino 9] 
 */ 
 ```
-如果你希望`toString()`打印出类的内存地址，也许你会考虑使用`this`关键字：
+如果你希望 `toString()` 打印出类的内存地址，也许你会考虑使用 `this` 关键字：
 ```java
 // strings/InfiniteRecursion.java 
 // Accidental recursion 
@@ -280,18 +282,18 @@ public class InfiniteRecursion {
     } 
 } 
 ```
-当你创建了`InfiniteRecursion`对象，并将其打印出来的时候，你会得到一串很长的异常信息。如果你将该`InfiniteRecursion`对象存入一个`ArrayList`中，然后打印该`ArrayList`，同样也会抛出异常。其实，当运行到如下代码时：
+当你创建了 `InfiniteRecursion` 对象，并将其打印出来的时候，你会得到一串很长的异常信息。如果你将该 `InfiniteRecursion` 对象存入一个 `ArrayList` 中，然后打印该 `ArrayList`，同样也会抛出异常。其实，当运行到如下代码时：
 ```java
 "InfiniteRecursion address: " + this 
 ```
-这里发生了自动类型转换，由`InfiniteRecursion`类型转换为`String`类型。因为编译器发现一个`String`对象后面跟着一个“+”，而“+”后面的对象不是`String`，于是编译器试着将`this`转换成一个`String`。它怎么转换呢？正是通过调用`this`上的`toString()`方法，于是就发生了递归调用。
+这里发生了自动类型转换，由 `InfiniteRecursion` 类型转换为 `String` 类型。因为编译器发现一个 `String` 对象后面跟着一个 “+”，而 “+” 后面的对象不是 `String`，于是编译器试着将 `this` 转换成一个 `String`。它怎么转换呢？正是通过调用 `this` 上的 `toString()` 方法，于是就发生了递归调用。
 
-如果你真的想要打印对象的内存地址，应该调用`Object.toString()`方法，这才是负责此任务的方法。所以，不要使用`this`，而是应该调用`super.toString()`方法。
+如果你真的想要打印对象的内存地址，应该调用 `Object.toString()` 方法，这才是负责此任务的方法。所以，不要使用 `this`，而是应该调用 `super.toString()` 方法。
 
 
 <!-- Operations on Strings -->
 ## 字符串操作
-以下是`String`对象具备的一些基本方法。重载的方法归纳在同一行中：
+以下是 `String` 对象具备的一些基本方法。重载的方法归纳在同一行中：
 
 | 方法 | 参数，重载版本 | 作用 |
 | ---- | ---- | ---- |
@@ -323,22 +325,22 @@ public class InfiniteRecursion {
 | `intern()` | | 为每个唯一的字符序列生成一个且仅生成一个`String`引用 |
 | `format()` | 要格式化的字符串，要替换到格式化字符串的参数 | 返回格式化结果`String` |
 
-从这个表可以看出，当需要改变字符串的内容时，`String`类的方法都会返回一个新的`String`对象。同时，如果内容不改变，`String`方法只是返回原始对象的一个引用而已。这可以节约存储空间以及避免额外的开销。
+从这个表可以看出，当需要改变字符串的内容时，`String` 类的方法都会返回一个新的 `String` 对象。同时，如果内容不改变，`String` 方法只是返回原始对象的一个引用而已。这可以节约存储空间以及避免额外的开销。
 
-本章稍后还将介绍正则表达式在`String`方法中的应用。
-
+本章稍后还将介绍正则表达式在 `String` 方法中的应用。
 
 <!-- Formatting Output -->
+
 ## 格式化输出
-在长久的等待之后，Java SE5终于推出了C语言中 `printf()` 风格的格式化输出这一功能。这不仅使得控制输出的代码更加简单，同时也给与Java开发者对于输出格式与排列更加大的控制能力。
+在长久的等待之后，Java SE5 终于推出了 C 语言中 `printf()` 风格的格式化输出这一功能。这不仅使得控制输出的代码更加简单，同时也给与Java开发者对于输出格式与排列更强大的控制能力。
 ### `printf()`
-C语言的 `printf()` 并不像Java那样连接字符串，它使用一个简单的格式化字符串，加上要插入其中的值，然后将其格式化输出。 `printf()` 并不使用重载的`+`操作符（C语言没有重载）来连接引号内的字符串或字符串变量，而是使用特殊的占位符来表示数据将来的位置。而且它还将插入格式化字符串的参数，以逗号分隔，排成一行。例如：
+C 语言的 `printf()` 并不像 Java 那样连接字符串，它使用一个简单的格式化字符串，加上要插入其中的值，然后将其格式化输出。 `printf()` 并不使用重载的 `+` 操作符（C语言没有重载）来连接引号内的字符串或字符串变量，而是使用特殊的占位符来表示数据将来的位置。而且它还将插入格式化字符串的参数，以逗号分隔，排成一行。例如：
 ```c
 System.out.printf("Row 1: [%d %f]%n", x, y);
 ```
-这一行代码在运行的时候，首先将`x`的值插入到`%d_`的位置，然后将`y`的值插入到`%f`的位置。这些占位符叫做*格式修饰符*，它们不仅指明了插入数据的位置，同时还指明了将会插入什么类型的变量，以及如何格式化。在这个例子中`%d`表示`x`是一个整数，`%f`表示`y`是一个浮点数（`float`或者 `double`）。
+这一行代码在运行的时候，首先将 `x` 的值插入到 `%d_` 的位置，然后将 `y` 的值插入到 `%f` 的位置。这些占位符叫做*格式修饰符*，它们不仅指明了插入数据的位置，同时还指明了将会插入什么类型的变量，以及如何格式化。在这个例子中 `%d` 表示 `x` 是一个整数，`%f` 表示 `y` 是一个浮点数（`float` 或者 `double`）。
 ### `System.out.format()`
-Java SE5引入了`format()`方法，可用于`PrintStream`或者`PrintWriter`对象（你可以在 [`附录:流式I/O`](#)了解更多内容），其中也包括`System.out`对象。`format()`方法模仿了C语言的`printf()`。如果你比较怀旧的话，也可以使用 `printf()`。以下是一个简单的示例：
+Java SE5 引入了 `format()` 方法，可用于 `PrintStream` 或者 `PrintWriter` 对象（你可以在 [附录:流式 I/O](./Appendix-IO-Streams.md) 了解更多内容），其中也包括 `System.out` 对象。`format()` 方法模仿了 C 语言的 `printf()`。如果你比较怀旧的话，也可以使用 `printf()`。以下是一个简单的示例：
 ```java
 // strings/SimpleFormat.java 
 
@@ -360,11 +362,12 @@ Row 1: [5 5.332542]
 Row 1: [5 5.332542] 
 */
 ```
-可以看到，`format()`和 `printf()`是等价的，它们只需要一个简单的格式化字符串，加上一串参数即可，每个参数对应一个格式修饰符。
+可以看到，`format()` 和  `printf()` 是等价的，它们只需要一个简单的格式化字符串，加上一串参数即可，每个参数对应一个格式修饰符。
 
-`String`类也有一个`static format()`方法，可以格式化字符串。
-### `Formatter`类
-在Java中，所有的格式化功能都是由`java.util.Formatter`类处理的。可以将`Formatter`看做一个翻译器，它将你的格式化字符串与数据翻译成需要的结果。当你创建一个`Formatter`对象时，需要向其构造器传递一些信息，告诉它最终的结果将向哪里输出：
+`String` 类也有一个 `static format()` 方法，可以格式化字符串。
+
+### `Formatter` 类
+在 Java 中，所有的格式化功能都是由 `java.util.Formatter` 类处理的。可以将 `Formatter` 看做一个翻译器，它将你的格式化字符串与数据翻译成需要的结果。当你创建一个 `Formatter` 对象时，需要向其构造器传递一些信息，告诉它最终的结果将向哪里输出：
 ```java
 // strings/Turtle.java 
 import java.io.*;
@@ -404,9 +407,9 @@ Tommy The Turtle is at (3,3)
 Terry The Turtle is at (3,3) 
 */
 ```
-格式化修饰符`%s`表明这里需要`String`参数。
+格式化修饰符 `%s` 表明这里需要 `String` 参数。
 
-所有的`tommy`都将输出到`System.out`，而所有的`terry`则都输出到`System.out`的一个别名中。`Formatter`的重载构造器支持输出到多个路径，不过最常用的还是`PrintStream()`（如上例）、`OutputStream`和`File`。你可以在[`附录：I/O Streams`](#)中了解更多信息。
+所有的 `tommy` 都将输出到 `System.out`，而所有的 `terry` 则都输出到 `System.out` 的一个别名中。`Formatter` 的重载构造器支持输出到多个路径，不过最常用的还是 `PrintStream()`（如上例）、`OutputStream` 和 `File`。你可以在 [附录:流式 I/O](././Appendix-IO-Streams.md) 中了解更多信息。
 ### 格式化修饰符
 在插入数据时，如果想要优化空格与对齐，你需要更精细复杂的格式修饰符。以下是其抽象语法：
 ```java
