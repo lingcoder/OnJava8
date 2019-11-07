@@ -5,7 +5,7 @@
 # 第十七章 文件
 >在丑陋的 Java I/O 编程方式诞生多年以后，Java终于简化了文件读写的基本操作。
 
-这种"困难方式"的全部细节都在 [Appendix: I/O Streams](.\Appendix-IO-Streams.md)。如果你读过这个部分，就会认同 Java 设计者毫不在意他们的使用者的体验这一观念。打开并读取文件对于大多数编程语言来是非常常用的，由于 I/O 糟糕的设计以至于
+这种"困难方式"的全部细节都在 [Appendix: I/O Streams](./Appendix-IO-Streams.md)。如果你读过这个部分，就会认同 Java 设计者毫不在意他们的使用者的体验这一观念。打开并读取文件对于大多数编程语言来是非常常用的，由于 I/O 糟糕的设计以至于
 很少有人能够在不依赖其他参考代码的情况下完成打开文件的操作。
 
 好像 Java 设计者终于意识到了 Java 使用者多年来的痛苦，在 Java7 中对此引入了巨大的改进。这些新元素被放在 **java.nio.file** 包下面，过去人们通常把 **nio** 中的 **n** 理解为 **new** 即新的 **io**，现在更应该当成是 **non-blocking** 非阻塞 **io**(**io**就是*input/output输入/输出*)。**java.nio.file** 库终于将 Java 文件操作带到与其他编程语言相同的水平。最重要的是 Java8 新增的 streams 与文件结合使得文件操作编程变得更加优雅。我们将看一下文件操作的两个基本组件：
@@ -514,7 +514,7 @@ sun.nio.fs.WindowsFileSystemProvider@6d06d69c
 File Attribute Views: [owner, dos, acl, basic, user]
 */
 ```
-一个**FileSystem** 对象也能生成 **WatchService** 和 **PathMatcher** 对象，将会在接下来两章中详细讲解。
+一个 **FileSystem** 对象也能生成 **WatchService** 和 **PathMatcher** 对象，将会在接下来两章中详细讲解。
 
 <!-- Watching a Path -->
 
