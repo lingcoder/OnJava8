@@ -1610,6 +1610,323 @@ boring3
 <!-- Interfaces and Type -->
 ## 接口和类型
 
+`interface` 关键字的一个重要目标就是允许程序员隔离构件，进而降低耦合度。使用接口可以实现这一目标，但是通过类型信息，这种耦合性还是会传播出去——接口并不是对解耦的一种无懈可击的保障。比如我们先写一个接口：
+
+```java
+// typeinfo/interfacea/A.java
+package typeinfo.interfacea;
+
+public interface A {
+    void f();
+}
+```
+
+然后实现这个接口，你可以看到其代码是怎么从实际类型开始顺藤摸瓜的：
+
+```java
+// typeinfo/InterfaceViolation.java
+// Sneaking around an interface
+import typeinfo.interfacea.*;
+
+class B implements A {
+    public void f() {}
+    public void g() {}
+}
+
+public class InterfaceViolation {
+    public static void main(String[] args) {
+        A a = new B();
+        a.f();
+        // a.g(); // Compile error
+        System.out.println(a.getClass().getName());
+        if(a instanceof B) {
+            B b = (B)a;
+            b.g();
+        }
+    }
+}
+
+```
+
+输出结果：
+
+```
+B
+```
+
+通过使用 RTTI，我们发现 `a` 是被当做 `B` 实现的。通过将其转型为 `B`，我们可以调用不在 `A` 中的方法。
+
+这样的操作完全是合情合理的，但是你也许并不想让客户端开发者这么做，因为这给了他们一个机会，使得他们的代码与你的代码的耦合度超过了你的预期。也就是说，你可能认为 `interface` 关键字正在保护你，但其实并没有。另外，在本例中使用 `B` 来实现 `A` 这中情况是有公开案例可查的[^3]。
+
+一种解决方案是直接声明，如果开发者决定使用实际的类而不是接口，他们需要自己对自己负责。这在很多情况下都是可行的，但“可能”还不够，你或许希望能有一些更严格的控制方式。
+
+最简单的方式是让实现类只具有包访问权限，这样在包外部的客户端就看不到它了：
+
+```java
+// typeinfo/packageaccess/HiddenC.java
+package typeinfo.packageaccess;
+import typeinfo.interfacea.*;
+
+class C implements A {
+    @Override
+    public void f() {
+        System.out.println("public C.f()");
+    }
+    public void g() {
+        System.out.println("public C.g()");
+    }
+    void u() {
+        System.out.println("package C.u()");
+    }
+    protected void v() {
+        System.out.println("protected C.v()");
+    }
+    private void w() {
+        System.out.println("private C.w()");
+    }
+}
+
+public class HiddenC {
+    public static A makeA() { return new C(); }
+}
+```
+
+在这个包中唯一 `public` 的部分就是 `HiddenC`，在被调用时将产生 `A`接口类型的对象。这里有趣之处在于：即使你从 `makeA()` 返回的是 `C` 类型，你在包的外部仍旧不能使用 `A` 之外的任何方法，因为你不能在包的外部命名 `C`。
+
+现在如果你试着将其向下转型为 `C`，则将被禁止，因为在包的外部没有任何 `C` 类型可用：
+
+```java
+// typeinfo/HiddenImplementation.java
+// Sneaking around package hiding
+import typeinfo.interfacea.*;
+import typeinfo.packageaccess.*;
+import java.lang.reflect.*;
+
+public class HiddenImplementation {
+    public static void main(String[] args) throws Exception {
+        A a = HiddenC.makeA();
+        a.f();
+        System.out.println(a.getClass().getName());
+        // Compile error: cannot find symbol 'C':
+        /* if(a instanceof C) {
+            C c = (C)a;
+            c.g();
+        } */
+        // Oops! Reflection still allows us to call g():
+        callHiddenMethod(a, "g");
+        // And even less accessible methods!
+        callHiddenMethod(a, "u");
+        callHiddenMethod(a, "v");
+        callHiddenMethod(a, "w");
+    }
+    static void callHiddenMethod(Object a, String methodName) throws Exception {
+        Method g = a.getClass().getDeclaredMethod(methodName);
+        g.setAccessible(true);
+        g.invoke(a);
+    }
+}
+```
+
+输出结果：
+
+```
+public C.f()
+typeinfo.packageaccess.C
+public C.g()
+package C.u()
+protected C.v()
+private C.w()
+```
+
+正如你所看到的，通过使用反射，仍然可以调用所有方法，甚至是 `private` 方法！如果知道方法名，你就可以在其 `Method` 对象上调用 `setAccessible(true)`，就像在 `callHiddenMethod()` 中看到的那样。
+
+你可能觉得，可以通过只发布编译后的代码来阻止这种情况，但其实这并不能解决问题。因为只需要运行 `javap`（一个随 JDK 发布的反编译器）即可突破这一限制。下面是一个使用 `javap` 的命令行：
+
+```shell
+javap -private C
+```
+
+`-private` 标志表示所有的成员都应该显示，甚至包括私有成员。下面是输出：
+
+```
+class typeinfo.packageaccess.C extends
+java.lang.Object implements typeinfo.interfacea.A {
+  typeinfo.packageaccess.C();
+  public void f();
+  public void g();
+  void u();
+  protected void v();
+  private void w();
+}
+```
+
+因此，任何人都可以获取你最私有的方法的名字和签名，然后调用它们。
+
+那如果把接口实现为一个私有内部类，又会怎么样呢？下面展示了这种情况：
+
+```java
+// typeinfo/InnerImplementation.java
+// Private inner classes can't hide from reflection
+import typeinfo.interfacea.*;
+class InnerA {
+    private static class C implements A {
+        public void f() {
+            System.out.println("public C.f()");
+        }
+        public void g() {
+            System.out.println("public C.g()");
+        }
+        void u() {
+            System.out.println("package C.u()");
+        }
+        protected void v() {
+            System.out.println("protected C.v()");
+        }
+        private void w() {
+            System.out.println("private C.w()");
+        }
+    }
+    public static A makeA() {
+        return new C();
+    }
+}
+public class InnerImplementation {
+    public static void
+      main(String[] args) throws Exception {
+        A a = InnerA.makeA();
+        a.f();
+        System.out.println(a.getClass().getName());
+        // Reflection still gets into the private class:
+        HiddenImplementation.callHiddenMethod(a, "g");
+        HiddenImplementation.callHiddenMethod(a, "u");
+        HiddenImplementation.callHiddenMethod(a, "v");
+        HiddenImplementation.callHiddenMethod(a, "w");
+    }
+}
+```
+
+输出结果：
+
+```
+public C.f()
+InnerA$C
+public C.g()
+package C.u()
+protected C.v()
+private C.w()
+```
+
+这里对反射仍然没有任何东西可以隐藏。那么如果是匿名类呢？
+
+```java
+// typeinfo/AnonymousImplementation.java
+// Anonymous inner classes can't hide from reflection
+import typeinfo.interfacea.*;
+class AnonymousA {
+    public static A makeA() {
+        return new A() {
+            public void f() {
+                System.out.println("public C.f()");
+            }
+            public void g() {
+                System.out.println("public C.g()");
+            }
+            void u() {
+                System.out.println("package C.u()");
+            }
+            protected void v() {
+                System.out.println("protected C.v()");
+            }
+            private void w() {
+                System.out.println("private C.w()");
+            }
+        }
+        ;
+    }
+}
+public class AnonymousImplementation {
+    public static void
+      main(String[] args) throws Exception {
+        A a = AnonymousA.makeA();
+        a.f();
+        System.out.println(a.getClass().getName());
+        // Reflection still gets into the anonymous class:
+        HiddenImplementation.callHiddenMethod(a, "g");
+        HiddenImplementation.callHiddenMethod(a, "u");
+        HiddenImplementation.callHiddenMethod(a, "v");
+        HiddenImplementation.callHiddenMethod(a, "w");
+    }
+}
+```
+
+输出结果：
+
+```
+public C.f()
+AnonymousA$1
+public C.g()
+package C.u()
+protected C.v()
+private C.w()
+```
+
+看起来任何方式都没法阻止反射调用那些非公共访问权限的方法。对于域来说也是这样，即便是 `private` 域：
+
+```java
+// typeinfo/ModifyingPrivateFields.java
+import java.lang.reflect.*;
+class WithPrivateFinalField {
+    private int i = 1;
+    private final String s = "I'm totally safe";
+    private String s2 = "Am I safe?";
+    @Override
+      public String toString() {
+        return "i = " + i + ", " + s + ", " + s2;
+    }
+}
+public class ModifyingPrivateFields {
+    public static void
+      main(String[] args) throws Exception {
+        WithPrivateFinalField pf =
+              new WithPrivateFinalField();
+        System.out.println(pf);
+        Field f = pf.getClass().getDeclaredField("i");
+        f.setAccessible(true);
+        System.out.println(
+              "f.getInt(pf): " + f.getint(pf));
+        f.setint(pf, 47);
+        System.out.println(pf);
+        f = pf.getClass().getDeclaredField("s");
+        f.setAccessible(true);
+        System.out.println("f.get(pf): " + f.get(pf));
+        f.set(pf, "No, you're not!");
+        System.out.println(pf);
+        f = pf.getClass().getDeclaredField("s2");
+        f.setAccessible(true);
+        System.out.println("f.get(pf): " + f.get(pf));
+        f.set(pf, "No, you're not!");
+        System.out.println(pf);
+    }
+}
+```
+
+输出结果：
+
+```
+i = 1, I'm totally safe, Am I safe?
+f.getInt(pf): 1
+i = 47, I'm totally safe, Am I safe?
+f.get(pf): I'm totally safe
+i = 47, I'm totally safe, Am I safe?
+f.get(pf): Am I safe?
+i = 47, I'm totally safe, No, you're not!
+```
+
+但实际上 `final` 域在被修改时是安全的。运行时系统会在不抛出异常的情况下接受任何修改的尝试，但是实际上不会发生任何修改。
+
+通常，所有这些违反访问权限的操作并不是什么十恶不赦的。如果有人使用这样的技术去调用标志为 `private` 或包访问权限的方法（很明显这些访问权限表示这些人不应该调用它们），那么对他们来说，如果你修改了这些方法的某些地方，他们不应该抱怨。另一方面，总是在类中留下后门，也许会帮助你解决某些特定类型的问题（这些问题往往除此之外，别无它法）。总之，不可否认，发射给我们带来了很多好处。
+
+程序员往往对编程语言提供的访问控制过于自信，甚至认为 Java 在安全性上比其它提供了（明显）更宽松的访问控制的语言要优越[^4]。然而，正如你所看到的，事实并不是这样。
 
 <!-- Summary -->
 ## 本章小结
