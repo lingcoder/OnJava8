@@ -1733,6 +1733,8 @@ caught EmptyTitleException
 
 这里使用 `Optional` 的方式不太一样。请注意，`title` 和 `person` 都是普通域，不受 `Optional` 的保护。但是，修改这些域的唯一途径是调用 `setTitle()` 和 `setPerson()` 方法，这两个都借助 `Optional` 对域进行了严格的限制。
 
+我们想保证 `title` 不会有 `null` 值，
+
 <!-- TODO -->
 
 <!-- Interfaces and Type -->
