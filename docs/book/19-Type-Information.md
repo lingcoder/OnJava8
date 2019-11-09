@@ -1617,6 +1617,7 @@ boring3
 // Using Optional with regular classes
 import onjava.*;
 import java.util.*;
+
 class Person {
     public final Optional<String> first;
     public final Optional<String> last;
@@ -1676,6 +1677,7 @@ Bob Smith 11 Degree Lane, Frostbite Falls, MN
 ```java
 // typeinfo/Position.java
 import java.util.*;
+
 class EmptyTitleException extends RuntimeException {
 }
 class Position {
@@ -1733,9 +1735,270 @@ caught EmptyTitleException
 
 这里使用 `Optional` 的方式不太一样。请注意，`title` 和 `person` 都是普通字段，不受 `Optional` 的保护。但是，修改这些字段的唯一途径是调用 `setTitle()` 和 `setPerson()` 方法，这两个都借助 `Optional` 对字段进行了严格的限制。
 
-我们想保证 `title` 不会有 `null` 值，
+同时，我们想保证 `title` 字段永远不会变成 `null` 值。为此，我们可以自己在 `setTitle()` 方法里边检查参数 `newTitle` 的值。但其实还有更好的做法，函数式编程一大优势就是可以让我们重用经过验证的功能（即便是个很小的功能），以减少自己手动编写代码可能产生的一些小错误。所以在这里，我们用 `ofNullable()` 把 `newTitle` 转换一个 `Optional`（如果传入的值为 `null`，`ofNullable()` 返回的将是 `Optional.empty()`）。紧接着我们调用了 `orElseThrow()` 方法，所以如果 `newTitle` 的值是 `null`，你将会得到一个异常。这里我们并没有把 `title` 保存成 `Optional`，但通过利 `Optional` 的功能，我们仍然如愿以偿的对这个字段施加了约束。
 
-<!-- TODO -->
+`EmptyTitleException` 是一个 `RuntimeException`，因为它意味着程序存在错误。在这个方案里边，你仍然可能会得到一个异常。但不同的是，在错误产生的那一刻（向 `setTitle()` 传 `null` 值时）就会抛出异常，而不是发生在其它时刻，需要你通过调试才能发现问题所在。另外，使用 `EmptyTitleException` 还有助于定位 BUG。
+
+`Person` 字段的限制又不太一样：如果你把它的值设为 `null`，程序会自动把将它赋值成一个空的 `Person` 对象。先前我们也用过类似的方法把字段转换成 `Option`，但这里我们是在返回结果的时候使用 `orElse(new Person())` 插入一个空的 `Person` 对象替代了 `null`。
+
+在 `Position` 里边，我们没有创建一个表示“空”的标志位或者方法，因为 `person` 字段如果是空 `Person` 对象就表示这个 `Position` 是个空缺位置。之后，你可能会发现你必须添加一个显示的表示“空位”的方法，但是 YAGNI[^2] (You Aren't Going to Need It，你永远不需要它)。
+
+请注意，虽然你清楚你使用了 `Optional`，可以免受 `NullPointerExceptions` 的困扰，但是 `Staff` 类却对此毫不知情。
+
+```java
+// typeinfo/Staff.java
+import java.util.*;
+
+public class Staff extends ArrayList<Position> {
+    public void add(String title, Person person) {
+        add(new Position(title, person));
+    }
+    public void add(String... titles) {
+        for (String title : titles)
+              add(new Position(title));
+    }
+    public Staff(String... titles) {
+        add(titles);
+    }
+    public Boolean positionAvailable(String title) {
+        for (Position position : this)
+              if(position.getTitle().equals(title) &&
+                 position.getPerson().empty)
+                return true;
+        return false;
+    }
+    public void fillPosition(String title, Person hire) {
+        for (Position position : this)
+              if(position.getTitle().equals(title) &&
+                 position.getPerson().empty) {
+            position.setPerson(hire);
+            return;
+        }
+        throw new RuntimeException(
+              "Position " + title + " not available");
+    }
+    public static void main(String[] args) {
+        Staff staff = new Staff("President", "CTO",
+              "Marketing Manager", "Product Manager",
+              "Project Lead", "Software Engineer",
+              "Software Engineer", "Software Engineer",
+              "Software Engineer", "Test Engineer",
+              "Technical Writer");
+        staff.fillPosition("President",
+              new Person("Me", "Last", "The Top, Lonely At"));
+        staff.fillPosition("Project Lead",
+              new Person("Janet", "Planner", "The Burbs"));
+        if(staff.positionAvailable("Software Engineer"))
+              staff.fillPosition("Software Engineer",
+                new Person(
+                  "Bob", "Coder", "Bright Light City"));
+        System.out.println(staff);
+    }
+}
+```
+
+输出结果：
+
+```
+[Position: President, Employee: Me Last The Top, Lonely
+At, Position: CTO, Employee: <Empty>, Position:
+Marketing Manager, Employee: <Empty>, Position: Product
+Manager, Employee: <Empty>, Position: Project Lead,
+Employee: Janet Planner The Burbs, Position: Software
+Engineer, Employee: Bob Coder Bright Light City,
+Position: Software Engineer, Employee: <Empty>,
+Position: Software Engineer, Employee: <Empty>,
+Position: Software Engineer, Employee: <Empty>,
+Position: Test Engineer, Employee: <Empty>, Position:
+Technical Writer, Employee: <Empty>]
+```
+
+注意，在有些地方你可能还是要测试引用是不是 `Optional`，这跟检查是否为 `null` 没什么不同。但是在其它地方（例如本例中的 `toString()` 转换），你就不必执行额外的测试了，而可以直接假设所有对象都是有效的。
+
+### 标记接口
+
+有时候使用一个**标记接口**来表示空值会更方便。标记接口里边什么都没有，你只要把它的名字当做标签来用就可以。
+
+```java
+// onjava/Null.java
+package onjava;
+public interface Null {}
+```
+
+如果你用接口取代具体类，那么就可以使用 `DynamicProxy` 来自动地创建 `Null` 对象。假设我们有一个 `Robot` 接口，它定义了一个名字、一个模型和一个描述 `Robot` 行为能力的 `List<Operation>`：
+
+```java
+// typeinfo/Robot.java
+import onjava.*;
+import java.util.*;
+
+public interface Robot {
+    String name();
+    String model();
+    List<Operation> operations();
+    static void test(Robot r) {
+        if(r instanceof Null)
+              System.out.println("[Null Robot]");
+        System.out.println("Robot name: " + r.name());
+        System.out.println("Robot model: " + r.model());
+        for (Operation operation : r.operations()) {
+            System.out.println(operation.description.get());
+            operation.command.run();
+        }
+    }
+}
+```
+
+你可以通过调用 `operations()` 来访问 `Robot` 的服务。`Robot` 里边还有一个 `static` 方法来执行测试。
+
+`Operation` 包含一个描述和一个命令（这用到了**命令模式**）。它们被定义成函数式接口的引用，所以可以把 lambda 表达式或者方法的引用传给 `Operation` 的构造器：
+
+```java
+// typeinfo/Operation.java
+import java.util.function.*;
+
+public class Operation {
+    public final Supplier<String> description;
+    public final Runnable command;
+    public
+      Operation(Supplier<String> descr, Runnable cmd) {
+        description = descr;
+        command = cmd;
+    }
+}
+```
+
+现在我们可以创建一个扫雪 `Robot`：
+
+```java
+// typeinfo/SnowRemovalRobot.java
+import java.util.*;
+
+public class SnowRemovalRobot implements Robot {
+    private String name;
+    public SnowRemovalRobot(String name) {
+        this.name = name;
+    }
+    @Override
+      public String name() {
+        return name;
+    }
+    @Override
+      public String model() {
+        return "SnowBot Series 11";
+    }
+    private List<Operation> ops = Arrays.asList(
+        new Operation(
+          () -> name + " can shovel snow",
+          () -> System.out.println(
+            name + " shoveling snow")),
+        new Operation(
+          () -> name + " can chip ice",
+          () -> System.out.println(name + " chipping ice")),
+        new Operation(
+          () -> name + " can clear the roof",
+          () -> System.out.println(
+            name + " clearing roof")));
+    public List<Operation> operations() {
+        return ops;
+    }
+    public static void main(String[] args) {
+        Robot.test(new SnowRemovalRobot("Slusher"));
+    }
+}
+```
+
+输出结果：
+
+```
+Robot name: Slusher
+Robot model: SnowBot Series 11
+Slusher can shovel snow
+Slusher shoveling snow
+Slusher can chip ice
+Slusher chipping ice
+Slusher can clear the roof
+Slusher clearing roof
+```
+
+假设存在许多不同类型的 `Robot`，我们想让每种 `Robot` 都创建一个 `Null` 对象来执行一些特殊的操作——在本例中，即提供 `Null` 对象所代表 `Robot` 的确切类型信息。这些信息是通过动态代理捕获的：
+
+```java
+// typeinfo/NullRobot.java
+// Using a dynamic proxy to create an Optional
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.stream.*;
+import onjava.*;
+
+class NullRobotProxyHandler
+implements InvocationHandler {
+    private String nullName;
+    private Robot proxied = new NRobot();
+    NullRobotProxyHandler(Class<? extends Robot> type) {
+        nullName = type.getSimpleName() + " NullRobot";
+    }
+    private class NRobot implements Null, Robot {
+        @Override
+            public String name() {
+            return nullName;
+        }
+        @Override
+            public String model() {
+            return nullName;
+        }
+        @Override
+            public List<Operation> operations() {
+            return Collections.emptyList();
+        }
+    }
+    @Override
+      public Object
+      invoke(Object proxy, Method method, Object[] args)
+      throws Throwable {
+        return method.invoke(proxied, args);
+    }
+}
+public class NullRobot {
+    public static Robot
+      newNullRobot(Class<? extends Robot> type) {
+        return (Robot)Proxy.newProxyInstance(
+              NullRobot.class.getClassLoader(),
+              new Class,
+              new NullRobotProxyHandler(type));
+    }
+    public static void main(String[] args) {
+        Stream.of(
+              new SnowRemovalRobot("SnowBee"),
+              newNullRobot(SnowRemovalRobot.class)
+            ).forEach(Robot::test);
+    }
+}
+```
+
+输出结果：
+
+```
+Robot name: SnowBee
+Robot model: SnowBot Series 11
+SnowBee can shovel snow
+SnowBee shoveling snow
+SnowBee can chip ice
+SnowBee chipping ice
+SnowBee can clear the roof
+SnowBee clearing roof
+[Null Robot]
+Robot name: SnowRemovalRobot NullRobot
+Robot model: SnowRemovalRobot NullRobot
+```
+
+无论何时，如果你需要一个空 `Robot` 对象，只需要调用 `newNullRobot()`，并传递需要代理的 `Robot` 的类型。这个代理满足了 `Robot` 和 `Null` 接口的需要，并提供了它所代理的类型的确切名字。
+
+### Mock 对象和桩
+
+**Mock 对象**和 **桩（Stub）**在逻辑上都是 `Optional` 的变体。他们都是最终程序中所使用的“实际”对象的代理。不过，Mock 对象和桩都是假扮成那些可以传递实际信息的实际对象，而不是像 `Optional` 那样把包含潜在 `null` 值的对象隐藏。
+
+Mock 对象和桩之间的的差别在于程度不同。Mock 对象往往是轻量级的，且用于自测试。通常，为了处理各种不同的测试场景，我们会创建出很多 Mock 对象。而桩只是返回桩数据，它通常是重量级的，并且经常在多个测试中被复用。桩可以根据它们被调用的方式，通过配置进行修改。因此，桩是一种复杂对象，它可以做很多事情。至于 Mock 对象，如果你要做很多事，通常会创建大量又小又简单的 Mock 对象。
 
 <!-- Interfaces and Type -->
 ## 接口和类型
@@ -2073,7 +2336,7 @@ RTTI 允许通过匿名类的引用来获取类型信息。初学者极易误用
 
 [^1]: 特别是在过去。但现在 Java 的 HTML 文档有了很大的提升，要查看基类的方法已经变得很容易了。
 
-[^2]: 极限编程（XP，Extreme Programming）的一条宗旨：“Try the simplest thing that could possibly work，实现尽最大可能的简单。”
+[^2]: 这是极限编程（XP，Extreme Programming）的原则之一：“Try the simplest thing that could possibly work，实现尽最大可能的简单。”
 
 [^3]: 最著名的例子是 Windows 操作系统，Windows 为开发者提供了公开的 API，但是开发者还可以找到一些非公开但是可以调用的函数。为了解决问题，很多程序员使用了隐藏的 API 函数。这就迫使微软公司要像维护公开 API 一样维护这些隐藏的 API，消耗了巨大的成本和精力。
 
