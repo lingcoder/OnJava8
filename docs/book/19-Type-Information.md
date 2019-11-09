@@ -317,11 +317,11 @@ Java还提供了另一种方法来生成类对象的引用：**类字面常量**
 
 1. **加载**，这是由类加载器执行的。该步骤将查找字节码（通常在 classpath 所指定的路径中查找，但这并非是必须的），并从这些字节码中创建一个 `Class` 对象。
 
-2. **链接**。在链接阶段将验证类中的字节码，为 `static` 域分配存储空间，并且如果需要的话，将解析这个类创建的对其他类的所有引用。
+2. **链接**。在链接阶段将验证类中的字节码，为 `static` 字段分配存储空间，并且如果需要的话，将解析这个类创建的对其他类的所有引用。
 
 3. **初始化**。如果该类具有超类，则对其进行初始化，执行 `static` 初始化器和 `static` 初始化块。
 
-初始化被延迟到了对 `static` 方法（构造器隐式地是 `static` 的）或者非常数 `static` 域进行首次引用时才执行：
+初始化被延迟到了对 `static` 方法（构造器隐式地是 `static` 的）或者非常数 `static` 字段进行首次引用时才执行：
 
 ```java
 // typeinfo/ClassInitialization.java
@@ -385,9 +385,9 @@ After creating Initable3 ref
 
 初始化有效地实现了尽可能的“惰性”，从对 `initable` 引用的创建中可以看到，仅使用 `.class` 语法来获得对类对象的引用不会引发初始化。但与此相反，使用 `Class.forName()` 来产生 `Class` 引用会立即就进行初始化，如 `initable3`。
 
-如果一个 `static final` 值是“编译期常量”（如 `Initable.staticFinal`），那么这个值不需要对 `Initable` 类进行初始化就可以被读取。但是，如果只是将一个域设置成为 `static` 和 `final`，还不足以确保这种行为。例如，对 `Initable.staticFinal2` 的访问将强制进行类的初始化，因为它不是一个编译期常量。
+如果一个 `static final` 值是“编译期常量”（如 `Initable.staticFinal`），那么这个值不需要对 `Initable` 类进行初始化就可以被读取。但是，如果只是将一个字段设置成为 `static` 和 `final`，还不足以确保这种行为。例如，对 `Initable.staticFinal2` 的访问将强制进行类的初始化，因为它不是一个编译期常量。
 
-如果一个 `static` 域不是 `final` 的，那么在对它访问时，总是要求在它被读取之前，要先进行链接（为这个域分配存储空间）和初始化（初始化该存储空间），就像在对 `Initable2.staticNonFinal` 的访问中所看到的那样。
+如果一个 `static` 字段不是 `final` 的，那么在对它访问时，总是要求在它被读取之前，要先进行链接（为这个字段分配存储空间）和初始化（初始化该存储空间），就像在对 `Initable2.staticNonFinal` 的访问中所看到的那样。
 
 ### 泛化的 `Class` 引用
 
@@ -1667,9 +1667,9 @@ Bob Smith
 Bob Smith 11 Degree Lane, Frostbite Falls, MN
 ```
 
-`Person` 的设计有时候又叫“数据传输对象（DTO，data-transfer object）”。注意，所有域都是 `public` 和 `final` 的，所以没有 `getter` 和 `setter` 方法。也就是说，`Person` 是不可变的，你只能通过构造器给它赋值，之后就只能读而不能修改它的值（字符串本身就是不可变的，因此你无法修改字符串的内容，也无法给它的域重新赋值）。如果你想修改一个 `Person`，你只能用一个新的 `Person` 对象来替换它。`empty` 域在对象创建的时候被赋值，用于快速判断这个 `Person` 对象是不是空对象。
+`Person` 的设计有时候又叫“数据传输对象（DTO，data-transfer object）”。注意，所有字段都是 `public` 和 `final` 的，所以没有 `getter` 和 `setter` 方法。也就是说，`Person` 是不可变的，你只能通过构造器给它赋值，之后就只能读而不能修改它的值（字符串本身就是不可变的，因此你无法修改字符串的内容，也无法给它的字段重新赋值）。如果你想修改一个 `Person`，你只能用一个新的 `Person` 对象来替换它。`empty` 字段在对象创建的时候被赋值，用于快速判断这个 `Person` 对象是不是空对象。
 
-如果想使用 `Person`，就必须使用 `Optional` 接口才能访问它的 `String` 域，这样就不会意外触发 `NullPointException` 了。
+如果想使用 `Person`，就必须使用 `Optional` 接口才能访问它的 `String` 字段，这样就不会意外触发 `NullPointException` 了。
 
 现在假设你已经因你惊人的理念而获得了一大笔风险投资，现在你要招兵买马了，但是在虚位以待时，你可以将 `Person Optional` 对象放在每个 `Position` 上：
 
@@ -1731,7 +1731,7 @@ Position: Programmer, Employee: Arthur Fonzarelli
 caught EmptyTitleException
 ```
 
-这里使用 `Optional` 的方式不太一样。请注意，`title` 和 `person` 都是普通域，不受 `Optional` 的保护。但是，修改这些域的唯一途径是调用 `setTitle()` 和 `setPerson()` 方法，这两个都借助 `Optional` 对域进行了严格的限制。
+这里使用 `Optional` 的方式不太一样。请注意，`title` 和 `person` 都是普通字段，不受 `Optional` 的保护。但是，修改这些字段的唯一途径是调用 `setTitle()` 和 `setPerson()` 方法，这两个都借助 `Optional` 对字段进行了严格的限制。
 
 我们想保证 `title` 不会有 `null` 值，
 
@@ -2000,7 +2000,7 @@ protected C.v()
 private C.w()
 ```
 
-看起来任何方式都没法阻止反射调用那些非公共访问权限的方法。对于域来说也是这样，即便是 `private` 域：
+看起来任何方式都没法阻止反射调用那些非公共访问权限的方法。对于字段来说也是这样，即便是 `private` 字段：
 
 ```java
 // typeinfo/ModifyingPrivateFields.java
@@ -2052,7 +2052,7 @@ f.get(pf): Am I safe?
 i = 47, I'm totally safe, No, you're not!
 ```
 
-但实际上 `final` 域在被修改时是安全的。运行时系统会在不抛出异常的情况下接受任何修改的尝试，但是实际上不会发生任何修改。
+但实际上 `final` 字段在被修改时是安全的。运行时系统会在不抛出异常的情况下接受任何修改的尝试，但是实际上不会发生任何修改。
 
 通常，所有这些违反访问权限的操作并不是什么十恶不赦的。如果有人使用这样的技术去调用标志为 `private` 或包访问权限的方法（很明显这些访问权限表示这些人不应该调用它们），那么对他们来说，如果你修改了这些方法的某些地方，他们不应该抱怨。另一方面，总是在类中留下后门，也许会帮助你解决某些特定类型的问题（这些问题往往除此之外，别无它法）。总之，不可否认，发射给我们带来了很多好处。
 
