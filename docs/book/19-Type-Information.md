@@ -1312,7 +1312,7 @@ x.getClass().equals(Derived.class)) true
 
 通常，你不会直接使用反射工具，但它们可以帮助你创建更多的动态代码。反射是用来支持其他 Java 特性的，例如对象序列化（参见[附录：对象序列化](#ch040.xhtml#appendix-object-serialization)）。但是，有时动态提取有关类的信息很有用。
 
-考虑一个类方法提取器。查看类定义的源代码或 JDK 文档，只显示*在该类定义中*定义或重写的方法。但是，可能还有几十个来自基类的可用方法。找到它们既单调又费时。
+考虑一个类方法提取器。查看类定义的源代码或 JDK 文档，只显示*在该类定义中*定义或重写的方法。但是，可能还有几十个来自基类的可用方法。找到它们既单调又费时[^1]。
 
 ```java
 // typeinfo/ShowMethods.java
@@ -1386,7 +1386,7 @@ public ShowMethods()
 */
 ```
 
-`Class` 方法 `getmethods()` 和'getconstructors()`  分别返回 `Method` 数组和 `Constructor` 数组。这些类中的每一个都有进一步的方法来解析它们所表示的方法的名称、参数和返回值。但你也可以像这里所做的那样，使用 `toString()`，生成带有整个方法签名的 `String`。代码的其余部分提取命令行信息，确定特定签名是否与目标 `String`（使用 `indexOf()`）匹配，并使用正则表达式（在 [Strings](#ch021.xhtml#strings) 一章中介绍）删除名称限定符。
+`Class` 方法 `getmethods()` 和 `getconstructors()`  分别返回 `Method` 数组和 `Constructor` 数组。这些类中的每一个都有进一步的方法来解析它们所表示的方法的名称、参数和返回值。但你也可以像这里所做的那样，使用 `toString()`，生成带有整个方法签名的 `String`。代码的其余部分提取命令行信息，确定特定签名是否与目标 `String`（使用 `indexOf()`）匹配，并使用正则表达式（在 [Strings](#ch021.xhtml#strings) 一章中介绍）删除名称限定符。
 
 编译时无法知道 `Class.forName()` 生成的结果，因此所有方法签名信息都是在运行时提取的。如果你研究 JDK 反射文档，你将看到有足够的支持来实际设置和对编译时完全未知的对象进行方法调用（本书后面有这样的例子）。虽然最初你可能认为你永远都不需要这样做，但是反射的全部价值可能会令人惊讶。
 
@@ -1610,10 +1610,346 @@ boring3
 <!-- Interfaces and Type -->
 ## 接口和类型
 
+`interface` 关键字的一个重要目标就是允许程序员隔离构件，进而降低耦合度。使用接口可以实现这一目标，但是通过类型信息，这种耦合性还是会传播出去——接口并不是对解耦的一种无懈可击的保障。比如我们先写一个接口：
+
+```java
+// typeinfo/interfacea/A.java
+package typeinfo.interfacea;
+
+public interface A {
+    void f();
+}
+```
+
+然后实现这个接口，你可以看到其代码是怎么从实际类型开始顺藤摸瓜的：
+
+```java
+// typeinfo/InterfaceViolation.java
+// Sneaking around an interface
+import typeinfo.interfacea.*;
+
+class B implements A {
+    public void f() {}
+    public void g() {}
+}
+
+public class InterfaceViolation {
+    public static void main(String[] args) {
+        A a = new B();
+        a.f();
+        // a.g(); // Compile error
+        System.out.println(a.getClass().getName());
+        if(a instanceof B) {
+            B b = (B)a;
+            b.g();
+        }
+    }
+}
+
+```
+
+输出结果：
+
+```
+B
+```
+
+通过使用 RTTI，我们发现 `a` 是被当做 `B` 实现的。通过将其转型为 `B`，我们可以调用不在 `A` 中的方法。
+
+这样的操作完全是合情合理的，但是你也许并不想让客户端开发者这么做，因为这给了他们一个机会，使得他们的代码与你的代码的耦合度超过了你的预期。也就是说，你可能认为 `interface` 关键字正在保护你，但其实并没有。另外，在本例中使用 `B` 来实现 `A` 这中情况是有公开案例可查的[^3]。
+
+一种解决方案是直接声明，如果开发者决定使用实际的类而不是接口，他们需要自己对自己负责。这在很多情况下都是可行的，但“可能”还不够，你或许希望能有一些更严格的控制方式。
+
+最简单的方式是让实现类只具有包访问权限，这样在包外部的客户端就看不到它了：
+
+```java
+// typeinfo/packageaccess/HiddenC.java
+package typeinfo.packageaccess;
+import typeinfo.interfacea.*;
+
+class C implements A {
+    @Override
+    public void f() {
+        System.out.println("public C.f()");
+    }
+    public void g() {
+        System.out.println("public C.g()");
+    }
+    void u() {
+        System.out.println("package C.u()");
+    }
+    protected void v() {
+        System.out.println("protected C.v()");
+    }
+    private void w() {
+        System.out.println("private C.w()");
+    }
+}
+
+public class HiddenC {
+    public static A makeA() { return new C(); }
+}
+```
+
+在这个包中唯一 `public` 的部分就是 `HiddenC`，在被调用时将产生 `A`接口类型的对象。这里有趣之处在于：即使你从 `makeA()` 返回的是 `C` 类型，你在包的外部仍旧不能使用 `A` 之外的任何方法，因为你不能在包的外部命名 `C`。
+
+现在如果你试着将其向下转型为 `C`，则将被禁止，因为在包的外部没有任何 `C` 类型可用：
+
+```java
+// typeinfo/HiddenImplementation.java
+// Sneaking around package hiding
+import typeinfo.interfacea.*;
+import typeinfo.packageaccess.*;
+import java.lang.reflect.*;
+
+public class HiddenImplementation {
+    public static void main(String[] args) throws Exception {
+        A a = HiddenC.makeA();
+        a.f();
+        System.out.println(a.getClass().getName());
+        // Compile error: cannot find symbol 'C':
+        /* if(a instanceof C) {
+            C c = (C)a;
+            c.g();
+        } */
+        // Oops! Reflection still allows us to call g():
+        callHiddenMethod(a, "g");
+        // And even less accessible methods!
+        callHiddenMethod(a, "u");
+        callHiddenMethod(a, "v");
+        callHiddenMethod(a, "w");
+    }
+    static void callHiddenMethod(Object a, String methodName) throws Exception {
+        Method g = a.getClass().getDeclaredMethod(methodName);
+        g.setAccessible(true);
+        g.invoke(a);
+    }
+}
+```
+
+输出结果：
+
+```
+public C.f()
+typeinfo.packageaccess.C
+public C.g()
+package C.u()
+protected C.v()
+private C.w()
+```
+
+正如你所看到的，通过使用反射，仍然可以调用所有方法，甚至是 `private` 方法！如果知道方法名，你就可以在其 `Method` 对象上调用 `setAccessible(true)`，就像在 `callHiddenMethod()` 中看到的那样。
+
+你可能觉得，可以通过只发布编译后的代码来阻止这种情况，但其实这并不能解决问题。因为只需要运行 `javap`（一个随 JDK 发布的反编译器）即可突破这一限制。下面是一个使用 `javap` 的命令行：
+
+```shell
+javap -private C
+```
+
+`-private` 标志表示所有的成员都应该显示，甚至包括私有成员。下面是输出：
+
+```
+class typeinfo.packageaccess.C extends
+java.lang.Object implements typeinfo.interfacea.A {
+  typeinfo.packageaccess.C();
+  public void f();
+  public void g();
+  void u();
+  protected void v();
+  private void w();
+}
+```
+
+因此，任何人都可以获取你最私有的方法的名字和签名，然后调用它们。
+
+那如果把接口实现为一个私有内部类，又会怎么样呢？下面展示了这种情况：
+
+```java
+// typeinfo/InnerImplementation.java
+// Private inner classes can't hide from reflection
+import typeinfo.interfacea.*;
+class InnerA {
+    private static class C implements A {
+        public void f() {
+            System.out.println("public C.f()");
+        }
+        public void g() {
+            System.out.println("public C.g()");
+        }
+        void u() {
+            System.out.println("package C.u()");
+        }
+        protected void v() {
+            System.out.println("protected C.v()");
+        }
+        private void w() {
+            System.out.println("private C.w()");
+        }
+    }
+    public static A makeA() {
+        return new C();
+    }
+}
+public class InnerImplementation {
+    public static void
+      main(String[] args) throws Exception {
+        A a = InnerA.makeA();
+        a.f();
+        System.out.println(a.getClass().getName());
+        // Reflection still gets into the private class:
+        HiddenImplementation.callHiddenMethod(a, "g");
+        HiddenImplementation.callHiddenMethod(a, "u");
+        HiddenImplementation.callHiddenMethod(a, "v");
+        HiddenImplementation.callHiddenMethod(a, "w");
+    }
+}
+```
+
+输出结果：
+
+```
+public C.f()
+InnerA$C
+public C.g()
+package C.u()
+protected C.v()
+private C.w()
+```
+
+这里对反射仍然没有任何东西可以隐藏。那么如果是匿名类呢？
+
+```java
+// typeinfo/AnonymousImplementation.java
+// Anonymous inner classes can't hide from reflection
+import typeinfo.interfacea.*;
+class AnonymousA {
+    public static A makeA() {
+        return new A() {
+            public void f() {
+                System.out.println("public C.f()");
+            }
+            public void g() {
+                System.out.println("public C.g()");
+            }
+            void u() {
+                System.out.println("package C.u()");
+            }
+            protected void v() {
+                System.out.println("protected C.v()");
+            }
+            private void w() {
+                System.out.println("private C.w()");
+            }
+        }
+        ;
+    }
+}
+public class AnonymousImplementation {
+    public static void
+      main(String[] args) throws Exception {
+        A a = AnonymousA.makeA();
+        a.f();
+        System.out.println(a.getClass().getName());
+        // Reflection still gets into the anonymous class:
+        HiddenImplementation.callHiddenMethod(a, "g");
+        HiddenImplementation.callHiddenMethod(a, "u");
+        HiddenImplementation.callHiddenMethod(a, "v");
+        HiddenImplementation.callHiddenMethod(a, "w");
+    }
+}
+```
+
+输出结果：
+
+```
+public C.f()
+AnonymousA$1
+public C.g()
+package C.u()
+protected C.v()
+private C.w()
+```
+
+看起来任何方式都没法阻止反射调用那些非公共访问权限的方法。对于域来说也是这样，即便是 `private` 域：
+
+```java
+// typeinfo/ModifyingPrivateFields.java
+import java.lang.reflect.*;
+class WithPrivateFinalField {
+    private int i = 1;
+    private final String s = "I'm totally safe";
+    private String s2 = "Am I safe?";
+    @Override
+      public String toString() {
+        return "i = " + i + ", " + s + ", " + s2;
+    }
+}
+public class ModifyingPrivateFields {
+    public static void
+      main(String[] args) throws Exception {
+        WithPrivateFinalField pf =
+              new WithPrivateFinalField();
+        System.out.println(pf);
+        Field f = pf.getClass().getDeclaredField("i");
+        f.setAccessible(true);
+        System.out.println(
+              "f.getInt(pf): " + f.getint(pf));
+        f.setint(pf, 47);
+        System.out.println(pf);
+        f = pf.getClass().getDeclaredField("s");
+        f.setAccessible(true);
+        System.out.println("f.get(pf): " + f.get(pf));
+        f.set(pf, "No, you're not!");
+        System.out.println(pf);
+        f = pf.getClass().getDeclaredField("s2");
+        f.setAccessible(true);
+        System.out.println("f.get(pf): " + f.get(pf));
+        f.set(pf, "No, you're not!");
+        System.out.println(pf);
+    }
+}
+```
+
+输出结果：
+
+```
+i = 1, I'm totally safe, Am I safe?
+f.getInt(pf): 1
+i = 47, I'm totally safe, Am I safe?
+f.get(pf): I'm totally safe
+i = 47, I'm totally safe, Am I safe?
+f.get(pf): Am I safe?
+i = 47, I'm totally safe, No, you're not!
+```
+
+但实际上 `final` 域在被修改时是安全的。运行时系统会在不抛出异常的情况下接受任何修改的尝试，但是实际上不会发生任何修改。
+
+通常，所有这些违反访问权限的操作并不是什么十恶不赦的。如果有人使用这样的技术去调用标志为 `private` 或包访问权限的方法（很明显这些访问权限表示这些人不应该调用它们），那么对他们来说，如果你修改了这些方法的某些地方，他们不应该抱怨。另一方面，总是在类中留下后门，也许会帮助你解决某些特定类型的问题（这些问题往往除此之外，别无它法）。总之，不可否认，发射给我们带来了很多好处。
+
+程序员往往对编程语言提供的访问控制过于自信，甚至认为 Java 在安全性上比其它提供了（明显）更宽松的访问控制的语言要优越[^4]。然而，正如你所看到的，事实并不是这样。
 
 <!-- Summary -->
 ## 本章小结
 
+RTTI 允许通过匿名类的引用来获取类型信息。初学者极易误用它，因为在学会使用多态调用方法之前，这么做也很有效。有过程化编程背景的人很容易把程序组织成一系列 `switch` 语句，你可以用 RTTI 和 `switch` 实现功能，但这样就损失了多态机制在代码开发和维护过程中的重要价值。面向对象编程语言是想让我们尽可能的使用多态机制，只在非用不可的时候才使用 RTTI。
+
+然而使用多态机制的方法调用，要求我们拥有基类定义的控制权。因为在你扩展程序的时候，可能会发现基类并未包含我们想要的方法。如果基类来自别人的库，这时 RTTI 便是一种解决之道：可继承一个新类，然后添加你需要的方法。在代码的其它地方，可以检查你自己特定的类型，并调用你自己的方法。这样做不会破坏多态性以及程序的扩展能力，因为这样添加一个新的类并不需要修改程序中的 `switch` 语句。但如果想在程序中增加具有新特性的代码，你就必须使用 RTTI 来检查这个特定的类型。
+
+如果只是为了方便某个特定的类，就将某个特性放进基类里边，这将使得从那个基类派生出的所有其它子类都带有这些可能毫无意义的东西。这会导致接口更加不清晰，因为我们必须覆盖从基类继承而来的所有抽象方法，事情就变得很麻烦。举个例子，现在有一个表示乐器 `Instrument` 的类层次结构。假设我们想清理管弦乐队中某些乐器残留的口水，一种办法是在基类 `Instrument` 中放入 `clearSpitValve()` 方法。但这样做会导致类结构混乱，因为这意味着打击乐器 `Percussion`、弦乐器 `Stringed` 和电子乐器 `Electronic` 也需要清理口水。在这个例子中，RTTI 可以提供一种更合理的解决方案。可以将 `clearSpitValve()` 放在某个合适的类中，在这个例子中是管乐器 `Wind`。不过，在这里你可能会发现还有更好的解决方法，就是将 `prepareInstrument()` 放在基类中，但是初次面对这个问题的读者可能想不到还有这样的解决方案，而误认为必须使用 RTTI。
+
+最后一点，RTTI 有时候也能解决效率问题。假设你的代码运用了多态，但是为了实现多态，导致其中某个对象的效率非常低。这时候，你就可以挑出那个类，使用 RTTI 为它编写一段特别的代码以提高效率。然而必须注意的是，不要太早的关注程序的效率问题，这是个诱人的陷阱。最好先让程序能跑起来，然后再去看看程序能不能跑得更快，下一步才是去解决效率问题（比如使用 Profiler）[^5]。
+
+我们已经看到，反射，因其更加动态的编程风格，为我们开创了编程的新世界。但对有些人来说，反射的动态特性却是一种困扰。对那些已经习惯于静态类型检查的安全性的人来说，Java 中允许这种动态类型检查（只在运行时才能检查到，并以异常的形式上报检查结果）的操作似乎是一种错误的方向。有些人想的更远，他们认为引入运行时异常本身就是一种指示，指示我们应该避免这种代码。我发现这种意义的安全是一种错觉，因为总是有些事情是在运行时才发生并抛出异常的，即使是在那些不包含任何 `try` 语句块或异常声明的程序中也是如此。因此，我认为一致性错误报告模型的存在使我们能够通过使用反射编写动态代码。当然，尽力编写能够进行静态检查的代码是有价值的，只有你有这样的能力。但是我相信动态代码是将 Java 与其它诸如 C++ 这样的语言区分开的重要工具之一。
+
+[^1]: 特别是在过去。但现在 Java 的 HTML 文档有了很大的提升，要查看基类的方法已经变得很容易了。
+
+[^2]: 极限编程（XP，Extreme Programming）的一条宗旨：“Try the simplest thing that could possibly work，实现尽最大可能的简单。”
+
+[^3]: 最著名的例子是 Windows 操作系统，Windows 为开发者提供了公开的 API，但是开发者还可以找到一些非公开但是可以调用的函数。为了解决问题，很多程序员使用了隐藏的 API 函数。这就迫使微软公司要像维护公开 API 一样维护这些隐藏的 API，消耗了巨大的成本和精力。
+
+[^4]: 比如，Python 中在元素前面添加双下划线 `__`，就表示你想隐藏这个元素。如果你在类或者包外面调用了这个元素，运行环境就会报错。
+
+[^5]: 译者注：Java Profiler 是一种 Java 性能分析工具，用于在 JVM 级别监视 Java 字节码的构造和执行。主流的 Profiler 有 JProfiler、YourKit 和 Java VisualVM 等。
 
 <!-- 分页 -->
 
