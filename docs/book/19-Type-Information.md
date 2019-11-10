@@ -317,11 +317,11 @@ Java还提供了另一种方法来生成类对象的引用：**类字面常量**
 
 1. **加载**，这是由类加载器执行的。该步骤将查找字节码（通常在 classpath 所指定的路径中查找，但这并非是必须的），并从这些字节码中创建一个 `Class` 对象。
 
-2. **链接**。在链接阶段将验证类中的字节码，为 `static` 域分配存储空间，并且如果需要的话，将解析这个类创建的对其他类的所有引用。
+2. **链接**。在链接阶段将验证类中的字节码，为 `static` 字段分配存储空间，并且如果需要的话，将解析这个类创建的对其他类的所有引用。
 
 3. **初始化**。如果该类具有超类，则对其进行初始化，执行 `static` 初始化器和 `static` 初始化块。
 
-初始化被延迟到了对 `static` 方法（构造器隐式地是 `static` 的）或者非常数 `static` 域进行首次引用时才执行：
+初始化被延迟到了对 `static` 方法（构造器隐式地是 `static` 的）或者非常数 `static` 字段进行首次引用时才执行：
 
 ```java
 // typeinfo/ClassInitialization.java
@@ -385,9 +385,9 @@ After creating Initable3 ref
 
 初始化有效地实现了尽可能的“惰性”，从对 `initable` 引用的创建中可以看到，仅使用 `.class` 语法来获得对类对象的引用不会引发初始化。但与此相反，使用 `Class.forName()` 来产生 `Class` 引用会立即就进行初始化，如 `initable3`。
 
-如果一个 `static final` 值是“编译期常量”（如 `Initable.staticFinal`），那么这个值不需要对 `Initable` 类进行初始化就可以被读取。但是，如果只是将一个域设置成为 `static` 和 `final`，还不足以确保这种行为。例如，对 `Initable.staticFinal2` 的访问将强制进行类的初始化，因为它不是一个编译期常量。
+如果一个 `static final` 值是“编译期常量”（如 `Initable.staticFinal`），那么这个值不需要对 `Initable` 类进行初始化就可以被读取。但是，如果只是将一个字段设置成为 `static` 和 `final`，还不足以确保这种行为。例如，对 `Initable.staticFinal2` 的访问将强制进行类的初始化，因为它不是一个编译期常量。
 
-如果一个 `static` 域不是 `final` 的，那么在对它访问时，总是要求在它被读取之前，要先进行链接（为这个域分配存储空间）和初始化（初始化该存储空间），就像在对 `Initable2.staticNonFinal` 的访问中所看到的那样。
+如果一个 `static` 字段不是 `final` 的，那么在对它访问时，总是要求在它被读取之前，要先进行链接（为这个字段分配存储空间）和初始化（初始化该存储空间），就像在对 `Initable2.staticNonFinal` 的访问中所看到的那样。
 
 ### 泛化的 `Class` 引用
 
@@ -568,7 +568,7 @@ RTTI 在 Java 中还有第三种形式，那就是关键字 `instanceof`。它�
 
 ```java
 if(x instanceof Dog)
-  ((Dog)x).bark();
+    ((Dog)x).bark();
 ```
 
 在将 `x` 的类型转换为 `Dog` 之前，`if` 语句会先检查 `x` 是否是 `Dog` 类型的对象。进行向下转型前，如果没有其他信息可以告诉你这个对象是什么类型，那么使用 `instanceof` 是非常重要的，否则会得到一个 `ClassCastException` 异常。
@@ -582,7 +582,7 @@ if(x instanceof Dog)
 package typeinfo.pets;
 
 public class Person extends Individual {
-  public Person(String name) { super(name); }
+    public Person(String name) { super(name); }
 }
 ```
 
@@ -591,8 +591,8 @@ public class Person extends Individual {
 package typeinfo.pets;
 
 public class Pet extends Individual {
-  public Pet(String name) { super(name); }
-  public Pet() { super(); }
+    public Pet(String name) { super(name); }
+    public Pet() { super(); }
 }
 ```
 
@@ -601,8 +601,8 @@ public class Pet extends Individual {
 package typeinfo.pets;
 
 public class Dog extends Pet {
-  public Dog(String name) { super(name); }
-  public Dog() { super(); }
+    public Dog(String name) { super(name); }
+    public Dog() { super(); }
 }
 ```
 
@@ -611,8 +611,8 @@ public class Dog extends Pet {
 package typeinfo.pets;
 
 public class Mutt extends Dog {
-  public Mutt(String name) { super(name); }
-  public Mutt() { super(); }
+    public Mutt(String name) { super(name); }
+    public Mutt() { super(); }
 }
 ```
 
@@ -622,8 +622,8 @@ public class Mutt extends Dog {
 package typeinfo.pets;
 
 public class Pug extends Dog {
-  public Pug(String name) { super(name); }
-  public Pug() { super(); }
+    public Pug(String name) { super(name); }
+    public Pug() { super(); }
 }
 ```
 
@@ -632,8 +632,8 @@ public class Pug extends Dog {
 package typeinfo.pets;
 
 public class Cat extends Pet {
-  public Cat(String name) { super(name); }
-  public Cat() { super(); }
+    public Cat(String name) { super(name); }
+    public Cat() { super(); }
 }
 ```
 
@@ -642,8 +642,8 @@ public class Cat extends Pet {
 package typeinfo.pets;
 
 public class EgyptianMau extends Cat {
-  public EgyptianMau(String name) { super(name); }
-  public EgyptianMau() { super(); }
+    public EgyptianMau(String name) { super(name); }
+    public EgyptianMau() { super(); }
 }
 ```
 
@@ -652,8 +652,8 @@ public class EgyptianMau extends Cat {
 package typeinfo.pets;
 
 public class Manx extends Cat {
-  public Manx(String name) { super(name); }
-  public Manx() { super(); }
+    public Manx(String name) { super(name); }
+    public Manx() { super(); }
 }
 ```
 
@@ -662,8 +662,8 @@ public class Manx extends Cat {
 package typeinfo.pets;
 
 public class Cymric extends Manx {
-  public Cymric(String name) { super(name); }
-  public Cymric() { super(); }
+    public Cymric(String name) { super(name); }
+    public Cymric() { super(); }
 }
 ```
 
@@ -672,8 +672,8 @@ public class Cymric extends Manx {
 package typeinfo.pets;
 
 public class Rodent extends Pet {
-  public Rodent(String name) { super(name); }
-  public Rodent() { super(); }
+    public Rodent(String name) { super(name); }
+    public Rodent() { super(); }
 }
 ```
 
@@ -682,8 +682,8 @@ public class Rodent extends Pet {
 package typeinfo.pets;
 
 public class Rat extends Rodent {
-  public Rat(String name) { super(name); }
-  public Rat() { super(); }
+    public Rat(String name) { super(name); }
+    public Rat() { super(); }
 }
 ```
 
@@ -692,8 +692,8 @@ public class Rat extends Rodent {
 package typeinfo.pets;
 
 public class Mouse extends Rodent {
-  public Mouse(String name) { super(name); }
-  public Mouse() { super(); }
+    public Mouse(String name) { super(name); }
+    public Mouse() { super(); }
 }
 ```
 
@@ -702,8 +702,8 @@ public class Mouse extends Rodent {
 package typeinfo.pets;
 
 public class Hamster extends Rodent {
-  public Hamster(String name) { super(name); }
-  public Hamster() { super(); }
+    public Hamster(String name) { super(name); }
+    public Hamster() { super(); }
 }
 ```
 
@@ -718,20 +718,21 @@ package typeinfo.pets;
 import java.util.*;
 import java.util.function.*;
 
-public abstract
-class PetCreator implements Supplier<Pet> {
-  private Random rand = new Random(47);
-  // The List of the different types of Pet to create:
-  public abstract List<Class<? extends Pet>> types();
-  public Pet get() { // Create one random Pet
-    int n = rand.nextInt(types().size());
-    try {
-      return types().get(n).newInstance();
-    } catch(InstantiationException |
-            IllegalAccessException e) {
-      throw new RuntimeException(e);
+public abstract class PetCreator implements Supplier<Pet> {
+    private Random rand = new Random(47);
+
+    // The List of the different types of Pet to create:
+    public abstract List<Class<? extends Pet>> types();
+
+    public Pet get() { // Create one random Pet
+        int n = rand.nextInt(types().size());
+        try {
+            return types().get(n).newInstance();
+        } catch (InstantiationException |
+                IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 }
 ```
 
@@ -747,37 +748,39 @@ package typeinfo.pets;
 import java.util.*;
 
 public class ForNameCreator extends PetCreator {
-  private static List<Class<? extends Pet>> types =
-    new ArrayList<>();
+    private static List<Class<? extends Pet>> types =
+            new ArrayList<>();
+    // 需要随机生成的类型名:
+    private static String[] typeNames = {
+            "typeinfo.pets.Mutt",
+            "typeinfo.pets.Pug",
+            "typeinfo.pets.EgyptianMau",
+            "typeinfo.pets.Manx",
+            "typeinfo.pets.Cymric",
+            "typeinfo.pets.Rat",
+            "typeinfo.pets.Mouse",
+            "typeinfo.pets.Hamster"
+    };
 
-  // 需要随机生成的类型名:
-  private static String[] typeNames = {
-    "typeinfo.pets.Mutt",
-    "typeinfo.pets.Pug",
-    "typeinfo.pets.EgyptianMau",
-    "typeinfo.pets.Manx",
-    "typeinfo.pets.Cymric",
-    "typeinfo.pets.Rat",
-    "typeinfo.pets.Mouse",
-    "typeinfo.pets.Hamster"
-  };
-
-  @SuppressWarnings("unchecked")
-  private static void loader() {
-    try {
-      for(String name : typeNames)
-        types.add(
-          (Class<? extends Pet>)Class.forName(name));
-    } catch(ClassNotFoundException e) {
-      throw new RuntimeException(e);
+    @SuppressWarnings("unchecked")
+    private static void loader() {
+        try {
+            for (String name : typeNames)
+                types.add(
+                        (Class<? extends Pet>) Class.forName(name));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 
-  static { loader(); }
-  @Override
-  public List<Class<? extends Pet>> types() {
-    return types;
-  }
+    static {
+        loader();
+    }
+
+    @Override
+    public List<Class<? extends Pet>> types() {
+        return types;
+    }
 }
 ```
 
@@ -794,62 +797,67 @@ import typeinfo.pets.*;
 import java.util.*;
 
 public class PetCount {
-  static class Counter extends HashMap<String,Integer> {
-    public void count(String type) {
-      Integer quantity = get(type);
-      if(quantity == null)
-        put(type, 1);
-      else
-        put(type, quantity + 1);
+    static class Counter extends HashMap<String, Integer> {
+        public void count(String type) {
+            Integer quantity = get(type);
+            if (quantity == null)
+                put(type, 1);
+            else
+                put(type, quantity + 1);
+        }
     }
-  }
-  public static void
-  countPets(PetCreator creator) {
-    Counter counter = new Counter();
-    for(Pet pet : Pets.array(20)) {
-      // List each individual pet:
-      System.out.print(
-        pet.getClass().getSimpleName() + " ");
-      if(pet instanceof Pet)
-        counter.count("Pet");
-      if(pet instanceof Dog)
-        counter.count("Dog");
-      if(pet instanceof Mutt)
-        counter.count("Mutt");
-      if(pet instanceof Pug)
-        counter.count("Pug");
-      if(pet instanceof Cat)
-        counter.count("Cat");
-      if(pet instanceof EgyptianMau)
-        counter.count("EgyptianMau");
-      if(pet instanceof Manx)
-        counter.count("Manx");
-      if(pet instanceof Cymric)
-        counter.count("Cymric");
-      if(pet instanceof Rodent)
-        counter.count("Rodent");
-      if(pet instanceof Rat)
-        counter.count("Rat");
-      if(pet instanceof Mouse)
-        counter.count("Mouse");
-      if(pet instanceof Hamster)
-        counter.count("Hamster");
+
+    public static void
+    countPets(PetCreator creator) {
+        Counter counter = new Counter();
+        for (Pet pet : Pets.array(20)) {
+            // List each individual pet:
+            System.out.print(
+                    pet.getClass().getSimpleName() + " ");
+            if (pet instanceof Pet)
+                counter.count("Pet");
+            if (pet instanceof Dog)
+                counter.count("Dog");
+            if (pet instanceof Mutt)
+                counter.count("Mutt");
+            if (pet instanceof Pug)
+                counter.count("Pug");
+            if (pet instanceof Cat)
+                counter.count("Cat");
+            if (pet instanceof EgyptianMau)
+                counter.count("EgyptianMau");
+            if (pet instanceof Manx)
+                counter.count("Manx");
+            if (pet instanceof Cymric)
+                counter.count("Cymric");
+            if (pet instanceof Rodent)
+                counter.count("Rodent");
+            if (pet instanceof Rat)
+                counter.count("Rat");
+            if (pet instanceof Mouse)
+                counter.count("Mouse");
+            if (pet instanceof Hamster)
+                counter.count("Hamster");
+        }
+        // Show the counts:
+        System.out.println();
+        System.out.println(counter);
     }
-    // Show the counts:
-    System.out.println();
-    System.out.println(counter);
-  }
-  public static void main(String[] args) {
-    countPets(new ForNameCreator());
-  }
+
+    public static void main(String[] args) {
+        countPets(new ForNameCreator());
+    }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
 EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
 Pug Mouse Cymric
 {EgyptianMau=2, Pug=3, Rat=2, Cymric=5, Mouse=2, Cat=9,
 Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
-*/
 ```
 
 在 `countPets()` 中，一个简短的静态方法 `Pets.array()` 生产出了一个随机动物的集合。每个 `Pet` 都被 `instanceof` 检测到并数了一遍。
@@ -868,36 +876,40 @@ package typeinfo.pets;
 import java.util.*;
 
 public class LiteralPetCreator extends PetCreator {
-  // try 代码块不再需要
-  @SuppressWarnings("unchecked")
-  public static
-  final List<Class<? extends Pet>> ALL_TYPES =
-    Collections.unmodifiableList(Arrays.asList(
-      Pet.class, Dog.class, Cat.class, Rodent.class,
-      Mutt.class, Pug.class, EgyptianMau.class,
-      Manx.class, Cymric.class, Rat.class,
-      Mouse.class, Hamster.class));
-  // 用于随机创建的类型:
-  private static final
-  List<Class<? extends Pet>> TYPES =
-    ALL_TYPES.subList(ALL_TYPES.indexOf(Mutt.class),
-      ALL_TYPES.size());
-  @Override
-  public List<Class<? extends Pet>> types() {
-    return TYPES;
-  }
-  public static void main(String[] args) {
-    System.out.println(TYPES);
-  }
+    // try 代码块不再需要
+    @SuppressWarnings("unchecked")
+    public static final List<Class<? extends Pet>> ALL_TYPES =
+            Collections.unmodifiableList(Arrays.asList(
+                    Pet.class, Dog.class, Cat.class, Rodent.class,
+                    Mutt.class, Pug.class, EgyptianMau.class,
+                    Manx.class, Cymric.class, Rat.class,
+                    Mouse.class, Hamster.class));
+    // 用于随机创建的类型:
+    private static final List<Class<? extends Pet>> TYPES =
+            ALL_TYPES.subList(ALL_TYPES.indexOf(Mutt.class),
+                    ALL_TYPES.size());
+
+    @Override
+    public List<Class<? extends Pet>> types() {
+        return TYPES;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(TYPES);
+    }
 }
-/* 输出:
+```
+
+输出结果：
+
+```
 [class typeinfo.pets.Mutt, class typeinfo.pets.Pug,
 class typeinfo.pets.EgyptianMau, class
 typeinfo.pets.Manx, class typeinfo.pets.Cymric, class
 typeinfo.pets.Rat, class typeinfo.pets.Mouse, class
 typeinfo.pets.Hamster]
-*/
 ```
+
 
 在即将到来的 `PetCount3.java` 示例中，我们用所有 `Pet` 类型预先加载一个 `Map`（不仅仅是随机生成的），因此 `ALL_TYPES` 类型的列表是必要的。`types` 列表是 `ALL_TYPES` 类型（使用 `List.subList()` 创建）的一部分，它包含精确的宠物类型，因此用于随机生成 `Pet`。
 
@@ -909,33 +921,33 @@ typeinfo.pets.Hamster]
 // typeinfo/pets/Pets.java
 // Facade to produce a default PetCreator
 package typeinfo.pets;
+
 import java.util.*;
 import java.util.stream.*;
 
 public class Pets {
-  public static final PetCreator CREATOR =
-    new LiteralPetCreator();
+    public static final PetCreator CREATOR = new LiteralPetCreator();
 
-  public static Pet get() {
-    return CREATOR.get();
-  }
+    public static Pet get() {
+        return CREATOR.get();
+    }
 
-  public static Pet[] array(int size) {
-    Pet[] result = new Pet[size];
-    for(int i = 0; i < size; i++)
-      result[i] = CREATOR.get();
-    return result;
-  }
+    public static Pet[] array(int size) {
+        Pet[] result = new Pet[size];
+        for (int i = 0; i < size; i++)
+            result[i] = CREATOR.get();
+        return result;
+    }
 
-  public static List<Pet> list(int size) {
-    List<Pet> result = new ArrayList<>();
-    Collections.addAll(result, array(size));
-    return result;
-  }
+    public static List<Pet> list(int size) {
+        List<Pet> result = new ArrayList<>();
+        Collections.addAll(result, array(size));
+        return result;
+    }
 
-  public static Stream<Pet> stream() {
-    return Stream.generate(CREATOR);
-  }
+    public static Stream<Pet> stream() {
+        return Stream.generate(CREATOR);
+    }
 }
 ```
 
@@ -948,17 +960,20 @@ public class Pets {
 import typeinfo.pets.*;
 
 public class PetCount2 {
-  public static void main(String[] args) {
-    PetCount.countPets(Pets.CREATOR);
-  }
+    public static void main(String[] args) {
+        PetCount.countPets(Pets.CREATOR);
+    }
 }
-/* 输出:
+```
+
+输出结果：
+
+```
 Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
 EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
 Pug Mouse Cymric
 {EgyptianMau=2, Pug=3, Rat=2, Cymric=5, Mouse=2, Cat=9,
 Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
-*/
 ```
 
 输出与 `PetCount.java` 的输出相同。
@@ -970,58 +985,62 @@ Manx=7, Rodent=5, Mutt=3, Dog=6, Pet=20, Hamster=1}
 ```java
 // typeinfo/PetCount3.java
 // 使用 isInstance() 方法
+
 import java.util.*;
 import java.util.stream.*;
+
 import onjava.*;
 import typeinfo.pets.*;
 
 public class PetCount3 {
-  static class Counter extends
-  LinkedHashMap<Class<? extends Pet>, Integer> {
+    static class Counter extends
+            LinkedHashMap<Class<? extends Pet>, Integer> {
+        Counter() {
+            super(LiteralPetCreator.ALL_TYPES.stream()
+                    .map(lpc -> Pair.make(lpc, 0))
+                    .collect(
+                            Collectors.toMap(Pair::key, Pair::value)));
+        }
 
-    Counter() {
-      super(LiteralPetCreator.ALL_TYPES.stream()
-        .map(lpc -> Pair.make(lpc, 0))
-        .collect(
-          Collectors.toMap(Pair::key, Pair::value)));
+        public void count(Pet pet) {
+            // Class.isInstance() 替换 instanceof:
+            entrySet().stream()
+                    .filter(pair -> pair.getKey().isInstance(pet))
+                    .forEach(pair ->
+                            put(pair.getKey(), pair.getValue() + 1));
+        }
+
+        @Override
+        public String toString() {
+            String result = entrySet().stream()
+                    .map(pair -> String.format("%s=%s",
+                            pair.getKey().getSimpleName(),
+                            pair.getValue()))
+                    .collect(Collectors.joining(", "));
+            return "{" + result + "}";
+        }
     }
 
-    public void count(Pet pet) {
-      // Class.isInstance() 替换 instanceof:
-      entrySet().stream()
-        .filter(pair -> pair.getKey().isInstance(pet))
-        .forEach(pair ->
-          put(pair.getKey(), pair.getValue() + 1));
+    public static void main(String[] args) {
+        Counter petCount = new Counter();
+        Pets.stream()
+                .limit(20)
+                .peek(petCount::count)
+                .forEach(p -> System.out.print(
+                        p.getClass().getSimpleName() + " "));
+        System.out.println("n" + petCount);
     }
-
-    @Override
-    public String toString() {
-      String result = entrySet().stream()
-        .map(pair -> String.format("%s=%s",
-          pair.getKey().getSimpleName(),
-          pair.getValue()))
-        .collect(Collectors.joining(", "));
-      return "{" + result + "}";
-    }
-  }
-
-  public static void main(String[] args) {
-    Counter petCount = new Counter();
-    Pets.stream()
-      .limit(20)
-      .peek(petCount::count)
-      .forEach(p -> System.out.print(
-        p.getClass().getSimpleName() + " "));
-    System.out.println("\n" + petCount);
-  }
 }
-/* 输出:
+```
+
+输出结果：
+
+```
 Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
 EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
 Pug Mouse Cymric
 {Rat=2, Pug=3, Mutt=3, Mouse=2, Cat=9, Dog=6, Cymric=5,
 EgyptianMau=2, Rodent=5, Hamster=1, Manx=7, Pet=20}
-*/
 ```
 
 为了计算所有不同类型的 `Pet`，`Counter Map` 预先加载了来自 `LiteralPetCreator.ALL_TYPES` 的类型。如果不预先加载 `Map`，将只计数随机生成的类型，而不是像 `Pet` 和 `Cat` 这样的基本类型。
@@ -1041,41 +1060,40 @@ package onjava;
 import java.util.*;
 import java.util.stream.*;
 
-public class
-TypeCounter extends HashMap<Class<?>, Integer> {
-  private Class<?> baseType;
+public class TypeCounter extends HashMap<Class<?>, Integer> {
+    private Class<?> baseType;
 
-  public TypeCounter(Class<?> baseType) {
-    this.baseType = baseType;
-  }
+    public TypeCounter(Class<?> baseType) {
+        this.baseType = baseType;
+    }
 
-  public void count(Object obj) {
-    Class<?> type = obj.getClass();
-    if(!baseType.isAssignableFrom(type))
-      throw new RuntimeException(
-        obj + " incorrect type: " + type +
-        ", should be type or subtype of " + baseType);
-    countClass(type);
-  }
+    public void count(Object obj) {
+        Class<?> type = obj.getClass();
+        if(!baseType.isAssignableFrom(type))
+              throw new RuntimeException(
+                obj + " incorrect type: " + type +
+                ", should be type or subtype of " + baseType);
+        countClass(type);
+    }
 
-  private void countClass(Class<?> type) {
-    Integer quantity = get(type);
-    put(type, quantity == null ? 1 : quantity + 1);
-    Class<?> superClass = type.getSuperclass();
-    if(superClass != null &&
-       baseType.isAssignableFrom(superClass))
-      countClass(superClass);
-  }
+    private void countClass(Class<?> type) {
+        Integer quantity = get(type);
+        put(type, quantity == null ? 1 : quantity + 1);
+        Class<?> superClass = type.getSuperclass();
+        if(superClass != null &&
+               baseType.isAssignableFrom(superClass))
+              countClass(superClass);
+    }
 
-  @Override
-  public String toString() {
-    String result = entrySet().stream()
-      .map(pair -> String.format("%s=%s",
-        pair.getKey().getSimpleName(),
-        pair.getValue()))
-      .collect(Collectors.joining(", "));
-    return "{" + result + "}";
-  }
+    @Override
+    public String toString() {
+        String result = entrySet().stream()
+              .map(pair -> String.format("%s=%s",
+                pair.getKey().getSimpleName(),
+                pair.getValue()))
+              .collect(Collectors.joining(", "));
+        return "{" + result + "}";
+    }
 }
 ```
 
@@ -1087,24 +1105,27 @@ import typeinfo.pets.*;
 import onjava.*;
 
 public class PetCount4 {
-  public static void main(String[] args) {
-    TypeCounter counter = new TypeCounter(Pet.class);
-    Pets.stream()
-      .limit(20)
-      .peek(counter::count)
-      .forEach(p -> System.out.print(
-        p.getClass().getSimpleName() + " "));
-    System.out.println("\n" + counter);
+    public static void main(String[] args) {
+        TypeCounter counter = new TypeCounter(Pet.class);
+        Pets.stream()
+              .limit(20)
+              .peek(counter::count)
+              .forEach(p -> System.out.print(
+                p.getClass().getSimpleName() + " "));
+        System.out.println("n" + counter);
   }
 }
-/* 输出:
+```
+
+输出结果：
+
+```
 Rat Manx Cymric Mutt Pug Cymric Pug Manx Cymric Rat
 EgyptianMau Hamster EgyptianMau Mutt Mutt Cymric Mouse
 Pug Mouse Cymric
 {Dog=6, Manx=7, Cat=9, Rodent=5, Hamster=1, Rat=2,
 Pug=3, Mutt=3, Cymric=5, EgyptianMau=2, Pet=20,
 Mouse=2}
-*/
 ```
 
 输出表明两个基类型以及精确类型都被计数了。
@@ -1130,83 +1151,94 @@ import java.util.function.*;
 import java.util.stream.*;
 
 class Part implements Supplier<Part> {
-  @Override
-  public String toString() {
-    return getClass().getSimpleName();
-  }
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 
-  static List<Supplier<? extends Part>> prototypes =
-    Arrays.asList(
-      new FuelFilter(),
-      new AirFilter(),
-      new CabinAirFilter(),
-      new OilFilter(),
-      new FanBelt(),
-      new PowerSteeringBelt(),
-      new GeneratorBelt()
-    );
+    static List<Supplier<? extends Part>> prototypes =
+        Arrays.asList(
+          new FuelFilter(),
+          new AirFilter(),
+          new CabinAirFilter(),
+          new OilFilter(),
+          new FanBelt(),
+          new PowerSteeringBelt(),
+          new GeneratorBelt()
+        );
 
-  private static Random rand = new Random(47);
-  public Part get() {
-    int n = rand.nextInt(prototypes.size());
-    return prototypes.get(n).get();
-  }
+    private static Random rand = new Random(47);
+    public Part get() {
+        int n = rand.nextint(prototypes.size());
+        return prototypes.get(n).get();
+    }
 }
 
 class Filter extends Part {}
 
 class FuelFilter extends Filter {
-  @Override
-  public FuelFilter get() { return new FuelFilter(); }
+    @Override
+    public FuelFilter get() {
+        return new FuelFilter();
+    }
 }
 
 class AirFilter extends Filter {
-  @Override
-  public AirFilter get() { return new AirFilter(); }
+    @Override
+    public AirFilter get() {
+        return new AirFilter();
+    }
 }
 
 class CabinAirFilter extends Filter {
-  @Override
-  public CabinAirFilter get() {
-    return new CabinAirFilter();
-  }
+    @Override
+    public CabinAirFilter get() {
+        return new CabinAirFilter();
+    }
 }
 
 class OilFilter extends Filter {
-  @Override
-  public OilFilter get() { return new OilFilter(); }
+    @Override
+    public OilFilter get() {
+        return new OilFilter();
+    }
 }
 
 class Belt extends Part {}
 
 class FanBelt extends Belt {
-  @Override
-  public FanBelt get() { return new FanBelt(); }
+    @Override
+    public FanBelt get() {
+        return new FanBelt();
+    }
 }
 
 class GeneratorBelt extends Belt {
-  @Override
-  public GeneratorBelt get() {
-    return new GeneratorBelt();
-  }
+    @Override
+    public GeneratorBelt get() {
+        return new GeneratorBelt();
+    }
 }
 
 class PowerSteeringBelt extends Belt {
-  @Override
-  public PowerSteeringBelt get() {
-    return new PowerSteeringBelt();
-  }
+    @Override
+    public PowerSteeringBelt get() {
+        return new PowerSteeringBelt();
+    }
 }
 
 public class RegisteredFactories {
-  public static void main(String[] args) {
-    Stream.generate(new Part())
-      .limit(10)
-      .forEach(System.out::println);
-  }
+    public static void main(String[] args) {
+        Stream.generate(new Part())
+              .limit(10)
+              .forEach(System.out::println);
+    }
 }
+```
 
-/* 输出:
+输出结果：
+
+```
 GeneratorBelt
 CabinAirFilter
 GeneratorBelt
@@ -1217,7 +1249,6 @@ FuelFilter
 PowerSteeringBelt
 PowerSteeringBelt
 FuelFilter
-*/
 ```
 
 并非层次结构中的所有类都应实例化；这里的 `Filter` 和 `Belt` 只是分类器，这样你就不会创建任何一个类的实例，而是只创建它们的子类（请注意，如果尝试这样做，你将获得 `Part` 基类的行为）。
@@ -1239,37 +1270,42 @@ class Base {}
 class Derived extends Base {}
 
 public class FamilyVsExactType {
-  static void test(Object x) {
-    System.out.println(
-      "Testing x of type " + x.getClass());
-    System.out.println(
-      "x instanceof Base " + (x instanceof Base));
-    System.out.println(
-      "x instanceof Derived " + (x instanceof Derived));
-    System.out.println(
-      "Base.isInstance(x) " + Base.class.isInstance(x));
-    System.out.println(
-      "Derived.isInstance(x) " +
-      Derived.class.isInstance(x));
-    System.out.println(
-      "x.getClass() == Base.class " +
-      (x.getClass() == Base.class));
-    System.out.println(
-      "x.getClass() == Derived.class " +
-      (x.getClass() == Derived.class));
-    System.out.println(
-      "x.getClass().equals(Base.class)) "+
-      (x.getClass().equals(Base.class)));
-    System.out.println(
-      "x.getClass().equals(Derived.class)) " +
-      (x.getClass().equals(Derived.class)));
-  }
-  public static void main(String[] args) {
-    test(new Base());
-    test(new Derived());
-  }
+    static void test(Object x) {
+        System.out.println(
+              "Testing x of type " + x.getClass());
+        System.out.println(
+              "x instanceof Base " + (x instanceof Base));
+        System.out.println(
+              "x instanceof Derived " + (x instanceof Derived));
+        System.out.println(
+              "Base.isInstance(x) " + Base.class.isInstance(x));
+        System.out.println(
+              "Derived.isInstance(x) " +
+              Derived.class.isInstance(x));
+        System.out.println(
+              "x.getClass() == Base.class " +
+              (x.getClass() == Base.class));
+        System.out.println(
+              "x.getClass() == Derived.class " +
+              (x.getClass() == Derived.class));
+        System.out.println(
+              "x.getClass().equals(Base.class)) "+
+              (x.getClass().equals(Base.class)));
+        System.out.println(
+              "x.getClass().equals(Derived.class)) " +
+              (x.getClass().equals(Derived.class)));
+    }
+
+    public static void main(String[] args) {
+        test(new Base());
+        test(new Derived());
+    }
 }
-/* 输出:
+```
+
+输出结果：
+
+```
 Testing x of type class typeinfo.Base
 x instanceof Base true
 x instanceof Derived false
@@ -1288,7 +1324,6 @@ x.getClass() == Base.class false
 x.getClass() == Derived.class true
 x.getClass().equals(Base.class)) false
 x.getClass().equals(Derived.class)) true
-*/
 ```
 
 `test()` 方法使用两种形式的 `instanceof` 对其参数执行类型检查。然后，它获取 `Class` 引用，并使用 `==` 和 `equals()` 测试 `Class` 对象的相等性。令人放心的是，`instanceof` 和 `isInstance()` 产生的结果与 `equals()` 和 `==` 完全相同。但测试本身得出了不同的结论。与类型的概念一致，`instanceof` 说的是“你是这个类，还是从这个类派生的类？”。另一方面，如果使用 `==` 比较实际的 `Class` 对象，则与继承无关 —— 它要么是确切的类型，要么不是。
@@ -1322,54 +1357,57 @@ import java.lang.reflect.*;
 import java.util.regex.*;
 
 public class ShowMethods {
-  private static String usage =
-    "usage:\n" +
-    "ShowMethods qualified.class.name\n" +
-    "To show all methods in class or:\n" +
-    "ShowMethods qualified.class.name word\n" +
-    "To search for methods involving 'word'";
+    private static String usage =
+            "usage:n" +
+                    "ShowMethods qualified.class.namen" +
+                    "To show all methods in class or:n" +
+                    "ShowMethods qualified.class.name wordn" +
+                    "To search for methods involving 'word'";
+    private static Pattern p = Pattern.compile("\w+\.");
 
-  private static Pattern p = Pattern.compile("\\w+\\.");
-  public static void main(String[] args) {
-
-    if(args.length < 1) {
-      System.out.println(usage);
-      System.exit(0);
+    public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println(usage);
+            System.exit(0);
+        }
+        int lines = 0;
+        try {
+            Class<?> c = Class.forName(args[0]);
+            Method[] methods = c.getMethods();
+            Constructor[] ctors = c.getConstructors();
+            if (args.length == 1) {
+                for (Method method : methods)
+                    System.out.println(
+                            p.matcher(
+                                    method.toString()).replaceAll(""));
+                for (Constructor ctor : ctors)
+                    System.out.println(
+                            p.matcher(ctor.toString()).replaceAll(""));
+                lines = methods.length + ctors.length;
+            } else {
+                for (Method method : methods)
+                    if (method.toString().contains(args[1])) {
+                        System.out.println(p.matcher(
+                                method.toString()).replaceAll(""));
+                        lines++;
+                    }
+                for (Constructor ctor : ctors)
+                    if (ctor.toString().contains(args[1])) {
+                        System.out.println(p.matcher(
+                                ctor.toString()).replaceAll(""));
+                        lines++;
+                    }
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println("No such class: " + e);
+        }
     }
-    int lines = 0;
-    try {
-      Class<?> c = Class.forName(args[0]);
-      Method[] methods = c.getMethods();
-      Constructor[] ctors = c.getConstructors();
-      if(args.length == 1) {
-        for(Method method : methods)
-          System.out.println(
-            p.matcher(
-              method.toString()).replaceAll(""));
-        for(Constructor ctor : ctors)
-          System.out.println(
-            p.matcher(ctor.toString()).replaceAll(""));
-        lines = methods.length + ctors.length;
-      } else {
-        for(Method method : methods)
-          if(method.toString().contains(args[1])) {
-            System.out.println(p.matcher(
-              method.toString()).replaceAll(""));
-            lines++;
-          }
-        for(Constructor ctor : ctors)
-          if(ctor.toString().contains(args[1])) {
-            System.out.println(p.matcher(
-              ctor.toString()).replaceAll(""));
-            lines++;
-          }
-      }
-    } catch(ClassNotFoundException e) {
-      System.out.println("No such class: " + e);
-    }
-  }
 }
-/* 输出:
+```
+
+输出结果：
+
+```
 public static void main(String[])
 public final void wait() throws InterruptedException
 public final void wait(long,int) throws
@@ -1383,7 +1421,6 @@ public final native Class getClass()
 public final native void notify()
 public final native void notifyAll()
 public ShowMethods()
-*/
 ```
 
 `Class` 方法 `getmethods()` 和 `getconstructors()`  分别返回 `Method` 数组和 `Constructor` 数组。这些类中的每一个都有进一步的方法来解析它们所表示的方法的名称、参数和返回值。但你也可以像这里所做的那样，使用 `toString()`，生成带有整个方法签名的 `String`。代码的其余部分提取命令行信息，确定特定签名是否与目标 `String`（使用 `indexOf()`）匹配，并使用正则表达式（在 [Strings](#ch021.xhtml#strings) 一章中介绍）删除名称限定符。
@@ -1411,57 +1448,66 @@ java ShowMethods ShowMethods
 // typeinfo/SimpleProxyDemo.java
 
 interface Interface {
-  void doSomething();
-  void somethingElse(String arg);
+    void doSomething();
+
+    void somethingElse(String arg);
 }
 
 class RealObject implements Interface {
-  @Override
-  public void doSomething() {
-    System.out.println("doSomething");
-  }
-  @Override
-  public void somethingElse(String arg) {
-    System.out.println("somethingElse " + arg);
-  }
+    @Override
+    public void doSomething() {
+        System.out.println("doSomething");
+    }
+
+    @Override
+    public void somethingElse(String arg) {
+        System.out.println("somethingElse " + arg);
+    }
 }
 
 class SimpleProxy implements Interface {
-  private Interface proxied;
-  SimpleProxy(Interface proxied) {
-    this.proxied = proxied;
-  }
-  @Override
-  public void doSomething() {
-    System.out.println("SimpleProxy doSomething");
-    proxied.doSomething();
-  }
-  @Override
-  public void somethingElse(String arg) {
-    System.out.println(
-      "SimpleProxy somethingElse " + arg);
-    proxied.somethingElse(arg);
-  }
+    private Interface proxied;
+
+    SimpleProxy(Interface proxied) {
+        this.proxied = proxied;
+    }
+
+    @Override
+    public void doSomething() {
+        System.out.println("SimpleProxy doSomething");
+        proxied.doSomething();
+    }
+
+    @Override
+    public void somethingElse(String arg) {
+        System.out.println(
+                "SimpleProxy somethingElse " + arg);
+        proxied.somethingElse(arg);
+    }
 }
 
 class SimpleProxyDemo {
-  public static void consumer(Interface iface) {
-    iface.doSomething();
-    iface.somethingElse("bonobo");
-  }
-  public static void main(String[] args) {
-    consumer(new RealObject());
-    consumer(new SimpleProxy(new RealObject()));
-  }
+    public static void consumer(Interface iface) {
+        iface.doSomething();
+        iface.somethingElse("bonobo");
+    }
+
+    public static void main(String[] args) {
+        consumer(new RealObject());
+        consumer(new SimpleProxy(new RealObject()));
+    }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 doSomething
 somethingElse bonobo
 SimpleProxy doSomething
 doSomething
 SimpleProxy somethingElse bonobo
 somethingElse bonobo
-*/
 ```
 
 因为`consumer()`接受`Interface`，所以它不知道获得的是`RealObject`还是`SimpleProxy`，因为两者都实现了`Interface`。
@@ -1473,44 +1519,52 @@ Java的*动态代理*更进一步，不仅动态创建代理对象而且动态�
 
 ```java
 // typeinfo/SimpleDynamicProxy.java
+
 import java.lang.reflect.*;
 
 class DynamicProxyHandler implements InvocationHandler {
-  private Object proxied;
-  DynamicProxyHandler(Object proxied) {
-    this.proxied = proxied;
-  }
-  @Override
-  public Object
-  invoke(Object proxy, Method method, Object[] args)
-  throws Throwable {
-    System.out.println(
-      "**** proxy: " + proxy.getClass() +
-      ", method: " + method + ", args: " + args);
-    if(args != null)
-      for(Object arg : args)
-        System.out.println("  " + arg);
-    return method.invoke(proxied, args);
-  }
+    private Object proxied;
+
+    DynamicProxyHandler(Object proxied) {
+        this.proxied = proxied;
+    }
+
+    @Override
+    public Object
+    invoke(Object proxy, Method method, Object[] args)
+            throws Throwable {
+        System.out.println(
+                "**** proxy: " + proxy.getClass() +
+                        ", method: " + method + ", args: " + args);
+        if (args != null)
+            for (Object arg : args)
+                System.out.println("  " + arg);
+        return method.invoke(proxied, args);
+    }
 }
 
 class SimpleDynamicProxy {
-  public static void consumer(Interface iface) {
-    iface.doSomething();
-    iface.somethingElse("bonobo");
-  }
-  public static void main(String[] args) {
-    RealObject real = new RealObject();
-    consumer(real);
-    // Insert a proxy and call again:
-    Interface proxy = (Interface)Proxy.newProxyInstance(
-      Interface.class.getClassLoader(),
-      new Class[]{ Interface.class },
-      new DynamicProxyHandler(real));
-    consumer(proxy);
-  }
+    public static void consumer(Interface iface) {
+        iface.doSomething();
+        iface.somethingElse("bonobo");
+    }
+
+    public static void main(String[] args) {
+        RealObject real = new RealObject();
+        consumer(real);
+        // Insert a proxy and call again:
+        Interface proxy = (Interface) Proxy.newProxyInstance(
+                Interface.class.getClassLoader(),
+                new Class[]{Interface.class},
+                new DynamicProxyHandler(real));
+        consumer(proxy);
+    }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 doSomething
 somethingElse bonobo
 **** proxy: class $Proxy0, method: public abstract void
@@ -1521,7 +1575,6 @@ Interface.somethingElse(java.lang.String), args:
 [Ljava.lang.Object;@6bc7c054
   bonobo
 somethingElse bonobo
-*/
 ```
 
 可以通过调用静态方法`Proxy.newProxyInstance()`来创建动态代理，该方法需要一个类加载器（通常可以从已加载的对象中获取），希望代理实现的接口列表（不是类或抽象类），以及接口`InvocationHandler`的一个实现。动态代理会将所有调用重定向到调用处理程序，因此通常为调用处理程序的构造函数提供对“真实”对象的引用，以便一旦执行中介任务便可以转发请求。
@@ -1533,70 +1586,82 @@ somethingElse bonobo
 ```java
 // typeinfo/SelectingMethods.java
 // Looking for particular methods in a dynamic proxy
+
 import java.lang.reflect.*;
 
 class MethodSelector implements InvocationHandler {
-  private Object proxied;
-  MethodSelector(Object proxied) {
-    this.proxied = proxied;
-  }
-  @Override
-  public Object
-  invoke(Object proxy, Method method, Object[] args)
-  throws Throwable {
-    if(method.getName().equals("interesting"))
-      System.out.println(
-        "Proxy detected the interesting method");
-    return method.invoke(proxied, args);
-  }
+    private Object proxied;
+
+    MethodSelector(Object proxied) {
+        this.proxied = proxied;
+    }
+
+    @Override
+    public Object
+    invoke(Object proxy, Method method, Object[] args)
+            throws Throwable {
+        if (method.getName().equals("interesting"))
+            System.out.println(
+                    "Proxy detected the interesting method");
+        return method.invoke(proxied, args);
+    }
 }
 
 interface SomeMethods {
-  void boring1();
-  void boring2();
-  void interesting(String arg);
-  void boring3();
+    void boring1();
+
+    void boring2();
+
+    void interesting(String arg);
+
+    void boring3();
 }
 
 class Implementation implements SomeMethods {
-  @Override
-  public void boring1() {
-    System.out.println("boring1");
-  }
-  @Override
-  public void boring2() {
-    System.out.println("boring2");
-  }
-  @Override
-  public void interesting(String arg) {
-    System.out.println("interesting " + arg);
-  }
-  @Override
-  public void boring3() {
-    System.out.println("boring3");
-  }
+    @Override
+    public void boring1() {
+        System.out.println("boring1");
+    }
+
+    @Override
+    public void boring2() {
+        System.out.println("boring2");
+    }
+
+    @Override
+    public void interesting(String arg) {
+        System.out.println("interesting " + arg);
+    }
+
+    @Override
+    public void boring3() {
+        System.out.println("boring3");
+    }
 }
 
 class SelectingMethods {
-  public static void main(String[] args) {
-    SomeMethods proxy =
-      (SomeMethods)Proxy.newProxyInstance(
-        SomeMethods.class.getClassLoader(),
-        new Class[]{ Interface.class },
-        new MethodSelector(new Implementation()));
-    proxy.boring1();
-    proxy.boring2();
-    proxy.interesting("bonobo");
-    proxy.boring3();
-  }
+    public static void main(String[] args) {
+        SomeMethods proxy =
+                (SomeMethods) Proxy.newProxyInstance(
+                        SomeMethods.class.getClassLoader(),
+                        new Class[]{Interface.class},
+                        new MethodSelector(new Implementation()));
+        proxy.boring1();
+        proxy.boring2();
+        proxy.interesting("bonobo");
+        proxy.boring3();
+    }
 }
-/* Output:
+```
+
+输出结果：
+
+```
 boring1
 boring2
 Proxy detected the interesting method
 interesting bonobo
 boring3
-*/
 ```
 
 在这个示例里，我们只是在寻找方法名，但是你也可以寻找方法签名的其他方面，甚至可以搜索特定的参数值。
@@ -1606,6 +1671,444 @@ boring3
 <!-- Using Optional -->
 ## Optional类
 
+如果你使用内置的 `null` 来表示没有对象，每次使用引用的时候就必须测试一下引用是否为 `null`，这显得有点枯燥，而且势必会产生相当乏味的代码。问题在于 `null` 没什么自己的行为，只会在你想用它执行任何操作的时候产生 `NullPointException`。`java.util.Optional`（首次出现是在[函数式编程](docs/book/13-Functional-Programming.md)这章）为 `null` 值提供了一个轻量级代理，`Optional` 对象可以防止你的代码直接抛出 `NullPointException`。
+
+虽然 `Optional` 是 Java 8 为了支持流式编程才引入的，但其实它是一个通用的工具。为了证明这点，在本节中，我们会把它用在普通的类中。因为涉及一些运行时检测，所以把这一小节放在了本章。
+
+实际上，在所有地方都使用 `Optional` 是没有意义的，有时候检查一下是不是 `null` 也挺好的，或者有时我们可以合理的假设不会出现 `null`，甚至有时候检查 `NullPointException` 异常也是可以接受的。`Optional` 最有用武之地的是在那些“更接近数据”的地方，在问题空间中代表实体的对象上。举个简单的例子，很多系统中都有 `Person` 类型，代码中有些情况下你可能没有一个实际的 `Person` 对象（或者可能有，但是你还没用关于那个人的所有信息）。这时，在传统方法下，你会用到一个 `null` 引用，并且在使用的时候测试它是不是 `null`。而现在，我们可以使用 `Optional`：
+
+```java
+// typeinfo/Person.java
+// Using Optional with regular classes
+
+import onjava.*;
+
+import java.util.*;
+
+class Person {
+    public final Optional<String> first;
+    public final Optional<String> last;
+    public final Optional<String> address;
+    // etc.
+    public final Boolean empty;
+
+    Person(String first, String last, String address) {
+        this.first = Optional.ofNullable(first);
+        this.last = Optional.ofNullable(last);
+        this.address = Optional.ofNullable(address);
+        empty = !this.first.isPresent()
+                && !this.last.isPresent()
+                && !this.address.isPresent();
+    }
+
+    Person(String first, String last) {
+        this(first, last, null);
+    }
+
+    Person(String last) {
+        this(null, last, null);
+    }
+
+    Person() {
+        this(null, null, null);
+    }
+
+    @Override
+    public String toString() {
+        if (empty)
+            return "<Empty>";
+        return (first.orElse("") +
+                " " + last.orElse("") +
+                " " + address.orElse("")).trim();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Person());
+        System.out.println(new Person("Smith"));
+        System.out.println(new Person("Bob", "Smith"));
+        System.out.println(new Person("Bob", "Smith",
+                "11 Degree Lane, Frostbite Falls, MN"));
+    }
+}
+```
+
+输出结果：
+
+```
+<Empty>
+Smith
+Bob Smith
+Bob Smith 11 Degree Lane, Frostbite Falls, MN
+```
+
+`Person` 的设计有时候又叫“数据传输对象（DTO，data-transfer object）”。注意，所有字段都是 `public` 和 `final` 的，所以没有 `getter` 和 `setter` 方法。也就是说，`Person` 是不可变的，你只能通过构造器给它赋值，之后就只能读而不能修改它的值（字符串本身就是不可变的，因此你无法修改字符串的内容，也无法给它的字段重新赋值）。如果你想修改一个 `Person`，你只能用一个新的 `Person` 对象来替换它。`empty` 字段在对象创建的时候被赋值，用于快速判断这个 `Person` 对象是不是空对象。
+
+如果想使用 `Person`，就必须使用 `Optional` 接口才能访问它的 `String` 字段，这样就不会意外触发 `NullPointException` 了。
+
+现在假设你已经因你惊人的理念而获得了一大笔风险投资，现在你要招兵买马了，但是在虚位以待时，你可以将 `Person Optional` 对象放在每个 `Position` 上：
+
+```java
+// typeinfo/Position.java
+
+import java.util.*;
+
+class EmptyTitleException extends RuntimeException {
+}
+
+class Position {
+    private String title;
+    private Person person;
+
+    Position(String jobTitle, Person employee) {
+        setTitle(jobTitle);
+        setPerson(employee);
+    }
+
+    Position(String jobTitle) {
+        this(jobTitle, null);
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String newTitle) {
+        // Throws EmptyTitleException if newTitle is null:
+        title = Optional.ofNullable(newTitle)
+                .orElseThrow(EmptyTitleException::new);
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person newPerson) {
+        // Uses empty Person if newPerson is null:
+        person = Optional.ofNullable(newPerson)
+                .orElse(new Person());
+    }
+
+    @Override
+    public String toString() {
+        return "Position: " + title +
+                ", Employee: " + person;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(new Position("CEO"));
+        System.out.println(new Position("Programmer",
+                new Person("Arthur", "Fonzarelli")));
+        try {
+            new Position(null);
+        } catch (Exception e) {
+            System.out.println("caught " + e);
+        }
+    }
+}
+```
+
+输出结果：
+
+```
+Position: CEO, Employee: <Empty>
+Position: Programmer, Employee: Arthur Fonzarelli
+caught EmptyTitleException
+```
+
+这里使用 `Optional` 的方式不太一样。请注意，`title` 和 `person` 都是普通字段，不受 `Optional` 的保护。但是，修改这些字段的唯一途径是调用 `setTitle()` 和 `setPerson()` 方法，这两个都借助 `Optional` 对字段进行了严格的限制。
+
+同时，我们想保证 `title` 字段永远不会变成 `null` 值。为此，我们可以自己在 `setTitle()` 方法里边检查参数 `newTitle` 的值。但其实还有更好的做法，函数式编程一大优势就是可以让我们重用经过验证的功能（即便是个很小的功能），以减少自己手动编写代码可能产生的一些小错误。所以在这里，我们用 `ofNullable()` 把 `newTitle` 转换一个 `Optional`（如果传入的值为 `null`，`ofNullable()` 返回的将是 `Optional.empty()`）。紧接着我们调用了 `orElseThrow()` 方法，所以如果 `newTitle` 的值是 `null`，你将会得到一个异常。这里我们并没有把 `title` 保存成 `Optional`，但通过利 `Optional` 的功能，我们仍然如愿以偿的对这个字段施加了约束。
+
+`EmptyTitleException` 是一个 `RuntimeException`，因为它意味着程序存在错误。在这个方案里边，你仍然可能会得到一个异常。但不同的是，在错误产生的那一刻（向 `setTitle()` 传 `null` 值时）就会抛出异常，而不是发生在其它时刻，需要你通过调试才能发现问题所在。另外，使用 `EmptyTitleException` 还有助于定位 BUG。
+
+`Person` 字段的限制又不太一样：如果你把它的值设为 `null`，程序会自动把将它赋值成一个空的 `Person` 对象。先前我们也用过类似的方法把字段转换成 `Option`，但这里我们是在返回结果的时候使用 `orElse(new Person())` 插入一个空的 `Person` 对象替代了 `null`。
+
+在 `Position` 里边，我们没有创建一个表示“空”的标志位或者方法，因为 `person` 字段如果是空 `Person` 对象就表示这个 `Position` 是个空缺位置。之后，你可能会发现你必须添加一个显示的表示“空位”的方法，但是 YAGNI[^2] (You Aren't Going to Need It，你永远不需要它)。
+
+请注意，虽然你清楚你使用了 `Optional`，可以免受 `NullPointerExceptions` 的困扰，但是 `Staff` 类却对此毫不知情。
+
+```java
+// typeinfo/Staff.java
+
+import java.util.*;
+
+public class Staff extends ArrayList<Position> {
+    public void add(String title, Person person) {
+        add(new Position(title, person));
+    }
+
+    public void add(String... titles) {
+        for (String title : titles)
+            add(new Position(title));
+    }
+
+    public Staff(String... titles) {
+        add(titles);
+    }
+
+    public Boolean positionAvailable(String title) {
+        for (Position position : this)
+            if (position.getTitle().equals(title) &&
+                    position.getPerson().empty)
+                return true;
+        return false;
+    }
+
+    public void fillPosition(String title, Person hire) {
+        for (Position position : this)
+            if (position.getTitle().equals(title) &&
+                    position.getPerson().empty) {
+                position.setPerson(hire);
+                return;
+            }
+        throw new RuntimeException(
+                "Position " + title + " not available");
+    }
+
+    public static void main(String[] args) {
+        Staff staff = new Staff("President", "CTO",
+                "Marketing Manager", "Product Manager",
+                "Project Lead", "Software Engineer",
+                "Software Engineer", "Software Engineer",
+                "Software Engineer", "Test Engineer",
+                "Technical Writer");
+        staff.fillPosition("President",
+                new Person("Me", "Last", "The Top, Lonely At"));
+        staff.fillPosition("Project Lead",
+                new Person("Janet", "Planner", "The Burbs"));
+        if (staff.positionAvailable("Software Engineer"))
+            staff.fillPosition("Software Engineer",
+                    new Person(
+                            "Bob", "Coder", "Bright Light City"));
+        System.out.println(staff);
+    }
+}
+```
+
+输出结果：
+
+```
+[Position: President, Employee: Me Last The Top, Lonely
+At, Position: CTO, Employee: <Empty>, Position:
+Marketing Manager, Employee: <Empty>, Position: Product
+Manager, Employee: <Empty>, Position: Project Lead,
+Employee: Janet Planner The Burbs, Position: Software
+Engineer, Employee: Bob Coder Bright Light City,
+Position: Software Engineer, Employee: <Empty>,
+Position: Software Engineer, Employee: <Empty>,
+Position: Software Engineer, Employee: <Empty>,
+Position: Test Engineer, Employee: <Empty>, Position:
+Technical Writer, Employee: <Empty>]
+```
+
+注意，在有些地方你可能还是要测试引用是不是 `Optional`，这跟检查是否为 `null` 没什么不同。但是在其它地方（例如本例中的 `toString()` 转换），你就不必执行额外的测试了，而可以直接假设所有对象都是有效的。
+
+### 标记接口
+
+有时候使用一个**标记接口**来表示空值会更方便。标记接口里边什么都没有，你只要把它的名字当做标签来用就可以。
+
+```java
+// onjava/Null.java
+package onjava;
+public interface Null {}
+```
+
+如果你用接口取代具体类，那么就可以使用 `DynamicProxy` 来自动地创建 `Null` 对象。假设我们有一个 `Robot` 接口，它定义了一个名字、一个模型和一个描述 `Robot` 行为能力的 `List<Operation>`：
+
+```java
+// typeinfo/Robot.java
+
+import onjava.*;
+
+import java.util.*;
+
+public interface Robot {
+    String name();
+
+    String model();
+
+    List<Operation> operations();
+
+    static void test(Robot r) {
+        if (r instanceof Null)
+            System.out.println("[Null Robot]");
+        System.out.println("Robot name: " + r.name());
+        System.out.println("Robot model: " + r.model());
+        for (Operation operation : r.operations()) {
+            System.out.println(operation.description.get());
+            operation.command.run();
+        }
+    }
+}
+```
+
+你可以通过调用 `operations()` 来访问 `Robot` 的服务。`Robot` 里边还有一个 `static` 方法来执行测试。
+
+`Operation` 包含一个描述和一个命令（这用到了**命令模式**）。它们被定义成函数式接口的引用，所以可以把 lambda 表达式或者方法的引用传给 `Operation` 的构造器：
+
+```java
+// typeinfo/Operation.java
+
+import java.util.function.*;
+
+public class Operation {
+    public final Supplier<String> description;
+    public final Runnable command;
+
+    public Operation(Supplier<String> descr, Runnable cmd) {
+        description = descr;
+        command = cmd;
+    }
+}
+```
+
+现在我们可以创建一个扫雪 `Robot`：
+
+```java
+// typeinfo/SnowRemovalRobot.java
+
+import java.util.*;
+
+public class SnowRemovalRobot implements Robot {
+    private String name;
+
+    public SnowRemovalRobot(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public String model() {
+        return "SnowBot Series 11";
+    }
+
+    private List<Operation> ops = Arrays.asList(
+            new Operation(
+                    () -> name + " can shovel snow",
+                    () -> System.out.println(
+                            name + " shoveling snow")),
+            new Operation(
+                    () -> name + " can chip ice",
+                    () -> System.out.println(name + " chipping ice")),
+            new Operation(
+                    () -> name + " can clear the roof",
+                    () -> System.out.println(
+                            name + " clearing roof")));
+
+    public List<Operation> operations() {
+        return ops;
+    }
+
+    public static void main(String[] args) {
+        Robot.test(new SnowRemovalRobot("Slusher"));
+    }
+}
+```
+
+输出结果：
+
+```
+Robot name: Slusher
+Robot model: SnowBot Series 11
+Slusher can shovel snow
+Slusher shoveling snow
+Slusher can chip ice
+Slusher chipping ice
+Slusher can clear the roof
+Slusher clearing roof
+```
+
+假设存在许多不同类型的 `Robot`，我们想让每种 `Robot` 都创建一个 `Null` 对象来执行一些特殊的操作——在本例中，即提供 `Null` 对象所代表 `Robot` 的确切类型信息。这些信息是通过动态代理捕获的：
+
+```java
+// typeinfo/NullRobot.java
+// Using a dynamic proxy to create an Optional
+
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.stream.*;
+
+import onjava.*;
+
+class NullRobotProxyHandler
+        implements InvocationHandler {
+    private String nullName;
+    private Robot proxied = new NRobot();
+
+    NullRobotProxyHandler(Class<? extends Robot> type) {
+        nullName = type.getSimpleName() + " NullRobot";
+    }
+
+    private class NRobot implements Null, Robot {
+        @Override
+        public String name() {
+            return nullName;
+        }
+
+        @Override
+        public String model() {
+            return nullName;
+        }
+
+        @Override
+        public List<Operation> operations() {
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public Object
+    invoke(Object proxy, Method method, Object[] args)
+            throws Throwable {
+        return method.invoke(proxied, args);
+    }
+}
+
+public class NullRobot {
+    public static Robot
+    newNullRobot(Class<? extends Robot> type) {
+        return (Robot) Proxy.newProxyInstance(
+                NullRobot.class.getClassLoader(),
+                new Class,
+                new NullRobotProxyHandler(type));
+    }
+
+    public static void main(String[] args) {
+        Stream.of(
+                new SnowRemovalRobot("SnowBee"),
+                newNullRobot(SnowRemovalRobot.class)
+        ).forEach(Robot::test);
+    }
+}
+```
+
+输出结果：
+
+```
+Robot name: SnowBee
+Robot model: SnowBot Series 11
+SnowBee can shovel snow
+SnowBee shoveling snow
+SnowBee can chip ice
+SnowBee chipping ice
+SnowBee can clear the roof
+SnowBee clearing roof
+[Null Robot]
+Robot name: SnowRemovalRobot NullRobot
+Robot model: SnowRemovalRobot NullRobot
+```
+
+无论何时，如果你需要一个空 `Robot` 对象，只需要调用 `newNullRobot()`，并传递需要代理的 `Robot` 的类型。这个代理满足了 `Robot` 和 `Null` 接口的需要，并提供了它所代理的类型的确切名字。
+
+### Mock 对象和桩
+
+**Mock 对象**和 **桩（Stub）**在逻辑上都是 `Optional` 的变体。他们都是最终程序中所使用的“实际”对象的代理。不过，Mock 对象和桩都是假扮成那些可以传递实际信息的实际对象，而不是像 `Optional` 那样把包含潜在 `null` 值的对象隐藏。
+
+Mock 对象和桩之间的的差别在于程度不同。Mock 对象往往是轻量级的，且用于自测试。通常，为了处理各种不同的测试场景，我们会创建出很多 Mock 对象。而桩只是返回桩数据，它通常是重量级的，并且经常在多个测试中被复用。桩可以根据它们被调用的方式，通过配置进行修改。因此，桩是一种复杂对象，它可以做很多事情。至于 Mock 对象，如果你要做很多事，通常会创建大量又小又简单的 Mock 对象。
 
 <!-- Interfaces and Type -->
 ## 接口和类型
@@ -1626,11 +2129,15 @@ public interface A {
 ```java
 // typeinfo/InterfaceViolation.java
 // Sneaking around an interface
+
 import typeinfo.interfacea.*;
 
 class B implements A {
-    public void f() {}
-    public void g() {}
+    public void f() {
+    }
+
+    public void g() {
+    }
 }
 
 public class InterfaceViolation {
@@ -1639,13 +2146,12 @@ public class InterfaceViolation {
         a.f();
         // a.g(); // Compile error
         System.out.println(a.getClass().getName());
-        if(a instanceof B) {
-            B b = (B)a;
+        if (a instanceof B) {
+            B b = (B) a;
             b.g();
         }
     }
 }
-
 ```
 
 输出结果：
@@ -1665,6 +2171,7 @@ B
 ```java
 // typeinfo/packageaccess/HiddenC.java
 package typeinfo.packageaccess;
+
 import typeinfo.interfacea.*;
 
 class C implements A {
@@ -1672,22 +2179,28 @@ class C implements A {
     public void f() {
         System.out.println("public C.f()");
     }
+
     public void g() {
         System.out.println("public C.g()");
     }
+
     void u() {
         System.out.println("package C.u()");
     }
+
     protected void v() {
         System.out.println("protected C.v()");
     }
+
     private void w() {
         System.out.println("private C.w()");
     }
 }
 
 public class HiddenC {
-    public static A makeA() { return new C(); }
+    public static A makeA() {
+        return new C();
+    }
 }
 ```
 
@@ -1698,8 +2211,10 @@ public class HiddenC {
 ```java
 // typeinfo/HiddenImplementation.java
 // Sneaking around package hiding
+
 import typeinfo.interfacea.*;
 import typeinfo.packageaccess.*;
+
 import java.lang.reflect.*;
 
 public class HiddenImplementation {
@@ -1719,6 +2234,7 @@ public class HiddenImplementation {
         callHiddenMethod(a, "v");
         callHiddenMethod(a, "w");
     }
+
     static void callHiddenMethod(Object a, String methodName) throws Exception {
         Method g = a.getClass().getDeclaredMethod(methodName);
         g.setAccessible(true);
@@ -1767,32 +2283,40 @@ java.lang.Object implements typeinfo.interfacea.A {
 ```java
 // typeinfo/InnerImplementation.java
 // Private inner classes can't hide from reflection
+
 import typeinfo.interfacea.*;
+
 class InnerA {
     private static class C implements A {
         public void f() {
             System.out.println("public C.f()");
         }
+
         public void g() {
             System.out.println("public C.g()");
         }
+
         void u() {
             System.out.println("package C.u()");
         }
+
         protected void v() {
             System.out.println("protected C.v()");
         }
+
         private void w() {
             System.out.println("private C.w()");
         }
     }
+
     public static A makeA() {
         return new C();
     }
 }
+
 public class InnerImplementation {
     public static void
-      main(String[] args) throws Exception {
+    main(String[] args) throws Exception {
         A a = InnerA.makeA();
         a.f();
         System.out.println(a.getClass().getName());
@@ -1821,32 +2345,39 @@ private C.w()
 ```java
 // typeinfo/AnonymousImplementation.java
 // Anonymous inner classes can't hide from reflection
+
 import typeinfo.interfacea.*;
+
 class AnonymousA {
     public static A makeA() {
         return new A() {
             public void f() {
                 System.out.println("public C.f()");
             }
+
             public void g() {
                 System.out.println("public C.g()");
             }
+
             void u() {
                 System.out.println("package C.u()");
             }
+
             protected void v() {
                 System.out.println("protected C.v()");
             }
+
             private void w() {
                 System.out.println("private C.w()");
             }
         }
-        ;
+                ;
     }
 }
+
 public class AnonymousImplementation {
     public static void
-      main(String[] args) throws Exception {
+    main(String[] args) throws Exception {
         A a = AnonymousA.makeA();
         a.f();
         System.out.println(a.getClass().getName());
@@ -1870,30 +2401,33 @@ protected C.v()
 private C.w()
 ```
 
-看起来任何方式都没法阻止反射调用那些非公共访问权限的方法。对于域来说也是这样，即便是 `private` 域：
+看起来任何方式都没法阻止反射调用那些非公共访问权限的方法。对于字段来说也是这样，即便是 `private` 字段：
 
 ```java
 // typeinfo/ModifyingPrivateFields.java
+
 import java.lang.reflect.*;
+
 class WithPrivateFinalField {
     private int i = 1;
     private final String s = "I'm totally safe";
     private String s2 = "Am I safe?";
+
     @Override
-      public String toString() {
+    public String toString() {
         return "i = " + i + ", " + s + ", " + s2;
     }
 }
+
 public class ModifyingPrivateFields {
-    public static void
-      main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         WithPrivateFinalField pf =
-              new WithPrivateFinalField();
+                new WithPrivateFinalField();
         System.out.println(pf);
         Field f = pf.getClass().getDeclaredField("i");
         f.setAccessible(true);
         System.out.println(
-              "f.getInt(pf): " + f.getint(pf));
+                "f.getInt(pf): " + f.getint(pf));
         f.setint(pf, 47);
         System.out.println(pf);
         f = pf.getClass().getDeclaredField("s");
@@ -1922,7 +2456,7 @@ f.get(pf): Am I safe?
 i = 47, I'm totally safe, No, you're not!
 ```
 
-但实际上 `final` 域在被修改时是安全的。运行时系统会在不抛出异常的情况下接受任何修改的尝试，但是实际上不会发生任何修改。
+但实际上 `final` 字段在被修改时是安全的。运行时系统会在不抛出异常的情况下接受任何修改的尝试，但是实际上不会发生任何修改。
 
 通常，所有这些违反访问权限的操作并不是什么十恶不赦的。如果有人使用这样的技术去调用标志为 `private` 或包访问权限的方法（很明显这些访问权限表示这些人不应该调用它们），那么对他们来说，如果你修改了这些方法的某些地方，他们不应该抱怨。另一方面，总是在类中留下后门，也许会帮助你解决某些特定类型的问题（这些问题往往除此之外，别无它法）。总之，不可否认，发射给我们带来了很多好处。
 
@@ -1943,7 +2477,7 @@ RTTI 允许通过匿名类的引用来获取类型信息。初学者极易误用
 
 [^1]: 特别是在过去。但现在 Java 的 HTML 文档有了很大的提升，要查看基类的方法已经变得很容易了。
 
-[^2]: 极限编程（XP，Extreme Programming）的一条宗旨：“Try the simplest thing that could possibly work，实现尽最大可能的简单。”
+[^2]: 这是极限编程（XP，Extreme Programming）的原则之一：“Try the simplest thing that could possibly work，实现尽最大可能的简单。”
 
 [^3]: 最著名的例子是 Windows 操作系统，Windows 为开发者提供了公开的 API，但是开发者还可以找到一些非公开但是可以调用的函数。为了解决问题，很多程序员使用了隐藏的 API 函数。这就迫使微软公司要像维护公开 API 一样维护这些隐藏的 API，消耗了巨大的成本和精力。
 
