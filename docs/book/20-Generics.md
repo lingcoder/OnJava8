@@ -17,7 +17,7 @@
 
 然而，如果你了解其他语言（例如 C++ ）的参数化机制，你会发现，Java 泛型并不能满足所有的预期。使用别人创建好的泛型相对容易，但是创建自己的泛型时，就会遇到很多意料之外的麻烦。
 
-这并不是说 Java 泛型毫无用处。在很多情况下，它可以使代码更直接更优雅。不过，如果你见识过那种实现了更纯粹的泛型的编程语言，那么，Java 可能会令你失望。本章会介绍 Java 泛型的优点与局限。我会解释 Java 的泛型是如何发展成现在这样的，希望能够帮助你更有效地使用这个特性。
+这并不是说 Java 泛型毫无用处。在很多情况下，它可以使代码更直接更优雅。不过，如果你见识过那种实现了更纯粹的泛型的编程语言，那么，Java 可能会令你失望。本章会介绍 Java 泛型的优点与局限。我会解释 Java 的泛型是如何发展成现在这样的，希望能够帮助你更有效地使用这个特性。[^1]
 
 ### 与 C++ 的比较
 
@@ -1756,13 +1756,317 @@ Note: Recompile with -Xlint:unchecked for details.
 
 果然，标准库会产生很多警告。如果你使用过 C 语言，尤其是使用 ANSI C 之前的语言，你会记住警告的特殊效果：发现警告后，可以忽略它们。因此，除非程序员必须对其进行处理，否则最好不要从编译器发出任何类型的消息。
 
-Neal Gafter（Java 5的主要开发人员之一）在他的博客中[^2]指出，他在重写 Java 库时很懒惰，我们不应该做他所做的事情。Neal 还指出，他在不破坏现有接口的情况下无法修复某些 Java 库代码。因此，即使某些习惯用法出现在 Java 库源代码中，也不一定是正确的做法。当查看库代码时，我们不能假设这是您在自己的代码中必须要遵循的示例。
+Neal Gafter（Java 5的主要开发人员之一）在他的博客中[^2]指出，他在重写 Java 库时是很随意、马虎的，我们不应该像他那样做。Neal 还指出，他在不破坏现有接口的情况下无法修复某些 Java 库代码。因此，即使在 Java 库源代码中出现了一些习惯用法，它们也不一定是正确的做法。当查看库代码时，我们不能认为这就是要在自己代码中必须遵循的示例。
 
 请注意，在 Java 文献中推荐使用类型标记技术，例如 Gilad Bracha 的论文《Generics in the Java Programming Language》[^3]，他指出：“例如，这种用法已广泛用于新的 API 中以处理注解。” 我发现此技术在人们对于舒适度的看法方面存在一些不一致之处；有些人强烈喜欢本章前面介绍的工厂方法。
 
 <!-- Bounds -->
 ## 边界
 
+*边界*（bounds）在本章的前面进行了简要介绍。边界允许我们对泛型使用的参数类型施加约束。尽管这可以强制执行有关应用了泛型类型的规则，但潜在的更重要的效果是我们可以在绑定的类型中调用方法。
+
+由于擦除会删除类型信息，因此唯一可用于无限制泛型参数的方法是那些 **Object** 可用的方法。但是，如果将该参数限制为某类型的子集，则可以调用该子集中的方法。为了应用约束，Java 泛型使用了 `extends` 关键字。
+
+重要的是要理解，当用于限定泛型类型时，`extends` 的含义与通常的意义截然不同。此示例展示边界的基础应用：
+
+```java
+// generics/BasicBounds.java
+
+interface HasColor {
+    java.awt.Color getColor();
+}
+
+class WithColor<T extends HasColor> {
+    T item;
+
+    WithColor(T item) {
+        this.item = item;
+    }
+
+    T getItem() {
+        return item;
+    }
+
+    // The bound allows you to call a method:
+    java.awt.Color color() {
+        return item.getColor();
+    }
+}
+
+class Coord {
+    public int x, y, z;
+}
+
+// This fails. Class must be first, then interfaces:
+// class WithColorCoord<T extends HasColor & Coord> {
+
+// Multiple bounds:
+class WithColorCoord<T extends Coord & HasColor> {
+    T item;
+
+    WithColorCoord(T item) {
+        this.item = item;
+    }
+
+    T getItem() {
+        return item;
+    }
+
+    java.awt.Color color() {
+        return item.getColor();
+    }
+
+    int getX() {
+        return item.x;
+    }
+
+    int getY() {
+        return item.y;
+    }
+
+    int getZ() {
+        return item.z;
+    }
+}
+
+interface Weight {
+    int weight();
+}
+
+// As with inheritance, you can have only one
+// concrete class but multiple interfaces:
+class Solid<T extends Coord & HasColor & Weight> {
+    T item;
+
+    Solid(T item) {
+        this.item = item;
+    }
+
+    T getItem() {
+        return item;
+    }
+
+    java.awt.Color color() {
+        return item.getColor();
+    }
+
+    int getX() {
+        return item.x;
+    }
+
+    int getY() {
+        return item.y;
+    }
+
+    int getZ() {
+        return item.z;
+    }
+
+    int weight() {
+        return item.weight();
+    }
+}
+
+class Bounded
+        extends Coord implements HasColor, Weight {
+    @Override
+    public java.awt.Color getColor() {
+        return null;
+    }
+
+    @Override
+    public int weight() {
+        return 0;
+    }
+}
+
+public class BasicBounds {
+    public static void main(String[] args) {
+        Solid<Bounded> solid =
+                new Solid<>(new Bounded());
+        solid.color();
+        solid.getY();
+        solid.weight();
+    }
+}
+```
+
+你可能会观察到 **BasicBounds.java** 中似乎包含一些冗余，它们可以通过继承来消除。在这里，每个继承级别还添加了边界约束：
+
+```java
+// generics/InheritBounds.java
+
+class HoldItem<T> {
+    T item;
+
+    HoldItem(T item) {
+        this.item = item;
+    }
+
+    T getItem() {
+        return item;
+    }
+}
+
+class WithColor2<T extends HasColor>
+        extends HoldItem<T> {
+    WithColor2(T item) {
+        super(item);
+    }
+
+    java.awt.Color color() {
+        return item.getColor();
+    }
+}
+
+class WithColorCoord2<T extends Coord & HasColor>
+        extends WithColor2<T> {
+    WithColorCoord2(T item) {
+        super(item);
+    }
+
+    int getX() {
+        return item.x;
+    }
+
+    int getY() {
+        return item.y;
+    }
+
+    int getZ() {
+        return item.z;
+    }
+}
+
+class Solid2<T extends Coord & HasColor & Weight>
+        extends WithColorCoord2<T> {
+    Solid2(T item) {
+        super(item);
+    }
+
+    int weight() {
+        return item.weight();
+    }
+}
+
+public class InheritBounds {
+    public static void main(String[] args) {
+        Solid2<Bounded> solid2 =
+                new Solid2<>(new Bounded());
+        solid2.color();
+        solid2.getY();
+        solid2.weight();
+    }
+}
+```
+
+**HoldItem** 拥有一个对象，因此此行为将继承到 **WithColor2** 中，这也需要其参数符合 **HasColor**。 **WithColorCoord2** 和 **Solid2** 进一步扩展了层次结构，并在每个级别添加了边界。现在，这些方法已被继承，并且在每个类中不再重复。
+
+这是一个具有更多层次的示例：
+
+```java
+// generics/EpicBattle.java
+// Bounds in Java generics
+
+import java.util.List;
+
+interface SuperPower {
+}
+
+interface XRayVision extends SuperPower {
+    void seeThroughWalls();
+}
+
+interface SuperHearing extends SuperPower {
+    void hearSubtleNoises();
+}
+
+interface SuperSmell extends SuperPower {
+    void trackBySmell();
+}
+
+class SuperHero<POWER extends SuperPower> {
+    POWER power;
+
+    SuperHero(POWER power) {
+        this.power = power;
+    }
+
+    POWER getPower() {
+        return power;
+    }
+}
+
+class SuperSleuth<POWER extends XRayVision>
+        extends SuperHero<POWER> {
+    SuperSleuth(POWER power) {
+        super(power);
+    }
+
+    void see() {
+        power.seeThroughWalls();
+    }
+}
+
+class
+CanineHero<POWER extends SuperHearing & SuperSmell>
+        extends SuperHero<POWER> {
+    CanineHero(POWER power) {
+        super(power);
+    }
+
+    void hear() {
+        power.hearSubtleNoises();
+    }
+
+    void smell() {
+        power.trackBySmell();
+    }
+}
+
+class SuperHearSmell
+        implements SuperHearing, SuperSmell {
+    @Override
+    public void hearSubtleNoises() {
+    }
+
+    @Override
+    public void trackBySmell() {
+    }
+}
+
+class DogPerson extends CanineHero<SuperHearSmell> {
+    DogPerson() {
+        super(new SuperHearSmell());
+    }
+}
+
+public class EpicBattle {
+    // Bounds in generic methods:
+    static <POWER extends SuperHearing>
+    void useSuperHearing(SuperHero<POWER> hero) {
+        hero.getPower().hearSubtleNoises();
+    }
+
+    static <POWER extends SuperHearing & SuperSmell>
+    void superFind(SuperHero<POWER> hero) {
+        hero.getPower().hearSubtleNoises();
+        hero.getPower().trackBySmell();
+    }
+
+    public static void main(String[] args) {
+        DogPerson dogPerson = new DogPerson();
+        useSuperHearing(dogPerson);
+        superFind(dogPerson);
+        // You can do this:
+        List<? extends SuperHearing> audioPeople;
+        // But you can't do this:
+        // List<? extends SuperHearing & SuperSmell> dogPs;
+    }
+}
+```
+
+接下来将要研究的通配符将会把范围限制在单个类型。
 
 <!-- Wildcards -->
 ## 通配符
@@ -1805,10 +2109,9 @@ Neal Gafter（Java 5的主要开发人员之一）在他的博客中[^2]指出�
 
 
 
-
-
-
-
+[^1]: 在编写本章期间，Angelika Langer的 Java 泛型常见问题解答以及她的其他著作（与Klaus Kreft一起）是非常宝贵的。
+[^2]: [http://gafter.blogspot.com/2004/09/puzzling-through-erasureanswer.html](http://gafter.blogspot.com/2004/09/puzzling-through-erasureanswer.html)
+[^3]: 参见本章章末引文。
 
 
 
