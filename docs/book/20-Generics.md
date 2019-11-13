@@ -1233,6 +1233,532 @@ public class Store extends ArrayList<Aisle> {
 <!-- Compensating for Erasure -->
 ## 补偿擦除
 
+因为擦除，我们将失去执行泛型代码中某些操作的能力。无法在运行时知道确切类型：
+
+```java
+// generics/Erased.java
+// {WillNotCompile}
+
+public class Erased<T> {
+    private final int SIZE = 100;
+
+    public void f(Object arg) {
+
+        // error: illegal generic type for instanceof
+        if (arg instanceof T) {
+        }
+
+        // error: unexpected type
+        T var = new T();
+
+        // error: generic array creation
+        T[] array = new T[SIZE];
+
+        // warning: [unchecked] unchecked cast
+        T[] array = (T[]) new Object[SIZE];
+
+    }
+}
+```
+
+有时，我们可以对这些问题进行编程，但是有时必须通过引入类型标签来补偿擦除。这意味着为所需的类型显式传递一个 **Class** 对象，以在类型表达式中使用它。
+
+例如，由于删除了类型信息，因此在上一个程序中尝试使用 **instanceof** 将会失败。类型标签可以使用动态 `isInstance()` ：
+
+```java
+// generics/ClassTypeCapture.java
+
+class Building {
+}
+
+class House extends Building {
+}
+
+public class ClassTypeCapture<T> {
+    Class<T> kind;
+
+    public ClassTypeCapture(Class<T> kind) {
+        this.kind = kind;
+    }
+
+    public boolean f(Object arg) {
+        return kind.isInstance(arg);
+    }
+
+    public static void main(String[] args) {
+        ClassTypeCapture<Building> ctt1 =
+                new ClassTypeCapture<>(Building.class);
+        System.out.println(ctt1.f(new Building()));
+        System.out.println(ctt1.f(new House()));
+        ClassTypeCapture<House> ctt2 =
+                new ClassTypeCapture<>(House.class);
+        System.out.println(ctt2.f(new Building()));
+        System.out.println(ctt2.f(new House()));
+    }
+}
+/* Output:
+true
+true
+false
+true
+*/
+```
+
+编译器来保证类型标签与泛型参数相匹配。
+
+<!-- Creating Instances of Types -->
+### 创建类型的实例
+
+试图在 **Erased.java** 中 `new T()` 是行不通的，部分原因是由于擦除，部分原因是编译器无法验证 **T** 是否具有默认（无参）构造函数。但是在 C++ 中，此操作自然，直接且安全（在编译时检查）：
+
+```C++
+// generics/InstantiateGenericType.cpp
+// C++, not Java!
+
+template<class T> class Foo {
+  T x; // Create a field of type T
+  T* y; // Pointer to T
+public:
+  // Initialize the pointer:
+  Foo() { y = new T(); }
+};
+
+class Bar {};
+
+int main() {
+  Foo<Bar> fb;
+  Foo<int> fi; // ... and it works with primitives
+}
+```
+
+Java 中的解决方案是传入一个工厂对象，并使用该对象创建新实例。方便的工厂对象只是 **Class** 对象，因此，如果使用类型标记，则可以使用 `newInstance()` 创建该类型的新对象：
+
+```java
+// generics/InstantiateGenericType.java
+
+import java.util.function.Supplier;
+
+class ClassAsFactory<T> implements Supplier<T> {
+    Class<T> kind;
+
+    ClassAsFactory(Class<T> kind) {
+        this.kind = kind;
+    }
+
+    @Override
+    public T get() {
+        try {
+            return kind.newInstance();
+        } catch (InstantiationException |
+                IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+class Employee {
+    @Override
+    public String toString() {
+        return "Employee";
+    }
+}
+
+public class InstantiateGenericType {
+    public static void main(String[] args) {
+        ClassAsFactory<Employee> fe =
+                new ClassAsFactory<>(Employee.class);
+        System.out.println(fe.get());
+        ClassAsFactory<Integer> fi =
+                new ClassAsFactory<>(Integer.class);
+        try {
+            System.out.println(fi.get());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+/* Output:
+Employee
+java.lang.InstantiationException: java.lang.Integer
+*/
+```
+
+这样可以编译，但对于 `ClassAsFactory \<Integer\>` 会失败，这是因为 **Integer** 没有无参构造函数。由于错误不是在编译时捕获的，因此语言创建者不赞成这种方法。他们建议使用显式工厂（**Supplier**）并约束类型，以便只有实现该工厂的类可以这样创建对象。这是创建工厂的两种不同方法：
+
+```java
+// generics/FactoryConstraint.java
+
+import onjava.Suppliers;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
+class IntegerFactory implements Supplier<Integer> {
+    private int i = 0;
+
+    @Override
+    public Integer get() {
+        return ++i;
+    }
+}
+
+class Widget {
+    private int id;
+
+    Widget(int n) {
+        id = n;
+    }
+
+    @Override
+    public String toString() {
+        return "Widget " + id;
+    }
+
+    public static
+    class Factory implements Supplier<Widget> {
+        private int i = 0;
+
+        @Override
+        public Widget get() {
+            return new Widget(++i);
+        }
+    }
+}
+
+class Fudge {
+    private static int count = 1;
+    private int n = count++;
+
+    @Override
+    public String toString() {
+        return "Fudge " + n;
+    }
+}
+
+class Foo2<T> {
+    private List<T> x = new ArrayList<>();
+
+    Foo2(Supplier<T> factory) {
+        Suppliers.fill(x, factory, 5);
+    }
+
+    @Override
+    public String toString() {
+        return x.toString();
+    }
+}
+
+public class FactoryConstraint {
+    public static void main(String[] args) {
+        System.out.println(
+                new Foo2<>(new IntegerFactory()));
+        System.out.println(
+                new Foo2<>(new Widget.Factory()));
+        System.out.println(
+                new Foo2<>(Fudge::new));
+    }
+}
+/* Output:
+[1, 2, 3, 4, 5]
+[Widget 1, Widget 2, Widget 3, Widget 4, Widget 5]
+[Fudge 1, Fudge 2, Fudge 3, Fudge 4, Fudge 5]
+*/
+```
+
+**IntegerFactory** 本身就是通过实现 `Supplier\<Integer\>` 的工厂。 **Widget** 包含一个内部类，它是一个工厂。还要注意，**Fudge** 并没有做任何类似于工厂的操作，并且传递 `Fudge::new` 仍然会产生工厂行为，因为编译器将对函数方法 `::new` 的调用转换为对 `get()` 的调用。
+
+另一种方法是模板方法设计模式。在以下示例中，`create()` 是模板方法，在子类中被重写以生成该类型的对象：
+
+```java
+// generics/CreatorGeneric.java
+
+abstract class GenericWithCreate<T> {
+    final T element;
+
+    GenericWithCreate() {
+        element = create();
+    }
+
+    abstract T create();
+}
+
+class X {
+}
+
+class XCreator extends GenericWithCreate<X> {
+    @Override
+    X create() {
+        return new X();
+    }
+
+    void f() {
+        System.out.println(
+                element.getClass().getSimpleName());
+    }
+}
+
+public class CreatorGeneric {
+    public static void main(String[] args) {
+        XCreator xc = new XCreator();
+        xc.f();
+    }
+}
+/* Output:
+X
+*/
+```
+
+**GenericWithCreate** 包含 `element` 字段，并通过无参构造函数强制其初始化，该构造函数又调用抽象的 `create()` 方法。这种创建方式可以在子类中定义，同时建立 **T** 的类型。
+
+<!-- Arrays of Generics -->
+### 泛型数组
+
+正如在 **Erased.java** 中所看到的，我们无法创建泛型数组。通用解决方案是在试图创建泛型数组的时候使用 **ArrayList** ：
+
+```java
+// generics/ListOfGenerics.java
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ListOfGenerics<T> {
+    private List<T> array = new ArrayList<>();
+
+    public void add(T item) {
+        array.add(item);
+    }
+
+    public T get(int index) {
+        return array.get(index);
+    }
+}
+```
+
+这样做可以获得数组的行为，并且还具有泛型提供的编译时类型安全性。
+
+有时，仍然会创建泛型类型的数组（例如， **ArrayList** 在内部使用数组）。可以通过使编译器满意的方式定义对数组的通用引用：
+
+```java
+// generics/ArrayOfGenericReference.java
+
+class Generic<T> {
+}
+
+public class ArrayOfGenericReference {
+    static Generic<Integer>[] gia;
+}
+```
+
+编译器接受此操作而不产生警告。但是我们永远无法创建具有该确切类型（包括类型参数）的数组，因此有点令人困惑。由于所有数组，无论它们持有什么类型，都具有相同的结构（每个数组插槽的大小和数组布局），因此似乎可以创建一个 **Object** 数组并将其转换为所需的数组类型。实际上，这确实可以编译，但是会产生 **ClassCastException** ：
+
+```java
+// generics/ArrayOfGeneric.java
+
+public class ArrayOfGeneric {
+    static final int SIZE = 100;
+    static Generic<Integer>[] gia;
+
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args) {
+        try {
+            gia = (Generic<Integer>[]) new Object[SIZE];
+        } catch (ClassCastException e) {
+            System.out.println(e.getMessage());
+        }
+        // Runtime type is the raw (erased) type:
+        gia = (Generic<Integer>[]) new Generic[SIZE];
+        System.out.println(gia.getClass().getSimpleName());
+        gia[0] = new Generic<>();
+        //- gia[1] = new Object(); // Compile-time error
+        // Discovers type mismatch at compile time:
+        //- gia[2] = new Generic<Double>();
+    }
+}
+/* Output:
+[Ljava.lang.Object; cannot be cast to [LGeneric;
+Generic[]
+*/
+```
+
+问题在于数组会跟踪其实际类型，而该类型是在创建数组时建立的。因此，即使 `gia` 被强制转换为 `Generic\<Integer\>[]` ，该信息也仅在编译时存在（并且没有 **@SuppressWarnings** 注解，将会收到有关该强制转换的警告）。在运行时，它仍然是一个对象数组，这会引起问题。成功创建泛型类型的数组的唯一方法是创建一个已擦除类型的新数组，并将其强制转换。
+
+让我们看一个更复杂的示例。考虑一个包装数组的简单泛型包装器：
+
+```java
+// generics/GenericArray.java
+
+public class GenericArray<T> {
+    private T[] array;
+
+    @SuppressWarnings("unchecked")
+    public GenericArray(int sz) {
+        array = (T[]) new Object[sz];
+    }
+
+    public void put(int index, T item) {
+        array[index] = item;
+    }
+
+    public T get(int index) {
+        return array[index];
+    }
+
+    // Method that exposes the underlying representation:
+    public T[] rep() {
+        return array;
+    }
+
+    public static void main(String[] args) {
+        GenericArray<Integer> gai = new GenericArray<>(10);
+        try {
+            Integer[] ia = gai.rep();
+        } catch (ClassCastException e) {
+            System.out.println(e.getMessage());
+        }
+        // This is OK:
+        Object[] oa = gai.rep();
+    }
+}
+/* Output:
+[Ljava.lang.Object; cannot be cast to
+[Ljava.lang.Integer;
+*/
+```
+
+和以前一样，我们不能说 `T[] array = new T[sz]` ，所以我们创建了一个 **Object** 数组并将其强制转换。
+
+`rep()` 方法返回一个 `T[]` ，在主方法中它应该是 `gai` 的 `Integer[]` ，但是如果调用它并尝试将结果转换为 `Integer[]` 引用，则会得到 **ClassCastException** ，这再次是因为实际的运行时类型为 `Object[]` 。
+
+如果再注释掉 **@SuppressWarnings** 注解后编译 **GenericArray.java** ，则编译器会产生警告：
+
+```java
+GenericArray.java uses unchecked or unsafe operations.
+Recompile with -Xlint:unchecked for details.
+```
+
+在这里，我们收到了一个警告，我们认为这是有关强制转换的。
+
+但是要真正确定，请使用 `-Xlint：unchecked` 进行编译：
+
+```java
+GenericArray.java:7: warning: [unchecked] unchecked cast    array = (T[])new Object[sz];                 ^  required: T[]  found:    Object[]  where T is a type-variable:    T extends Object declared in class GenericArray 1 warning
+```
+
+确实是在抱怨那个强制转换。由于警告会变成噪音，因此，一旦我们确认预期会出现特定警告，我们可以做的最好的办法就是使用 **@SuppressWarnings** 将其关闭。这样，当警告确实出现时，我们将进行实际调查。
+
+由于擦除，数组的运行时类型只能是 `Object[]` 。 如果我们立即将其转换为 `T[]` ，则在编译时会丢失数组的实际类型，并且编译器可能会错过一些潜在的错误检查。因此，最好在集合中使用 `Object[]` ，并在使用数组元素时向 **T** 添加强制类型转换。让我们来看看在 **GenericArray.java** 示例中会是怎么样的：
+
+```java
+// generics/GenericArray2.java
+
+public class GenericArray2<T> {
+    private Object[] array;
+
+    public GenericArray2(int sz) {
+        array = new Object[sz];
+    }
+
+    public void put(int index, T item) {
+        array[index] = item;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T get(int index) {
+        return (T) array[index];
+    }
+
+    @SuppressWarnings("unchecked")
+    public T[] rep() {
+        return (T[]) array; // Unchecked cast
+    }
+
+    public static void main(String[] args) {
+        GenericArray2<Integer> gai =
+                new GenericArray2<>(10);
+        for (int i = 0; i < 10; i++)
+            gai.put(i, i);
+        for (int i = 0; i < 10; i++)
+            System.out.print(gai.get(i) + " ");
+        System.out.println();
+        try {
+            Integer[] ia = gai.rep();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+/* Output:
+0 1 2 3 4 5 6 7 8 9
+java.lang.ClassCastException: [Ljava.lang.Object;
+cannot be cast to [Ljava.lang.Integer;
+*/
+```
+
+最初，看起来并没有太大不同，只是转换的位置移动了。没有 **@SuppressWarnings** 注解，仍然会收到“unchecked”警告。但是，内部表示现在是 `Object[]` 而不是 `T[]` 。 调用 `get()` 时，它将对象强制转换为 **T** ，实际上这是正确的类型，因此很安全。但是，如果调用 `rep()` ，它将再次尝试将 `Object[]` 强制转换为 `T[]` ，但仍然不正确，并在编译时生成警告，并在运行时生成异常。因此，无法破坏基础数组的类型，该基础数组只能是 `Object[]` 。在内部将数组视为 `Object[]` 而不是 `T[]` 的优点是，我们不太可能会忘记数组的运行时类型并意外地引入了bug，尽管大多数（也许是全部）此类错误会在运行时被迅速检测到。
+
+对于新代码，请传入类型标记。在这种情况下，**GenericArray** 如下所示：
+
+```java
+// generics/GenericArrayWithTypeToken.java
+
+import java.lang.reflect.Array;
+
+public class GenericArrayWithTypeToken<T> {
+    private T[] array;
+
+    @SuppressWarnings("unchecked")
+    public GenericArrayWithTypeToken(Class<T> type, int sz) {
+        array = (T[]) Array.newInstance(type, sz);
+    }
+
+    public void put(int index, T item) {
+        array[index] = item;
+    }
+
+    public T get(int index) {
+        return array[index];
+    }
+
+    // Expose the underlying representation:
+    public T[] rep() {
+        return array;
+    }
+
+    public static void main(String[] args) {
+        GenericArrayWithTypeToken<Integer> gai =
+                new GenericArrayWithTypeToken<>(
+                        Integer.class, 10);
+        // This now works:
+        Integer[] ia = gai.rep();
+    }
+}
+```
+
+类型标记 **Class\<T\>** 被传递到构造函数中以从擦除中恢复，因此尽管必须使用 **@SuppressWarnings** 关闭来自强制类型转换的警告，但我们仍可以创建所需的实际数组类型。一旦获得了实际的类型，就可以返回它并产生所需的结果，如在主方法中看到的那样。数组的运行时类型是确切的类型 `T[]` 。
+
+不幸的是，如果查看 Java 标准库中的源代码，你会发现到处都有从 **Object** 数组到参数化类型的转换。例如，这是**ArrayList** 中，复制一个 **Collection** 的构造函数，这里为了简化，去除了源码中对此不重要的代码：
+
+```java
+public ArrayList(Collection c) {
+  size = c.size();
+  elementData = (E[])new Object[size];
+  c.toArray(elementData);
+}
+```
+
+如果你浏览 **ArrayList.java** 的代码，将会发现很多此类强制转换。当我们编译它时会发生什么？
+
+```java
+Note: ArrayList.java uses unchecked or unsafe operations
+Note: Recompile with -Xlint:unchecked for details.
+```
+
+果然，标准库会产生很多警告。如果你使用过 C 语言，尤其是使用 ANSI C 之前的语言，你会记住警告的特殊效果：发现警告后，可以忽略它们。因此，除非程序员必须对其进行处理，否则最好不要从编译器发出任何类型的消息。
+
+Neal Gafter（Java 5的主要开发人员之一）在他的博客中[^2]指出，他在重写 Java 库时很懒惰，我们不应该做他所做的事情。Neal 还指出，他在不破坏现有接口的情况下无法修复某些 Java 库代码。因此，即使某些习惯用法出现在 Java 库源代码中，也不一定是正确的做法。当查看库代码时，我们不能假设这是您在自己的代码中必须要遵循的示例。
+
+请注意，在 Java 文献中推荐使用类型标记技术，例如 Gilad Bracha 的论文《Generics in the Java Programming Language》[^3]，他指出：“例如，这种用法已广泛用于新的 API 中以处理注解。” 我发现此技术在人们对于舒适度的看法方面存在一些不一致之处；有些人强烈喜欢本章前面介绍的工厂方法。
 
 <!-- Bounds -->
 ## 边界
