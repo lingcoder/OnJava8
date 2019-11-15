@@ -43,7 +43,7 @@ Java 语言曾规划设计的许多功能并未按照承诺兑现。本书中，
 
 ## C编程思想
 
-*Thinking in C* 已经可以在 www.OnJava8.com 免费下载。Java 的基础语法是基于 C 语言的。*Thinking in C* 中有更适合初学者的编程基础介绍。 我已经委托 Chuck Allison 将这本 C 基础的书籍作为独立产品附赠于本书的 CD 中。希望大家在阅读本书时，都已具备了学习 Java 的良好基础。
+*Thinking in C* 已经可以在 [www.OnJava8.com](https://archive.org/details/ThinkingInC) 免费下载。Java 的基础语法是基于 C 语言的。*Thinking in C* 中有更适合初学者的编程基础介绍。 我已经委托 Chuck Allison 将这本 C 基础的书籍作为独立产品附赠于本书的 CD 中。希望大家在阅读本书时，都已具备了学习 Java 的良好基础。
 
 ## 源码下载
 
