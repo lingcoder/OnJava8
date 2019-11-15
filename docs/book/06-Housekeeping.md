@@ -1363,7 +1363,7 @@ public class ArrayInit {
                 3, // Autoboxing
         };
         System.out.println(Arrays.toString(a));
-        System.out.println(Arrays.toString(a));
+        System.out.println(Arrays.toString(b));
 
     }
 }
