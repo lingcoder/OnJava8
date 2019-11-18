@@ -41,7 +41,7 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 
 每种数据源都有相应的 `InputStream` 子类。另外，`FilterInputStream` 也属于一种 `InputStream`，它的作用是为“装饰器”类提供基类。其中，“装饰器”类可以把属性或有用的接口与输入流连接在一起，这个我们稍后在讨论。
 
-<span id="table-io-1">**表 I/O-1：`InputStream` 类型**</span>
+<a id="table-io-1">**表 I/O-1：`InputStream` 类型**</a>
 
 |  类  | 功能 | 构造器参数 | 如何使用 |
 | :--: | :-- | :-------- | :----- |
@@ -55,7 +55,7 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 <!-- Types of OutputStream -->
 ## 输出流类型
 
-<span id="table-io-2">**表 I/O-2：`OutputStream` 类型**</span>
+<a id="table-io-2">**表 I/O-2：`OutputStream` 类型**</a>
 
 | 类 | 功能 | 构造器参数 | 如何使用 |
 | :--: | :-- | :-------- | :----- |
@@ -71,7 +71,7 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 
 ### 通过 `FilterInputStream` 从 `InputStream` 读取
 
-<span id="table-io-3">**表 I/O-3：`FilterInputStream` 类型**</span>
+<a id="table-io-3">**表 I/O-3：`FilterInputStream` 类型**</a>
 
 | 类 | 功能 | 构造器参数 | 如何使用 |
 | :--: | :-- | :-------- | :----- |
@@ -82,7 +82,7 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 
 ### 通过 `FilterOutputStream` 向 `OutputStream` 写入
 
-<span id="table-io-4">**表 I/O-4：`FilterOutputStream` 类型**</span>
+<a id="table-io-4">**表 I/O-4：`FilterOutputStream` 类型**</a>
 
 | 类 | 功能 | 构造器参数 | 如何使用 |
 | :--: | :-- | :-------- | :----- |
