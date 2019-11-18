@@ -13,7 +13,7 @@ Java 类库的设计者通过创建大量的类来解决这一难题。一开始
 
 编程语言的 I/O 类库经常使用**流**这个抽象概念，它将所有数据源或者数据接收器表示为能够产生或者接收数据片的对象。
 
-> **注意：**Java 8 函数式编程中的 `Stream` 类和这里的 I/O stream 没有任何关系。这又是另一个例子，如果再给设计者一次重来的机会，他们将使用不同的术语。
+> **注意**：Java 8 函数式编程中的 `Stream` 类和这里的 I/O stream 没有任何关系。这又是另一个例子，如果再给设计者一次重来的机会，他们将使用不同的术语。
 
 I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 
@@ -30,17 +30,69 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 <!-- Types of InputStream -->
 ## 输入流类型
 
+`InputStream` 表示那些从不同数据源产生输入的类，这些数据源包括：
+
+1. 字节数组；
+2. `String` 对象；
+3. 文件；
+4. “管道”，工作方式与实际生活中的管道类似：从一端输入，从另一端输出；
+5. 一个由其它种类的流组成的序列，然后我们可以把它们汇聚成一个流；
+6. 其它数据源，如 `Internet` 连接。
+
+每种数据源都有相应的 `InputStream` 子类。另外，`FilterInputStream` 也属于一种 `InputStream`，它的作用是为“装饰器”类提供基类。其中，“装饰器”类可以把属性或有用的接口与输入流连接在一起，这个我们稍后在讨论。
+
+<span id="table-io-1">**表 I/O-1：`InputStream` 类型**</span>
+
+|  类  | 功能 | 构造器参数 | 如何使用 |
+| :--: | :-- | :-------- | :----- |
+| `ByteArrayInputStream`    | 允许将内存的缓冲区当做 `InputStream` 使用 | 缓冲区，字节将从中取出 | 作为一种数据源：将其与 `FilterInputStream` 对象相连以提供有用接口 |
+| `StringBufferInputStream` | 将 `String` 转换成 `InputStream` | 字符串。底层实现实际使用 `StringBuffer` | 作为一种数据源：将其与 `FilterInputStream` 对象相连以提供有用接口 |
+| `FileInputStream`         | 用于从文件中读取信息 | 字符串，表示文件名、文件或 `FileDescriptor` 对象 | 作为一种数据源：将其与 `FilterInputStream` 对象相连以提供有用接口 |
+| `PipedInputStream`        | 产生用于写入相关 `PipedOutputStream` 的数据。实现“管道化”概念 | `PipedOutputSteam`           | 作为多线程中的数据源：将其与 `FilterInputStream` 对象相连以提供有用接口 |
+| `SequenceInputStream`     | 将两个或多个 `InputStream` 对象转换成一个 `InputStream` | 两个 `InputStream` 对象或一个容纳 `InputStream` 对象的容器 `Enumeration` | 作为一种数据源：将其与 `FilterInputStream` 对象相连以提供有用接口          |
+| `FilterInputStream`       | 抽象类，作为“装饰器”的接口。其中，“装饰器”为其它的 `InputStream` 类提供有用的功能。见[表 I/O-3](#table-io-3) | 见[表 I/O-3](#table-io-3) | 见[表 I/O-3](#table-io-3) |
 
 <!-- Types of OutputStream -->
 ## 输出流类型
 
+<span id="table-io-2">**表 I/O-2：`OutputStream` 类型**</span>
+
+| 类 | 功能 | 构造器参数 | 如何使用 |
+| :--: | :-- | :-------- | :----- |
+| `ByteArrayOutputStream` | 在内存中创建缓冲区。所有送往“流”的数据都要放置在此缓冲区 | 缓冲区初始大小（可选） | 用于指定数据的目的地：将其与 `FilterOutputStream` 对象相连以提供有用接口 |
+| `FileOutputStream`      | 用于将信息接入文件 | 字符串，表示文件名、文件或 `FileDescriptor` 对象 | 用于指定数据的目的地：将其与 `FilterOutputStream` 对象相连以提供有用接口 |
+| `PipedOutputStream`     | 任何写入其中的信息都会自动作为相关 `PipedInputStream` 的输出。实现“管道化”概念 | `PipedInputStream` | 指定用于多线程的数据的目的地：将其与 `FilterOutputStream` 对象相连以提供有用接口 |
+| `FilterOutputStream`    | 抽象类，作为“装饰器”的接口。其中，“装饰器”为其它 `OutputStream` 提供有用功能。见[表 I/O-4](#table-io-4) | 见[表 I/O-4](#table-io-4) | 见[表 I/O-4](#table-io-4) |
 
 <!-- Adding Attributes and Useful Interfaces -->
+
 ## 添加属性和有用的接口
 
 
+### 通过 `FilterInputStream` 从 `InputStream` 读取
+
+<span id="table-io-3">**表 I/O-3：`FilterInputStream` 类型**</span>
+
+| 类 | 功能 | 构造器参数 | 如何使用 |
+| :--: | :-- | :-------- | :----- |
+| `DataInputStream` |  |  |  |
+| `BufferedInputStream`      |  |  |  |
+| `LineNumberInputStream`     |  |  |  |
+| `PushbackInputStream`    |  |  |  |
+
+### 通过 `FilterOutputStream` 向 `OutputStream` 写入
+
+<span id="table-io-4">**表 I/O-4：`FilterOutputStream` 类型**</span>
+
+| 类 | 功能 | 构造器参数 | 如何使用 |
+| :--: | :-- | :-------- | :----- |
+| `DataOutputStream` |  |  |  |
+| `PrintStream`      |  |  |  |
+| `BufferedOutputStream`     |  |  |  |
+
 <!-- Readers & Writers -->
 ## Reader和Writer
+
 
 
 <!-- Off By Itself: RandomAccessFile -->
@@ -58,3 +110,4 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 <!-- 分页 -->
 
 <div style="page-break-after: always;"></div>
+[^表 IO-3]: 
