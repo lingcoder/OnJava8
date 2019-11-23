@@ -120,22 +120,122 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 
 ## Reader和Writer
 
+Java 1.1 对基本的 I/O 流类库做了重大的修改。你初次遇到 `Reader` 和 `Writer` 时，可能会以为这两个类是用来替代 `InputStream` 和 `OutputStream` 的，但实际上并不是这样。尽管一些原始的“流”类库已经过时了（如果使用它们，编译器会发出警告），但是 `InputStream` 和 `OutputStream` 在面向字节 I/O 这方面仍然发挥着极其重要的作用，而 `Reader` 和 `Writer` 则提供兼容 Unicode 和面向字符 I/O 的功能。另外：
 
+1. Java 1.1 往 `InputStream` 和 `OutputStream` 的继承体系中又添加了一些新类，所以这两个类显然是不会被取代的；
+
+2. 有时我们必须把来自“字节”层级结构中的类和来自“字符”层次结构中的类结合起来使用。为了达到这个目的，需要用到“适配器（adapter）类”：`InputStreamReader` 可以把 `InputStream` 转换为 `Reader`，而 `OutputStreamWriter` 可以把 `OutputStream` 转换为 `Writer`。
+
+设计 `Reader` 和 `Writer` 继承体系主要是为了国际化。老的 I/O 流继承体系仅支持 8 比特的字节流，并且不能很好地处理 16 比特的 Unicode 字符。由于 Unicode 用于字符国际化（Java 本身的 `char` 也是 16 比特的 Unicode），所以添加 `Reader` 和 `Writer` 继承体系就是为了让所有的 I/O 操作都支持 Unicode。另外，新类库的设计使得它的操作比旧类库要快。
+
+### 数据的来源和去处
+
+几乎所有原始的 Java I/O 流类都有相应的 `Reader` 和 `Writer` 类来提供原生的 Unicode 操作。但是在某些场合，面向字节的 `InputStream` 和 `OutputStream` 才是正确的解决方案。特别是 `java.util.zip` 类库就是面向字节而不是面向字符的。因此，最明智的做法是尽量**尝试**使用 `Reader` 和 `Writer`，一旦代码没法成功编译，你就会发现此时应该使用面向字节的类库了。
+
+下表展示了在两个继承体系中，信息的来源和去处（即数据物理上来自哪里又去向哪里）之间的对应关系：
+
+| 来源与去处：Java 1.0 类 | 相应的 Java 1.1 类 |
+| :-------------------: | :--------------: |
+| `InputStream`  |  `Reader` <br/> 适配器：`InputStreamReader` |
+| `OutputStream`  |  `Writer` <br/> 适配器：`OutputStreamWriter` |
+| `FileInputStream`  | `FileReader` |
+| `FileOutputStream`  |  `FileWriter` |
+| `StringBufferInputStream`（已弃用） | `StringReader` |
+| （无相应的类） |  `StringWriter` |
+| `ByteArrayInputStream`  |  `CharArrayReader` |
+| `ByteArrayOutputStream`  | `CharArrayWriter` |
+| `PipedInputStream`  |  `PipedReader` |
+| `PipedOutputStream`  | `PipedWriter` |
+
+总的来说，这两个不同的继承体系中的接口即便不能说完全相同，但也是非常相似的。
+
+### 更改流的行为
+
+对于 `InputStream` 和 `OutputStream` 来说，我们会使用 `FilterInputStream` 和 `FilterOutputStream` 的装饰器子类来修改“流”以满足特殊需要。`Reader` 和 `Writer` 的类继承体系沿用了相同的思想——但是并不完全相同。
+
+在下表中，左右之间对应关系的近似程度现比上一个表格更加粗略一些。造成这种差别的原因是类的组织形式不同，`BufferedOutputStream` 是 `FilterOutputStream` 的子类，但 `BufferedWriter` 却不是 `FilterWriter` 的子类（尽管 `FilterWriter` 是抽象类，但却没有任何子类，把它放在表格里只是占个位置，不然你可能奇怪 `FilterWriter` 上哪去了）。然而，这些类的接口却又十分相似。
+
+| 过滤器：Java 1.0 类 | 相应 Java 1.1 类 |
+| :---------------  | :-------------- |
+| `FilterInputStream` | `FilterReader` |
+| `FilterOutputStream` | `FilterWriter` (抽象类，没有子类) |
+| `BufferedInputStream` | `BufferedReader`（也有 `readLine()`) |
+| `BufferedOutputStream` | `BufferedWriter` |
+| `DataInputStream` | 使用 `DataInputStream`（ 如果必须用到 `readLine()`，那你就得使用 `BufferedReader`。否则，一般情况下就用 `DataInputStream` |
+| `PrintStream` | `PrintWriter` |
+| `LineNumberInputStream` | `LineNumberReader` |
+| `StreamTokenizer` | `StreamTokenizer`（使用具有 `Reader` 参数的构造器） |
+| `PushbackInputStream` | `PushbackReader` |
+
+有一条限制需要明确：一旦要使用 `readLine()`，我们就不应该用 `DataInputStream`（否则，编译时会得到使用了过时方法的警告），而应该使用 `BufferedReader`。除了这种情况之外的情形中，`DataInputStream` 仍是 I/O 类库的首选成员。
+
+为了使用时更容易过渡到 `PrintWriter`，它提供了一个既能接受 `Writer` 对象又能接受任何 `OutputStream` 对象的构造器。`PrintWriter` 的格式化接口实际上与 `PrintStream` 相同。
+
+Java 5 添加了几种 `PrintWriter` 构造器，以便在将输出写入时简化文件的创建过程，你马上就会见到它们。
+
+其中一种 `PrintWriter` 构造器还有一个执行**自动 flush**[^2] 的选项。如果构造器设置了该选项，就会在每个 `println()` 调用之后，自动执行 flush。
+
+### 未发生改变的类
+
+有一些类在 Java 1.0 和 Java 1.1 之间未做改变。
+
+| 以下这些 Java 1.0 类在 Java 1.1 中没有相应类 |
+| --- |
+| `DataOutputStream` |
+| `File` |
+| `RandomAccessFile` |
+| `SequenceInputStream` |
+
+特别是 `DataOutputStream`，在使用时没有任何变化；因此如果想以可传输的格式存储和检索数据，请用 `InputStream` 和 `OutputStream` 继承体系。
 
 <!-- Off By Itself: RandomAccessFile -->
 ## RandomAccessFile类
+
 
 
 <!-- Typical Uses of I/O Streams -->
 ## IO流典型用途
 
 
+
+### 缓冲输入文件
+
+
+
+### 从内存输入
+
+
+
+### 格式化内存输入
+
+
+
+### 基本文件的输出
+
+
+
+### 文本文件输出快捷方式
+
+
+
+### 存储和恢复数据
+
+
+
+### 读写随机访问文件
+
+
+
 <!-- Summary -->
 ## 本章小结
 
+
+
 [^1]: 很难说这就是一个很好的设计选择，尤其是与其它编程语言中简单的 I/O 类库相比较。但它确实是如此选择的一个正当理由。
 
-[^2]: XML 是另一种方式，可以解决在不同计算平台之间移动数据，而不依赖于所有平台上都有 Java 这一问题。XML 将在[附录：对象序列化](./Appendix-Object-Serialization.md)一章中进行介绍。
+[^2]: 译者注：“flush” 直译是“清空”，意思是把缓冲中的数据清空，输送到对应的目的地（如文件和屏幕）。
+
+[^3]: XML 是另一种方式，可以解决在不同计算平台之间移动数据，而不依赖于所有平台上都有 Java 这一问题。XML 将在[附录：对象序列化](./Appendix-Object-Serialization.md)一章中进行介绍。
 
 <!-- 分页 -->
 
