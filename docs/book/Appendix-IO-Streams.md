@@ -191,7 +191,13 @@ Java 5 添加了几种 `PrintWriter` 构造器，以便在将输出写入时简�
 <!-- Off By Itself: RandomAccessFile -->
 ## RandomAccessFile类
 
+`RandomAccessFile` 适用于由大小已知的记录组成的文件，所以我们可以使用 `seek()` 将文件指针从一条记录移动到另一条记录，然后对记录进行读取和修改。文件中记录的大小不一定都相同，只要我们能确定那些记录有多大以及它们在文件中的位置即可。
 
+最初，我们可能难以相信 `RandomAccessFile` 不是 `InputStream` 或者 `OutputStream` 继承体系中的一部分。除了实现了 `DataInput` 和 `DataOutput` 接口（`DataInputStream` 和 `DataOutputStream` 也实现了这两个接口）之外，它和这两个继承体系没有任何关系。它甚至都不使用 `InputStream` 和 `OutputStream` 类中已有的任何功能。它是一个完全独立的类，其所有的方法（大多数都是 `native` 方法）都是从头开始编写的。这么做是因为 `RandomAccessFile` 拥有和别的 I/O 类型本质上不同的行为，因为我们可以在一个文件内向前和向后移动。在任何情况下，它都是自我独立的，直接继承自 `Object`。
+
+从本质上来讲，`RandomAccessFile` 的工作方式类似于把 `DataIunputStream` 和 `DataOutputStream` 组合起来使用。另外它还有一些额外的方法，比如使用 `getFilePointer()` 可以得到当前文件指针在文件中的位置，使用 `seek()` 可以移动文件指针，使用 `length()` 可以得到文件的长度，另外，其构造器还需要传入第二个参数（和 C 语言中的 `fopen()` 相同）用来表示我们是准备对文件进行 “随机读”（r）还是“读写”（rw）。它并不支持只写文件，从这点来看，如果当初 `RandomAccessFile` 能设计成继承自 `DataInputStream`，可能也是个不错的实现方式。
+
+在 Java 1.4 中，`RandomAccessFile` 的大多数功能（但不是全部）都被 nio 中的**内存映射文件（mmap）**取代，详见[附录：新 I/O](./Appendix-New-IO.md)。
 
 <!-- Typical Uses of I/O Streams -->
 ## IO流典型用途
