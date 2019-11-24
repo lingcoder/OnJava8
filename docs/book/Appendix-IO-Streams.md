@@ -72,25 +72,47 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 
 ## 添加属性和有用的接口
 
+装饰器在[泛型](./20-Generics.md)这一章引入。Java I/O 类库需要多种不同功能的组合，这正是使用装饰器模式的原因所在[^1]。而之所以存在 **filter**（过滤器）类，是因为让抽象类 **filter** 作为所有装饰器类的基类。装饰器必须具有和它所装饰对象相同的接口，但它也可以扩展接口，不过这种情况只发生在个别 **filter** 类中。
+
+但是，装饰器模式也有一个缺点：在编写程序的时候，它给我们带来了相当多的灵活性（因为我们可以很容易地对属性进行混搭），但它同时也增加了代码的复杂性。Java I/O 类库操作不便的原因在于：我们必须创建许多类（“核心” I/O 类型加上所有的装饰器）才能得到我们所希望的单个 I/O 对象。
+
+`FilterInputStream` 和 `FilterOutputStream` 是用来提供装饰器类接口以控制特定输入流 `InputStream` 和 输出流 `OutputStream` 的两个类，但它们的名字并不是很直观。`FilterInputStream` 和 `FilterOutputStream` 分别从 I/O 类库中的基类 `InputStream` 和 `OutputStream` 派生而来，这两个类是创建装饰器的必要条件（这样它们才能为所有被装饰的对象提供统一接口）。
 
 ### 通过 `FilterInputStream` 从 `InputStream` 读取
+
+`FilterInputStream` 类能够完成两件截然不同的事情。其中，`DataInputStream` 允许我们读取不同的基本数据类型和 `String` 类型的对象（所有方法都以 “read” 开头，例如 `readByte()`、`readFloat()`等等）。搭配其对应的 `DataOutputStream`，我们就可以通过数据“流”将基本数据类型的数据从一个地方迁移到另一个地方。具体是那些“地方”是由[表 I/O-1](#table-io-1) 中的那些类决定的。
+
+其它 `FilterInputStream` 类则在内部修改 `InputStream` 的行为方式：是否缓冲，是否保留它所读过的行（允许我们查询行数或设置行数），以及是否允许把单个字符推回输入流等等。最后两个类看起来就像是为了创建编译器提供的（它们被添加进来可能是为了对“用 Java 构建编译器”实现提供支持），因此我们在一般编程中不会用到它们。
+
+在实际应用中，不管连接的是什么 I/O 设备，我们基本上都会对输入进行缓冲。所以当初 I/O 类库如果能默认都让输入进行缓冲，同时将无缓冲输入作为一种特殊情况（或者只是简单地提供一个方法调用），这样会更加合理，而不是像现在这样迫使我们基本上每次都得手动添加缓冲。
+<!-- 译者注：感觉第四版中文版（536页）把上面这一段的意思弄反了 -->
 
 <span id="table-io-3">**表 I/O-3：`FilterInputStream` 类型**</span>
 
 | 类 | 功能 | 构造器参数 | 如何使用 |
 | :--: | :-- | :-------- | :----- |
-| `DataInputStream` | 与 `DataOutputStream` 搭配使用，按照移植方式从流读取基本数据类型（`int`、`char`、`long` 等） | `InputStream` | 包含用于读取基本类型数据的全部接口 |
+| `DataInputStream` | 与 `DataOutputStream` 搭配使用，按照移植方式从流读取基本数据类型（`int`、`char`、`long` 等） | `InputStream` | 包含用于读取基本数据类型的全部接口 |
 | `BufferedInputStream`      | 使用它可以防止每次读取时都得进行实际写操作。代表“使用缓冲区” | `InputStream`，可以指定缓冲区大小（可选） | 本质上不提供接口，只是向进程添加缓冲功能。与接口对象搭配 |
 | `LineNumberInputStream`     | 跟踪输入流中的行号，可调用 `getLineNumber()` 和 `setLineNumber(int)` | `InputStream` | 仅增加了行号，因此可能要与接口对象搭配使用 |
 | `PushbackInputStream`    | 具有能弹出一个字节的缓冲区，因此可以将读到的最后一个字符回退 | `InputStream` | 通常作为编译器的扫描器，我们可能永远也不会用到 |
 
 ### 通过 `FilterOutputStream` 向 `OutputStream` 写入
 
+与 `DataInputStream` 对应的是 `DataOutputStream`，它可以将各种基本数据类型和 `String` 类型的对象格式化输出到“流”中，。这样一来，任何机器上的任何 `DataInputStream` 都可以读出它们。所有方法都以 “write” 开头，例如 `writeByte()`、`writeFloat()` 等等。
+
+`PrintStream` 最初的目的就是为了以可视化格式打印所有基本数据类型和 `String` 类型的对象。这和 `DataOutputStream` 不同，后者的目的是将数据元素置入“流”中，使 `DataInputStream` 能够可移植地重构它们。
+
+`PrintStream` 内有两个重要方法：`print()` 和 `println()`。它们都被重载了，可以打印各种各种数据类型。`print()` 和 `println()` 之间的差异是，后者在操作完毕后会添加一个换行符。
+
+`PrintStream` 可能会造成一些问题，因为它捕获了所有 `IOException`（因此，我们必须使用 `checkError()` 自行测试错误状态，如果出现错误它会返回 `true`）。另外，`PrintStream` 没有处理好国际化问题。这些问题都在 `PrintWriter` 中得到了解决，这在后面会讲到。
+
+`BufferedOutputStream` 是一个修饰符，表明这个“流”使用了缓冲技术，因此每次向流写入的时候，不是每次都会执行物理写操作。我们在进行输出操作的时候可能会经常用到它。
+
 <span id="table-io-4">**表 I/O-4：`FilterOutputStream` 类型**</span>
 
 | 类 | 功能 | 构造器参数 | 如何使用 |
 | :--: | :-- | :-------- | :----- |
-| `DataOutputStream` | 与 `DataInputStream` 搭配使用，因此可以按照移植方式向流中写入基本类型数据（`int`、`char`、`long` 等） | `OutputStream` | 包含用于写入基本类型数据的全部接口 |
+| `DataOutputStream` | 与 `DataInputStream` 搭配使用，因此可以按照移植方式向流中写入基本数据类型（`int`、`char`、`long` 等） | `OutputStream` | 包含用于写入基本数据类型的全部接口 |
 | `PrintStream`      | 用于产生格式化输出。其中 `DataOutputStream` 处理数据的存储，`PrintStream` 处理显示 | `OutputStream`，可以用 `boolean` 值指示是否每次换行时清空缓冲区（可选） | 应该是对 `OutputStream` 对象的 `final` 封装。可能会经常用到它 |
 | `BufferedOutputStream`     | 使用它以避免每次发送数据时都进行实际的写操作。代表“使用缓冲区”。可以调用 `flush()` 清空缓冲区 | `OutputStream`，可以指定缓冲区大小（可选） | 本质上并不提供接口，只是向进程添加缓冲功能。与接口对象搭配 |
 
@@ -98,22 +120,128 @@ I/O 流屏蔽了实际的 I/O 设备中处理数据的细节：
 
 ## Reader和Writer
 
+Java 1.1 对基本的 I/O 流类库做了重大的修改。你初次遇到 `Reader` 和 `Writer` 时，可能会以为这两个类是用来替代 `InputStream` 和 `OutputStream` 的，但实际上并不是这样。尽管一些原始的“流”类库已经过时了（如果使用它们，编译器会发出警告），但是 `InputStream` 和 `OutputStream` 在面向字节 I/O 这方面仍然发挥着极其重要的作用，而 `Reader` 和 `Writer` 则提供兼容 Unicode 和面向字符 I/O 的功能。另外：
 
+1. Java 1.1 往 `InputStream` 和 `OutputStream` 的继承体系中又添加了一些新类，所以这两个类显然是不会被取代的；
+
+2. 有时我们必须把来自“字节”层级结构中的类和来自“字符”层次结构中的类结合起来使用。为了达到这个目的，需要用到“适配器（adapter）类”：`InputStreamReader` 可以把 `InputStream` 转换为 `Reader`，而 `OutputStreamWriter` 可以把 `OutputStream` 转换为 `Writer`。
+
+设计 `Reader` 和 `Writer` 继承体系主要是为了国际化。老的 I/O 流继承体系仅支持 8 比特的字节流，并且不能很好地处理 16 比特的 Unicode 字符。由于 Unicode 用于字符国际化（Java 本身的 `char` 也是 16 比特的 Unicode），所以添加 `Reader` 和 `Writer` 继承体系就是为了让所有的 I/O 操作都支持 Unicode。另外，新类库的设计使得它的操作比旧类库要快。
+
+### 数据的来源和去处
+
+几乎所有原始的 Java I/O 流类都有相应的 `Reader` 和 `Writer` 类来提供原生的 Unicode 操作。但是在某些场合，面向字节的 `InputStream` 和 `OutputStream` 才是正确的解决方案。特别是 `java.util.zip` 类库就是面向字节而不是面向字符的。因此，最明智的做法是尽量**尝试**使用 `Reader` 和 `Writer`，一旦代码没法成功编译，你就会发现此时应该使用面向字节的类库了。
+
+下表展示了在两个继承体系中，信息的来源和去处（即数据物理上来自哪里又去向哪里）之间的对应关系：
+
+| 来源与去处：Java 1.0 类 | 相应的 Java 1.1 类 |
+| :-------------------: | :--------------: |
+| `InputStream`  |  `Reader` <br/> 适配器：`InputStreamReader` |
+| `OutputStream`  |  `Writer` <br/> 适配器：`OutputStreamWriter` |
+| `FileInputStream`  | `FileReader` |
+| `FileOutputStream`  |  `FileWriter` |
+| `StringBufferInputStream`（已弃用） | `StringReader` |
+| （无相应的类） |  `StringWriter` |
+| `ByteArrayInputStream`  |  `CharArrayReader` |
+| `ByteArrayOutputStream`  | `CharArrayWriter` |
+| `PipedInputStream`  |  `PipedReader` |
+| `PipedOutputStream`  | `PipedWriter` |
+
+总的来说，这两个不同的继承体系中的接口即便不能说完全相同，但也是非常相似的。
+
+### 更改流的行为
+
+对于 `InputStream` 和 `OutputStream` 来说，我们会使用 `FilterInputStream` 和 `FilterOutputStream` 的装饰器子类来修改“流”以满足特殊需要。`Reader` 和 `Writer` 的类继承体系沿用了相同的思想——但是并不完全相同。
+
+在下表中，左右之间对应关系的近似程度现比上一个表格更加粗略一些。造成这种差别的原因是类的组织形式不同，`BufferedOutputStream` 是 `FilterOutputStream` 的子类，但 `BufferedWriter` 却不是 `FilterWriter` 的子类（尽管 `FilterWriter` 是抽象类，但却没有任何子类，把它放在表格里只是占个位置，不然你可能奇怪 `FilterWriter` 上哪去了）。然而，这些类的接口却又十分相似。
+
+| 过滤器：Java 1.0 类 | 相应 Java 1.1 类 |
+| :---------------  | :-------------- |
+| `FilterInputStream` | `FilterReader` |
+| `FilterOutputStream` | `FilterWriter` (抽象类，没有子类) |
+| `BufferedInputStream` | `BufferedReader`（也有 `readLine()`) |
+| `BufferedOutputStream` | `BufferedWriter` |
+| `DataInputStream` | 使用 `DataInputStream`（ 如果必须用到 `readLine()`，那你就得使用 `BufferedReader`。否则，一般情况下就用 `DataInputStream` |
+| `PrintStream` | `PrintWriter` |
+| `LineNumberInputStream` | `LineNumberReader` |
+| `StreamTokenizer` | `StreamTokenizer`（使用具有 `Reader` 参数的构造器） |
+| `PushbackInputStream` | `PushbackReader` |
+
+有一条限制需要明确：一旦要使用 `readLine()`，我们就不应该用 `DataInputStream`（否则，编译时会得到使用了过时方法的警告），而应该使用 `BufferedReader`。除了这种情况之外的情形中，`DataInputStream` 仍是 I/O 类库的首选成员。
+
+为了使用时更容易过渡到 `PrintWriter`，它提供了一个既能接受 `Writer` 对象又能接受任何 `OutputStream` 对象的构造器。`PrintWriter` 的格式化接口实际上与 `PrintStream` 相同。
+
+Java 5 添加了几种 `PrintWriter` 构造器，以便在将输出写入时简化文件的创建过程，你马上就会见到它们。
+
+其中一种 `PrintWriter` 构造器还有一个执行**自动 flush**[^2] 的选项。如果构造器设置了该选项，就会在每个 `println()` 调用之后，自动执行 flush。
+
+### 未发生改变的类
+
+有一些类在 Java 1.0 和 Java 1.1 之间未做改变。
+
+| 以下这些 Java 1.0 类在 Java 1.1 中没有相应类 |
+| --- |
+| `DataOutputStream` |
+| `File` |
+| `RandomAccessFile` |
+| `SequenceInputStream` |
+
+特别是 `DataOutputStream`，在使用时没有任何变化；因此如果想以可传输的格式存储和检索数据，请用 `InputStream` 和 `OutputStream` 继承体系。
 
 <!-- Off By Itself: RandomAccessFile -->
 ## RandomAccessFile类
 
+`RandomAccessFile` 适用于由大小已知的记录组成的文件，所以我们可以使用 `seek()` 将文件指针从一条记录移动到另一条记录，然后对记录进行读取和修改。文件中记录的大小不一定都相同，只要我们能确定那些记录有多大以及它们在文件中的位置即可。
+
+最初，我们可能难以相信 `RandomAccessFile` 不是 `InputStream` 或者 `OutputStream` 继承体系中的一部分。除了实现了 `DataInput` 和 `DataOutput` 接口（`DataInputStream` 和 `DataOutputStream` 也实现了这两个接口）之外，它和这两个继承体系没有任何关系。它甚至都不使用 `InputStream` 和 `OutputStream` 类中已有的任何功能。它是一个完全独立的类，其所有的方法（大多数都是 `native` 方法）都是从头开始编写的。这么做是因为 `RandomAccessFile` 拥有和别的 I/O 类型本质上不同的行为，因为我们可以在一个文件内向前和向后移动。在任何情况下，它都是自我独立的，直接继承自 `Object`。
+
+从本质上来讲，`RandomAccessFile` 的工作方式类似于把 `DataIunputStream` 和 `DataOutputStream` 组合起来使用。另外它还有一些额外的方法，比如使用 `getFilePointer()` 可以得到当前文件指针在文件中的位置，使用 `seek()` 可以移动文件指针，使用 `length()` 可以得到文件的长度，另外，其构造器还需要传入第二个参数（和 C 语言中的 `fopen()` 相同）用来表示我们是准备对文件进行 “随机读”（r）还是“读写”（rw）。它并不支持只写文件，从这点来看，如果当初 `RandomAccessFile` 能设计成继承自 `DataInputStream`，可能也是个不错的实现方式。
+
+在 Java 1.4 中，`RandomAccessFile` 的大多数功能（但不是全部）都被 nio 中的**内存映射文件（mmap）**取代，详见[附录：新 I/O](./Appendix-New-IO.md)。
 
 <!-- Typical Uses of I/O Streams -->
 ## IO流典型用途
 
 
+
+### 缓冲输入文件
+
+
+
+### 从内存输入
+
+
+
+### 格式化内存输入
+
+
+
+### 基本文件的输出
+
+
+
+### 文本文件输出快捷方式
+
+
+
+### 存储和恢复数据
+
+
+
+### 读写随机访问文件
+
+
+
 <!-- Summary -->
 ## 本章小结
 
+
+
 [^1]: 很难说这就是一个很好的设计选择，尤其是与其它编程语言中简单的 I/O 类库相比较。但它确实是如此选择的一个正当理由。
 
-[^2]: XML 是另一种方式，可以解决在不同计算平台之间移动数据，而不依赖于所有平台上都有 Java 这一问题。XML 将在[附录：对象序列化](./Appendix-Object-Serialization.md)一章中进行介绍。
+[^2]: 译者注：“flush” 直译是“清空”，意思是把缓冲中的数据清空，输送到对应的目的地（如文件和屏幕）。
+
+[^3]: XML 是另一种方式，可以解决在不同计算平台之间移动数据，而不依赖于所有平台上都有 Java 这一问题。XML 将在[附录：对象序列化](./Appendix-Object-Serialization.md)一章中进行介绍。
 
 <!-- 分页 -->
 
