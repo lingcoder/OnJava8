@@ -2764,16 +2764,26 @@ Java 7 引入了 **java.util.Objects** 库，使创建 `equals()` 和 `hashCode(
 
 ## 问题
 
-
 <!-- Self-Bounded Types -->
+
 ## 自我约束类型
 
-
 <!-- Dynamic Type Safety -->
+
+Java泛型中会定期出现一种让人费解的习惯用法。 看起来是这样的：
+
+```
+class SelfBounded<T extends SelfBounded<T>> { // ...
+```
+
+这具有两个指向彼此的镜子的眩晕效果，这是一种无限的反射。 **SelfBounded**类采用通用参数`T`，`T`受一个界限约束，该界限为**SelfBounded**，其中`T`为参数。
+
 ## 动态类型安全
 
-
 <!-- Exceptions -->
+
+
+
 ## 泛型异常
 
 
