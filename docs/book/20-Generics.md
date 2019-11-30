@@ -2254,11 +2254,12 @@ Note: Recompile with -Xlint:unchecked for details.
 
 果然，标准库会产生很多警告。如果你使用过 C 语言，尤其是使用 ANSI C 之前的语言，你会记住警告的特殊效果：发现警告后，可以忽略它们。因此，除非程序员必须对其进行处理，否则最好不要从编译器发出任何类型的消息。
 
-Neal Gafter（Java 5的主要开发人员之一）在他的博客中[^2]指出，他在重写 Java 库时是很随意、马虎的，我们不应该像他那样做。Neal 还指出，他在不破坏现有接口的情况下无法修复某些 Java 库代码。因此，即使在 Java 库源代码中出现了一些习惯用法，它们也不一定是正确的做法。当查看库代码时，我们不能认为这就是要在自己代码中必须遵循的示例。
+Neal Gafter（Java 5 的主要开发人员之一）在他的博客中[^2]指出，他在重写 Java 库时是很随意、马虎的，我们不应该像他那样做。Neal 还指出，他在不破坏现有接口的情况下无法修复某些 Java 库代码。因此，即使在 Java 库源代码中出现了一些习惯用法，它们也不一定是正确的做法。当查看库代码时，我们不能认为这就是要在自己代码中必须遵循的示例。
 
 请注意，在 Java 文献中推荐使用类型标记技术，例如 Gilad Bracha 的论文《Generics in the Java Programming Language》[^3]，他指出：“例如，这种用法已广泛用于新的 API 中以处理注解。” 我发现此技术在人们对于舒适度的看法方面存在一些不一致之处；有些人强烈喜欢本章前面介绍的工厂方法。
 
 <!-- Bounds -->
+
 ## 边界
 
 *边界*（bounds）在本章的前面进行了简要介绍。边界允许我们对泛型使用的参数类型施加约束。尽管这可以强制执行有关应用了泛型类型的规则，但潜在的更重要的效果是我们可以在绑定的类型中调用方法。
@@ -2567,10 +2568,200 @@ public class EpicBattle {
 接下来将要研究的通配符将会把范围限制在单个类型。
 
 <!-- Wildcards -->
+
 ## 通配符
+
+你已经在 [集合](./12-Collections.md) 章节中看到了一些简单示例使用了通配符——在泛型参数表达式中的问号，在 [类型信息](./19-Type-Information.md) 一章中这种示例更多。本节将更深入地探讨这个特性。
+
+我们的起始示例要展示数组的一种特殊行为：你可以将派生类的数组赋值给基类的引用：
+
+```java
+// generics/CovariantArrays.java
+
+class Fruit {}
+
+class Apple extends Fruit {}
+
+class Jonathan extends Apple {}
+
+class Orange extends Fruit {}
+
+public class CovariantArrays {
+    
+    public static void main(String[] args) {
+        Fruit[] fruit = new Apple[10];
+        fruit[0] = new Apple(); // OK
+        fruit[1] = new Jonathan(); // OK
+        // Runtime type is Apple[], not Fruit[] or Orange[]:
+        try {
+            // Compiler allows you to add Fruit:
+            fruit[0] = new Fruit(); // ArrayStoreException
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        try {
+            // Compiler allows you to add Oranges:
+            fruit[0] = new Orange(); // ArrayStoreException
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+/* Output:
+java.lang.ArrayStoreException: Fruit
+java.lang.ArrayStoreException: Orange
+```
+
+`main()` 中的第一行创建了 **Apple** 数组，并赋值给一个 **Fruit** 数组引用。这是有意义的，因为 **Apple** 也是一种 **Fruit**，因此 **Apple** 数组应该也是一个 **Fruit** 数组。
+
+但是，如果实际的数组类型是 **Apple[]**，你可以在其中放置 **Apple** 或 **Apple** 的子类型，这在编译期和运行时都可以工作。但是你也可以在数组中放置 **Fruit** 对象。这对编译器来说是有意义的，因为它有一个 **Fruit[]** 引用——它有什么理由不允许将 **Fruit** 对象或任何从 **Fruit** 继承出来的对象（比如 **Orange**），放置到这个数组中呢？因此在编译期，这是允许的。然而，运行时的数组机制知道它处理的是 **Apple[]**，因此会在向数组中放置异构类型时抛出异常。
+
+向上转型用在这里不合适。你真正在做的是将一个数组赋值给另一个数组。数组的行为是持有其他对象，这里只是因为我们能够向上转型而已，所以很明显，数组对象可以保留有关它们包含的对象类型的规则。看起来就像数组对它们持有的对象是有意识的，因此在编译期检查和运行时检查之间，你不能滥用它们。
+
+数组的这种赋值并不是那么可怕，因为在运行时你可以发现插入了错误的类型。但是泛型的主要目标之一是将这种错误检测移到编译期。所以当我们试图使用泛型集合代替数组时，会发生什么呢？
+
+```java
+// generics/NonCovariantGenerics.java
+// {WillNotCompile}
+
+import java.util.*;
+
+public class NonCovariantGenerics {
+    // Compile Error: incompatible types:
+    List<Fruit> flist = new ArrayList<Apple>();
+}
+```
+
+尽管你在首次阅读这段代码时会认为“不能将一个 **Apple** 集合赋值给一个 **Fruit** 集合”。记住，泛型不仅仅是关于集合，它真正要表达的是“不能把一个涉及 **Apple** 的泛型赋值给一个涉及 **Fruit** 的泛型”。如果像在数组中的情况一样，编译器对代码的了解足够多，可以确定所涉及到的集合，那么它可能会留下一些余地。但是它不知道任何有关这方面的信息，因此它拒绝向上转型。然而实际上这也不是向上转型—— **Apple** 的 **List** 不是 **Fruit** 的 **List**。**Apple** 的 **List** 将持有 **Apple** 和 **Apple** 的子类型，**Fruit** 的 **List** 将持有任何类型的 **Fruit**。是的，这包括 **Apple**，但是它不是一个 **Apple** 的 **List**，它仍然是 **Fruit** 的 **List**。**Apple** 的 **List** 在类型上不等价于 **Fruit** 的 **List**，即使 **Apple** 是一种 **Fruit** 类型。
+
+真正的问题是我们在讨论的集合类型，而不是集合持有对象的类型。与数组不同，泛型没有内建的协变类型。这是因为数组是完全在语言中定义的，因此可以具有编译期和运行时的内建检查，但是在使用泛型时，编译器和运行时系统不知道你想用类型做什么，以及应该采用什么规则。
+
+但是，有时你想在两个类型间建立某种向上转型关系。通配符可以产生这种关系。
+
+```java
+// generics/GenericsAndCovariance.java
+
+import java.util.*;
+
+public class GenericsAndCovariance {
+    
+    public static void main(String[] args) {
+        // Wildcards allow covariance:
+        List<? extends Fruit> flist = new ArrayList<>();
+        // Compile Error: can't add any type of object:
+        // flist.add(new Apple());
+        // flist.add(new Fruit());
+        // flist.add(new Object());
+        flist.add(null); // Legal but uninteresting
+        // We know it returns at least Fruit:
+        Fruit f = flist.get(0);
+    }
+    
+}
+```
+
+**flist** 的类型现在是 `List<? extends Fruit>`，你可以读作“一个具有任何从 **Fruit** 继承的类型的列表”。然而，这实际上并不意味着这个 **List** 将持有任何类型的 **Fruit**。通配符引用的是明确的类型，因此它意味着“某种 **flist** 引用没有指定的具体类型”。因此这个被赋值的 **List** 必须持有诸如 **Fruit** 或 **Apple** 这样的指定类型，但是为了向上转型为 **Fruit**，这个类型是什么没人在意。
+
+**List** 必须持有一种具体的 **Fruit** 或 **Fruit** 的子类型，但是如果你不关心具体的类型是什么，那么你能对这样的 **List** 做什么呢？如果不知道 **List** 中持有的对象是什么类型，你怎能保证安全地向其中添加对象呢？就像在 **CovariantArrays.java** 中向上转型一样，你不能，除非编译器而不是运行时系统可以阻止这种操作的发生。你很快就会发现这个问题。
+
+你可能认为事情开始变得有点走极端了，因为现在你甚至不能向刚刚声明过将持有 **Apple** 对象的 **List** 中放入一个 **Apple** 对象。是的，但编译器并不知道这一点。`List<? extends Fruit>` 可能合法地指向一个 `List<Orange>`。一旦执行这种类型的向上转型，你就丢失了向其中传递任何对象的能力，甚至传递 **Object** 也不行。
+
+另一方面，如果你调用了一个返回 **Fruit** 的方法，则是安全的，因为你知道这个 **List** 中的任何对象至少具有 **Fruit** 类型，因此编译器允许这么做。
+
+### 编译器有多聪明
+
+现在你可能会猜想自己不能去调用任何接受参数的方法，但是考虑下面的代码：
+
+```java
+// generics/CompilerIntelligence.java
+
+import java.util.*;
+
+public class CompilerIntelligence {
+    
+    public static void main(String[] args) {
+        List<? extends Fruit> flist = Arrays.asList(new Apple());
+        Apple a = (Apple) flist.get(0); // No warning
+        flist.contains(new Apple()); // Argument is 'Object'
+        flist.indexOf(new Apple()); // Argument is 'Object'
+    }
+    
+}
+```
+
+这里对 `contains()` 和 `indexOf()` 的调用接受 **Apple** 对象作为参数，执行没问题。这是否意味着编译器实际上会检查代码，以查看是否有某个特定的方法修改了它的对象？
+
+通过查看 **ArrayList** 的文档，我们发现编译器没有那么聪明。尽管 `add()` 接受一个泛型参数类型的参数，但 `contains()` 和 `indexOf()` 接受的参数类型是 **Object**。因此当你指定一个 `ArrayList<? extends Fruit>` 时，`add()` 的参数就变成了"**? extends Fruit**"。从这个描述中，编译器无法得知这里需要 **Fruit** 的哪个具体子类型，因此它不会接受任何类型的 **Fruit**。如果你先把 **Apple** 向上转型为 **Fruit**，也没有关系——编译器仅仅会拒绝调用像 `add()` 这样参数列表中涉及通配符的方法。
+
+`contains()` 和 `indexOf()` 的参数类型是 **Object**，不涉及通配符，所以编译器允许调用它们。这意味着将由泛型类的设计者来决定哪些调用是“安全的”，并使用 **Object** 类作为它们的参数类型。为了禁止对类型中使用了通配符的方法调用，需要在参数列表中使用类型参数。
+
+下面展示一个简单的 **Holder** 类：
+
+```java
+public class Holder<T> {
+
+    private T value;
+
+    public Holder() {}
+
+    public Holder(T val) {
+        value = val;
+    }
+
+    public void set(T val) {
+        value = val;
+    }
+
+    public T get() {
+        return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Holder && Objects.equals(value, ((Holder) o).value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(value);
+    }
+
+    public static void main(String[] args) {
+        Holder<Apple> apple = new Holder<>(new Apple());
+        Apple d = apple.get();
+        apple.set(d);
+//        Holder<Fruit> fruit = apple; // Cannot upcast
+        Holder<? extends Fruit> fruit = apple; // OK
+        Fruit p = fruit.get();
+        d = (Apple) fruit.get();
+        try {
+            Orange c = (Orange) fruit.get(); // No warning
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+//        fruit.set(new Apple()); // Cannot call set()
+//        fruit.set(new Fruit()); // Cannot call set()
+        System.out.println(fruit.equals(d)); // OK
+    }
+}
+/* Output
+java.lang.ClassCastException: Apple cannot be cast to Orange
+false
+*/
+```
+
+**Holder** 有一个接受 **T** 类型对象的 `set()` 方法，一个返回 T 对象的 `get()` 方法和一个接受 Object 对象的 `equals()` 方法。正如你所见，如果创建了一个 `Holder<Apple>`，就不能将其向上转型为 `Holder<Fruit>`，但是可以向上转型为 `Holder<? extends Fruit>`。如果调用 `get()`，只能返回一个 **Fruit**——这就是在给定“任何；额扩展自 **Fruit** 的对象”这一边界后，它所能知道的一切了。如果你知道更多的信息，就可以将其转型到某种具体的 **Fruit** 而不会导致任何警告，但是存在得到 **ClassCastException** 的风险。`set()` 方法不能工作在 **Apple** 和 **Fruit** 上，因为 `set()` 的参数也是"**? extends Fruit**"，意味着它可以是任何事物，编译器无法验证“任何事物”的类型安全性。
+
+但是，`equals()` 方法可以正常工作，因为它接受的参数是 **Object** 而不是 **T** 类型。因此，编译器只关注传递进来和要返回的对象类型。它不会分析代码，以查看是否执行了任何实际的写入和读取操作。
+
+Java 7 引入了 **java.util.Objects** 库，使创建 `equals()` 和 `hashCode()` 方法变得更加容易，当然还有很多其他功能。`equals()` 方法的标准形式参考 [附录：理解 equals 和 hashCode 方法](./Appendix-Understanding-equals-and-hashCode) 一章。
+
+### 逆变
+
 
 
 <!-- Issues -->
+
 ## 问题
 
 
