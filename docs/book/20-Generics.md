@@ -2832,9 +2832,6 @@ public class GenericReading {
 
 ```java
 // generics/UnboundedWildcards1.java
-// (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
 import java.util.*;
 
 public class UnboundedWildcards1 {
@@ -2896,9 +2893,6 @@ public class UnboundedWildcards1 {
 
 ```java
 // generics/UnboundedWildcards2.java
-// (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
 import java.util.*;
 
 public class UnboundedWildcards2 {
@@ -2939,9 +2933,6 @@ public class UnboundedWildcards2 {
 
 ```java
 // generics/Wildcards.java
-// (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
 // Exploring the meaning of wildcards
 
 public class Wildcards {
@@ -3244,9 +3235,6 @@ public class Wildcards {
 
 ```java
 // generics/CaptureConversion.java
-// (c)2017 MindView LLC: see Copyright.txt
-// We make no guarantees that this code is fit for any purpose.
-// Visit http://OnJava8.com for more book information.
 
 public class CaptureConversion {
   static <T> void f1(Holder<T> holder) {
@@ -3312,6 +3300,255 @@ Double
 
 ## 问题
 
+本节将阐述在使用Java泛型时会出现的各类问题。
+
+### 任何基本类型都不能作为类型参数
+
+正如本章早先提到过的，你将在Java泛型中发现的限制之一是，不能将基本类型用作类型参数。因此，不能创建    `ArrayList<int>` 之类的东西。
+解决之道是使用基本类型的包装器类以及JavaSE5的自动包装机制。如果创建一个 `ArrayList<Integer>`，并将基本类型 **int** 应用于这个容器，那么你将发现自动包装机制将自动地实现 **int** 到 **Integer** 的双向转换——因此，这几乎就像是有一个 `ArrayList<int>`一样：
+
+```java
+// generics/ListOfInt.java
+// Autoboxing compensates for the inability
+// to use primitives in generics
+import java.util.*;
+import java.util.stream.*;
+
+public class ListOfInt {
+  public static void main(String[] args) {
+    List<Integer> li = IntStream.range(38, 48)
+      .boxed() // Converts ints to Integers
+      .collect(Collectors.toList());
+    System.out.println(li);
+  }
+}
+/* Output:
+[38, 39, 40, 41, 42, 43, 44, 45, 46, 47]
+*/
+```
+
+注意，自动包装机制甚至允许用foreach语法来产生 **int** 。
+通常，这种解决方案工作得很好——能够成功地存储和读取 **int** ，有一些转换碰巧在发生的同时会对你屏蔽掉。但是，如果性能成为了问题，就需要使用专门适配基本类型的容器版。**Org.apache.commons.collections.primitives** 就是一种开源的这类版本。
+下面是另外一种方式，它可以创建持有 **Byte** 的 **Set** ：
+
+```java
+// generics/ByteSet.java
+import java.util.*;
+
+public class ByteSet {
+  Byte[] possibles = { 1,2,3,4,5,6,7,8,9 };
+  Set<Byte> mySet =
+    new HashSet<>(Arrays.asList(possibles));
+  // But you can't do this:
+  // Set<Byte> mySet2 = new HashSet<>(
+  //   Arrays.<Byte>asList(1,2,3,4,5,6,7,8,9));
+}
+```
+
+注意，自动包装机制解决了一些问题，但并不是解决了所有问题。
+
+在下面的示例中，**FillArray** 接口包含一些通用方法，这些方法使用 **Supplier** 来用对象填充数组（这使得类泛型在本例中无法工作，因为这个方法是静态的）   **Supplier** 实现来自“数组”一章,并且在 `main()` 中，可以看到 `FillArray.fill()` 使用它在数组中填充对象：
+
+```java
+// generics/PrimitiveGenericTest.java
+import onjava.*;
+import java.util.*;
+import java.util.function.*;
+
+// Fill an array using a generator:
+interface FillArray {
+  static <T> T[] fill(T[] a, Supplier<T> gen) {
+    Arrays.setAll(a, n -> gen.get());
+    return a;
+  }
+  static int[] fill(int[] a, IntSupplier gen) {
+    Arrays.setAll(a, n -> gen.getAsInt());
+    return a;
+  }
+  static long[] fill(long[] a, LongSupplier gen) {
+    Arrays.setAll(a, n -> gen.getAsLong());
+    return a;
+  }
+  static double[] fill(double[] a, DoubleSupplier gen) {
+    Arrays.setAll(a, n -> gen.getAsDouble());
+    return a;
+  }
+}
+
+public class PrimitiveGenericTest {
+  public static void main(String[] args) {
+    String[] strings = FillArray.fill(
+      new String[5], new Rand.String(9));
+    System.out.println(Arrays.toString(strings));
+    int[] integers = FillArray.fill(
+      new int[9], new Rand.Pint());
+    System.out.println(Arrays.toString(integers));
+  }
+}
+/* Output:
+[btpenpccu, xszgvgmei, nneeloztd, vewcippcy, gpoalkljl]
+[635, 8737, 3941, 4720, 6177, 8479, 6656, 3768, 4948]
+*/
+```
+
+自动装箱不适用于数组，因此我们必须创建 `FillArray.fill()` 的重载版本，或创建产生 **Wrapped** 输出的生成器。 **FillArray** 仅比 `java.util.Arrays.setAll()` 有用，因为它返回填充的数组。
+
+### 实现参数化接口
+
+一个类不能实现同一个泛型接口的两种变体，由于擦除的原因，这两个变体会成为相同的接口。下面是产生这种冲突的情况：
+
+```java
+// generics/MultipleInterfaceVariants.java
+// {WillNotCompile}
+package generics;
+
+interface Payable<T> {}
+
+class Employee implements Payable<Employee> {}
+
+class Hourly extends Employee
+implements Payable<Hourly> {}
+```
+
+**Hourly** 不能编译，因为擦除会将  `Payable<Employe>` 和 `Payable<Hourly>` 简化为相同的类 **Payable**，这样，上面的代码就意味着在重复两次地实现相同的接口。十分有趣的是，如果从 **Payable** 的两种用法中都移除掉泛型参数（就像编译器在擦除阶段所做的那样）这段代码就可以编译。
+
+在使用某些更基本的 Java 接口，例如 `Comparable<T>` 时，这个问题可能会变得十分令人恼火，就像你在本节稍后就会看到的那样。
+
+### 转型和警告
+
+使用带有泛型类型参数的转型或 **instanceof** 不会有任何效果。下面的容器在内部将各个值存储为 **Object**，并在获取这些值时，再将它们转型回 **T**：
+
+```java
+// generics/GenericCast.java
+import java.util.*;
+import java.util.stream.*;
+
+class FixedSizeStack<T> {
+  private final int size;
+  private Object[] storage;
+  private int index = 0;
+  FixedSizeStack(int size) {
+    this.size = size;
+    storage = new Object[size];
+  }
+  public void push(T item) {
+    if(index < size)
+      storage[index++] = item;
+  }
+  @SuppressWarnings("unchecked")
+  public T pop() {
+    return index == 0 ? null : (T)storage[--index];
+  }
+  @SuppressWarnings("unchecked")
+  Stream<T> stream() {
+    return (Stream<T>)Arrays.stream(storage);
+  }
+}
+
+public class GenericCast {
+  static String[] letters =
+    "ABCDEFGHIJKLMNOPQRS".split("");
+  public static void main(String[] args) {
+    FixedSizeStack<String> strings =
+      new FixedSizeStack<>(letters.length);
+    Arrays.stream("ABCDEFGHIJKLMNOPQRS".split(""))
+      .forEach(strings::push);
+    System.out.println(strings.pop());
+    strings.stream()
+      .map(s -> s + " ")
+      .forEach(System.out::print);
+  }
+}
+/* Output:
+S
+A B C D E F G H I J K L M N O P Q R S
+*/
+```
+
+如果没有 **@SuppressWarnings** 注解，编译器将对 `pop()` 产生 “unchecked cast” 警告。由于擦除的原因，编译器无法知道这个转型是否是安全的，并且 `pop()` 方法实际上并没有执行任何转型。
+这是因为，**T** 被擦除到它的第一个边界，默认情况下是 **Object** ，因此 `pop()` 实际上只是将 **Object** 转型为  **Object**。
+有时，泛型没有消除对转型的需要，这就会由编译器产生警告，而这个警告是不恰当的。例如：
+
+```java
+// generics/NeedCasting.java
+import java.io.*;
+import java.util.*;
+
+public class NeedCasting {
+  @SuppressWarnings("unchecked")
+  public void f(String[] args) throws Exception {
+    ObjectInputStream in = new ObjectInputStream(
+      new FileInputStream(args[0]));
+    List<Widget> shapes = (List<Widget>)in.readObject();
+  }
+}
+```
+
+正如你将在附件：对象序列化( Appendix: Object Serialization)中学到的那样，`readObject() `无法知道它正在读取的是什么，因此它返回的是必须转型的对象。但是当注释掉 **@SuppressWarnings** 注解，并编译这个程序时，就会得到下面的警告。
+
+```
+NeedCasting.java uses unchecked or unsafe operations.
+Recompile with -Xlint:unchecked for details.
+
+And if you follow the instructions and recompile with  -
+Xlint:unchecked :(如果遵循这条指示，使用-Xlint:unchecked来重新编译：)
+
+NeedCasting.java:10: warning: [unchecked] unchecked cast
+    List<Widget> shapes = (List<Widget>)in.readObject();
+    required: List<Widget>
+    found: Object
+1 warning
+```
+
+你会被强制要求转型，但是又被告知不应该转型。为了解决这个问题，必须使用在 Java SE5 中引入的新的转型形式，既通过泛型类来转型：
+
+```java
+// generics/ClassCasting.java
+import java.io.*;
+import java.util.*;
+
+public class ClassCasting {
+  @SuppressWarnings("unchecked")
+  public void f(String[] args) throws Exception {
+    ObjectInputStream in = new ObjectInputStream(
+      new FileInputStream(args[0]));
+      // Won't Compile:
+//    List<Widget> lw1 =
+//    List<>.class.cast(in.readObject());
+    List<Widget> lw2 = List.class.cast(in.readObject());
+  }
+}
+```
+
+但是，不能转型到实际类型（ `List<Widget>` ）。也就是说，不能声明：
+
+```
+List<Widget>.class.cast(in.readobject())
+```
+
+甚至当你添加一个像下面这样的另一个转型时：
+
+```
+(List<Widget>)List.class.cast(in.readobject())
+```
+
+仍旧会得到一个警告。
+
+### 重载
+
+下面的程序是不能编译的，即使编译它是一种合理的尝试：
+
+```java
+// generics/UseList.java
+// {WillNotCompile}
+import java.util.*;
+
+public class UseList<W, T> {
+  void f(List<T> v) {}
+  void f(List<W> v) {}
+}
+```
+
 <!-- Self-Bounded Types -->
 
 ## 自限定的类型
@@ -3325,7 +3562,12 @@ class SelfBounded<T extends SelfBounded<T>> { // ...
 ```
 
 这就像两面镜子彼此照向对方所引起的目眩效果一样，是一种无限反射。**SelfBounded** 类接受泛型参数 **T**，而T由一个边界类限定，这个边界就是拥有 **T** 作为其参数的 **SelfBounded**。
-当你首次看到它时，很难去解析它，它强调的是当 `extends` 关键字用于边界与用来创建子类明显是不同的。
+当你首次看到它时，很难去解析它，它强调的是当 **extends** 关键字用于边界与用来创建子类明显是不同的。
+
+### 古怪的循环泛型
+
+为了理解自限定类型的含义，我们从这个惯用法的一个简单版本入手，它没有自限定的边界。
+不能直接继承一个泛型参数，但是，可以继承在其自己的定义中使用这个泛型参数的类。也就是说，可以声明：
 
 ## 动态类型安全
 
