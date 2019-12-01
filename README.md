@@ -49,7 +49,7 @@
 - [x] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)
 - [ ] [附录:文档注释](docs/book/Appendix-Javadoc.md)
 - [ ] [附录:对象传递和返回](docs/book/Appendix-Passing-and-Returning-Objects.md)
-- [ ] [附录:流式IO](docs/book/Appendix-IO-Streams.md)
+- [x] [附录:流式IO](docs/book/Appendix-IO-Streams.md)
 - [x] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
 - [x] [附录:新IO](docs/book/Appendix-New-IO.md)
 - [x] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
