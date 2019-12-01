@@ -1132,7 +1132,7 @@ public class Adventure {
 
 类 **Hero** 结合了具体类 **ActionCharacter** 和接口 **CanFight**、**CanSwim** 和 **CanFly**。当通过这种方式结合具体类和接口时，需要将具体类放在前面，后面跟着接口（否则编译器会报错）。
 
-接口 **CanFight** 和类 **ActionCharacter** 中的 `flight()` 方法签名相同，而在类 Hero 中也没有提供 `fight()` 的定义。可以扩展一个接口，但是得到的是另一个接口。当想创建一个对象时，所有的定义必须首先都存在。类 **Hero** 中没有显式地提供 `fight()` 的定义，是由于该方法在类 **ActionCharacter** 中已经定义过，这样才使得创建 **Hero** 对象成为可能。
+接口 **CanFight** 和类 **ActionCharacter** 中的 `fight()` 方法签名相同，而在类 Hero 中也没有提供 `fight()` 的定义。可以扩展一个接口，但是得到的是另一个接口。当想创建一个对象时，所有的定义必须首先都存在。类 **Hero** 中没有显式地提供 `fight()` 的定义，是由于该方法在类 **ActionCharacter** 中已经定义过，这样才使得创建 **Hero** 对象成为可能。
 
 在类 **Adventure** 中可以看到四个方法，它们把不同的接口和具体类作为参数。当创建一个 **Hero** 对象时，它可以被传入这些方法中的任意一个，意味着它可以依次向上转型为每个接口。Java 中这种接口的设计方式，使得程序员不需要付出特别的努力。
 
@@ -1217,7 +1217,7 @@ public class HorrorShow {
 
 ### 结合接口时的命名冲突
 
-当实现多个接口时可能会存在一个小陷阱。在前面的例子中，**CanFlight** 和 **ActionCharacter** 具有完全相同的 `flight()` 方法。完全相同的方法没有问题，但是如果它们的签名或返回类型不同会怎么样呢？这里有一个例子：
+当实现多个接口时可能会存在一个小陷阱。在前面的例子中，**CanFight** 和 **ActionCharacter** 具有完全相同的 `fight()` 方法。完全相同的方法没有问题，但是如果它们的签名或返回类型不同会怎么样呢？这里有一个例子：
 
 ```java
 // interfaces/InterfaceCollision.java
