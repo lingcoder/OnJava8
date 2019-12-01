@@ -2758,22 +2758,1152 @@ Java 7 引入了 **java.util.Objects** 库，使创建 `equals()` 和 `hashCode(
 
 ### 逆变
 
+还可以走另外一条路，即使用超类型通配符。这里，可以声明通配符是由某个特定类的任何基类来界定的，方法是指定 `<？super MyClass>` ，甚至或者使用类型参数： `<？super T>`（尽管你不能对泛型参数给出一个超类型边界；即不能声明 `<T super MyClass>` ）。这使得你可以安全地传递一个类型对象到泛型类型中。因此，有了超类型通配符，就可以向 **Collection** 写入了：
 
+```java
+// generics/SuperTypeWildcards.java
+import java.util.*;
+public class SuperTypeWildcards {
+    static void writeTo(List<? super Apple> apples) {
+        apples.add(new Apple());
+        apples.add(new Jonathan());
+        // apples.add(new Fruit()); // Error
+    }
+}
+```
+
+参数 **Apple** 是 **Apple** 的某种基类型的 **List**，这样你就知道向其中添加 **Apple** 或 **Apple** 的子类型是安全的。但是，既然 **Apple** 是下界，那么你可以知道向这样的 **List** 中添加 **Fruit** 是不安全的，因为这将使这个 **List** 敞开口子，从而可以向其中添加非 **Apple** 类型的对象，而这是违反静态类型安全的。
+因此你可能会根据如何能够向一个泛型类型“写入”（传递给一个方法），以及如何能够从一个泛型类型中“读取”（从一个方法中返回），来着手思考子类型和超类型边界。
+超类型边界放松了在可以向方法传递的参数上所作的限制，此示例提供了逆变和通配符的概述：：
+
+```java
+// generics/GenericReading.java
+import java.util.*;
+
+public class GenericReading {
+  static List<Apple> apples =
+    Arrays.asList(new Apple());
+  static List<Fruit> fruit = Arrays.asList(new Fruit());
+  static <T> T readExact(List<T> list) {
+    return list.get(0);
+  }
+  // A static method adapts to each call:
+  static void f1() {
+    Apple a = readExact(apples);
+    Fruit f = readExact(fruit);
+    f = readExact(apples);
+  }
+  // A class type is established
+  // when the class is instantiated:
+  static class Reader<T> {
+    T readExact(List<T> list) { return list.get(0); }
+  }
+  static void f2() {
+    Reader<Fruit> fruitReader = new Reader<>();
+    Fruit f = fruitReader.readExact(fruit);
+    //- Fruit a = fruitReader.readExact(apples);
+    // error: incompatible types: List<Apple>
+    // cannot be converted to List<Fruit>
+  }
+  static class CovariantReader<T> {
+    T readCovariant(List<? extends T> list) {
+      return list.get(0);
+    }
+  }
+  static void f3() {
+    CovariantReader<Fruit> fruitReader =
+      new CovariantReader<>();
+    Fruit f = fruitReader.readCovariant(fruit);
+    Fruit a = fruitReader.readCovariant(apples);
+  }
+  public static void main(String[] args) {
+    f1(); f2(); f3();
+  }
+}
+```
+
+第一个方法 `readExact()` 使用了精确的类型。因此如果使用这个没有任何通配符的精确类型，就可以向 **List** 中写入和读取这个精确类型。另外，对于返回值，静态的泛型方法 `readExact（）` 可以有效地“适应”每个方法调用，并能够从 `List<Apple>` 中返回一个 **Apple** ，从 `List<Fruit>` 中返回一个 **Fruit** ，就像在 `f1()` 中看到的那样。因此，如果可以摆脱静态泛型方法，那么当只是读取时，就不需要协变类型了。
+但是，如果有一个泛型类，那么当你创建这个类的实例时，要为这个类确定参数。就像在 `f2()` 中看到的，**fruitReader** 实例可以从 `List<Fruit>` 中读取一个 **Fruit** ，因为这就是它的确切类型。但是 `List<Apple>` 还应该产生 **Fruit** 对象，而 **fruitReader** 不允许这么做。
+为了修正这个问题，`CovariantReader.readCovcariant()` 方法将接受 `List<？extendsT>` ，因此，从这个列表中读取一个 **T** 是安全的（你知道在这个列表中的所有对象至少是一个 **T** ，并且可能是从T导出的某种对象）。在 `f3()` 中，你可以看到现在可以从 `List<Apple>` 中读取 **Fruit** 了。
+
+### 无界通配符
+
+无界通配符<？>看起来意味着“任何事物”，因此使用无界通配符好像等价于使用原生类型。事实上，编译器初看起来是支持这种判断的：
+
+```java
+// generics/UnboundedWildcards1.java
+import java.util.*;
+
+public class UnboundedWildcards1 {
+  static List list1;
+  static List<?> list2;
+  static List<? extends Object> list3;
+  static void assign1(List list) {
+    list1 = list;
+    list2 = list;
+    //- list3 = list;
+    // warning: [unchecked] unchecked conversion
+    // list3 = list;
+    //         ^
+    // required: List<? extends Object>
+    // found:    List
+  }
+  static void assign2(List<?> list) {
+    list1 = list;
+    list2 = list;
+    list3 = list;
+  }
+  static void assign3(List<? extends Object> list) {
+    list1 = list;
+    list2 = list;
+    list3 = list;
+  }
+  public static void main(String[] args) {
+    assign1(new ArrayList());
+    assign2(new ArrayList());
+    //- assign3(new ArrayList());
+    // warning: [unchecked] unchecked method invocation:
+    // method assign3 in class UnboundedWildcards1
+    // is applied to given types
+    // assign3(new ArrayList());
+    //        ^
+    // required: List<? extends Object>
+    // found: ArrayList
+    // warning: [unchecked] unchecked conversion
+    // assign3(new ArrayList());
+    //         ^
+    // required: List<? extends Object>
+    // found:    ArrayList
+    // 2 warnings
+    assign1(new ArrayList<>());
+    assign2(new ArrayList<>());
+    assign3(new ArrayList<>());
+    // Both forms are acceptable as List<?>:
+    List<?> wildList = new ArrayList();
+    wildList = new ArrayList<>();
+    assign1(wildList);
+    assign2(wildList);
+    assign3(wildList);
+  }
+}
+```
+
+有很多情况都和你在这里看到的情况类似，即编译器很少关心使用的是原生类型还是 `<?>` 。在这些情况中，`<?>` 可以被认为是一种装饰，但是它仍旧是很有价值的，因为，实际上，它是在声明：“我是想用Java的泛型来编写这段代码，我在这里并不是要用原生类型，但是在当前这种情况下，泛型参数可以持有任何类型。”
+第二个示例展示了无界通配符的一个重要应用。当你在处理多个泛型参数时，有时允许一个参数可以是任何类型，同时为其他参数确定某种特定类型的这种能力会显得很重要：
+
+```java
+// generics/UnboundedWildcards2.java
+import java.util.*;
+
+public class UnboundedWildcards2 {
+  static Map map1;
+  static Map<?,?> map2;
+  static Map<String,?> map3;
+  static void assign1(Map map) { map1 = map; }
+  static void assign2(Map<?,?> map) { map2 = map; }
+  static void assign3(Map<String,?> map) { map3 = map; }
+  public static void main(String[] args) {
+    assign1(new HashMap());
+    assign2(new HashMap());
+    //- assign3(new HashMap());
+    // warning: [unchecked] unchecked method invocation:
+    // method assign3 in class UnboundedWildcards2
+    // is applied to given types
+    //     assign3(new HashMap());
+    //            ^
+    //   required: Map<String,?>
+    //   found: HashMap
+    // warning: [unchecked] unchecked conversion
+    //     assign3(new HashMap());
+    //             ^
+    //   required: Map<String,?>
+    //   found:    HashMap
+    // 2 warnings
+    assign1(new HashMap<>());
+    assign2(new HashMap<>());
+    assign3(new HashMap<>());
+  }
+}
+```
+
+但是，当你拥有的全都是无界通配符时，就像在 `Map<?，?>` 中看到的那样，编译器看起来就无法将其与原生 **Map** 区分开了。另外， **UnboundedWildcards.java** 展示了编译器处理  `List<?>` 和 `List<? extends Object>` 时是不同的。
+令人困惑的是，编译器并非总是关注像 `List` 和 `List<?>` 之间的这种差异，因此它们看起来就像是相同的事物。因为，事实上，由于泛型参数将擦除到它的第一个边界，因此 `List<?>` 看起来等价于 `List<Object>` ，而 **List** 实际上也是 `List<Object>` ——除非这些语句都不为真。**List** 实际上表示“持有任何 **Object** 类型的原生 **List ** ”，而 `List<？>` 表示“具有某种特定类型的非原生 **List** ，只是我们不知道那种类型是什么。”
+编译器何时才会关注原生类型和涉及无界通配符的类型之间的差异呢？下面的示例使用了前面定义的 `Holder<T>` 类，它包含接受 **Holder** 作为参数的各种方法，但是它们具有不同的形式：
+作为原生类型，具有具体的类型参数以及具有无界通配符参数：
+
+```java
+// generics/Wildcards.java
+// Exploring the meaning of wildcards
+
+public class Wildcards {
+   // Raw argument:
+  static void rawArgs(Holder holder, Object arg) {
+    //- holder.set(arg);
+    // warning: [unchecked] unchecked call to set(T)
+    // as a member of the raw type Holder
+    //     holder.set(arg);
+    //               ^
+    //   where T is a type-variable:
+    //     T extends Object declared in class Holder
+    // 1 warning
+
+    // Can't do this; don't have any 'T':
+    // T t = holder.get();
+
+    // OK, but type information is lost:
+    Object obj = holder.get();
+  }
+  // Like rawArgs(), but errors instead of warnings:
+  static void
+  unboundedArg(Holder<?> holder, Object arg) {
+    //- holder.set(arg);
+    // error: method set in class Holder<T>
+    // cannot be applied to given types;
+    //     holder.set(arg);
+    //           ^
+    //   required: CAP#1
+    //   found: Object
+    //   reason: argument mismatch;
+    //     Object cannot be converted to CAP#1
+    //   where T is a type-variable:
+    //     T extends Object declared in class Holder
+    //   where CAP#1 is a fresh type-variable:
+    //     CAP#1 extends Object from capture of ?
+    // 1 error
+
+    // Can't do this; don't have any 'T':
+    // T t = holder.get();
+
+    // OK, but type information is lost:
+    Object obj = holder.get();
+  }
+  static <T> T exact1(Holder<T> holder) {
+    return holder.get();
+  }
+  static <T> T exact2(Holder<T> holder, T arg) {
+    holder.set(arg);
+    return holder.get();
+  }
+  static <T>
+  T wildSubtype(Holder<? extends T> holder, T arg) {
+    //- holder.set(arg);
+    // error: method set in class Holder<T#2>
+    // cannot be applied to given types;
+    //     holder.set(arg);
+    //           ^
+    //   required: CAP#1
+    //   found: T#1
+    //   reason: argument mismatch;
+    //     T#1 cannot be converted to CAP#1
+    //   where T#1,T#2 are type-variables:
+    //     T#1 extends Object declared in method
+    //     <T#1>wildSubtype(Holder<? extends T#1>,T#1)
+    //     T#2 extends Object declared in class Holder
+    //   where CAP#1 is a fresh type-variable:
+    //     CAP#1 extends T#1 from
+    //       capture of ? extends T#1
+    // 1 error
+
+    return holder.get();
+  }
+  static <T>
+  void wildSupertype(Holder<? super T> holder, T arg) {
+    holder.set(arg);
+    //- T t = holder.get();
+    // error: incompatible types:
+    // CAP#1 cannot be converted to T
+    //     T t = holder.get();
+    //                     ^
+    //   where T is a type-variable:
+    //     T extends Object declared in method
+    //       <T>wildSupertype(Holder<? super T>,T)
+    //   where CAP#1 is a fresh type-variable:
+    //     CAP#1 extends Object super:
+    //       T from capture of ? super T
+    // 1 error
+
+    // OK, but type information is lost:
+    Object obj = holder.get();
+  }
+  public static void main(String[] args) {
+    Holder raw = new Holder<>();
+    // Or:
+    raw = new Holder();
+    Holder<Long> qualified = new Holder<>();
+    Holder<?> unbounded = new Holder<>();
+    Holder<? extends Long> bounded = new Holder<>();
+    Long lng = 1L;
+
+    rawArgs(raw, lng);
+    rawArgs(qualified, lng);
+    rawArgs(unbounded, lng);
+    rawArgs(bounded, lng);
+
+    unboundedArg(raw, lng);
+    unboundedArg(qualified, lng);
+    unboundedArg(unbounded, lng);
+    unboundedArg(bounded, lng);
+
+    //- Object r1 = exact1(raw);
+    // warning: [unchecked] unchecked method invocation:
+    // method exact1 in class Wildcards is applied
+    // to given types
+    //      Object r1 = exact1(raw);
+    //                        ^
+    //   required: Holder<T>
+    //   found: Holder
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>exact1(Holder<T>)
+    // warning: [unchecked] unchecked conversion
+    //      Object r1 = exact1(raw);
+    //                         ^
+    //   required: Holder<T>
+    //   found:    Holder
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>exact1(Holder<T>)
+    // 2 warnings
+
+    Long r2 = exact1(qualified);
+    Object r3 = exact1(unbounded); // Must return Object
+    Long r4 = exact1(bounded);
+
+    //- Long r5 = exact2(raw, lng);
+    // warning: [unchecked] unchecked method invocation:
+    // method exact2 in class Wildcards is
+    // applied to given types
+    //     Long r5 = exact2(raw, lng);
+    //                     ^
+    //   required: Holder<T>,T
+    //   found: Holder,Long
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //       method <T>exact2(Holder<T>,T)
+    // warning: [unchecked] unchecked conversion
+    //     Long r5 = exact2(raw, lng);
+    //                      ^
+    //   required: Holder<T>
+    //   found:    Holder
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //       method <T>exact2(Holder<T>,T)
+    // 2 warnings
+
+    Long r6 = exact2(qualified, lng);
+
+    //- Long r7 = exact2(unbounded, lng);
+    // error: method exact2 in class Wildcards
+    // cannot be applied to given types;
+    //     Long r7 = exact2(unbounded, lng);
+    //               ^
+    //   required: Holder<T>,T
+    //   found: Holder<CAP#1>,Long
+    //   reason: inference variable T has
+    //     incompatible bounds
+    //     equality constraints: CAP#1
+    //     lower bounds: Long
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //       method <T>exact2(Holder<T>,T)
+    //   where CAP#1 is a fresh type-variable:
+    //     CAP#1 extends Object from capture of ?
+    // 1 error
+
+    //- Long r8 = exact2(bounded, lng);
+    // error: method exact2 in class Wildcards
+    // cannot be applied to given types;
+    //      Long r8 = exact2(bounded, lng);
+    //                ^
+    //   required: Holder<T>,T
+    //   found: Holder<CAP#1>,Long
+    //   reason: inference variable T
+    //     has incompatible bounds
+    //     equality constraints: CAP#1
+    //     lower bounds: Long
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //       method <T>exact2(Holder<T>,T)
+    //   where CAP#1 is a fresh type-variable:
+    //     CAP#1 extends Long from
+    //       capture of ? extends Long
+    // 1 error
+
+    //- Long r9 = wildSubtype(raw, lng);
+    // warning: [unchecked] unchecked method invocation:
+    // method wildSubtype in class Wildcards
+    // is applied to given types
+    //     Long r9 = wildSubtype(raw, lng);
+    //                          ^
+    //   required: Holder<? extends T>,T
+    //   found: Holder,Long
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>wildSubtype(Holder<? extends T>,T)
+    // warning: [unchecked] unchecked conversion
+    //     Long r9 = wildSubtype(raw, lng);
+    //                           ^
+    //   required: Holder<? extends T>
+    //   found:    Holder
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>wildSubtype(Holder<? extends T>,T)
+    // 2 warnings
+
+    Long r10 = wildSubtype(qualified, lng);
+    // OK, but can only return Object:
+    Object r11 = wildSubtype(unbounded, lng);
+    Long r12 = wildSubtype(bounded, lng);
+
+    //- wildSupertype(raw, lng);
+    // warning: [unchecked] unchecked method invocation:
+    //   method wildSupertype in class Wildcards
+    //   is applied to given types
+    //     wildSupertype(raw, lng);
+    //                  ^
+    //   required: Holder<? super T>,T
+    //   found: Holder,Long
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>wildSupertype(Holder<? super T>,T)
+    // warning: [unchecked] unchecked conversion
+    //     wildSupertype(raw, lng);
+    //                   ^
+    //   required: Holder<? super T>
+    //   found:    Holder
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>wildSupertype(Holder<? super T>,T)
+    // 2 warnings
+
+    wildSupertype(qualified, lng);
+
+    //- wildSupertype(unbounded, lng);
+    // error: method wildSupertype in class Wildcards
+    // cannot be applied to given types;
+    //     wildSupertype(unbounded, lng);
+    //     ^
+    //   required: Holder<? super T>,T
+    //   found: Holder<CAP#1>,Long
+    //   reason: cannot infer type-variable(s) T
+    //     (argument mismatch; Holder<CAP#1>
+    //     cannot be converted to Holder<? super T>)
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>wildSupertype(Holder<? super T>,T)
+    //   where CAP#1 is a fresh type-variable:
+    //     CAP#1 extends Object from capture of ?
+    // 1 error
+
+    //- wildSupertype(bounded, lng);
+    // error: method wildSupertype in class Wildcards
+    // cannot be applied to given types;
+    //     wildSupertype(bounded, lng);
+    //     ^
+    //   required: Holder<? super T>,T
+    //   found: Holder<CAP#1>,Long
+    //   reason: cannot infer type-variable(s) T
+    //     (argument mismatch; Holder<CAP#1>
+    //     cannot be converted to Holder<? super T>)
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>wildSupertype(Holder<? super T>,T)
+    //   where CAP#1 is a fresh type-variable:
+    //     CAP#1 extends Long from capture of
+    //     ? extends Long
+    // 1 error
+  }
+}
+```
 
 <!-- Issues -->
 
+在 `rawArgs()` 中，编译器知道 `Holder` 是一个泛型类型，因此即使它在这里被表示成一个原生类型，编译器仍旧知道向 `set()` 传递一个 **Object** 是不安全的。由于它是原生类型，你可以将任何类型的对象传递给 `set()` ，而这个对象将被向上转型为 **Object** 。因此，无论何时；只要使用了原生类型，都会放弃编译期检查。对 `get()` 的调用说明了相同的问题：没有任何 **T** 类型的对象，因此结果只能是一个 **Object** 。
+人们很自然地会开始考虑原生 `Holder` 与 `Holder<?>` 是大致相同的事物。但是 `unboundedArg()` 强调它们是不同的——它揭示了相同的问题，但是它将这些问题作为错误而不是警告报告，因为原生 **Holder** 将持有任何类型的组合，而 `Holder<?>` 将持有具有某种具体类型的同构集合，因此不能只是向其中传递 **Object** 。
+在 `exact1()` 和 `exact2()` 中，你可以看到使用了确切的泛型参数——没有任何通配符。你将看到，`exact2()`与 `exact1()` 具有不同的限制，因为它有额外的参数。
+在 `wildSubtype()` 中，在 **Holder** 类型上的限制被放松为包括持有任何扩展自 **T** 的对象的 **Holder** 。这还是意味着如果T是 **Fruit** ，那么 `holder` 可以是 `Holder<Apple>` ，这是合法的。为了防止将 **Orange** 放置到 `Holder<Apple>` 中，对 `set()` 的调用（或者对任何接受这个类型参数为参数的方法的调用）都是不允许的。但是，你仍旧知道任何来自 `Holder<？extends Fruit>` 的对象至少是 **Fruit** ，因此 `get()` （或者任何将产生具有这个类型参数的返回值的方法）都是允许的。
+`wildSupertype()` 展示了超类型通配符，这个方法展示了与 `wildSubtype()` 相反的行为：`holder` 可以是持有任何T的基类型的容器。因此， `set()` 可以接受**T** ，因为任何可以工作于基类的对象都可以多态地作用于导出类（这里就是 **T** ）。但是，尝试着调用 `get()` 是没有用的，因为由 `holder` 持有的类型可以是任何超类型，因此唯一安全的类型就是 **Object** 。
+这个示例还展示了对于在 `unbounded()` 中使用无界通配符能够做什么不能做什么所做出的限制。对于迁移兼容性，`rawArgs()`  将接受所有 **Holder** 的不同变体，而不会产生警告。`unboundedArg()` 方法也可以接受相同的所有类型，尽管如前所述，它在方法体内部处理这些类型的方式并不相同。
+
+如果向接受“确切”泛型类型（没有通配符）的方法传递一个原生 **Holder** 引用，就会得到一个警告，因为确切的参数期望得到在原生类型中并不存在的信息。如果向 `exact1()` 传递一个无界引用，就不会有任何可以确定返回类型的类型信息。
+可以看到，`exact2()` 具有最多的限制，因为它希望精确地得到一个 `Holder<T>` ，以及一个具有类型 **T** 的参数，正由于此，它将产生错误或警告，除非提供确切的参数。有时，这样做很好，但是如果它过于受限，那么就可以使用通配符，这取决于是否想要从泛型参数中返回类型确定的返回值（就像在 `wildSubtype()` 中看到的那样），或者是否想要向泛型参数传递类型确定的参数（就像在 `wildSupertype()` 中看到的那样）。
+因此，使用确切类型来替代通配符类型的好处是，可以用泛型参数来做更多的事，但是使用通配符使得你必须接受范围更宽的参数化类型作为参数。因此，必须逐个情况地权衡利弊，找到更适合你的需求的方法。
+
+### 捕获转换
+
+有一种情况特别需要使用 `<?>`而不是原生类型。如果向一个使用 `<?>` 的方法传递原生类型，那么对编译器来说，可能会推断出实际的类型参数，使得这个方法可以回转并调用另一个使用这个确切类型的方法。下面的示例演示了这种技术，它被称为捕获转换，因为未指定的通配符类型被捕获，并被转换为确切类型。这里，有关警告的注释只有在 `@SuppressWarnings` 注解被移除之后才能起作用：
+
+```java
+// generics/CaptureConversion.java
+
+public class CaptureConversion {
+  static <T> void f1(Holder<T> holder) {
+    T t = holder.get();
+    System.out.println(t.getClass().getSimpleName());
+  }
+  static void f2(Holder<?> holder) {
+    f1(holder); // Call with captured type
+  }
+  @SuppressWarnings("unchecked")
+  public static void main(String[] args) {
+    Holder raw = new Holder<>(1);
+
+    f1(raw);
+    // warning: [unchecked] unchecked method invocation:
+    // method f1 in class CaptureConversion
+    // is applied to given types
+    //     f1(raw);
+    //       ^
+    //   required: Holder<T>
+    //   found: Holder
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>f1(Holder<T>)
+    // warning: [unchecked] unchecked conversion
+    //     f1(raw);
+    //        ^
+    //   required: Holder<T>
+    //   found:    Holder
+    //   where T is a type-variable:
+    //     T extends Object declared in
+    //     method <T>f1(Holder<T>)
+    // 2 warnings
+
+    f2(raw); // No warnings
+    Holder rawBasic = new Holder();
+
+    rawBasic.set(new Object());
+    // warning: [unchecked] unchecked call to set(T)
+    // as a member of the raw type Holder
+    //     rawBasic.set(new Object());
+    //                 ^
+    //   where T is a type-variable:
+    //     T extends Object declared in class Holder
+    // 1 warning
+
+    f2(rawBasic); // No warnings
+    // Upcast to Holder<?>, still figures it out:
+    Holder<?> wildcarded = new Holder<>(1.0);
+    f2(wildcarded);
+  }
+}
+/* Output:
+Integer
+Integer
+Object
+Double
+*/
+```
+
+`f1()` 中的类型参数都是确切的，没有通配符或边界。在 `f2()` 中，**Holder** 参数是一个无界通配符，因此它看起来是未知的。但是，在 `f2()` 中，`f1()` 被调用，而 `f1()` 需要一个已知参数。这里所发生的是：参数类型在调用 `f2()` 的过程中被捕获，因此它可以在对 `f1()` 的调用中被使用。
+你可能想知道，这项技术是否可以用于写入，但是这要求要在传递 `Holder<?>`时同时传递一个具体类型。捕获转换只有在这样的情况下可以工作：即在方法内部，你需要使用确切的类型。注意，不能从 `f2()`中返回 **T**，因为 **T ** 对于 `f2()` 来说是未知的。捕获转换十分有趣，但是非常受限。
+
 ## 问题
 
+本节将阐述在使用Java泛型时会出现的各类问题。
+
+### 任何基本类型都不能作为类型参数
+
+正如本章早先提到过的，你将在Java泛型中发现的限制之一是，不能将基本类型用作类型参数。因此，不能创建    `ArrayList<int>` 之类的东西。
+解决之道是使用基本类型的包装器类以及JavaSE5的自动包装机制。如果创建一个 `ArrayList<Integer>`，并将基本类型 **int** 应用于这个容器，那么你将发现自动包装机制将自动地实现 **int** 到 **Integer** 的双向转换——因此，这几乎就像是有一个 `ArrayList<int>`一样：
+
+```java
+// generics/ListOfInt.java
+// Autoboxing compensates for the inability
+// to use primitives in generics
+import java.util.*;
+import java.util.stream.*;
+
+public class ListOfInt {
+  public static void main(String[] args) {
+    List<Integer> li = IntStream.range(38, 48)
+      .boxed() // Converts ints to Integers
+      .collect(Collectors.toList());
+    System.out.println(li);
+  }
+}
+/* Output:
+[38, 39, 40, 41, 42, 43, 44, 45, 46, 47]
+*/
+```
+
+注意，自动包装机制甚至允许用foreach语法来产生 **int** 。
+通常，这种解决方案工作得很好——能够成功地存储和读取 **int** ，有一些转换碰巧在发生的同时会对你屏蔽掉。但是，如果性能成为了问题，就需要使用专门适配基本类型的容器版。**Org.apache.commons.collections.primitives** 就是一种开源的这类版本。
+下面是另外一种方式，它可以创建持有 **Byte** 的 **Set** ：
+
+```java
+// generics/ByteSet.java
+import java.util.*;
+
+public class ByteSet {
+  Byte[] possibles = { 1,2,3,4,5,6,7,8,9 };
+  Set<Byte> mySet =
+    new HashSet<>(Arrays.asList(possibles));
+  // But you can't do this:
+  // Set<Byte> mySet2 = new HashSet<>(
+  //   Arrays.<Byte>asList(1,2,3,4,5,6,7,8,9));
+}
+```
+
+注意，自动包装机制解决了一些问题，但并不是解决了所有问题。
+
+在下面的示例中，**FillArray** 接口包含一些通用方法，这些方法使用 **Supplier** 来用对象填充数组（这使得类泛型在本例中无法工作，因为这个方法是静态的）   **Supplier** 实现来自“数组”一章,并且在 `main()` 中，可以看到 `FillArray.fill()` 使用它在数组中填充对象：
+
+```java
+// generics/PrimitiveGenericTest.java
+import onjava.*;
+import java.util.*;
+import java.util.function.*;
+
+// Fill an array using a generator:
+interface FillArray {
+  static <T> T[] fill(T[] a, Supplier<T> gen) {
+    Arrays.setAll(a, n -> gen.get());
+    return a;
+  }
+  static int[] fill(int[] a, IntSupplier gen) {
+    Arrays.setAll(a, n -> gen.getAsInt());
+    return a;
+  }
+  static long[] fill(long[] a, LongSupplier gen) {
+    Arrays.setAll(a, n -> gen.getAsLong());
+    return a;
+  }
+  static double[] fill(double[] a, DoubleSupplier gen) {
+    Arrays.setAll(a, n -> gen.getAsDouble());
+    return a;
+  }
+}
+
+public class PrimitiveGenericTest {
+  public static void main(String[] args) {
+    String[] strings = FillArray.fill(
+      new String[5], new Rand.String(9));
+    System.out.println(Arrays.toString(strings));
+    int[] integers = FillArray.fill(
+      new int[9], new Rand.Pint());
+    System.out.println(Arrays.toString(integers));
+  }
+}
+/* Output:
+[btpenpccu, xszgvgmei, nneeloztd, vewcippcy, gpoalkljl]
+[635, 8737, 3941, 4720, 6177, 8479, 6656, 3768, 4948]
+*/
+```
+
+自动装箱不适用于数组，因此我们必须创建 `FillArray.fill()` 的重载版本，或创建产生 **Wrapped** 输出的生成器。 **FillArray** 仅比 `java.util.Arrays.setAll()` 有用，因为它返回填充的数组。
+
+### 实现参数化接口
+
+一个类不能实现同一个泛型接口的两种变体，由于擦除的原因，这两个变体会成为相同的接口。下面是产生这种冲突的情况：
+
+```java
+// generics/MultipleInterfaceVariants.java
+// {WillNotCompile}
+package generics;
+
+interface Payable<T> {}
+
+class Employee implements Payable<Employee> {}
+
+class Hourly extends Employee
+implements Payable<Hourly> {}
+```
+
+**Hourly** 不能编译，因为擦除会将  `Payable<Employe>` 和 `Payable<Hourly>` 简化为相同的类 **Payable**，这样，上面的代码就意味着在重复两次地实现相同的接口。十分有趣的是，如果从 **Payable** 的两种用法中都移除掉泛型参数（就像编译器在擦除阶段所做的那样）这段代码就可以编译。
+
+在使用某些更基本的 Java 接口，例如 `Comparable<T>` 时，这个问题可能会变得十分令人恼火，就像你在本节稍后就会看到的那样。
+
+### 转型和警告
+
+使用带有泛型类型参数的转型或 **instanceof** 不会有任何效果。下面的容器在内部将各个值存储为 **Object**，并在获取这些值时，再将它们转型回 **T**：
+
+```java
+// generics/GenericCast.java
+import java.util.*;
+import java.util.stream.*;
+
+class FixedSizeStack<T> {
+  private final int size;
+  private Object[] storage;
+  private int index = 0;
+  FixedSizeStack(int size) {
+    this.size = size;
+    storage = new Object[size];
+  }
+  public void push(T item) {
+    if(index < size)
+      storage[index++] = item;
+  }
+  @SuppressWarnings("unchecked")
+  public T pop() {
+    return index == 0 ? null : (T)storage[--index];
+  }
+  @SuppressWarnings("unchecked")
+  Stream<T> stream() {
+    return (Stream<T>)Arrays.stream(storage);
+  }
+}
+
+public class GenericCast {
+  static String[] letters =
+    "ABCDEFGHIJKLMNOPQRS".split("");
+  public static void main(String[] args) {
+    FixedSizeStack<String> strings =
+      new FixedSizeStack<>(letters.length);
+    Arrays.stream("ABCDEFGHIJKLMNOPQRS".split(""))
+      .forEach(strings::push);
+    System.out.println(strings.pop());
+    strings.stream()
+      .map(s -> s + " ")
+      .forEach(System.out::print);
+  }
+}
+/* Output:
+S
+A B C D E F G H I J K L M N O P Q R S
+*/
+```
+
+如果没有 **@SuppressWarnings** 注解，编译器将对 `pop()` 产生 “unchecked cast” 警告。由于擦除的原因，编译器无法知道这个转型是否是安全的，并且 `pop()` 方法实际上并没有执行任何转型。
+这是因为，**T** 被擦除到它的第一个边界，默认情况下是 **Object** ，因此 `pop()` 实际上只是将 **Object** 转型为  **Object**。
+有时，泛型没有消除对转型的需要，这就会由编译器产生警告，而这个警告是不恰当的。例如：
+
+```java
+// generics/NeedCasting.java
+import java.io.*;
+import java.util.*;
+
+public class NeedCasting {
+  @SuppressWarnings("unchecked")
+  public void f(String[] args) throws Exception {
+    ObjectInputStream in = new ObjectInputStream(
+      new FileInputStream(args[0]));
+    List<Widget> shapes = (List<Widget>)in.readObject();
+  }
+}
+```
+
+正如你将在附件：对象序列化( Appendix: Object Serialization)中学到的那样，`readObject() `无法知道它正在读取的是什么，因此它返回的是必须转型的对象。但是当注释掉 **@SuppressWarnings** 注解，并编译这个程序时，就会得到下面的警告。
+
+```
+NeedCasting.java uses unchecked or unsafe operations.
+Recompile with -Xlint:unchecked for details.
+
+And if you follow the instructions and recompile with  -
+Xlint:unchecked :(如果遵循这条指示，使用-Xlint:unchecked来重新编译：)
+
+NeedCasting.java:10: warning: [unchecked] unchecked cast
+    List<Widget> shapes = (List<Widget>)in.readObject();
+    required: List<Widget>
+    found: Object
+1 warning
+```
+
+你会被强制要求转型，但是又被告知不应该转型。为了解决这个问题，必须使用在 Java SE5 中引入的新的转型形式，既通过泛型类来转型：
+
+```java
+// generics/ClassCasting.java
+import java.io.*;
+import java.util.*;
+
+public class ClassCasting {
+  @SuppressWarnings("unchecked")
+  public void f(String[] args) throws Exception {
+    ObjectInputStream in = new ObjectInputStream(
+      new FileInputStream(args[0]));
+      // Won't Compile:
+//    List<Widget> lw1 =
+//    List<>.class.cast(in.readObject());
+    List<Widget> lw2 = List.class.cast(in.readObject());
+  }
+}
+```
+
+但是，不能转型到实际类型（ `List<Widget>` ）。也就是说，不能声明：
+
+```
+List<Widget>.class.cast(in.readobject())
+```
+
+甚至当你添加一个像下面这样的另一个转型时：
+
+```
+(List<Widget>)List.class.cast(in.readobject())
+```
+
+仍旧会得到一个警告。
+
+### 重载
+
+下面的程序是不能编译的，即使编译它是一种合理的尝试：
+
+```java
+// generics/UseList.java
+// {WillNotCompile}
+import java.util.*;
+
+public class UseList<W, T> {
+  void f(List<T> v) {}
+  void f(List<W> v) {}
+}
+```
 
 <!-- Self-Bounded Types -->
-## 自我约束类型
 
+## 自限定的类型
 
 <!-- Dynamic Type Safety -->
+
+在Java泛型中，有一个好像是经常性出现的惯用法，它相当令人费解：
+
+```
+class SelfBounded<T extends SelfBounded<T>> { // ...
+```
+
+这就像两面镜子彼此照向对方所引起的目眩效果一样，是一种无限反射。**SelfBounded** 类接受泛型参数 **T**，而T由一个边界类限定，这个边界就是拥有 **T** 作为其参数的 **SelfBounded**。
+当你首次看到它时，很难去解析它，它强调的是当 **extends** 关键字用于边界与用来创建子类明显是不同的。
+
+### 古怪的循环泛型
+
+为了理解自限定类型的含义，我们从这个惯用法的一个简单版本入手，它没有自限定的边界。
+不能直接继承一个泛型参数，但是，可以继承在其自己的定义中使用这个泛型参数的类。也就是说，可以声明：
+
+```java
+// generics/CuriouslyRecurringGeneric.java
+
+class GenericType<T> {}
+
+public class CuriouslyRecurringGeneric
+  extends GenericType<CuriouslyRecurringGeneric> {}
+```
+
+这可以按照 Jim Coplien 在 C++ 中的*古怪的循环模版模式*的命名方式，称为古怪的循环泛型（CRG）。“古怪的循环”是指类相当古怪地出现在它自己的基类中这一事实。
+为了理解其含义，努力大声说：“我在创建一个新类，它继承自一个泛型类型，这个泛型类型接受我的类的名字作为其参数。”当给出导出类的名字时，这个泛型基类能够实现什么呢？好吧，Java中的泛型关乎参数和返回类型，因此它能够产生使用导出类作为其参数和返回类型的基类。它还能将导出类型用作其域类型，甚至那些将被擦除为 **Object** 的类型。下面是表示了这种情况的一个泛型类：
+
+```java
+// generics/BasicHolder.java
+
+public class BasicHolder<T> {
+  T element;
+  void set(T arg) { element = arg; }
+  T get() { return element; }
+  void f() {
+    System.out.println(
+      element.getClass().getSimpleName());
+  }
+}
+```
+
+这是一个普通的泛型类型，它的一些方法将接受和产生具有其参数类型的对象，还有一个方法将在其存储的域上执行操作（尽管只是在这个域上执行 **Object** 操作）。
+我们可以在一个古怪的循环泛型中使用 **BasicHolder**：
+
+```java
+// generics/CRGWithBasicHolder.java
+
+class Subtype extends BasicHolder<Subtype> {}
+
+public class CRGWithBasicHolder {
+  public static void main(String[] args) {
+    Subtype
+      st1 = new Subtype(),
+      st2 = new Subtype();
+    st1.set(st2);
+    Subtype st3 = st1.get();
+    st1.f();
+  }
+}
+/* Output:
+Subtype
+*/
+```
+
+注意，这里有些东西很重要：新类 **Subtype** 接受的参数和返回的值具有 **Subtype** 类型而不仅仅是基类 **BasicHolder** 类型。这就是 CRG 的本质：基类用导出类替代其参数。这意味着泛型基类变成了一种其所有导出类的公共功能的模版，但是这些功能对于其所有参数和返回值，将使用导出类型。也就是说，在所产生的类中将使用确切类型而不是基类型。因此，在**Subtype** 中，传递给 `set()` 的参数和从 `get()` 返回的类型都是确切的 **Subtype** 。
+
+### 自限定
+
+BasicHolder可以使用任何类型作为其泛型参数，就像下面看到的那样：
+
+```java
+// generics/Unconstrained.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+
+class Other {}
+class BasicOther extends BasicHolder<Other> {}
+
+public class Unconstrained {
+  public static void main(String[] args) {
+    BasicOther b = new BasicOther();
+    BasicOther b2 = new BasicOther();
+    b.set(new Other());
+    Other other = b.get();
+    b.f();
+  }
+}
+/* Output:
+Other
+*/
+```
+
+限定将采取额外的步骤，强制泛型当作其自己的边界参数来使用。观察所产生的类可以如何使用以及不可以如何使用：
+
+```java
+// generics/SelfBounding.java
+
+class SelfBounded<T extends SelfBounded<T>> {
+  T element;
+  SelfBounded<T> set(T arg) {
+    element = arg;
+    return this;
+  }
+  T get() { return element; }
+}
+
+class A extends SelfBounded<A> {}
+class B extends SelfBounded<A> {} // Also OK
+
+class C extends SelfBounded<C> {
+  C setAndGet(C arg) { set(arg); return get(); }
+}
+
+class D {}
+// Can't do this:
+// class E extends SelfBounded<D> {}
+// Compile error:
+//   Type parameter D is not within its bound
+
+// Alas, you can do this, so you cannot force the idiom:
+class F extends SelfBounded {}
+
+public class SelfBounding {
+  public static void main(String[] args) {
+    A a = new A();
+    a.set(new A());
+    a = a.set(new A()).get();
+    a = a.get();
+    C c = new C();
+    c = c.setAndGet(new C());
+  }
+}
+```
+
+自限定所做的，就是要求在继承关系中，像下面这样使用这个类：
+
+```java
+class A extends SelfBounded<A>{}
+```
+
+这会强制要求将正在定义的类当作参数传递给基类。
+自限定的参数有何意义呢？它可以保证类型参数必须与正在被定义的类相同。正如你在B类的定义中所看到的，还可以从使用了另一个 **SelfBounded** 参数的**SelfBounded** 中导出，尽管在 **A** 类看到的用法看起来是主要的用法。对定义 **E** 的尝试说明不能使用不是 **SelfBounded** 的类型参数。
+遗憾的是， **F** 可以编译，不会有任何警告，因此自限定惯用法不是可强制执行的。如果它确实很重要，可以要求一个外部工具来确保不会使用原生类型来替代参数化类型。
+注意，可以移除自限定这个限制，这样所有的类仍旧是可以编译的，但是 **E** 也会因此而变得可编译：
+
+```java
+// generics/NotSelfBounded.java
+
+public class NotSelfBounded<T> {
+  T element;
+  NotSelfBounded<T> set(T arg) {
+    element = arg;
+    return this;
+  }
+  T get() { return element; }
+}
+
+class A2 extends NotSelfBounded<A2> {}
+class B2 extends NotSelfBounded<A2> {}
+
+class C2 extends NotSelfBounded<C2> {
+  C2 setAndGet(C2 arg) { set(arg); return get(); }
+}
+
+class D2 {}
+// Now this is OK:
+class E2 extends NotSelfBounded<D2> {}
+```
+
+因此很明显，自限定限制只能强制作用于继承关系。如果使用自限定，就应该了解这个类所用的类型参数将与使用这个参数的类具有相同的基类型。这会强制要求使用这个类的每个人都要遵循这种形式。
+还可以将自限定用于泛型方法：
+
+```java
+// generics/SelfBoundingMethods.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+
+public class SelfBoundingMethods {
+  static <T extends SelfBounded<T>> T f(T arg) {
+    return arg.set(arg).get();
+  }
+  public static void main(String[] args) {
+    A a = f(new A());
+  }
+}
+```
+
+这可以防止这个方法被应用于除上述形式的自限定参数之外的任何事物上。
+
+### 参数协变
+
+自限定类型的价值在于它们可以产生*协变参数类型*——方法参数类型会随子类而变化。
+
+尽管自限定类型还可以产生于子类类型相同的返回类型，但是这并不十分重要，因为*协变返回类型*是在 Java SE5 中引入的：
+
+```java
+// generics/CovariantReturnTypes.java
+
+class Base {}
+class Derived extends Base {}
+
+interface OrdinaryGetter {
+  Base get();
+}
+
+interface DerivedGetter extends OrdinaryGetter {
+  // Overridden method return type can vary:
+  @Override
+  Derived get();
+}
+
+public class CovariantReturnTypes {
+  void test(DerivedGetter d) {
+    Derived d2 = d.get();
+  }
+}
+```
+
+**DerivedGetter** 中的 `get()` 方法覆盖了 **OrdinaryGetter** 中的 `get()` ，并返回了一个从 `OrdinaryGetter.get()` 的返回类型中导出的类型。尽管这是完全合乎逻辑的事情（导出类方法应该能够返回比它覆盖的基类方法更具体的类型）但是这在早先的 Java 版本中是不合法的。
+自限定泛型事实上将产生确切的导出类型作为其返回值，就像在 `get()` 中所看到的一样：
+
+```java
+// generics/GenericsAndReturnTypes.java
+
+interface GenericGetter<T extends GenericGetter<T>> {
+  T get();
+}
+
+interface Getter extends GenericGetter<Getter> {}
+
+public class GenericsAndReturnTypes {
+  void test(Getter g) {
+    Getter result = g.get();
+    GenericGetter gg = g.get(); // Also the base type
+  }
+}
+```
+
+注意，这段代码不能编译，除非是使用囊括了协变返回类型的 Java SE5 。
+
+然而，在非泛型代码中，参数类型不能随子类型发生变化：
+
+```java
+// generics/OrdinaryArguments.java
+
+class OrdinarySetter {
+  void set(Base base) {
+    System.out.println("OrdinarySetter.set(Base)");
+  }
+}
+
+class DerivedSetter extends OrdinarySetter {
+  void set(Derived derived) {
+    System.out.println("DerivedSetter.set(Derived)");
+  }
+}
+
+public class OrdinaryArguments {
+  public static void main(String[] args) {
+    Base base = new Base();
+    Derived derived = new Derived();
+    DerivedSetter ds = new DerivedSetter();
+    ds.set(derived);
+    // Compiles--overloaded, not overridden!:
+    ds.set(base);
+  }
+}
+/* Output:
+DerivedSetter.set(Derived)
+OrdinarySetter.set(Base)
+*/
+```
+
+`set(derived)` 和 `set(base)` 都是合法的，因此 `DerivedSetter.set()` 没有覆盖 `OrdinarySetter.set()` ，而是重载了这个方法。从输出中可以看到，在 **DerivedSetter** 中有两个方法，因此基类版本仍旧是可用的，因此可以证明它被重载过。
+但是，在使用自限定类型时，在导出类中只有一个方法，并且这个方法接受导出类型而不是基类型为参数：
+
+```java
+// generics/SelfBoundingAndCovariantArguments.java
+
+interface
+SelfBoundSetter<T extends SelfBoundSetter<T>> {
+  void set(T arg);
+}
+
+interface Setter extends SelfBoundSetter<Setter> {}
+
+public class SelfBoundingAndCovariantArguments {
+  void
+  testA(Setter s1, Setter s2, SelfBoundSetter sbs) {
+    s1.set(s2);
+    //- s1.set(sbs);
+    // error: method set in interface SelfBoundSetter<T>
+    // cannot be applied to given types;
+    //     s1.set(sbs);
+    //       ^
+    //   required: Setter
+    //   found: SelfBoundSetter
+    //   reason: argument mismatch;
+    // SelfBoundSetter cannot be converted to Setter
+    //   where T is a type-variable:
+    //     T extends SelfBoundSetter<T> declared in
+    //     interface SelfBoundSetter
+    // 1 error
+  }
+}
+```
+
+编译器不能识别将基类型当作参数传递给 `set()` 的尝试，因为没有任何方法具有这样的签名。实际上，这个参数已经被覆盖。
+如果不使用自限定类型，普通的继承机制就会介入，而你将能够重载，就像在非泛型的情况下一样：
+
+```
+// generics/PlainGenericInheritance.java
+
+class GenericSetter<T> { // Not self-bounded
+  void set(T arg) {
+    System.out.println("GenericSetter.set(Base)");
+  }
+}
+
+class DerivedGS extends GenericSetter<Base> {
+  void set(Derived derived) {
+    System.out.println("DerivedGS.set(Derived)");
+  }
+}
+
+public class PlainGenericInheritance {
+  public static void main(String[] args) {
+    Base base = new Base();
+    Derived derived = new Derived();
+    DerivedGS dgs = new DerivedGS();
+    dgs.set(derived);
+    dgs.set(base); // Overloaded, not overridden!
+  }
+}
+/* Output:
+DerivedGS.set(Derived)
+GenericSetter.set(Base)
+*/
+```
+
+这段代码在模仿 **OrdinaryArgument.java** ，在那个示例中，**DerivedSetter** 继承自包含一个 `set(Base)` 的**OrdinarySetter** 。而这里，**DerivedGS** 继承自泛型创建的也包含有一个 `set(Base)`的 `GenericSetter<Base>`。就像 **OrdinaryArgument.java** 一样，你可以从输出中看到， **DerivedGS** 包含两个  `set()` 的重载版本。如果不使用自限定，将重载参数类型。如果使用了自限定，只能获得某个方法的一个版本，它将接受确切的参数类型。
+
 ## 动态类型安全
 
-
 <!-- Exceptions -->
+
+
+
 ## 泛型异常
 
 
