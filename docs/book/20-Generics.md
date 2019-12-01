@@ -3569,6 +3569,335 @@ class SelfBounded<T extends SelfBounded<T>> { // ...
 为了理解自限定类型的含义，我们从这个惯用法的一个简单版本入手，它没有自限定的边界。
 不能直接继承一个泛型参数，但是，可以继承在其自己的定义中使用这个泛型参数的类。也就是说，可以声明：
 
+```java
+// generics/CuriouslyRecurringGeneric.java
+
+class GenericType<T> {}
+
+public class CuriouslyRecurringGeneric
+  extends GenericType<CuriouslyRecurringGeneric> {}
+```
+
+这可以按照 Jim Coplien 在 C++ 中的*古怪的循环模版模式*的命名方式，称为古怪的循环泛型（CRG）。“古怪的循环”是指类相当古怪地出现在它自己的基类中这一事实。
+为了理解其含义，努力大声说：“我在创建一个新类，它继承自一个泛型类型，这个泛型类型接受我的类的名字作为其参数。”当给出导出类的名字时，这个泛型基类能够实现什么呢？好吧，Java中的泛型关乎参数和返回类型，因此它能够产生使用导出类作为其参数和返回类型的基类。它还能将导出类型用作其域类型，甚至那些将被擦除为 **Object** 的类型。下面是表示了这种情况的一个泛型类：
+
+```java
+// generics/BasicHolder.java
+
+public class BasicHolder<T> {
+  T element;
+  void set(T arg) { element = arg; }
+  T get() { return element; }
+  void f() {
+    System.out.println(
+      element.getClass().getSimpleName());
+  }
+}
+```
+
+这是一个普通的泛型类型，它的一些方法将接受和产生具有其参数类型的对象，还有一个方法将在其存储的域上执行操作（尽管只是在这个域上执行 **Object** 操作）。
+我们可以在一个古怪的循环泛型中使用 **BasicHolder**：
+
+```java
+// generics/CRGWithBasicHolder.java
+
+class Subtype extends BasicHolder<Subtype> {}
+
+public class CRGWithBasicHolder {
+  public static void main(String[] args) {
+    Subtype
+      st1 = new Subtype(),
+      st2 = new Subtype();
+    st1.set(st2);
+    Subtype st3 = st1.get();
+    st1.f();
+  }
+}
+/* Output:
+Subtype
+*/
+```
+
+注意，这里有些东西很重要：新类 **Subtype** 接受的参数和返回的值具有 **Subtype** 类型而不仅仅是基类 **BasicHolder** 类型。这就是 CRG 的本质：基类用导出类替代其参数。这意味着泛型基类变成了一种其所有导出类的公共功能的模版，但是这些功能对于其所有参数和返回值，将使用导出类型。也就是说，在所产生的类中将使用确切类型而不是基类型。因此，在**Subtype** 中，传递给 `set()` 的参数和从 `get()` 返回的类型都是确切的 **Subtype** 。
+
+### 自限定
+
+BasicHolder可以使用任何类型作为其泛型参数，就像下面看到的那样：
+
+```java
+// generics/Unconstrained.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+
+class Other {}
+class BasicOther extends BasicHolder<Other> {}
+
+public class Unconstrained {
+  public static void main(String[] args) {
+    BasicOther b = new BasicOther();
+    BasicOther b2 = new BasicOther();
+    b.set(new Other());
+    Other other = b.get();
+    b.f();
+  }
+}
+/* Output:
+Other
+*/
+```
+
+限定将采取额外的步骤，强制泛型当作其自己的边界参数来使用。观察所产生的类可以如何使用以及不可以如何使用：
+
+```java
+// generics/SelfBounding.java
+
+class SelfBounded<T extends SelfBounded<T>> {
+  T element;
+  SelfBounded<T> set(T arg) {
+    element = arg;
+    return this;
+  }
+  T get() { return element; }
+}
+
+class A extends SelfBounded<A> {}
+class B extends SelfBounded<A> {} // Also OK
+
+class C extends SelfBounded<C> {
+  C setAndGet(C arg) { set(arg); return get(); }
+}
+
+class D {}
+// Can't do this:
+// class E extends SelfBounded<D> {}
+// Compile error:
+//   Type parameter D is not within its bound
+
+// Alas, you can do this, so you cannot force the idiom:
+class F extends SelfBounded {}
+
+public class SelfBounding {
+  public static void main(String[] args) {
+    A a = new A();
+    a.set(new A());
+    a = a.set(new A()).get();
+    a = a.get();
+    C c = new C();
+    c = c.setAndGet(new C());
+  }
+}
+```
+
+自限定所做的，就是要求在继承关系中，像下面这样使用这个类：
+
+```java
+class A extends SelfBounded<A>{}
+```
+
+这会强制要求将正在定义的类当作参数传递给基类。
+自限定的参数有何意义呢？它可以保证类型参数必须与正在被定义的类相同。正如你在B类的定义中所看到的，还可以从使用了另一个 **SelfBounded** 参数的**SelfBounded** 中导出，尽管在 **A** 类看到的用法看起来是主要的用法。对定义 **E** 的尝试说明不能使用不是 **SelfBounded** 的类型参数。
+遗憾的是， **F** 可以编译，不会有任何警告，因此自限定惯用法不是可强制执行的。如果它确实很重要，可以要求一个外部工具来确保不会使用原生类型来替代参数化类型。
+注意，可以移除自限定这个限制，这样所有的类仍旧是可以编译的，但是 **E** 也会因此而变得可编译：
+
+```java
+// generics/NotSelfBounded.java
+
+public class NotSelfBounded<T> {
+  T element;
+  NotSelfBounded<T> set(T arg) {
+    element = arg;
+    return this;
+  }
+  T get() { return element; }
+}
+
+class A2 extends NotSelfBounded<A2> {}
+class B2 extends NotSelfBounded<A2> {}
+
+class C2 extends NotSelfBounded<C2> {
+  C2 setAndGet(C2 arg) { set(arg); return get(); }
+}
+
+class D2 {}
+// Now this is OK:
+class E2 extends NotSelfBounded<D2> {}
+```
+
+因此很明显，自限定限制只能强制作用于继承关系。如果使用自限定，就应该了解这个类所用的类型参数将与使用这个参数的类具有相同的基类型。这会强制要求使用这个类的每个人都要遵循这种形式。
+还可以将自限定用于泛型方法：
+
+```java
+// generics/SelfBoundingMethods.java
+// (c)2017 MindView LLC: see Copyright.txt
+// We make no guarantees that this code is fit for any purpose.
+// Visit http://OnJava8.com for more book information.
+
+public class SelfBoundingMethods {
+  static <T extends SelfBounded<T>> T f(T arg) {
+    return arg.set(arg).get();
+  }
+  public static void main(String[] args) {
+    A a = f(new A());
+  }
+}
+```
+
+这可以防止这个方法被应用于除上述形式的自限定参数之外的任何事物上。
+
+### 参数协变
+
+自限定类型的价值在于它们可以产生*协变参数类型*——方法参数类型会随子类而变化。
+
+尽管自限定类型还可以产生于子类类型相同的返回类型，但是这并不十分重要，因为*协变返回类型*是在 Java SE5 中引入的：
+
+```java
+// generics/CovariantReturnTypes.java
+
+class Base {}
+class Derived extends Base {}
+
+interface OrdinaryGetter {
+  Base get();
+}
+
+interface DerivedGetter extends OrdinaryGetter {
+  // Overridden method return type can vary:
+  @Override
+  Derived get();
+}
+
+public class CovariantReturnTypes {
+  void test(DerivedGetter d) {
+    Derived d2 = d.get();
+  }
+}
+```
+
+**DerivedGetter** 中的 `get()` 方法覆盖了 **OrdinaryGetter** 中的 `get()` ，并返回了一个从 `OrdinaryGetter.get()` 的返回类型中导出的类型。尽管这是完全合乎逻辑的事情（导出类方法应该能够返回比它覆盖的基类方法更具体的类型）但是这在早先的 Java 版本中是不合法的。
+自限定泛型事实上将产生确切的导出类型作为其返回值，就像在 `get()` 中所看到的一样：
+
+```java
+// generics/GenericsAndReturnTypes.java
+
+interface GenericGetter<T extends GenericGetter<T>> {
+  T get();
+}
+
+interface Getter extends GenericGetter<Getter> {}
+
+public class GenericsAndReturnTypes {
+  void test(Getter g) {
+    Getter result = g.get();
+    GenericGetter gg = g.get(); // Also the base type
+  }
+}
+```
+
+注意，这段代码不能编译，除非是使用囊括了协变返回类型的 Java SE5 。
+
+然而，在非泛型代码中，参数类型不能随子类型发生变化：
+
+```java
+// generics/OrdinaryArguments.java
+
+class OrdinarySetter {
+  void set(Base base) {
+    System.out.println("OrdinarySetter.set(Base)");
+  }
+}
+
+class DerivedSetter extends OrdinarySetter {
+  void set(Derived derived) {
+    System.out.println("DerivedSetter.set(Derived)");
+  }
+}
+
+public class OrdinaryArguments {
+  public static void main(String[] args) {
+    Base base = new Base();
+    Derived derived = new Derived();
+    DerivedSetter ds = new DerivedSetter();
+    ds.set(derived);
+    // Compiles--overloaded, not overridden!:
+    ds.set(base);
+  }
+}
+/* Output:
+DerivedSetter.set(Derived)
+OrdinarySetter.set(Base)
+*/
+```
+
+`set(derived)` 和 `set(base)` 都是合法的，因此 `DerivedSetter.set()` 没有覆盖 `OrdinarySetter.set()` ，而是重载了这个方法。从输出中可以看到，在 **DerivedSetter** 中有两个方法，因此基类版本仍旧是可用的，因此可以证明它被重载过。
+但是，在使用自限定类型时，在导出类中只有一个方法，并且这个方法接受导出类型而不是基类型为参数：
+
+```java
+// generics/SelfBoundingAndCovariantArguments.java
+
+interface
+SelfBoundSetter<T extends SelfBoundSetter<T>> {
+  void set(T arg);
+}
+
+interface Setter extends SelfBoundSetter<Setter> {}
+
+public class SelfBoundingAndCovariantArguments {
+  void
+  testA(Setter s1, Setter s2, SelfBoundSetter sbs) {
+    s1.set(s2);
+    //- s1.set(sbs);
+    // error: method set in interface SelfBoundSetter<T>
+    // cannot be applied to given types;
+    //     s1.set(sbs);
+    //       ^
+    //   required: Setter
+    //   found: SelfBoundSetter
+    //   reason: argument mismatch;
+    // SelfBoundSetter cannot be converted to Setter
+    //   where T is a type-variable:
+    //     T extends SelfBoundSetter<T> declared in
+    //     interface SelfBoundSetter
+    // 1 error
+  }
+}
+```
+
+编译器不能识别将基类型当作参数传递给 `set()` 的尝试，因为没有任何方法具有这样的签名。实际上，这个参数已经被覆盖。
+如果不使用自限定类型，普通的继承机制就会介入，而你将能够重载，就像在非泛型的情况下一样：
+
+```
+// generics/PlainGenericInheritance.java
+
+class GenericSetter<T> { // Not self-bounded
+  void set(T arg) {
+    System.out.println("GenericSetter.set(Base)");
+  }
+}
+
+class DerivedGS extends GenericSetter<Base> {
+  void set(Derived derived) {
+    System.out.println("DerivedGS.set(Derived)");
+  }
+}
+
+public class PlainGenericInheritance {
+  public static void main(String[] args) {
+    Base base = new Base();
+    Derived derived = new Derived();
+    DerivedGS dgs = new DerivedGS();
+    dgs.set(derived);
+    dgs.set(base); // Overloaded, not overridden!
+  }
+}
+/* Output:
+DerivedGS.set(Derived)
+GenericSetter.set(Base)
+*/
+```
+
+这段代码在模仿 **OrdinaryArgument.java** ，在那个示例中，**DerivedSetter** 继承自包含一个 `set(Base)` 的**OrdinarySetter** 。而这里，**DerivedGS** 继承自泛型创建的也包含有一个 `set(Base)`的 `GenericSetter<Base>`。就像 **OrdinaryArgument.java** 一样，你可以从输出中看到， **DerivedGS** 包含两个  `set()` 的重载版本。如果不使用自限定，将重载参数类型。如果使用了自限定，只能获得某个方法的一个版本，它将接受确切的参数类型。
+
 ## 动态类型安全
 
 <!-- Exceptions -->
