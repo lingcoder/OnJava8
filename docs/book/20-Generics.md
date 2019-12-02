@@ -4322,19 +4322,535 @@ Hello
 
 <!-- Latent Typing -->
 
-## 潜在类型
+## 潜在类型机制
 
+在本章的开头介绍过这样的思想，即要编写能够尽可能广泛地应用的代码。为了实现这一点，我们需要各种途径来放松对我们的代码将要作用的类型所作的限制，同时不丢失静态类型检查的好处。然后，我们就可以编写出无需修改就可以应用于更多情况的代码，即更加“泛化”的代码。
+Java泛型看起来是向这一方向迈进了一步。当你在编写或使用只是持有对象的泛型时，这些代码将可以工作于任何类型（除了基本类型，尽管正如你所见到的，自动包装机制可以克服这一点）。或者，换个角度讲，“持有器”泛型能够声明：“我不关心你是什么类型”。如果代码不关心它将要作用的类型，那么这种代码就可以真正地应用于任何地方，并因此而相当泛化。
+
+还是正如你所见到的，当要在泛型类型上执行操作（即调用 **Object** 方法之前的操作）时，就会产生问题，因为擦除要求指定可能会用到的泛型类型的边界，以安全地调用代码中的泛型对象上的具体方法。这是对“泛化”概念的一种明显的限制，因为必须限制你的泛型类型，使它们继承自特定的类，或者实现特定的接口。在某些情况下，你最终可能会使用普通类或普通接口，因为限定边界的泛型可能会和指定类或接口没有任何区别。
+某些编程语言提供的一种解决方案称为潜在类型机制或结构化类型机制，而更古怪的术语称为鸭子类型机制，即“如果它走起来像鸭子，并且叫起来也像鸭子，那么你就可以将它当作鸭子对待。”鸭子类型机制变成了一种相当流行的术语，可能是因为它不像其他的术语那样承载着历史的包袱。
+泛型代码典型地将在泛型类型上调用少量方法，而具有潜在类型机制的语言只要求实现某个方法子集，而不是某个特定类或接口，从而放松了这种限制（并且可以产生更加泛化的代码）。正由于此，潜在类型机制使得你可以横跨类继承结构，调用不属于某个公共接口的方法。因此，实际上一段代码可以声明：“我不关心你是什么类型，只要你可以 `speak()` 和 `sit()` 即可。”由于不要求具体类型，因此代码就可以更加泛化。
+潜在类型机制是一种代码组织和复用机制。有了它编写出的代码相对于没有它编写出的代码，能够更容易地复用。代码组织和复用是所有计算机编程的基本手段：编写一次，多次使用，并在一个位置保存代码。因为我并未被要求去命名我的代码要操作于其上的确切接口，所以，有了潜在类型机制，我就可以编写更少的代码，并更容易地将其应用于多个地方。
+两种支持潜在类型机制的语言实例是 Python （可以从www.Python.org免费下载）和 C++。Python是动态类型语言（事实上所有的类型检查都发生在运行时），而C++是静态类型语言（类型检查发生在编译期），因此潜在类型机制不要求静态或动态类型检查。
+
+### pyhton 中的潜在类型
+
+如果我们将上面的描述用 Python 来表示，如下所示：
+
+```python
+# generics/DogsAndRobots.py
+
+class Dog:
+    def speak(self):
+        print("Arf!")
+    def sit(self):
+        print("Sitting")
+    def reproduce(self):
+        pass
+
+class Robot:
+    def speak(self):
+        print("Click!")
+    def sit(self):
+        print("Clank!")
+    def oilChange(self):
+        pass
+
+def perform(anything):
+    anything.speak()
+    anything.sit()
+
+a = Dog()
+b = Robot()
+perform(a)
+perform(b)
+
+output = """
+Arf!
+Sitting
+Click!
+Clank!
+"""
+```
+
+Python 使用缩进来确定作用域（因此不需要任何花括号），而冒号将表示新的作用域的开始。“**#**” 表示注释到行尾，就像Java中的 “ **//** ”。类的方法需要显式地指定 **this** 引用的等价物作为第一个参数，按惯例成为 **self** 。构造器调用不要求任何类型的“ **new** ”关键字，并且 Python 允许正则（非成员）函数，就像 `perform()` 所表明的那样。注意，在 `perform(anything)`中，没有任何针对 **anything** 的类型，**anything** 只是一个标识符，它必须能够执行 `perform()` 期望它执行的操作，因此这里隐含着一个接口。但是你从来都不必显式地写出这个接口——它是潜在的。`perform()` 不关心其参数的类型，因此我可以向它传递任何对象，只要该对象支持  `speak()` 和 `sit()`方法。如果传递给 `perform()` 的对象不支持这些操作，那么将会得到运行时异常。
+
+输出规定使用三重引号创建带有嵌入式换行符的字符串。
+
+### C++ 中的潜在类型
+
+我们可以用C++产生相同的效果：
+
+```cpp
+// generics/DogsAndRobots.cpp
+
+#include <iostream>
+using namespace std;
+
+class Dog {
+public:
+  void speak() { cout << "Arf!" << endl; }
+  void sit() { cout << "Sitting" << endl; }
+  void reproduce() {}
+};
+
+class Robot {
+public:
+  void speak() { cout << "Click!" << endl; }
+  void sit() { cout << "Clank!" << endl; }
+  void oilChange() {}
+};
+
+template<class T> void perform(T anything) {
+  anything.speak();
+  anything.sit();
+}
+
+int main() {
+  Dog d;
+  Robot r;
+  perform(d);
+  perform(r);
+}
+/* Output:
+Arf!
+Sitting
+Click!
+Clank!
+*/
+```
+
+在 Python 和 C++ 中，**Dog** 和 **Robot** 没有任何共同的东西，只是碰巧有两个方法具有相同的签名。从类型的观点看，它们是完全不同的类型。但是，`perform()` 不关心其参数的具体类型，并且潜在类型机制允许它接受这两种类型的对象。
+C++ 确保了它实际上可以发送的那些消息，如果试图传递错误类型，编译器就会给你一个错误消息（这些错误消息从历史上看是相当可怕和冗长的，而主要原因是因为 C++ 的模版名声欠佳）。尽管它们是在不同时期实现这一点的，C++ 在编译期，而 Python 在运行时，但是这两种语言都可以确保类型不会被误用，因此被认为是强类型的。潜在类型机制没有损害强类型机制。
+
+### Go 中的潜在类型
+
+这是用Go语言编写的相同程序：
+
+```java
+// generics/dogsandrobots.go
+
+package main
+import "fmt"
+
+type Dog struct {}
+func (this Dog) speak() { fmt.Printf("Arf!\n")}
+func (this Dog) sit() { fmt.Printf("Sitting\n")}
+func (this Dog) reproduce() {}
+
+type Robot struct {}
+func (this Robot) speak() { fmt.Printf("Click!\n") }
+func (this Robot) sit() { fmt.Printf("Clank!\n") }
+func (this Robot) oilChange() {}
+
+func perform(speaker interface { speak(); sit() }) {
+  speaker.speak();
+  speaker.sit();
+}
+
+func main() {
+  perform(Dog{})
+  perform(Robot{})
+}
+/* Output:
+Arf!
+Sitting
+Click!
+Clank!
+*/
+```
+
+Go 没有 **class** 关键字，但是可以使用上述形式创建等效的基本类：它通常不定义为类，而是将其定义为 **struct** ，在其中定义数据字段（此处不存在）。 对于每种方法，都以 **func** 关键字开头，然后（为了将该方法附加到您的类上）放在括号中，该括号包含对象引用，该对象引用可以是任何标识符，但是我在这里使用 **this** 来提醒您，就像在 C ++ 或 Java 中的 **this** 一样。 然后，在Go中像这样定义其余的函数。
+
+Go也没有继承关系，因此这种“面向对象的目标”形式是相对原始的，并且可能是我无法花更多的时间来学习该语言的主要的原因。 但是，Go 的组成很简单。
+
+`perform()` 函数使用潜在类型：参数的确切类型并不重要，只要它包含了 `speak()` 和  `sit()` 方法即可。 该接口在此处匿名定义，内联，如 `perform()` 的参数列表所示。
+
+`main()` 证明 `perform()` 确实对其参数的确切类型无关紧要，只要可以在该参数上调用 `talk()` 和 `sit()` 即可。 但是，就像 C ++ 模板函数一样，在编译时检查类型。
+
+语法 **Dog {}** 和 **Robot {}** 创建匿名的 **Dog** 和 **Robot** 结构。
+
+### java中的直接潜在类型
+
+因为泛型是在这场竞赛的后期才添加到 Java 中的，因此没有任何机会可以去实现任何类型的潜在类型机制，因此  Java 没有对这种特性的支持。所以，初看起来，Java 的泛型机制比支持潜在类型机制的语言更“缺乏泛化性”。（使用删除来实现Java泛型的实现有时称为第二类泛型类型）例如，在 Java8 之前如果我们试图用 Java 实现上面 dogs-and-robots 的示例，那么就会被强制要求使用一个类或接口，并在边界表达式中指定它：
+
+```java
+// generics/Performs.java
+
+public interface Performs {
+  void speak();
+  void sit();
+}
+```
+
+```java
+// generics/DogsAndRobots.java
+// No (direct) latent typing in Java
+import typeinfo.pets.*;
+
+class PerformingDog extends Dog implements Performs {
+  @Override
+  public void speak() { System.out.println("Woof!"); }
+  @Override
+  public void sit() { System.out.println("Sitting"); }
+  public void reproduce() {}
+}
+
+class Robot implements Performs {
+  public void speak() { System.out.println("Click!"); }
+  public void sit() { System.out.println("Clank!"); }
+  public void oilChange() {}
+}
+
+class Communicate {
+  public static <T extends Performs>
+  void perform(T performer) {
+    performer.speak();
+    performer.sit();
+  }
+}
+
+public class DogsAndRobots {
+  public static void main(String[] args) {
+    Communicate.perform(new PerformingDog());
+    Communicate.perform(new Robot());
+  }
+}
+/* Output:
+Woof!
+Sitting
+Click!
+Clank!
+*/
+```
+
+但是要注意，`perform()` 不需要使用泛型来工作，它可以被简单地指定为接受一个 **Performs** 对象：
+
+```java
+// generics/SimpleDogsAndRobots.java
+// Removing the generic; code still works
+
+class CommunicateSimply {
+  static void perform(Performs performer) {
+    performer.speak();
+    performer.sit();
+  }
+}
+
+public class SimpleDogsAndRobots {
+  public static void main(String[] args) {
+    CommunicateSimply.perform(new PerformingDog());
+    CommunicateSimply.perform(new Robot());
+  }
+}
+/* Output:
+Woof!
+Sitting
+Click!
+Clank!
+*/
+```
+
+在本例中，泛型不是必需的，因为这些类已经被强制要求实现 **Performs** 接口。
 
 <!-- Compensating for the Lack of (Direct) Latent -->
-## 补偿不足
+
+## 对缺乏潜在类型机制的补偿
+
+尽管 Java 不支持潜在类型机制，但是这并不意味着有界泛型代码不能在不同的类型层次结构之间应用。也就是说，我们仍旧可以创建真正的泛型代码，但是这需要付出一些额外的努力。
+
+### 反射
+
+可以使用的一种方式是反射，下面的 `perform()` 方法就是用了潜在类型机制：
+
+```java
+// generics/LatentReflection.java
+// Using reflection for latent typing
+import java.lang.reflect.*;
+
+// Does not implement Performs:
+class Mime {
+  public void walkAgainstTheWind() {}
+  public void sit() {
+    System.out.println("Pretending to sit");
+  }
+  public void pushInvisibleWalls() {}
+  @Override
+  public String toString() { return "Mime"; }
+}
+
+// Does not implement Performs:
+class SmartDog {
+  public void speak() { System.out.println("Woof!"); }
+  public void sit() { System.out.println("Sitting"); }
+  public void reproduce() {}
+}
+
+class CommunicateReflectively {
+  public static void perform(Object speaker) {
+    Class<?> spkr = speaker.getClass();
+    try {
+      try {
+        Method speak = spkr.getMethod("speak");
+        speak.invoke(speaker);
+      } catch(NoSuchMethodException e) {
+        System.out.println(speaker + " cannot speak");
+      }
+      try {
+        Method sit = spkr.getMethod("sit");
+        sit.invoke(speaker);
+      } catch(NoSuchMethodException e) {
+        System.out.println(speaker + " cannot sit");
+      }
+    } catch(SecurityException |
+            IllegalAccessException |
+            IllegalArgumentException |
+            InvocationTargetException e) {
+      throw new RuntimeException(speaker.toString(), e);
+    }
+  }
+}
+
+public class LatentReflection {
+  public static void main(String[] args) {
+    CommunicateReflectively.perform(new SmartDog());
+    CommunicateReflectively.perform(new Robot());
+    CommunicateReflectively.perform(new Mime());
+  }
+}
+/* Output:
+Woof!
+Sitting
+Click!
+Clank!
+Mime cannot speak
+Pretending to sit
+*/
+```
+
+上例中，这些类完全是彼此分离的，没有任何公共基类（除了 **Object** ）或接口。通过反射, `CommunicateReflectively.perform()` 能够动态地确定所需要的方法是否可用并调用它们。它甚至能够处理 **Mime** 只具有一个必需的方法这一事实，并能够部分实现其目标。
+
+### 将一个方法应用于序列
+
+反射提供了一些有趣的可能性，但是它将所有的类型检查都转移到了运行时，因此在许多情况下并不是我们所希望的。如果能够实现编译期类型检查，这通常会更符合要求。但是有可能实现编译期类型检查和潜在类型机制吗？
+
+让我们看一个说明这个问题的示例。假设想要创建一个 `apply()` 方法，它能够将任何方法应用于某个序列中的所有对象。这是接口看起来并不适合的情况，因为你想要将任何方法应用于一个对象集合，而接口对于描述“任何方法”存在过多的限制。如何用Java来实现这个需求呢？
+
+最初，我们可以用反射来解决这个问题，由于有了 Java 的可变参数，这种方式被证明是相当优雅的：
+
+```java
+// generics/Apply.java
+
+import java.lang.reflect.*;
+import java.util.*;
+
+public class Apply {
+  public static <T, S extends Iterable<T>>
+  void apply(S seq, Method f, Object... args) {
+    try {
+      for(T t: seq)
+        f.invoke(t, args);
+    } catch(IllegalAccessException |
+            IllegalArgumentException |
+            InvocationTargetException e) {
+      // Failures are programmer errors
+      throw new RuntimeException(e);
+    }
+  }
+}
+```
+
+在 **Apply.java** 中，异常被转换为 **RuntimeException** ，因为没有多少办法可以从这种异常中恢复——在这种情况下，它们实际上代表着程序员的错误。
+
+为什么我们不只使用 Java 8 方法参考（稍后显示）而不是反射方法 **f** ？ 注意，`invoke()` 和 `apply()` 的优点是它们可以接受任意数量的参数。 在某些情况下，灵活性可能至关重要。
+
+为了测试 **Apply** ，我们首先创建一个 **Shape** 类：
+
+```java
+// generics/Shape.java
+
+public class Shape {
+  private static long counter = 0;
+  private final long id = counter++;
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " " + id;
+  }
+  public void rotate() {
+    System.out.println(this + " rotate");
+  }
+  public void resize(int newSize) {
+    System.out.println(this + " resize " + newSize);
+  }
+}
+```
+
+被一个子类 **Square** 继承：
+
+```java
+// generics/Square.java
+
+public class Square extends Shape {}
+```
+
+通过这些，我们可以测试 **Apply**：
+
+```java
+// generics/ApplyTest.java
+
+import java.util.*;
+import java.util.function.*;
+import onjava.*;
+
+public class ApplyTest {
+  public static
+  void main(String[] args) throws Exception {
+    List<Shape> shapes =
+      Suppliers.create(ArrayList::new, Shape::new, 3);
+    Apply.apply(shapes,
+      Shape.class.getMethod("rotate"));
+    Apply.apply(shapes,
+      Shape.class.getMethod("resize", int.class), 7);
+
+    List<Square> squares =
+      Suppliers.create(ArrayList::new, Square::new, 3);
+    Apply.apply(squares,
+      Shape.class.getMethod("rotate"));
+    Apply.apply(squares,
+      Shape.class.getMethod("resize", int.class), 7);
+
+    Apply.apply(new FilledList<>(Shape::new, 3),
+      Shape.class.getMethod("rotate"));
+    Apply.apply(new FilledList<>(Square::new, 3),
+      Shape.class.getMethod("rotate"));
+
+    SimpleQueue<Shape> shapeQ = Suppliers.fill(
+      new SimpleQueue<>(), SimpleQueue::add,
+      Shape::new, 3);
+    Suppliers.fill(shapeQ, SimpleQueue::add,
+      Square::new, 3);
+    Apply.apply(shapeQ,
+      Shape.class.getMethod("rotate"));
+  }
+}
+/* Output:
+Shape 0 rotate
+Shape 1 rotate
+Shape 2 rotate
+Shape 0 resize 7
+Shape 1 resize 7
+Shape 2 resize 7
+Square 3 rotate
+Square 4 rotate
+Square 5 rotate
+Square 3 resize 7
+Square 4 resize 7
+Square 5 resize 7
+Shape 6 rotate
+Shape 7 rotate
+Shape 8 rotate
+Square 9 rotate
+Square 10 rotate
+Square 11 rotate
+Shape 12 rotate
+Shape 13 rotate
+Shape 14 rotate
+Square 15 rotate
+Square 16 rotate
+Square 17 rotate
+*/
+```
+
+在 **Apply** 中，我们运气很好，因为碰巧在 Java 中内建了一个由 Java 容器类库使用的 **Iterable** 接口。正由于此， `apply()` 方法可以接受任何实现了 **Iterable** 接口的事物，包括诸如 **List** 这样的所有 **Collection** 类。但是它还可以接受其他任何事物，只要能够使这些事物是 **Iterable** 的一例如，在 `main()` 中使用的下面定义的 **SimpleQueue** 类：
+
+```java
+// generics/SimpleQueue.java
+
+// A different kind of Iterable collection
+import java.util.*;
+
+public class SimpleQueue<T> implements Iterable<T> {
+  private LinkedList<T> storage = new LinkedList<>();
+  public void add(T t) { storage.offer(t); }
+  public T get() { return storage.poll(); }
+  @Override
+  public Iterator<T> iterator() {
+    return storage.iterator();
+  }
+}
+```
+
+正如反射解决方案看起来那样优雅，我们必须观察到反射（尽管在Java的最新版本中得到了显着改进）通常比非反射实现要慢，因为在运行时发生了很多事情。 但它不应阻止您尝试这种解决方案，这依然是值得考虑的一点。
+
+几乎可以肯定，您会首先使用 Java 8 功能方法，并且只有在解决了特殊需求时才诉诸反射。 这里对 **ApplyTest.java** 进行了重写，以利用 Java 8 的流和函数工具：
+
+```java
+// generics/ApplyFunctional.java
+
+import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
+import onjava.*;
+
+public class ApplyFunctional {
+  public static void main(String[] args) {
+    Stream.of(
+      Stream.generate(Shape::new).limit(2),
+      Stream.generate(Square::new).limit(2))
+      .flatMap(c -> c) // flatten into one stream
+      .peek(Shape::rotate)
+      .forEach(s -> s.resize(7));
+
+    new FilledList<>(Shape::new, 2)
+      .forEach(Shape::rotate);
+    new FilledList<>(Square::new, 2)
+      .forEach(Shape::rotate);
+
+    SimpleQueue<Shape> shapeQ = Suppliers.fill(
+      new SimpleQueue<>(), SimpleQueue::add,
+      Shape::new, 2);
+    Suppliers.fill(shapeQ, SimpleQueue::add,
+      Square::new, 2);
+    shapeQ.forEach(Shape::rotate);
+  }
+}
+/* Output:
+Shape 0 rotate
+Shape 0 resize 7
+Shape 1 rotate
+Shape 1 resize 7
+Square 2 rotate
+Square 2 resize 7
+Square 3 rotate
+Square 3 resize 7
+Shape 4 rotate
+Shape 5 rotate
+Square 6 rotate
+Square 7 rotate
+Shape 8 rotate
+Shape 9 rotate
+Square 10 rotate
+Square 11 rotate
+*/
+```
+
+<未完待续>
+
+
+
 
 
 <!-- Assisted Latent Typing in Java 8 -->
-## 辅助潜在类型
+
+## Java8 中的辅助潜在类型
 
 
 <!-- Summary: Is Casting Really So Bad? -->
-## 泛型的优劣
+## 总结：转型真的如此之糟吗？
+
+
+
+
 
 
 
