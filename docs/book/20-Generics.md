@@ -3902,7 +3902,47 @@ GenericSetter.set(Base)
 
 <!-- Exceptions -->
 
+因为可以向 Java SE5 之前的代码传递泛型容器，所以旧式代码仍旧有可能会破坏你的容器，Java SE5 的 **java.util.Collections** 中有一组便利工具，可以解决在这种强况下的类型检查问题，它们是：静态方法`checkedCollection()` 、`checkedList()`、 `checkedMap()` 、 `checkedSet()` 、`checkedSortedMap()`和 `checkedSortedSet()`。这些方法每一个都会将你希望动态检查的容器当作第一个参数接受，并将你希望强制要求的类型作为第二个参数接受。
 
+受检查的容器在你试图插入类型不正确的对象时抛出 **ClassCastException** ，这与泛型之前的（原生）容器形成了对比，对于后者来说，当你将对象从容器中取出时，才会通知你出现了问题。在后一种情况中，你知道存在问题，但是不知道罪魁祸首在哪里，如果使用受检查的容器，就可以发现谁在试图插入不良对象。
+让我们用受检查的容器来看看“将猫插入到狗列表中”这个问题。这里，`oldStyleMethod()` 表示遗留代码，因为它接受的是原生的 **List** ，而 **@SuppressWarnings（“unchecked”）** 注解对于压制所产生的警告是必需的：
+
+```java
+// generics/CheckedList.java
+// Using Collection.checkedList()
+import typeinfo.pets.*;
+import java.util.*;
+
+public class CheckedList {
+  @SuppressWarnings("unchecked")
+  static void oldStyleMethod(List probablyDogs) {
+    probablyDogs.add(new Cat());
+  }
+  public static void main(String[] args) {
+    List<Dog> dogs1 = new ArrayList<>();
+    oldStyleMethod(dogs1); // Quietly accepts a Cat
+    List<Dog> dogs2 = Collections.checkedList(
+      new ArrayList<>(), Dog.class);
+    try {
+      oldStyleMethod(dogs2); // Throws an exception
+    } catch(Exception e) {
+      System.out.println("Expected: " + e);
+    }
+    // Derived types work fine:
+    List<Pet> pets = Collections.checkedList(
+      new ArrayList<>(), Pet.class);
+    pets.add(new Dog());
+    pets.add(new Cat());
+  }
+}
+/* Output:
+Expected: java.lang.ClassCastException: Attempt to
+insert class typeinfo.pets.Cat element into collection
+with element type class typeinfo.pets.Dog
+*/
+```
+
+运行这个程序时，你会发现插入一个 **Cat** 对于 **dogs1** 来说没有任何问题，而 **dogs2** 立即会在这个错误类型的插入操作上抛出一个异常。还可以看到，将导出类型的对象放置到将要检查基类型的受检查容器中是没有问题的。
 
 ## 泛型异常
 
