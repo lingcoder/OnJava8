@@ -3946,12 +3946,382 @@ with element type class typeinfo.pets.Dog
 
 ## 泛型异常
 
-
 <!-- Mixins -->
-## 混入
 
+由于擦除的原因，将泛型应用于异常是非常受限的。**catch** 语句不能捕获泛型类型的异常，因为在编译期和运行时都必须知道异常的确切类型。泛型类也不能直接或间接继承自 **Throwable**（这将进一步阻止你去定义不能捕获的泛型异常）。
+但是，类型参数可能会在一个方法的 **throws** 子句中用到。这使得你可以编写随检查型异常的类型而发生变化的泛型代码：
+
+```java
+// generics/ThrowGenericException.java
+
+import java.util.*;
+
+interface Processor<T, E extends Exception> {
+  void process(List<T> resultCollector) throws E;
+}
+
+class ProcessRunner<T, E extends Exception>
+extends ArrayList<Processor<T, E>> {
+  List<T> processAll() throws E {
+    List<T> resultCollector = new ArrayList<>();
+    for(Processor<T, E> processor : this)
+      processor.process(resultCollector);
+    return resultCollector;
+  }
+}
+
+class Failure1 extends Exception {}
+
+class Processor1
+implements Processor<String, Failure1> {
+  static int count = 3;
+  @Override
+  public void process(List<String> resultCollector)
+  throws Failure1 {
+    if(count-- > 1)
+      resultCollector.add("Hep!");
+    else
+      resultCollector.add("Ho!");
+    if(count < 0)
+       throw new Failure1();
+  }
+}
+
+class Failure2 extends Exception {}
+
+class Processor2
+implements Processor<Integer, Failure2> {
+  static int count = 2;
+  @Override
+  public void process(List<Integer> resultCollector)
+  throws Failure2 {
+    if(count-- == 0)
+      resultCollector.add(47);
+    else {
+      resultCollector.add(11);
+    }
+    if(count < 0)
+       throw new Failure2();
+  }
+}
+
+public class ThrowGenericException {
+  public static void main(String[] args) {
+    ProcessRunner<String, Failure1> runner =
+      new ProcessRunner<>();
+    for(int i = 0; i < 3; i++)
+      runner.add(new Processor1());
+    try {
+      System.out.println(runner.processAll());
+    } catch(Failure1 e) {
+      System.out.println(e);
+    }
+
+    ProcessRunner<Integer, Failure2> runner2 =
+      new ProcessRunner<>();
+    for(int i = 0; i < 3; i++)
+      runner2.add(new Processor2());
+    try {
+      System.out.println(runner2.processAll());
+    } catch(Failure2 e) {
+      System.out.println(e);
+    }
+  }
+}
+/* Output:
+[Hep!, Hep!, Ho!]
+Failure2
+*/
+```
+
+**Processor** 执行 `process()`，并且可能会抛出具有类型 **E** 的异常。`process()` 的结果存储在 `List<T>resultCollector` 中（这被称为*收集参数*）。**ProcessRunner** 有一个 `processAll()` 方法，它将执行所持有的每个 **Process** 对象，并返回 **resultCollector** 。
+如果不能参数化所抛出的异常，那么由于检查型异常的缘故，将不能编写出这种泛化的代码。
+
+## 混型
+
+术语*混型*随时间的推移好像拥有了无数的含义，但是其最基本的概念是混合多个类的能力，以产生一个可以表示混型中所有类型的类。这往往是你最后的手段，它将使组装多个类变得简单易行。
+混型的价值之一是它们可以将特性和行为一致地应用于多个类之上。如果想在混型类中修改某些东西，作为一种意外的好处，这些修改将会应用于混型所应用的所有类型之上。正由于此，混型有一点*面向方面编程* （AOP） 的味道，而方面经常被建议用来解决混型问题。
+
+### C++中的混型
+
+在 C++ 中，使用多重继承的最大理由，就是为了使用混型。但是，对于混型来说，更有趣、更优雅的方式是使用参数化类型，因为混型就是继承自其类型参数的类。在 C++ 中，可以很容易的创建混型，因为 C++ 能够记住其模版参数的类型。
+下面是一个 C++ 示例，它有两个混型类型：一个使得你可以在每个对象中混入拥有一个时间戳这样的属性，而另一个可以混入一个序列号。
+
+```cpp
+// generics/Mixins.cpp
+
+#include <string>
+#include <ctime>
+#include <iostream>
+using namespace std;
+
+template<class T> class TimeStamped : public T {
+  long timeStamp;
+public:
+  TimeStamped() { timeStamp = time(0); }
+  long getStamp() { return timeStamp; }
+};
+
+template<class T> class SerialNumbered : public T {
+  long serialNumber;
+  static long counter;
+public:
+  SerialNumbered() { serialNumber = counter++; }
+  long getSerialNumber() { return serialNumber; }
+};
+
+// Define and initialize the static storage:
+template<class T> long SerialNumbered<T>::counter = 1;
+
+class Basic {
+  string value;
+public:
+  void set(string val) { value = val; }
+  string get() { return value; }
+};
+
+int main() {
+  TimeStamped<SerialNumbered<Basic>> mixin1, mixin2;
+  mixin1.set("test string 1");
+  mixin2.set("test string 2");
+  cout << mixin1.get() << " " << mixin1.getStamp() <<
+    " " << mixin1.getSerialNumber() << endl;
+  cout << mixin2.get() << " " << mixin2.getStamp() <<
+    " " << mixin2.getSerialNumber() << endl;
+}
+/* Output:
+test string 1 1452987605 1
+test string 2 1452987605 2
+*/
+```
+
+在 `main()` 中， **mixin1** 和 **mixin2** 所产生的类型拥有所混入类型的所有方法。可以将混型看作是一种功能，它可以将现有类映射到新的子类上。注意，使用这种技术来创建一个混型是多么地轻而易举。基本上，只需要声明“这就是我想要的”，紧跟着它就发生了：
+
+```
+TimeStamped<SerialNumbered<Basic>> mixin1，mixin2；
+```
+
+遗憾的是，Java泛型不允许这样。擦除会忘记基类类型，因此
+
+>  泛型类不能直接继承自一个泛型参数
+
+这突显了许多我在Java语言设计决策（以及与这些功能一起发布）中遇到的一大问题：处理一件事很有希望，但是当您实际尝试做一些有趣的事情时，您发现自己做不到。
+
+### 与接口混合
+
+一种更常见的推荐解决方案是使用接口来产生混型效果，就像下面这样：
+
+```java
+// generics/Mixins.java
+
+import java.util.*;
+
+interface TimeStamped { long getStamp(); }
+
+class TimeStampedImp implements TimeStamped {
+  private final long timeStamp;
+  TimeStampedImp() {
+    timeStamp = new Date().getTime();
+  }
+  @Override
+  public long getStamp() { return timeStamp; }
+}
+
+interface SerialNumbered { long getSerialNumber(); }
+
+class SerialNumberedImp implements SerialNumbered {
+  private static long counter = 1;
+  private final long serialNumber = counter++;
+  @Override
+  public long getSerialNumber() { return serialNumber; }
+}
+
+interface Basic {
+  void set(String val);
+  String get();
+}
+
+class BasicImp implements Basic {
+  private String value;
+  @Override
+  public void set(String val) { value = val; }
+  @Override
+  public String get() { return value; }
+}
+
+class Mixin extends BasicImp
+implements TimeStamped, SerialNumbered {
+  private TimeStamped timeStamp = new TimeStampedImp();
+  private SerialNumbered serialNumber =
+    new SerialNumberedImp();
+  @Override
+  public long getStamp() {
+    return timeStamp.getStamp();
+  }
+  @Override
+  public long getSerialNumber() {
+    return serialNumber.getSerialNumber();
+  }
+}
+
+public class Mixins {
+  public static void main(String[] args) {
+    Mixin mixin1 = new Mixin(), mixin2 = new Mixin();
+    mixin1.set("test string 1");
+    mixin2.set("test string 2");
+    System.out.println(mixin1.get() + " " +
+      mixin1.getStamp() +  " " +
+      mixin1.getSerialNumber());
+    System.out.println(mixin2.get() + " " +
+      mixin2.getStamp() +  " " +
+      mixin2.getSerialNumber());
+  }
+}
+/* Output:
+test string 1 1494331663026 1
+test string 2 1494331663027 2
+*/
+```
+
+**Mixin** 类基本上是在使用*代理*，因此每个混入类型都要求在 **Mixin** 中有一个相应的域，而你必须在 **Mixin** 中编写所有必需的方法，将方法调用转发给恰当的对象。这个示例使用了非常简单的类，但是当使用更复杂的混型时，代码数量会急速增加。
+
+### 使用装饰器模式
+
+当你观察混型的使用方式时，就会发现混型概念好像与*装饰器*设计模式关系很近。装饰器经常用于满足各种可能的组合，而直接子类化会产生过多的类，因此是不实际的。
+装饰器模式使用分层对象来动态透明地向单个对象中添加责任。装饰器指定包装在最初的对象周围的所有对象都具有相同的基本接口。某些事物是可装饰的，可以通过将其他类包装在这个可装饰对象的四周，来将功能分层。这使得对装饰器的使用是透明的一—无论对象是否被装饰，你都拥有一个可以向对象发送的公共消息集。装饰类也可以添加新方法，但是正如你所见，这将是受限的。
+装饰器是通过使用组合和形式化结构（可装饰物/装饰器层次结构）来实现的，而混型是基于继承的。因此可以将基于参数化类型的混型当作是一种泛型装饰器机制，这种机制不需要装饰器设计模式的继承结构。
+前面的示例可以被改写为使用装饰器：
+
+```java
+// generics/decorator/Decoration.java
+
+// {java generics.decorator.Decoration}
+package generics.decorator;
+import java.util.*;
+
+class Basic {
+  private String value;
+  public void set(String val) { value = val; }
+  public String get() { return value; }
+}
+
+class Decorator extends Basic {
+  protected Basic basic;
+  Decorator(Basic basic) { this.basic = basic; }
+  @Override
+  public void set(String val) { basic.set(val); }
+  @Override
+  public String get() { return basic.get(); }
+}
+
+class TimeStamped extends Decorator {
+  private final long timeStamp;
+  TimeStamped(Basic basic) {
+    super(basic);
+    timeStamp = new Date().getTime();
+  }
+  public long getStamp() { return timeStamp; }
+}
+
+class SerialNumbered extends Decorator {
+  private static long counter = 1;
+  private final long serialNumber = counter++;
+  SerialNumbered(Basic basic) { super(basic); }
+  public long getSerialNumber() { return serialNumber; }
+}
+
+public class Decoration {
+  public static void main(String[] args) {
+    TimeStamped t = new TimeStamped(new Basic());
+    TimeStamped t2 = new TimeStamped(
+      new SerialNumbered(new Basic()));
+    //- t2.getSerialNumber(); // Not available
+    SerialNumbered s = new SerialNumbered(new Basic());
+    SerialNumbered s2 = new SerialNumbered(
+      new TimeStamped(new Basic()));
+    //- s2.getStamp(); // Not available
+  }
+}
+```
+
+产生自泛型的类包含所有感兴趣的方法，但是由使用装饰器所产生的对象类型是最后被装饰的类型。也就是说，尽管可以添加多个层，但是最后一层才是实际的类型，因此只有最后一层的方法是可视的，而混型的类型是所有被混合到一起的类型。因此对于装饰器来说，其明显的缺陷是它只能有效地工作于装饰中的一层（最后一层），而混型方法显然会更自然一些。因此，装饰器只是对由混型提出的问题的一种局限的解决方案。
+
+### 与动态代理混合
+
+可以使用动态代理来创建一种比装饰器更贴近混型模型的机制（查看类型信息（Type Information） 章中关于 Java 的动态代理如何工作的解释）。通过使用动态代理，所产生的类的动态类型将会是已经混入的组合类型。
+由于动态代理的限制，每个被混入的类都必须是某个接口的实现：
+
+```java
+// generics/DynamicProxyMixin.java
+
+import java.lang.reflect.*;
+import java.util.*;
+import onjava.*;
+import static onjava.Tuple.*;
+
+class MixinProxy implements InvocationHandler {
+  Map<String, Object> delegatesByMethod;
+  @SuppressWarnings("unchecked")
+  MixinProxy(Tuple2<Object, Class<?>>... pairs) {
+    delegatesByMethod = new HashMap<>();
+    for(Tuple2<Object, Class<?>> pair : pairs) {
+      for(Method method : pair.a2.getMethods()) {
+        String methodName = method.getName();
+        // The first interface in the map
+        // implements the method.
+        if(!delegatesByMethod.containsKey(methodName))
+          delegatesByMethod.put(methodName, pair.a1);
+      }
+    }
+  }
+  @Override
+  public Object invoke(Object proxy, Method method,
+    Object[] args) throws Throwable {
+    String methodName = method.getName();
+    Object delegate = delegatesByMethod.get(methodName);
+    return method.invoke(delegate, args);
+  }
+  @SuppressWarnings("unchecked")
+  public static Object newInstance(Tuple2... pairs) {
+    Class[] interfaces = new Class[pairs.length];
+    for(int i = 0; i < pairs.length; i++) {
+      interfaces[i] = (Class)pairs[i].a2;
+    }
+    ClassLoader cl =
+      pairs[0].a1.getClass().getClassLoader();
+    return Proxy.newProxyInstance(
+      cl, interfaces, new MixinProxy(pairs));
+  }
+}
+
+public class DynamicProxyMixin {
+  public static void main(String[] args) {
+    Object mixin = MixinProxy.newInstance(
+      tuple(new BasicImp(), Basic.class),
+      tuple(new TimeStampedImp(), TimeStamped.class),
+      tuple(new SerialNumberedImp(),
+          SerialNumbered.class));
+    Basic b = (Basic)mixin;
+    TimeStamped t = (TimeStamped)mixin;
+    SerialNumbered s = (SerialNumbered)mixin;
+    b.set("Hello");
+    System.out.println(b.get());
+    System.out.println(t.getStamp());
+    System.out.println(s.getSerialNumber());
+  }
+}
+/* Output:
+Hello
+1494331653339
+1
+*/
+```
+
+因为只有动态类型而不是非静态类型才包含所有的混入类型，因此这仍旧不如 C++ 的方式好，因为可以在具有这些类型的对象上调用方法之前，你被强制要求必须先将这些对象向下转型到恰当的类型。但是，它明显地更接近于真正的混型。
+为了让 Java 支持混型，人们已经做了大量的工作朝着这个目标努力，包括创建了至少一种附加语言（ Jam 语言），它是专门用来支持混型的。
 
 <!-- Latent Typing -->
+
 ## 潜在类型
 
 
