@@ -3902,29 +3902,955 @@ GenericSetter.set(Base)
 
 <!-- Exceptions -->
 
+因为可以向 Java SE5 之前的代码传递泛型容器，所以旧式代码仍旧有可能会破坏你的容器，Java SE5 的 **java.util.Collections** 中有一组便利工具，可以解决在这种强况下的类型检查问题，它们是：静态方法`checkedCollection()` 、`checkedList()`、 `checkedMap()` 、 `checkedSet()` 、`checkedSortedMap()`和 `checkedSortedSet()`。这些方法每一个都会将你希望动态检查的容器当作第一个参数接受，并将你希望强制要求的类型作为第二个参数接受。
 
+受检查的容器在你试图插入类型不正确的对象时抛出 **ClassCastException** ，这与泛型之前的（原生）容器形成了对比，对于后者来说，当你将对象从容器中取出时，才会通知你出现了问题。在后一种情况中，你知道存在问题，但是不知道罪魁祸首在哪里，如果使用受检查的容器，就可以发现谁在试图插入不良对象。
+让我们用受检查的容器来看看“将猫插入到狗列表中”这个问题。这里，`oldStyleMethod()` 表示遗留代码，因为它接受的是原生的 **List** ，而 **@SuppressWarnings（“unchecked”）** 注解对于压制所产生的警告是必需的：
+
+```java
+// generics/CheckedList.java
+// Using Collection.checkedList()
+import typeinfo.pets.*;
+import java.util.*;
+
+public class CheckedList {
+  @SuppressWarnings("unchecked")
+  static void oldStyleMethod(List probablyDogs) {
+    probablyDogs.add(new Cat());
+  }
+  public static void main(String[] args) {
+    List<Dog> dogs1 = new ArrayList<>();
+    oldStyleMethod(dogs1); // Quietly accepts a Cat
+    List<Dog> dogs2 = Collections.checkedList(
+      new ArrayList<>(), Dog.class);
+    try {
+      oldStyleMethod(dogs2); // Throws an exception
+    } catch(Exception e) {
+      System.out.println("Expected: " + e);
+    }
+    // Derived types work fine:
+    List<Pet> pets = Collections.checkedList(
+      new ArrayList<>(), Pet.class);
+    pets.add(new Dog());
+    pets.add(new Cat());
+  }
+}
+/* Output:
+Expected: java.lang.ClassCastException: Attempt to
+insert class typeinfo.pets.Cat element into collection
+with element type class typeinfo.pets.Dog
+*/
+```
+
+运行这个程序时，你会发现插入一个 **Cat** 对于 **dogs1** 来说没有任何问题，而 **dogs2** 立即会在这个错误类型的插入操作上抛出一个异常。还可以看到，将导出类型的对象放置到将要检查基类型的受检查容器中是没有问题的。
 
 ## 泛型异常
 
-
 <!-- Mixins -->
-## 混入
 
+由于擦除的原因，将泛型应用于异常是非常受限的。**catch** 语句不能捕获泛型类型的异常，因为在编译期和运行时都必须知道异常的确切类型。泛型类也不能直接或间接继承自 **Throwable**（这将进一步阻止你去定义不能捕获的泛型异常）。
+但是，类型参数可能会在一个方法的 **throws** 子句中用到。这使得你可以编写随检查型异常的类型而发生变化的泛型代码：
+
+```java
+// generics/ThrowGenericException.java
+
+import java.util.*;
+
+interface Processor<T, E extends Exception> {
+  void process(List<T> resultCollector) throws E;
+}
+
+class ProcessRunner<T, E extends Exception>
+extends ArrayList<Processor<T, E>> {
+  List<T> processAll() throws E {
+    List<T> resultCollector = new ArrayList<>();
+    for(Processor<T, E> processor : this)
+      processor.process(resultCollector);
+    return resultCollector;
+  }
+}
+
+class Failure1 extends Exception {}
+
+class Processor1
+implements Processor<String, Failure1> {
+  static int count = 3;
+  @Override
+  public void process(List<String> resultCollector)
+  throws Failure1 {
+    if(count-- > 1)
+      resultCollector.add("Hep!");
+    else
+      resultCollector.add("Ho!");
+    if(count < 0)
+       throw new Failure1();
+  }
+}
+
+class Failure2 extends Exception {}
+
+class Processor2
+implements Processor<Integer, Failure2> {
+  static int count = 2;
+  @Override
+  public void process(List<Integer> resultCollector)
+  throws Failure2 {
+    if(count-- == 0)
+      resultCollector.add(47);
+    else {
+      resultCollector.add(11);
+    }
+    if(count < 0)
+       throw new Failure2();
+  }
+}
+
+public class ThrowGenericException {
+  public static void main(String[] args) {
+    ProcessRunner<String, Failure1> runner =
+      new ProcessRunner<>();
+    for(int i = 0; i < 3; i++)
+      runner.add(new Processor1());
+    try {
+      System.out.println(runner.processAll());
+    } catch(Failure1 e) {
+      System.out.println(e);
+    }
+
+    ProcessRunner<Integer, Failure2> runner2 =
+      new ProcessRunner<>();
+    for(int i = 0; i < 3; i++)
+      runner2.add(new Processor2());
+    try {
+      System.out.println(runner2.processAll());
+    } catch(Failure2 e) {
+      System.out.println(e);
+    }
+  }
+}
+/* Output:
+[Hep!, Hep!, Ho!]
+Failure2
+*/
+```
+
+**Processor** 执行 `process()`，并且可能会抛出具有类型 **E** 的异常。`process()` 的结果存储在 `List<T>resultCollector` 中（这被称为*收集参数*）。**ProcessRunner** 有一个 `processAll()` 方法，它将执行所持有的每个 **Process** 对象，并返回 **resultCollector** 。
+如果不能参数化所抛出的异常，那么由于检查型异常的缘故，将不能编写出这种泛化的代码。
+
+## 混型
+
+术语*混型*随时间的推移好像拥有了无数的含义，但是其最基本的概念是混合多个类的能力，以产生一个可以表示混型中所有类型的类。这往往是你最后的手段，它将使组装多个类变得简单易行。
+混型的价值之一是它们可以将特性和行为一致地应用于多个类之上。如果想在混型类中修改某些东西，作为一种意外的好处，这些修改将会应用于混型所应用的所有类型之上。正由于此，混型有一点*面向切面编程* （AOP） 的味道，而方面经常被建议用来解决混型问题。
+
+### C++中的混型
+
+在 C++ 中，使用多重继承的最大理由，就是为了使用混型。但是，对于混型来说，更有趣、更优雅的方式是使用参数化类型，因为混型就是继承自其类型参数的类。在 C++ 中，可以很容易的创建混型，因为 C++ 能够记住其模版参数的类型。
+下面是一个 C++ 示例，它有两个混型类型：一个使得你可以在每个对象中混入拥有一个时间戳这样的属性，而另一个可以混入一个序列号。
+
+```cpp
+// generics/Mixins.cpp
+
+#include <string>
+#include <ctime>
+#include <iostream>
+using namespace std;
+
+template<class T> class TimeStamped : public T {
+  long timeStamp;
+public:
+  TimeStamped() { timeStamp = time(0); }
+  long getStamp() { return timeStamp; }
+};
+
+template<class T> class SerialNumbered : public T {
+  long serialNumber;
+  static long counter;
+public:
+  SerialNumbered() { serialNumber = counter++; }
+  long getSerialNumber() { return serialNumber; }
+};
+
+// Define and initialize the static storage:
+template<class T> long SerialNumbered<T>::counter = 1;
+
+class Basic {
+  string value;
+public:
+  void set(string val) { value = val; }
+  string get() { return value; }
+};
+
+int main() {
+  TimeStamped<SerialNumbered<Basic>> mixin1, mixin2;
+  mixin1.set("test string 1");
+  mixin2.set("test string 2");
+  cout << mixin1.get() << " " << mixin1.getStamp() <<
+    " " << mixin1.getSerialNumber() << endl;
+  cout << mixin2.get() << " " << mixin2.getStamp() <<
+    " " << mixin2.getSerialNumber() << endl;
+}
+/* Output:
+test string 1 1452987605 1
+test string 2 1452987605 2
+*/
+```
+
+在 `main()` 中， **mixin1** 和 **mixin2** 所产生的类型拥有所混入类型的所有方法。可以将混型看作是一种功能，它可以将现有类映射到新的子类上。注意，使用这种技术来创建一个混型是多么地轻而易举。基本上，只需要声明“这就是我想要的”，紧跟着它就发生了：
+
+```
+TimeStamped<SerialNumbered<Basic>> mixin1，mixin2；
+```
+
+遗憾的是，Java泛型不允许这样。擦除会忘记基类类型，因此
+
+>  泛型类不能直接继承自一个泛型参数
+
+这突显了许多我在Java语言设计决策（以及与这些功能一起发布）中遇到的一大问题：处理一件事很有希望，但是当您实际尝试做一些有趣的事情时，您发现自己做不到。
+
+### 与接口混合
+
+一种更常见的推荐解决方案是使用接口来产生混型效果，就像下面这样：
+
+```java
+// generics/Mixins.java
+
+import java.util.*;
+
+interface TimeStamped { long getStamp(); }
+
+class TimeStampedImp implements TimeStamped {
+  private final long timeStamp;
+  TimeStampedImp() {
+    timeStamp = new Date().getTime();
+  }
+  @Override
+  public long getStamp() { return timeStamp; }
+}
+
+interface SerialNumbered { long getSerialNumber(); }
+
+class SerialNumberedImp implements SerialNumbered {
+  private static long counter = 1;
+  private final long serialNumber = counter++;
+  @Override
+  public long getSerialNumber() { return serialNumber; }
+}
+
+interface Basic {
+  void set(String val);
+  String get();
+}
+
+class BasicImp implements Basic {
+  private String value;
+  @Override
+  public void set(String val) { value = val; }
+  @Override
+  public String get() { return value; }
+}
+
+class Mixin extends BasicImp
+implements TimeStamped, SerialNumbered {
+  private TimeStamped timeStamp = new TimeStampedImp();
+  private SerialNumbered serialNumber =
+    new SerialNumberedImp();
+  @Override
+  public long getStamp() {
+    return timeStamp.getStamp();
+  }
+  @Override
+  public long getSerialNumber() {
+    return serialNumber.getSerialNumber();
+  }
+}
+
+public class Mixins {
+  public static void main(String[] args) {
+    Mixin mixin1 = new Mixin(), mixin2 = new Mixin();
+    mixin1.set("test string 1");
+    mixin2.set("test string 2");
+    System.out.println(mixin1.get() + " " +
+      mixin1.getStamp() +  " " +
+      mixin1.getSerialNumber());
+    System.out.println(mixin2.get() + " " +
+      mixin2.getStamp() +  " " +
+      mixin2.getSerialNumber());
+  }
+}
+/* Output:
+test string 1 1494331663026 1
+test string 2 1494331663027 2
+*/
+```
+
+**Mixin** 类基本上是在使用*代理*，因此每个混入类型都要求在 **Mixin** 中有一个相应的域，而你必须在 **Mixin** 中编写所有必需的方法，将方法调用转发给恰当的对象。这个示例使用了非常简单的类，但是当使用更复杂的混型时，代码数量会急速增加。
+
+### 使用装饰器模式
+
+当你观察混型的使用方式时，就会发现混型概念好像与*装饰器*设计模式关系很近。装饰器经常用于满足各种可能的组合，而直接子类化会产生过多的类，因此是不实际的。
+装饰器模式使用分层对象来动态透明地向单个对象中添加责任。装饰器指定包装在最初的对象周围的所有对象都具有相同的基本接口。某些事物是可装饰的，可以通过将其他类包装在这个可装饰对象的四周，来将功能分层。这使得对装饰器的使用是透明的一—无论对象是否被装饰，你都拥有一个可以向对象发送的公共消息集。装饰类也可以添加新方法，但是正如你所见，这将是受限的。
+装饰器是通过使用组合和形式化结构（可装饰物/装饰器层次结构）来实现的，而混型是基于继承的。因此可以将基于参数化类型的混型当作是一种泛型装饰器机制，这种机制不需要装饰器设计模式的继承结构。
+前面的示例可以被改写为使用装饰器：
+
+```java
+// generics/decorator/Decoration.java
+
+// {java generics.decorator.Decoration}
+package generics.decorator;
+import java.util.*;
+
+class Basic {
+  private String value;
+  public void set(String val) { value = val; }
+  public String get() { return value; }
+}
+
+class Decorator extends Basic {
+  protected Basic basic;
+  Decorator(Basic basic) { this.basic = basic; }
+  @Override
+  public void set(String val) { basic.set(val); }
+  @Override
+  public String get() { return basic.get(); }
+}
+
+class TimeStamped extends Decorator {
+  private final long timeStamp;
+  TimeStamped(Basic basic) {
+    super(basic);
+    timeStamp = new Date().getTime();
+  }
+  public long getStamp() { return timeStamp; }
+}
+
+class SerialNumbered extends Decorator {
+  private static long counter = 1;
+  private final long serialNumber = counter++;
+  SerialNumbered(Basic basic) { super(basic); }
+  public long getSerialNumber() { return serialNumber; }
+}
+
+public class Decoration {
+  public static void main(String[] args) {
+    TimeStamped t = new TimeStamped(new Basic());
+    TimeStamped t2 = new TimeStamped(
+      new SerialNumbered(new Basic()));
+    //- t2.getSerialNumber(); // Not available
+    SerialNumbered s = new SerialNumbered(new Basic());
+    SerialNumbered s2 = new SerialNumbered(
+      new TimeStamped(new Basic()));
+    //- s2.getStamp(); // Not available
+  }
+}
+```
+
+产生自泛型的类包含所有感兴趣的方法，但是由使用装饰器所产生的对象类型是最后被装饰的类型。也就是说，尽管可以添加多个层，但是最后一层才是实际的类型，因此只有最后一层的方法是可视的，而混型的类型是所有被混合到一起的类型。因此对于装饰器来说，其明显的缺陷是它只能有效地工作于装饰中的一层（最后一层），而混型方法显然会更自然一些。因此，装饰器只是对由混型提出的问题的一种局限的解决方案。
+
+### 与动态代理混合
+
+可以使用动态代理来创建一种比装饰器更贴近混型模型的机制（查看类型信息（Type Information） 章中关于 Java 的动态代理如何工作的解释）。通过使用动态代理，所产生的类的动态类型将会是已经混入的组合类型。
+由于动态代理的限制，每个被混入的类都必须是某个接口的实现：
+
+```java
+// generics/DynamicProxyMixin.java
+
+import java.lang.reflect.*;
+import java.util.*;
+import onjava.*;
+import static onjava.Tuple.*;
+
+class MixinProxy implements InvocationHandler {
+  Map<String, Object> delegatesByMethod;
+  @SuppressWarnings("unchecked")
+  MixinProxy(Tuple2<Object, Class<?>>... pairs) {
+    delegatesByMethod = new HashMap<>();
+    for(Tuple2<Object, Class<?>> pair : pairs) {
+      for(Method method : pair.a2.getMethods()) {
+        String methodName = method.getName();
+        // The first interface in the map
+        // implements the method.
+        if(!delegatesByMethod.containsKey(methodName))
+          delegatesByMethod.put(methodName, pair.a1);
+      }
+    }
+  }
+  @Override
+  public Object invoke(Object proxy, Method method,
+    Object[] args) throws Throwable {
+    String methodName = method.getName();
+    Object delegate = delegatesByMethod.get(methodName);
+    return method.invoke(delegate, args);
+  }
+  @SuppressWarnings("unchecked")
+  public static Object newInstance(Tuple2... pairs) {
+    Class[] interfaces = new Class[pairs.length];
+    for(int i = 0; i < pairs.length; i++) {
+      interfaces[i] = (Class)pairs[i].a2;
+    }
+    ClassLoader cl =
+      pairs[0].a1.getClass().getClassLoader();
+    return Proxy.newProxyInstance(
+      cl, interfaces, new MixinProxy(pairs));
+  }
+}
+
+public class DynamicProxyMixin {
+  public static void main(String[] args) {
+    Object mixin = MixinProxy.newInstance(
+      tuple(new BasicImp(), Basic.class),
+      tuple(new TimeStampedImp(), TimeStamped.class),
+      tuple(new SerialNumberedImp(),
+          SerialNumbered.class));
+    Basic b = (Basic)mixin;
+    TimeStamped t = (TimeStamped)mixin;
+    SerialNumbered s = (SerialNumbered)mixin;
+    b.set("Hello");
+    System.out.println(b.get());
+    System.out.println(t.getStamp());
+    System.out.println(s.getSerialNumber());
+  }
+}
+/* Output:
+Hello
+1494331653339
+1
+*/
+```
+
+因为只有动态类型而不是非静态类型才包含所有的混入类型，因此这仍旧不如 C++ 的方式好，因为可以在具有这些类型的对象上调用方法之前，你被强制要求必须先将这些对象向下转型到恰当的类型。但是，它明显地更接近于真正的混型。
+为了让 Java 支持混型，人们已经做了大量的工作朝着这个目标努力，包括创建了至少一种附加语言（ Jam 语言），它是专门用来支持混型的。
 
 <!-- Latent Typing -->
-## 潜在类型
 
+## 潜在类型机制
+
+在本章的开头介绍过这样的思想，即要编写能够尽可能广泛地应用的代码。为了实现这一点，我们需要各种途径来放松对我们的代码将要作用的类型所作的限制，同时不丢失静态类型检查的好处。然后，我们就可以编写出无需修改就可以应用于更多情况的代码，即更加“泛化”的代码。
+Java泛型看起来是向这一方向迈进了一步。当你在编写或使用只是持有对象的泛型时，这些代码将可以工作于任何类型（除了基本类型，尽管正如你所见到的，自动包装机制可以克服这一点）。或者，换个角度讲，“持有器”泛型能够声明：“我不关心你是什么类型”。如果代码不关心它将要作用的类型，那么这种代码就可以真正地应用于任何地方，并因此而相当泛化。
+
+还是正如你所见到的，当要在泛型类型上执行操作（即调用 **Object** 方法之前的操作）时，就会产生问题，因为擦除要求指定可能会用到的泛型类型的边界，以安全地调用代码中的泛型对象上的具体方法。这是对“泛化”概念的一种明显的限制，因为必须限制你的泛型类型，使它们继承自特定的类，或者实现特定的接口。在某些情况下，你最终可能会使用普通类或普通接口，因为限定边界的泛型可能会和指定类或接口没有任何区别。
+某些编程语言提供的一种解决方案称为潜在类型机制或结构化类型机制，而更古怪的术语称为鸭子类型机制，即“如果它走起来像鸭子，并且叫起来也像鸭子，那么你就可以将它当作鸭子对待。”鸭子类型机制变成了一种相当流行的术语，可能是因为它不像其他的术语那样承载着历史的包袱。
+泛型代码典型地将在泛型类型上调用少量方法，而具有潜在类型机制的语言只要求实现某个方法子集，而不是某个特定类或接口，从而放松了这种限制（并且可以产生更加泛化的代码）。正由于此，潜在类型机制使得你可以横跨类继承结构，调用不属于某个公共接口的方法。因此，实际上一段代码可以声明：“我不关心你是什么类型，只要你可以 `speak()` 和 `sit()` 即可。”由于不要求具体类型，因此代码就可以更加泛化。
+潜在类型机制是一种代码组织和复用机制。有了它编写出的代码相对于没有它编写出的代码，能够更容易地复用。代码组织和复用是所有计算机编程的基本手段：编写一次，多次使用，并在一个位置保存代码。因为我并未被要求去命名我的代码要操作于其上的确切接口，所以，有了潜在类型机制，我就可以编写更少的代码，并更容易地将其应用于多个地方。
+两种支持潜在类型机制的语言实例是 Python （可以从www.Python.org免费下载）和 C++。Python是动态类型语言（事实上所有的类型检查都发生在运行时），而C++是静态类型语言（类型检查发生在编译期），因此潜在类型机制不要求静态或动态类型检查。
+
+### pyhton 中的潜在类型
+
+如果我们将上面的描述用 Python 来表示，如下所示：
+
+```python
+# generics/DogsAndRobots.py
+
+class Dog:
+    def speak(self):
+        print("Arf!")
+    def sit(self):
+        print("Sitting")
+    def reproduce(self):
+        pass
+
+class Robot:
+    def speak(self):
+        print("Click!")
+    def sit(self):
+        print("Clank!")
+    def oilChange(self):
+        pass
+
+def perform(anything):
+    anything.speak()
+    anything.sit()
+
+a = Dog()
+b = Robot()
+perform(a)
+perform(b)
+
+output = """
+Arf!
+Sitting
+Click!
+Clank!
+"""
+```
+
+Python 使用缩进来确定作用域（因此不需要任何花括号），而冒号将表示新的作用域的开始。“**#**” 表示注释到行尾，就像Java中的 “ **//** ”。类的方法需要显式地指定 **this** 引用的等价物作为第一个参数，按惯例成为 **self** 。构造器调用不要求任何类型的“ **new** ”关键字，并且 Python 允许正则（非成员）函数，就像 `perform()` 所表明的那样。注意，在 `perform(anything)`中，没有任何针对 **anything** 的类型，**anything** 只是一个标识符，它必须能够执行 `perform()` 期望它执行的操作，因此这里隐含着一个接口。但是你从来都不必显式地写出这个接口——它是潜在的。`perform()` 不关心其参数的类型，因此我可以向它传递任何对象，只要该对象支持  `speak()` 和 `sit()`方法。如果传递给 `perform()` 的对象不支持这些操作，那么将会得到运行时异常。
+
+输出规定使用三重引号创建带有嵌入式换行符的字符串。
+
+### C++ 中的潜在类型
+
+我们可以用C++产生相同的效果：
+
+```cpp
+// generics/DogsAndRobots.cpp
+
+#include <iostream>
+using namespace std;
+
+class Dog {
+public:
+  void speak() { cout << "Arf!" << endl; }
+  void sit() { cout << "Sitting" << endl; }
+  void reproduce() {}
+};
+
+class Robot {
+public:
+  void speak() { cout << "Click!" << endl; }
+  void sit() { cout << "Clank!" << endl; }
+  void oilChange() {}
+};
+
+template<class T> void perform(T anything) {
+  anything.speak();
+  anything.sit();
+}
+
+int main() {
+  Dog d;
+  Robot r;
+  perform(d);
+  perform(r);
+}
+/* Output:
+Arf!
+Sitting
+Click!
+Clank!
+*/
+```
+
+在 Python 和 C++ 中，**Dog** 和 **Robot** 没有任何共同的东西，只是碰巧有两个方法具有相同的签名。从类型的观点看，它们是完全不同的类型。但是，`perform()` 不关心其参数的具体类型，并且潜在类型机制允许它接受这两种类型的对象。
+C++ 确保了它实际上可以发送的那些消息，如果试图传递错误类型，编译器就会给你一个错误消息（这些错误消息从历史上看是相当可怕和冗长的，而主要原因是因为 C++ 的模版名声欠佳）。尽管它们是在不同时期实现这一点的，C++ 在编译期，而 Python 在运行时，但是这两种语言都可以确保类型不会被误用，因此被认为是强类型的。潜在类型机制没有损害强类型机制。
+
+### Go 中的潜在类型
+
+这是用Go语言编写的相同程序：
+
+```java
+// generics/dogsandrobots.go
+
+package main
+import "fmt"
+
+type Dog struct {}
+func (this Dog) speak() { fmt.Printf("Arf!\n")}
+func (this Dog) sit() { fmt.Printf("Sitting\n")}
+func (this Dog) reproduce() {}
+
+type Robot struct {}
+func (this Robot) speak() { fmt.Printf("Click!\n") }
+func (this Robot) sit() { fmt.Printf("Clank!\n") }
+func (this Robot) oilChange() {}
+
+func perform(speaker interface { speak(); sit() }) {
+  speaker.speak();
+  speaker.sit();
+}
+
+func main() {
+  perform(Dog{})
+  perform(Robot{})
+}
+/* Output:
+Arf!
+Sitting
+Click!
+Clank!
+*/
+```
+
+Go 没有 **class** 关键字，但是可以使用上述形式创建等效的基本类：它通常不定义为类，而是将其定义为 **struct** ，在其中定义数据字段（此处不存在）。 对于每种方法，都以 **func** 关键字开头，然后（为了将该方法附加到您的类上）放在括号中，该括号包含对象引用，该对象引用可以是任何标识符，但是我在这里使用 **this** 来提醒您，就像在 C ++ 或 Java 中的 **this** 一样。 然后，在Go中像这样定义其余的函数。
+
+Go也没有继承关系，因此这种“面向对象的目标”形式是相对原始的，并且可能是我无法花更多的时间来学习该语言的主要的原因。 但是，Go 的组成很简单。
+
+`perform()` 函数使用潜在类型：参数的确切类型并不重要，只要它包含了 `speak()` 和  `sit()` 方法即可。 该接口在此处匿名定义，内联，如 `perform()` 的参数列表所示。
+
+`main()` 证明 `perform()` 确实对其参数的确切类型无关紧要，只要可以在该参数上调用 `talk()` 和 `sit()` 即可。 但是，就像 C ++ 模板函数一样，在编译时检查类型。
+
+语法 **Dog {}** 和 **Robot {}** 创建匿名的 **Dog** 和 **Robot** 结构。
+
+### java中的直接潜在类型
+
+因为泛型是在这场竞赛的后期才添加到 Java 中的，因此没有任何机会可以去实现任何类型的潜在类型机制，因此  Java 没有对这种特性的支持。所以，初看起来，Java 的泛型机制比支持潜在类型机制的语言更“缺乏泛化性”。（使用删除来实现Java泛型的实现有时称为第二类泛型类型）例如，在 Java8 之前如果我们试图用 Java 实现上面 dogs-and-robots 的示例，那么就会被强制要求使用一个类或接口，并在边界表达式中指定它：
+
+```java
+// generics/Performs.java
+
+public interface Performs {
+  void speak();
+  void sit();
+}
+```
+
+```java
+// generics/DogsAndRobots.java
+// No (direct) latent typing in Java
+import typeinfo.pets.*;
+
+class PerformingDog extends Dog implements Performs {
+  @Override
+  public void speak() { System.out.println("Woof!"); }
+  @Override
+  public void sit() { System.out.println("Sitting"); }
+  public void reproduce() {}
+}
+
+class Robot implements Performs {
+  public void speak() { System.out.println("Click!"); }
+  public void sit() { System.out.println("Clank!"); }
+  public void oilChange() {}
+}
+
+class Communicate {
+  public static <T extends Performs>
+  void perform(T performer) {
+    performer.speak();
+    performer.sit();
+  }
+}
+
+public class DogsAndRobots {
+  public static void main(String[] args) {
+    Communicate.perform(new PerformingDog());
+    Communicate.perform(new Robot());
+  }
+}
+/* Output:
+Woof!
+Sitting
+Click!
+Clank!
+*/
+```
+
+但是要注意，`perform()` 不需要使用泛型来工作，它可以被简单地指定为接受一个 **Performs** 对象：
+
+```java
+// generics/SimpleDogsAndRobots.java
+// Removing the generic; code still works
+
+class CommunicateSimply {
+  static void perform(Performs performer) {
+    performer.speak();
+    performer.sit();
+  }
+}
+
+public class SimpleDogsAndRobots {
+  public static void main(String[] args) {
+    CommunicateSimply.perform(new PerformingDog());
+    CommunicateSimply.perform(new Robot());
+  }
+}
+/* Output:
+Woof!
+Sitting
+Click!
+Clank!
+*/
+```
+
+在本例中，泛型不是必需的，因为这些类已经被强制要求实现 **Performs** 接口。
 
 <!-- Compensating for the Lack of (Direct) Latent -->
-## 补偿不足
+
+## 对缺乏潜在类型机制的补偿
+
+尽管 Java 不支持潜在类型机制，但是这并不意味着有界泛型代码不能在不同的类型层次结构之间应用。也就是说，我们仍旧可以创建真正的泛型代码，但是这需要付出一些额外的努力。
+
+### 反射
+
+可以使用的一种方式是反射，下面的 `perform()` 方法就是用了潜在类型机制：
+
+```java
+// generics/LatentReflection.java
+// Using reflection for latent typing
+import java.lang.reflect.*;
+
+// Does not implement Performs:
+class Mime {
+  public void walkAgainstTheWind() {}
+  public void sit() {
+    System.out.println("Pretending to sit");
+  }
+  public void pushInvisibleWalls() {}
+  @Override
+  public String toString() { return "Mime"; }
+}
+
+// Does not implement Performs:
+class SmartDog {
+  public void speak() { System.out.println("Woof!"); }
+  public void sit() { System.out.println("Sitting"); }
+  public void reproduce() {}
+}
+
+class CommunicateReflectively {
+  public static void perform(Object speaker) {
+    Class<?> spkr = speaker.getClass();
+    try {
+      try {
+        Method speak = spkr.getMethod("speak");
+        speak.invoke(speaker);
+      } catch(NoSuchMethodException e) {
+        System.out.println(speaker + " cannot speak");
+      }
+      try {
+        Method sit = spkr.getMethod("sit");
+        sit.invoke(speaker);
+      } catch(NoSuchMethodException e) {
+        System.out.println(speaker + " cannot sit");
+      }
+    } catch(SecurityException |
+            IllegalAccessException |
+            IllegalArgumentException |
+            InvocationTargetException e) {
+      throw new RuntimeException(speaker.toString(), e);
+    }
+  }
+}
+
+public class LatentReflection {
+  public static void main(String[] args) {
+    CommunicateReflectively.perform(new SmartDog());
+    CommunicateReflectively.perform(new Robot());
+    CommunicateReflectively.perform(new Mime());
+  }
+}
+/* Output:
+Woof!
+Sitting
+Click!
+Clank!
+Mime cannot speak
+Pretending to sit
+*/
+```
+
+上例中，这些类完全是彼此分离的，没有任何公共基类（除了 **Object** ）或接口。通过反射, `CommunicateReflectively.perform()` 能够动态地确定所需要的方法是否可用并调用它们。它甚至能够处理 **Mime** 只具有一个必需的方法这一事实，并能够部分实现其目标。
+
+### 将一个方法应用于序列
+
+反射提供了一些有趣的可能性，但是它将所有的类型检查都转移到了运行时，因此在许多情况下并不是我们所希望的。如果能够实现编译期类型检查，这通常会更符合要求。但是有可能实现编译期类型检查和潜在类型机制吗？
+
+让我们看一个说明这个问题的示例。假设想要创建一个 `apply()` 方法，它能够将任何方法应用于某个序列中的所有对象。这是接口看起来并不适合的情况，因为你想要将任何方法应用于一个对象集合，而接口对于描述“任何方法”存在过多的限制。如何用Java来实现这个需求呢？
+
+最初，我们可以用反射来解决这个问题，由于有了 Java 的可变参数，这种方式被证明是相当优雅的：
+
+```java
+// generics/Apply.java
+
+import java.lang.reflect.*;
+import java.util.*;
+
+public class Apply {
+  public static <T, S extends Iterable<T>>
+  void apply(S seq, Method f, Object... args) {
+    try {
+      for(T t: seq)
+        f.invoke(t, args);
+    } catch(IllegalAccessException |
+            IllegalArgumentException |
+            InvocationTargetException e) {
+      // Failures are programmer errors
+      throw new RuntimeException(e);
+    }
+  }
+}
+```
+
+在 **Apply.java** 中，异常被转换为 **RuntimeException** ，因为没有多少办法可以从这种异常中恢复——在这种情况下，它们实际上代表着程序员的错误。
+
+为什么我们不只使用 Java 8 方法参考（稍后显示）而不是反射方法 **f** ？ 注意，`invoke()` 和 `apply()` 的优点是它们可以接受任意数量的参数。 在某些情况下，灵活性可能至关重要。
+
+为了测试 **Apply** ，我们首先创建一个 **Shape** 类：
+
+```java
+// generics/Shape.java
+
+public class Shape {
+  private static long counter = 0;
+  private final long id = counter++;
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " " + id;
+  }
+  public void rotate() {
+    System.out.println(this + " rotate");
+  }
+  public void resize(int newSize) {
+    System.out.println(this + " resize " + newSize);
+  }
+}
+```
+
+被一个子类 **Square** 继承：
+
+```java
+// generics/Square.java
+
+public class Square extends Shape {}
+```
+
+通过这些，我们可以测试 **Apply**：
+
+```java
+// generics/ApplyTest.java
+
+import java.util.*;
+import java.util.function.*;
+import onjava.*;
+
+public class ApplyTest {
+  public static
+  void main(String[] args) throws Exception {
+    List<Shape> shapes =
+      Suppliers.create(ArrayList::new, Shape::new, 3);
+    Apply.apply(shapes,
+      Shape.class.getMethod("rotate"));
+    Apply.apply(shapes,
+      Shape.class.getMethod("resize", int.class), 7);
+
+    List<Square> squares =
+      Suppliers.create(ArrayList::new, Square::new, 3);
+    Apply.apply(squares,
+      Shape.class.getMethod("rotate"));
+    Apply.apply(squares,
+      Shape.class.getMethod("resize", int.class), 7);
+
+    Apply.apply(new FilledList<>(Shape::new, 3),
+      Shape.class.getMethod("rotate"));
+    Apply.apply(new FilledList<>(Square::new, 3),
+      Shape.class.getMethod("rotate"));
+
+    SimpleQueue<Shape> shapeQ = Suppliers.fill(
+      new SimpleQueue<>(), SimpleQueue::add,
+      Shape::new, 3);
+    Suppliers.fill(shapeQ, SimpleQueue::add,
+      Square::new, 3);
+    Apply.apply(shapeQ,
+      Shape.class.getMethod("rotate"));
+  }
+}
+/* Output:
+Shape 0 rotate
+Shape 1 rotate
+Shape 2 rotate
+Shape 0 resize 7
+Shape 1 resize 7
+Shape 2 resize 7
+Square 3 rotate
+Square 4 rotate
+Square 5 rotate
+Square 3 resize 7
+Square 4 resize 7
+Square 5 resize 7
+Shape 6 rotate
+Shape 7 rotate
+Shape 8 rotate
+Square 9 rotate
+Square 10 rotate
+Square 11 rotate
+Shape 12 rotate
+Shape 13 rotate
+Shape 14 rotate
+Square 15 rotate
+Square 16 rotate
+Square 17 rotate
+*/
+```
+
+在 **Apply** 中，我们运气很好，因为碰巧在 Java 中内建了一个由 Java 容器类库使用的 **Iterable** 接口。正由于此， `apply()` 方法可以接受任何实现了 **Iterable** 接口的事物，包括诸如 **List** 这样的所有 **Collection** 类。但是它还可以接受其他任何事物，只要能够使这些事物是 **Iterable** 的一例如，在 `main()` 中使用的下面定义的 **SimpleQueue** 类：
+
+```java
+// generics/SimpleQueue.java
+
+// A different kind of Iterable collection
+import java.util.*;
+
+public class SimpleQueue<T> implements Iterable<T> {
+  private LinkedList<T> storage = new LinkedList<>();
+  public void add(T t) { storage.offer(t); }
+  public T get() { return storage.poll(); }
+  @Override
+  public Iterator<T> iterator() {
+    return storage.iterator();
+  }
+}
+```
+
+正如反射解决方案看起来那样优雅，我们必须观察到反射（尽管在Java的最新版本中得到了显着改进）通常比非反射实现要慢，因为在运行时发生了很多事情。 但它不应阻止您尝试这种解决方案，这依然是值得考虑的一点。
+
+几乎可以肯定，你会首先使用 Java 8 功能方法，并且只有在解决了特殊需求时才诉诸反射。 这里对 **ApplyTest.java** 进行了重写，以利用 Java 8 的流和函数工具：
+
+```java
+// generics/ApplyFunctional.java
+
+import java.util.*;
+import java.util.stream.*;
+import java.util.function.*;
+import onjava.*;
+
+public class ApplyFunctional {
+  public static void main(String[] args) {
+    Stream.of(
+      Stream.generate(Shape::new).limit(2),
+      Stream.generate(Square::new).limit(2))
+      .flatMap(c -> c) // flatten into one stream
+      .peek(Shape::rotate)
+      .forEach(s -> s.resize(7));
+
+    new FilledList<>(Shape::new, 2)
+      .forEach(Shape::rotate);
+    new FilledList<>(Square::new, 2)
+      .forEach(Shape::rotate);
+
+    SimpleQueue<Shape> shapeQ = Suppliers.fill(
+      new SimpleQueue<>(), SimpleQueue::add,
+      Shape::new, 2);
+    Suppliers.fill(shapeQ, SimpleQueue::add,
+      Square::new, 2);
+    shapeQ.forEach(Shape::rotate);
+  }
+}
+/* Output:
+Shape 0 rotate
+Shape 0 resize 7
+Shape 1 rotate
+Shape 1 resize 7
+Square 2 rotate
+Square 2 resize 7
+Square 3 rotate
+Square 3 resize 7
+Shape 4 rotate
+Shape 5 rotate
+Square 6 rotate
+Square 7 rotate
+Shape 8 rotate
+Shape 9 rotate
+Square 10 rotate
+Square 11 rotate
+*/
+```
+
+<未完待续>
+
+
+
 
 
 <!-- Assisted Latent Typing in Java 8 -->
-## 辅助潜在类型
+
+## Java8 中的辅助潜在类型
 
 
 <!-- Summary: Is Casting Really So Bad? -->
-## 泛型的优劣
+## 总结：类型转换真的如此之糟吗？
+
+
+
+
 
 
 
