@@ -4834,18 +4834,203 @@ Square 11 rotate
 */
 ```
 
-<未完待续>
+由于使用 Java 8，因此不需要 `Apply.apply()` 。
 
+我们首先生成两个 **Stream** ： 一个是 **Shape** ，一个是 **Square** ，并将它们展平为单个流。 尽管 Java 缺少功能语言中经常出现的 `flatten()` ，但是我们可以使用 `flatMap(c-> c)` 产生相同的结果，后者使用身份映射将操作简化为“  **flatten** ”。
 
+我们使用 `peek()` 当做对 `rotate()` 的调用，因为 `peek()` 执行一个操作（此处是出于副作用），并在未更改的情况下传递对象。
 
-
+注意，使用 **FilledList** 和 **shapeQ** 调用 `forEach()` 比 `Apply.apply()` 代码整洁得多。 在代码简单性和可读性方面，结果比以前的方法好得多。 并且，现在也不可能从  `main()` 引发异常。
 
 <!-- Assisted Latent Typing in Java 8 -->
 
 ## Java8 中的辅助潜在类型
 
+先前声明关于 Java 缺乏对潜在类型的支持在 Java 8 之前是完全正确的。但是，Java 8 中的非绑定方法引用使我们能够产生一种潜在类型的形式，该形式可以满足创建可在不相关类型上工作的单段代码的要求。 由于 Java 最初并不是设计用于执行此操作的，因此，正如现在可能期望的那样，其结果比其他语言要尴尬得多。
+
+我没有在其他地方遇到过这种技术，因此我将其称为辅助潜在类型。
+
+我们将重写 **DogsAndRobots.java** 来演示该技术。 为使外观看起来与原始示例尽可能相似，我仅向每个原始类名添加了 **A** ：
+
+```java
+// generics/DogsAndRobotMethodReferences.java
+
+// "Assisted Latent Typing"
+import typeinfo.pets.*;
+import java.util.function.*;
+
+class PerformingDogA extends Dog {
+  public void speak() { System.out.println("Woof!"); }
+  public void sit() { System.out.println("Sitting"); }
+  public void reproduce() {}
+}
+
+class RobotA {
+  public void speak() { System.out.println("Click!"); }
+  public void sit() { System.out.println("Clank!"); }
+  public void oilChange() {}
+}
+
+class CommunicateA {
+  public static <P> void perform(P performer,
+    Consumer<P> action1, Consumer<P> action2) {
+    action1.accept(performer);
+    action2.accept(performer);
+  }
+}
+
+public class DogsAndRobotMethodReferences {
+  public static void main(String[] args) {
+    CommunicateA.perform(new PerformingDogA(),
+      PerformingDogA::speak, PerformingDogA::sit);
+    CommunicateA.perform(new RobotA(),
+      RobotA::speak, RobotA::sit);
+    CommunicateA.perform(new Mime(),
+      Mime::walkAgainstTheWind,
+      Mime::pushInvisibleWalls);
+  }
+}
+/* Output:
+Woof!
+Sitting
+Click!
+Clank!
+*/
+```
+
+**PerformingDogA** 和 **RobotA** 与 **DogsAndRobots.java** 中的相同，不同之处在于它们不继承通用接口 **Performs** ，因此它们没有通用性。
+
+`CommunicateA.perform()` 在没有约束的 **P** 上生成。 只要可以使用 `Consumer <P>`，它在这里就可以是任何东西，这些 `Consumer <P>` 代表不带参数的 **P** 方法的未绑定方法引用。 当您调用消费者的 `accept()` 方法时，它将方法引用绑定到执行者对象并调用该方法。 由于“函数式编程”一章中描述的“魔术”，我们可以将任何符合签名的未绑定方法引用传递给 `CommunicateA.perform()` 。
+
+之所以称其为“辅助”，是因为您必须显式地为 `perform()` 提供要使用的方法引用。 它不能只按名称调用方法。
+
+尽管传递未绑定的方法引用似乎要花很多力气，但潜在类型的最终目标还是可以实现的。 我们创建了一个代码片段 `CommunicateA.perform()` ，该代码可用于任何具有符合签名的方法引用的类型。 请注意，这与我们看到的其他语言中的潜在类型有所不同，因为这些语言不仅需要签名以符合规范，还需要方法名称。 因此，该技术可以说产生了更多的通用代码。
+
+为了证明这一点，我还从 **LatentReflection.java** 中引入了 **Mime** 。
+
+使用**Suppliers**类的通用方法
+
+通过辅助潜在类型，我们可以定义本章其他部分中使用的 **Suppliers** 类。 此类包含使用生成器填充 **Collection** 的实用程序方法。 “通用化”这些操作很有意义：
+
+```java
+// onjava/Suppliers.java
+
+// A utility to use with Suppliers
+package onjava;
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+
+public class Suppliers {
+  // Create a collection and fill it:
+  public static <T, C extends Collection<T>> C
+  create(Supplier<C> factory, Supplier<T> gen, int n) {
+    return Stream.generate(gen)
+      .limit(n)
+      .collect(factory, C::add, C::addAll);
+  }
+  // Fill an existing collection:
+  public static <T, C extends Collection<T>>
+  C fill(C coll, Supplier<T> gen, int n) {
+    Stream.generate(gen)
+      .limit(n)
+      .forEach(coll::add);
+    return coll;
+  }
+  // Use an unbound method reference to
+  // produce a more general method:
+  public static <H, A> H fill(H holder,
+    BiConsumer<H, A> adder, Supplier<A> gen, int n) {
+    Stream.generate(gen)
+      .limit(n)
+      .forEach(a -> adder.accept(holder, a));
+    return holder;
+  }
+}
+```
+
+`create()` 为你创建一个新的 **Collection** 子类型，而 `fill()` 的第一个版本将元素放入 **Collection** 的现有子类型中。 请注意，还会返回传入的容器的确切类型，因此不会丢失类型信息。
+
+前两种方法一般都受约束以与 **Collection** 子类型一起使用。`fill()` 的第二个版本适用于任何类型的 **holder** 。 它需要一个附加参数：未绑定方法引用 `adder. fill()` ，使用辅助潜在类型来使其与任何具有添加元素方法的 **holder** 类型一起使用。因为此未绑定方法 **adder** 必须带有一个参数（要添加到 **holder** 的元素），所以 **adder** 必须是 `BiConsumer <H，A>` ，其中 **H** 是要绑定到的 **holder** 对象的类型，而 **A** 是要被添加的绑定元素类型。 对 `accept()` 的调用将使用参数a调用对象 **holder** 上的未绑定方法 **holder**。
+
+在一个稍作模拟的测试中对 **Suppliers** 实用程序进行了测试，该仿真还使用了本章前面定义的 **RandomList** ：
+
+```java
+// generics/BankTeller.java
+
+// A very simple bank teller simulation
+import java.util.*;
+import onjava.*;
+
+class Customer {
+  private static long counter = 1;
+  private final long id = counter++;
+  @Override
+  public String toString() {
+    return "Customer " + id;
+  }
+}
+
+class Teller {
+  private static long counter = 1;
+  private final long id = counter++;
+  @Override
+  public String toString() {
+    return "Teller " + id;
+  }
+}
+
+class Bank {
+  private List<BankTeller> tellers =
+    new ArrayList<>();
+  public void put(BankTeller bt) {
+    tellers.add(bt);
+  }
+}
+
+public class BankTeller {
+  public static void serve(Teller t, Customer c) {
+    System.out.println(t + " serves " + c);
+  }
+  public static void main(String[] args) {
+    // Demonstrate create():
+    RandomList<Teller> tellers =
+      Suppliers.create(
+        RandomList::new, Teller::new, 4);
+    // Demonstrate fill():
+    List<Customer> customers = Suppliers.fill(
+      new ArrayList<>(), Customer::new, 12);
+    customers.forEach(c ->
+      serve(tellers.select(), c));
+    // Demonstrate assisted latent typing:
+    Bank bank = Suppliers.fill(
+      new Bank(), Bank::put, BankTeller::new, 3);
+    // Can also use second version of fill():
+    List<Customer> customers2 = Suppliers.fill(
+      new ArrayList<>(),
+      List::add, Customer::new, 12);
+  }
+}
+/* Output:
+Teller 3 serves Customer 1
+Teller 2 serves Customer 2
+Teller 3 serves Customer 3
+Teller 1 serves Customer 4
+Teller 1 serves Customer 5
+Teller 3 serves Customer 6
+Teller 1 serves Customer 7
+Teller 2 serves Customer 8
+Teller 3 serves Customer 9
+Teller 3 serves Customer 10
+Teller 2 serves Customer 11
+Teller 4 serves Customer 12
+*/
+```
+
+可以看到 `create()` 生成一个新的 **Collection** 对象，而 `fill()` 添加到现有 **Collection** 中。第二个版本`fill()` 显示，它不仅与新的和无关的类型 **Bank** 一起使用，还与 **List** 一起使用。因此，从技术上讲，`fill()` 的第一个版本在技术上不是必需的，但在使用 **Collection** 时提供了较短的语法。
 
 <!-- Summary: Is Casting Really So Bad? -->
+
 ## 总结：类型转换真的如此之糟吗？
 
 
