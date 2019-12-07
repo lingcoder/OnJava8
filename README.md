@@ -47,7 +47,7 @@
 - [ ] [第二十五章 设计模式](docs/book/25-Patterns.md)
 - [x] [附录:补充](docs/book/Appendix-Supplements.md)
 - [x] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)
-- [ ] [附录:文档注释](docs/book/Appendix-Javadoc.md)
+- [x] [附录:文档注释](docs/book/Appendix-Javadoc.md)
 - [ ] [附录:对象传递和返回](docs/book/Appendix-Passing-and-Returning-Objects.md)
 - [x] [附录:流式IO](docs/book/Appendix-IO-Streams.md)
 - [x] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
