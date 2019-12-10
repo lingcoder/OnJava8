@@ -5170,7 +5170,7 @@ Teller 4 serves Customer 12
 
 泛型的入门文档是 《Generics in the Java Programming Language》，作者是 Gilad Bracha，可以从 http://java.oracle.com 获取。
 
-Angelika Langer 的《Java Generics FAQs》是一份非常有帮助的资料，可以从 http://www.angelikalanger.com/GenericsFAQ/JavaGenericsFAQ.html。
+Angelika Langer 的《Java Generics FAQs》是一份非常有帮助的资料，可以从 http://www.angelikalanger.com/GenericsFAQ/JavaGenericsFAQ.html 获取。
 
 你可以从 《Adding Wildcards to the Java Programming Language》中学到更多关于通配符的知识，作者是 Torgerson、Ernst、Hansen、von der Ahe、Bracha 和 Gafter，地址是 http://www.jot.fm/issues/issue_2004_12/article5。
 
@@ -5182,6 +5182,7 @@ Neal After 对于 Java 问题（尤其是擦除）的看法可以从这里找到
 [^4]: 注意，一些编程环境，如 Eclipse 和 IntelliJ IDEA，将会自动生成委托代码。
 [^5]: 因为可以使用转型，有效地禁止了类型系统，一些人就认为 C++ 是弱类型，但这太极端了。一种可能更好的说法是 C++ 是有一道暗门的强类型语言。
 [^6]: 我再次从 Brian Goetz 那获得帮助。
+
 <!-- 分页 -->
 
 <div style="page-break-after: always;"></div>
