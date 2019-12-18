@@ -415,7 +415,7 @@ public class Summing2 {
         Summing.timeTest("Basic Sum", CHECK, () ->
         basicSum(la));// Destructive summation:
         Summing.timeTest("parallelPrefix", CHECK, () -> {
-            Arrays.parallelPrefix(la, Long::sum)
+            Arrays.parallelPrefix(la, Long::sum);
         return la[la.length - 1];
         });
     }
@@ -543,7 +543,7 @@ public class CollectionIntoStream {
     String result = strings.stream()
     .map(String::toUpperCase)
     .map(s -> s.substring(2))
-    .reduce(":", (s1, s2) -> s1 + s2)
+    .reduce(":", (s1, s2) -> s1 + s2);
     System.out.println(result);
     }
 }
@@ -777,7 +777,7 @@ public class Nap {
 要执行任务，我们将从最简单的方法--SingleThreadExecutor开始:
 
 ```java
-/ concurrent/SingleThreadExecutor.java
+//concurrent/SingleThreadExecutor.java
 import java.util.concurrent.*;
 import java.util.stream.*;
 import onjava.*;
@@ -1448,7 +1448,7 @@ public class CompletableApplyAsync {
                 .thenApplyAsync(Machina::work);
             System.out.println(timer.duration());
             System.out.println(cf.join());
-            System.out.println(timer.duration())
+            System.out.println(timer.duration());
     }
 }
 /* Output:
@@ -1589,9 +1589,7 @@ main()包含一系列可由其int值引用的测试。cfi(1)演示了showr()正�
 ## 本章小结
 
 [^1]:例如,Eric-Raymond在“VIIX编程艺术”（Addison-Wesley，2004）中提出了一个很好的案例。
-
 [^2]:可以说，试图将并发性用于后续语言是一种注定要失败的方法，但你必须得出自己的结论
-
 [^3]:有人谈论在Java——10中围绕泛型做一些类似的基本改进，这将是非常令人难以置信的。
 [^4]:这是一种有趣的，虽然不一致的方法。通常，我们期望在公共接口上使用显式类表示不同的行为
 [^5]:不，永远不会有纯粹的功能性Java。我们所能期望的最好的是一种在JVM上运行的全新语言。
