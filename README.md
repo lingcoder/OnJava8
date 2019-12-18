@@ -35,28 +35,28 @@
 - [x] [第十三章 函数式编程](docs/book/13-Functional-Programming.md)
 - [x] [第十四章 流式编程](docs/book/14-Streams.md) 
 - [x] [第十五章 异常](docs/book/15-Exceptions.md)
-- [ ] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
-- [ ] [第十七章 文件](docs/book/17-Files.md)
+- [x] [第十六章 代码校验](docs/book/16-Validating-Your-Code.md)
+- [x] [第十七章 文件](docs/book/17-Files.md)
 - [x] [第十八章 字符串](docs/book/18-Strings.md)
-- [ ] [第十九章 类型信息](docs/book/19-Type-Information.md) 
-- [ ] [第二十章 泛型](docs/book/20-Generics.md)
-- [ ] [第二十一章 数组](docs/book/21-Arrays.md)
+- [x] [第十九章 类型信息](docs/book/19-Type-Information.md) 
+- [x] [第二十章 泛型](docs/book/20-Generics.md)
+- [x] [第二十一章 数组](docs/book/21-Arrays.md)
 - [x] [第二十二章 枚举](docs/book/22-Enumerations.md)
 - [x] [第二十三章 注解](docs/book/23-Annotations.md)
 - [ ] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
 - [ ] [第二十五章 设计模式](docs/book/25-Patterns.md)
 - [x] [附录:补充](docs/book/Appendix-Supplements.md)
 - [x] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)
-- [ ] [附录:文档注释](docs/book/Appendix-Javadoc.md)
+- [x] [附录:文档注释](docs/book/Appendix-Javadoc.md)
 - [ ] [附录:对象传递和返回](docs/book/Appendix-Passing-and-Returning-Objects.md)
-- [ ] [附录:流式IO](docs/book/Appendix-IO-Streams.md)
-- [ ] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
+- [x] [附录:流式IO](docs/book/Appendix-IO-Streams.md)
+- [x] [附录:标准IO](docs/book/Appendix-Standard-IO.md)
 - [x] [附录:新IO](docs/book/Appendix-New-IO.md)
-- [ ] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
+- [x] [附录:理解equals和hashCode方法](docs/book/Appendix-Understanding-equals-and-hashCode.md)
 - [x] [附录:集合主题](docs/book/Appendix-Collection-Topics.md)  
 - [x] [附录:并发底层原理](docs/book/Appendix-Low-Level-Concurrency.md)
 - [x] [附录:数据压缩](docs/book/Appendix-Data-Compression.md)
-- [ ] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
+- [x] [附录:对象序列化](docs/book/Appendix-Object-Serialization.md)
 - [ ] [附录:静态语言类型检查](docs/book/Appendix-Benefits-and-Costs-of-Static-Type-Checking.md)
 - [x] [附录:C++和Java的优良传统](docs/book/Appendix-The-Positive-Legacy-of-C-plus-plus-and-Java.md)
 - [ ] [附录:成为一名程序员](docs/book/Appendix-Becoming-a-Programmer.md)
@@ -65,7 +65,7 @@
 
 ## 一起交流
 
-交流群：721698221 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=4cb8bdc26879e544a0e1c2027305afef699029d5c0f314099a239b7c4f309c5f"><img border="0" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/docs/images/qqgroup.png" alt="OnJava8翻译交流" title="OnJava8翻译交流"></a>( 点击图标即可加入 )<br>
+交流群：721698221 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=4cb8bdc26879e544a0e1c2027305afef699029d5c0f314099a239b7c4f309c5f"><img border="0" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/docs/images/qqgroup.png" alt="OnJava8翻译交流" title="OnJava8翻译交流"></a>( 点击图标即可加入 )<br> 加群时请简单备注下来源或说明
 
 <div align="left">
 <img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/assets/QQGroupQRCode.png"  alt="QQGroupQRCode"/>

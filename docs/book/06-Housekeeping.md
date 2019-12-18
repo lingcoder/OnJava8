@@ -82,7 +82,8 @@ Tree t = new Tree(12); // 12-foot 树
 
 构造器消除了一类重要的问题，使得代码更易读。例如，在上面的代码块中，你看不到对 `initialize()` 方法的显式调用，而从概念上来看，`initialize()` 方法应该与对象的创建分离。在 Java 中，对象的创建与初始化是统一的概念，二者不可分割。
 
-构造器是一种特殊的方法，因为它没有返回值。这与返回 **void** 值的方法不同，在返回 **void** 值的方法中，方法返回空值，但是你还是有选择返回一些其他值。构造器返回空值，你没有选择（**new** 表达式的确返回了新创建对象的引用，但是构造器自身并没有返回值 ）。假如有返回值，而且你可以自由选择，那么编译器得知道如何去处理这个返回值。
+构造器没有返回值，它是一种特殊的方法。但它和返回类型为 `void` 的普通方法不同，普通方法可以返回空值，你还能选择让它返回别的类型；而构造器没有返回值，却同时也没有给你选择的余地（`new` 表达式虽然返回了刚创建的对象的引用，但构造器本身却没有返回任何值）。如果它有返回值，并且你也可以自己选择让它返回什么，那么编译器就还得知道接下来该怎么处理那个返回值（这个返回值没有接收者）。
+
 
 <!-- Method Overloading -->
 
@@ -311,6 +312,12 @@ public class PrimitiveOverloading {
         f1(x);f2(x);f3(x);f4(x);f5(x);f6(x);f7(x);
         System.out.println();
     }
+    void testLong() {
+        long x = 0;
+        System.out.print("long: ");
+        f1(x);f2(x);f3(x);f4(x);f5(x);f6(x);f7(x);
+        System.out.println();
+    }
     void testFloat() {
         float x = 0;
         System.out.print("float: ");
@@ -331,6 +338,7 @@ public class PrimitiveOverloading {
         p.testByte();
         p.testShort();
         p.testInt();
+        p.testLong();
         p.testFloat();
         p.testDouble();
     }
@@ -345,6 +353,7 @@ char: f1(char)f2(int)f3(int)f4(int)f5(long)f6(float)f7(double)
 byte: f1(byte)f2(byte)f3(short)f4(int)f5(long)f6(float)f7(double)
 short: f1(short)f2(short)f3(short)f4(int)f5(long)f6(float)f7(double)
 int: f1(int)f2(int)f3(int)f4(int)f5(long)f6(float)f7(double)
+long: f1(long)f2(long)f3(long)f4(long)f5(long)f6(float)f7(double)
 float: f1(float)f2(float)f3(float)f4(float)f5(float)f6(float)f7(double)
 double: f1(double)f2(double)f3(double)f4(double)f5(double)f6(double)f7(double)
 ```
@@ -414,11 +423,11 @@ class Banana {
     }
 }
 public class BananaPeel {
-    public static void main(String[] args) [
+    public static void main(String[] args) {
         Banana a = new Banana(), b = new Banana();
         a.peel(1);
         b.peel(2);
-    ]
+    }
 }
 ```
 
@@ -1186,7 +1195,7 @@ Mugs(int)
 new Mugs(1) completed
 ```
 
-看起来它很像静态代码块，只不过少了 **static** 关键字。这种语法对于支持"匿名内部类"（参见"内部类"一章）的初始化是必须的，但是你也可以使用它保证某些操作一定会发生，而不管哪个构造器被调用。从输出看出，示例初始化子句是在两个构造器之前执行的。
+看起来它很像静态代码块，只不过少了 **static** 关键字。这种语法对于支持"匿名内部类"（参见"内部类"一章）的初始化是必须的，但是你也可以使用它保证某些操作一定会发生，而不管哪个构造器被调用。从输出看出，实例初始化子句是在两个构造器之前执行的。
 
 <!-- Array Initialization -->
 
@@ -1355,7 +1364,7 @@ public class ArrayInit {
                 3, // Autoboxing
         };
         System.out.println(Arrays.toString(a));
-        System.out.println(Arrays.toString(a));
+        System.out.println(Arrays.toString(b));
 
     }
 }
@@ -1413,8 +1422,8 @@ public class VarArgs {
     static void printArray(Object[] args) {
         for (Object obj: args) {
             System.out.print(obj + " ");
-            System.out.println();
         }
+        System.out.println();
     }
     
     public static void main(String[] args) {
