@@ -415,7 +415,7 @@ public class Summing2 {
         Summing.timeTest("Basic Sum", CHECK, () ->
         basicSum(la));// Destructive summation:
         Summing.timeTest("parallelPrefix", CHECK, () -> {
-            Arrays.parallelPrefix(la, Long::sum)
+            Arrays.parallelPrefix(la, Long::sum);
         return la[la.length - 1];
         });
     }
@@ -543,7 +543,7 @@ public class CollectionIntoStream {
     String result = strings.stream()
     .map(String::toUpperCase)
     .map(s -> s.substring(2))
-    .reduce(":", (s1, s2) -> s1 + s2)
+    .reduce(":", (s1, s2) -> s1 + s2);
     System.out.println(result);
     }
 }
@@ -777,7 +777,7 @@ public class Nap {
 要执行任务，我们将从最简单的方法--SingleThreadExecutor开始:
 
 ```java
-/ concurrent/SingleThreadExecutor.java
+//concurrent/SingleThreadExecutor.java
 import java.util.concurrent.*;
 import java.util.stream.*;
 import onjava.*;
@@ -1366,7 +1366,7 @@ public class CompletedMachina {
 
 通常，**get()**在等待结果时阻塞调用线程。此块可以通过**InterruptedException**或**ExecutionException**中断。在这种情况下，阻止永远不会发生，因为CompletableFutureis已经完成，所以答案立即可用。
 
-当我们将Machina包装在CompletableFuture中时，我们发现我们可以在CompletableFuture上添加操作来处理所包含的对象，事情变得更加有趣：
+当我们将**handle()**包装在**CompletableFuture**中时，我们发现我们可以在**CompletableFuture**上添加操作来处理所包含的对象，事情变得更加有趣：
 
 ```java
 // concurrent/CompletableApply.java
@@ -1397,7 +1397,7 @@ Machina0: complete
 
 **thenApply()**应用一个接受输入并产生输出的函数。在这种情况下，**work()**函数产生与它相同的类型，因此每个得到的**CompletableFuture**仍然被输入为**Machina**，但是（类似于**Streams**中的**map()**）**Function**也可以返回不同的类型，这将反映在返回类型
 
-您可以在此处看到有关CompletableFutures的重要信息：它们会在您执行操作时自动解包并重新包装它们所携带的对象。这样你就不会陷入麻烦的细节，这使得编写和理解代码变得更加简单。
+您可以在此处看到有关**CompletableFutures**的重要信息：它们会在您执行操作时自动解包并重新包装它们所携带的对象。这样你就不会陷入麻烦的细节，这使得编写和理解代码变得更加简单。
 
 我们可以消除中间变量并将操作链接在一起，就像我们使用Streams一样：
 
@@ -1448,7 +1448,7 @@ public class CompletableApplyAsync {
                 .thenApplyAsync(Machina::work);
             System.out.println(timer.duration());
             System.out.println(cf.join());
-            System.out.println(timer.duration())
+            System.out.println(timer.duration());
     }
 }
 /* Output:
@@ -1464,14 +1464,14 @@ Machina0: complete
 
 同步调用(我们通常使用得那种)意味着“当你完成工作时，返回”，而异步调用以意味着“立刻返回但是继续后台工作。”正如你所看到的，**cf**的创建现在发生得跟快。每次调用 **thenApplyAsync()** 都会立刻返回，因此可以进行下一次调用，整个链接序列的完成速度比以前快得快。
 
-事实上，如果没有回调**cf.join() t**方法，程序会在完成其工作之前退出（尝试取出该行）对**join()**阻止了main()进程的进行，直到cf操作完成，我们可以看到大部分时间的确在哪里度过。
+事实上，如果没有回调**cf.join() t**方法，程序会在完成其工作之前退出（尝试取出该行）对**join()**阻止了**main()**进程的进行，直到cf操作完成，我们可以看到大部分时间的确在哪里度过。
 
 这种“立即返回”的异步能力需要**CompletableFuture**库进行一些秘密工作。特别是，它必须将您需要的操作链存储为一组回调。当第一个后台操作完成并返回时，第二个后台操作必须获取生成的**Machina**并开始工作，当完成后，下一个操作将接管，等等。但是没有我们普通的函数调用序列，通过程序调用栈控制，这个顺序会丢失，所以它使用回调 - 一个函数地址表来存储。
 
-幸运的是，您需要了解有关回调的所有信息。程序员将你手工造成的混乱称为“回调地狱”。通过异步调用，CompletableFuture为您管理所有回调。除非你知道关于你的系统有什么特定的改变，否则你可能想要使用异步调用。
+幸运的是，您需要了解有关回调的所有信息。程序员将你手工造成的混乱称为“回调地狱”。通过异步调用，**CompletableFuture**为您管理所有回调。除非你知道关于你的系统有什么特定的改变，否则你可能想要使用异步调用。
 
 - 其他操作
-当您查看CompletableFuture的Javadoc时，您会看到它有很多方法，但这个方法的大部分来自不同操作的变体。例如，有thenApply()，thenApplyAsync()和thenApplyAsync()的第二种形式，它接受运行任务的Executor（在本书中我们忽略了Executor选项）。
+当您查看**CompletableFuture**的Javadoc时，您会看到它有很多方法，但这个方法的大部分来自不同操作的变体。例如，有**thenApply()**，**thenApplyAsync()**和**thenApplyAsync()**的第二种形式，它接受运行任务的**Executor**（在本书中我们忽略了**Executor**选项）。
 
 这是一个显示所有“基本”操作的示例，它们不涉及组合两个CompletableFutures或异常（我们将在稍后查看）。首先，我们将重复使用两个实用程序以提供简洁和方便：
 
@@ -1500,9 +1500,9 @@ public class CompletableUtilities {
 }
 ```
 
-showr()在CompletableFuture <Integer>上调用get()并显示结果，捕获两个可能的异常。voidr()是CompletableFuture <Void>的showr()版本，即CompletableFutures，仅在任务完成或失败时显示。
+**showr()**在**CompletableFuture <Integer>**上调用**get()**并显示结果，捕获两个可能的异常。**voidr()**是**CompletableFuture <Void>**的**showr()**版本，即**CompletableFutures**，仅在任务完成或失败时显示。
 
-为简单起见，以下CompletableFutures只包装整数。cfi()是一个方便的方法，它在完成的CompletableFuture <Integer>中包装一个int：
+为简单起见，以下**CompletableFutures**只包装整数。**cfi()**是一个方便的方法，它在完成的**CompletableFuture <Integer>**中包装一个**int**：
 
 ```java
 // concurrent/CompletableOperations.java
@@ -1571,9 +1571,655 @@ dependents: 2
 */
 ```
 
-main()包含一系列可由其int值引用的测试。cfi(1)演示了showr()正常工作。cfi(2)是调用runAsync()的示例。由于Runnable不产生返回值，因此结果是CompletableFuture <Void>，因此使用voidr()。
+**main()**包含一系列可由其**int**值引用的测试。**cfi(1)**演示了**showr()**正常工作。**cfi(2)**是调用**runAsync()**的示例。由于**Runnable**不产生返回值，因此结果是**CompletableFuture <Void>**，因此使用**voidr()**。
+注意使用**cfi(3)**,**thenRunAsync()**似乎与**runAsync()**一致，差异显示在后续的测试中：
+**runAsync()**是一个静态方法，所以你不会像**cfi(2)**一样调用它。相反你可以在**QuittingCompletable.java**中使用它。后续测试中**supplyAsync()**也是静态方法，但是需要一个**Supplier**而不是**Runnable**并产生一个**CompletableFuture<Integer>**来代替**CompletableFuture<Void>**。
+含有“then”的方法将进一步的操作应用于现有的**CompletableFuture <Integer>**。与**thenRunAsync()**不同的是，将**cfi(4)**，**cfi(5)**和**cfi(6)**的“ then”方法作为未包装的**Integer**的参数。如您通过使用**voidr()**所见，然后**AcceptAsync()**接受了一个**Consumer**，因此不会产生结果。**thenApplyAsync()**接受一个**Function**并因此产生一个结果（该结果的类型可以不同于其参数）。**thenComposeAsync()**与**thenApplyAsync()**非常相似，不同之处在于其Function必须产生已经包装在**CompletableFuture**中的结果。
+**cfi(7)**示例演示了**obtrudeValue()**，它强制将值作为结果。**cfi(8)**使用**toCompletableFuture()**从**CompletionStage**生成**CompletableFuture**。**c.complete(9)**显示了如何通过给它一个结果来完成一个任务（**future**）（与**obtrudeValue()**相对，后者可能会迫使其结果替换该结果）。
+如果你调用**CompletableFuture**中的**cancel()**方法，它也会完成并且是非常好的完成。
+如果任务（**future**）未完成，则**getNow()**方法返回**CompletableFuture**的完成值，或者返回**getNow()**的替换参数。
+最后，我们看一下依赖(dependents)的概念。如果我们将两个**thenApplyAsync()**调用链接到**CompletableFuture**上，则依赖项的数量仍为1。但是，如果我们将另一个**thenApplyAsync()**直接附加到**c**，则现在有两个依赖项：两个链和另一个链。这表明您可以拥有一个**CompletionStage**，当它完成时，可以根据其结果派生多个新任务。
+
+### 结合CompletableFutures
+
+第二类**CompletableFuture**方法采用两个**CompletableFuture**并以各种方式将它们组合在一起。一个**CompletableFuture**通常会先于另一个完成，就好像两者都在比赛中一样。这些方法使您可以以不同的方式处理结果。
+为了对此进行测试，我们将创建一个任务，该任务将完成的时间作为其参数之一，因此我们可以控制。
+**CompletableFuture**首先完成：
+
+```java
+// concurrent/Workable.java
+import java.util.concurrent.*;
+import onjava.Nap;
+public class Workable {
+    String id;
+    final double duration;
+    public Workable(String id, double duration) {
+        this.id = id;
+        this.duration = duration;
+    }
+    @Override
+    public String toString() {
+        return "Workable[" + id + "]";
+    }
+    public static Workable work(Workable tt) {
+        new Nap(tt.duration); // Seconds
+        tt.id = tt.id + "W";
+        System.out.println(tt);
+        return tt;
+    }
+    public static CompletableFuture<Workable> make(String id, double duration) {
+        return CompletableFuture.completedFuture( new Workable(id, duration)) .thenApplyAsync(Workable::work);
+    }
+}
+```
+
+在**make()**中，**work()**方法应用于**CompletableFuture.work()**需要持续时间才能完成，然后将字母W附加到id上以指示工作已完成。
+现在，我们可以创建多个竞争的**CompletableFuture**，并使用**CompletableFuture**库：
+
+```java
+// concurrent/DualCompletableOperations.java
+import java.util.concurrent.*;
+import static onjava.CompletableUtilities.*;
+public class DualCompletableOperations {
+    static CompletableFuture<Workable> cfA, cfB;
+    static void init() {
+        cfA = Workable.make("A", 0.15);
+        cfB = Workable.make("B", 0.10);// Always wins
+    }
+    static void join() {
+        cfA.join();
+        cfB.join();
+        System.out.println("*****************");
+    }
+    public static void main(String[] args) {
+        init();
+        voidr(cfA.runAfterEitherAsync(cfB, () -> System.out.println("runAfterEither")));
+        join();
+        init();
+        voidr(cfA.runAfterBothAsync(cfB, () -> System.out.println("runAfterBoth")));
+        join();
+        init();
+        showr(cfA.applyToEitherAsync(cfB, w -> {
+            System.out.println("applyToEither: " + w);
+            return w;
+        }));
+        join();
+        init();
+        voidr(cfA.acceptEitherAsync(cfB, w -> {
+            System.out.println("acceptEither: " + w);
+        }));
+        join();
+        init();
+        voidr(cfA.thenAcceptBothAsync(cfB, (w1, w2) -> { System.out.println("thenAcceptBoth: " + w1 + ", " + w2);
+        }));
+        join();
+        init();
+        showr(cfA.thenCombineAsync(cfB, (w1, w2) -> {
+            System.out.println("thenCombine: " + w1 + ", " + w2);
+            return w1;
+        }));
+        join();
+        init();
+        CompletableFuture<Workable>
+            cfC = Workable.make("C", 0.08),
+            cfD = Workable.make("D", 0.09);
+        CompletableFuture.anyOf(cfA, cfB, cfC, cfD)
+        .thenRunAsync(() -> System.out.println("anyOf"));
+        join();
+        init();
+        cfC = Workable.make("C", 0.08);
+        cfD = Workable.make("D", 0.09);
+        CompletableFuture.allOf(cfA, cfB, cfC, cfD)
+        .thenRunAsync(() -> System.out.println("allOf"));
+        join();
+    }
+}
+/* Output:
+Workable[BW]
+runAfterEither
+Workable[AW]
+*****************
+Workable[BW]
+Workable[AW]
+runAfterBoth
+*****************
+Workable[BW]
+applyToEither: Workable[BW]
+Workable[BW]
+Workable[AW]
+*****************
+Workable[BW]
+acceptEither: Workable[BW]
+Workable[AW]
+*****************
+Workable[BW]
+Workable[AW]
+thenAcceptBoth: Workable[AW], Workable[BW]
+****************
+ Workable[BW]
+ Workable[AW]
+ thenCombine: Workable[AW], Workable[BW]
+ Workable[AW]
+ *****************
+ Workable[CW]
+ anyOf
+ Workable[DW]
+ Workable[BW]
+ Workable[AW]
+ *****************
+ Workable[CW]
+ Workable[DW]
+ Workable[BW]
+ Workable[AW]
+ *****************
+ allOf
+ */
+```
+
+为了便于访问，**cfA**和**cfB**是静态的。**init()**总是使用较短的延迟（因此总是“获胜”）使用“ B”初始化两者。**join()**是在这两种方法上调用**join()**并显示边框的另一种便捷方法。
+所有这些“双重”方法都以一个**CompletableFuture**作为调用该方法的对象，第二个**CompletableFuture**作为第一个参数，然后是要执行的操作。
+通过使用**Shower()**和**void()**，您可以看到“运行”和“接受”是终端操作，而“应用”和“组合”产生了新的承载载荷的**CompletableFutures**。
+
+方法的名称是不言自明的，您可以通过查看输出来验证这一点。一个特别有趣的方法是CombineAsync()，它等待两个**CompletableFuture**完成，然后将它们都交给BiFunction，然后BiFunction可以将结果加入到所得**CompletableFuture**的有效负载中。
+
+### 模拟
+
+作为一个示例，说明如何使用**CompletableFutures**将一系列操作组合在一起，让我们模拟制作蛋糕的过程。在第一个阶段中，我们准备并将成分混合成面糊：
+
+```java
+// concurrent/Batter.java
+import java.util.concurrent.*;
+import onjava.Nap;
+public class Batter {
+    static class Eggs {}
+    static class Milk {}
+    static class Sugar {}
+    static class Flour {}
+    static <T> T prepare(T ingredient) {
+        new Nap(0.1);
+        return ingredient;
+    }
+    static <T> CompletableFuture<T> prep(T ingredient) {
+        return CompletableFuture
+                .completedFuture(ingredient)
+                .thenApplyAsync(Batter::prepare);
+    }
+    public static CompletableFuture<Batter> mix() {
+        CompletableFuture<Eggs> eggs = prep(new Eggs()); CompletableFuture<Milk> milk = prep(new Milk()); CompletableFuture<Sugar> sugar = prep(new Sugar()); CompletableFuture<Flour> flour = prep(new Flour()); CompletableFuture.allOf(eggs, milk, sugar, flour)
+                        .join();
+        new Nap(0.1); // Mixing time
+        return CompletableFuture.completedFuture(new Batter());
+    }
+}
+
+```
+
+每种成分都需要一些时间来准备。**allOf()**等待所有配料准备就绪，然后需要更多时间将其混合到面糊中。
+
+接下来，我们将单批面糊放入四个锅中进行烘烤。产品作为**CompletableFutures**流返回：
+
+```java
+// concurrent/Baked.java
+import java.util.concurrent.*;
+import java.util.stream.*;
+import onjava.Nap;
+public class Baked {
+    static class Pan {}
+    static Pan pan(Batter b) {
+        new Nap(0.1);
+        return new Pan();
+    }
+    static Baked heat(Pan p) {
+        new Nap(0.1);
+        return new Baked();
+    }
+    static CompletableFuture<Baked> bake(CompletableFuture<Batter> cfb){
+        return cfb.thenApplyAsync(Baked::pan)
+                    .thenApplyAsync(Baked::heat);
+    }
+    public static Stream<CompletableFuture<Baked>> batch() {
+        CompletableFuture<Batter> batter = Batter.mix();
+        return Stream.of(bake(batter), bake(batter), bake(batter), bake(batter));
+    }
+}
+```
+
+最后，我们创建了一批糖，并用它对蛋糕进行糖化：
+
+```java
+// concurrent/FrostedCake.java
+import java.util.concurrent.*;
+import java.util.stream.*;
+import onjava.Nap;
+final class Frosting {
+    private Frosting() {}
+    static CompletableFuture<Frosting> make() {
+        new Nap(0.1);
+        return CompletableFuture.completedFuture(new Frosting());
+    }
+}
+public class FrostedCake {
+    public FrostedCake(Baked baked, Frosting frosting) {
+        new Nap(0.1);
+    }
+    @Override
+    public String toString() {
+        return "FrostedCake";
+    }
+    public static void main(String[] args) {
+        Baked.batch()
+            .forEach(baked -> baked.thenCombineAsync(Frosting.make(), (cake, frosting) -> new FrostedCake(cake, frosting)) .thenAcceptAsync(System.out::println)
+            .join());
+    }
+}
+```
+
+一旦您对背后的想法感到满意。**CompletableFutures**它们相对易于使用。
+
+### 例外情况
+
+与**CompletableFutur**e在处理链中包装对象的方式相同，它还可以缓冲异常。这些不会在处理过程中显示给调用者，而只会在您尝试提取结果时显示。为了展示它们是如何工作的，我们将从创建一个在某些情况下引发异常的类开始：
+
+```java
+// concurrent/Breakable.java
+import java.util.concurrent.*;
+public class Breakable {
+    String id;
+    private int failcount;
+    public Breakable(String id, int failcount) {
+        this.id = id;
+        this.failcount = failcount;
+    }
+    @Override
+    public String toString() {
+        return "Breakable_" + id + " [" + failcount + "]";
+    }
+    public static Breakable work(Breakable b) {
+        if(--b.failcount == 0) {
+            System.out.println( "Throwing Exception for " + b.id + "");
+            throw new RuntimeException( "Breakable_" + b.id + " failed");
+        }
+        System.out.println(b);
+        return b;
+    }
+}
+
+```
+
+**failcount**为正时，每次将对象传递给**work()**方法可减少**failcount**。当它为零时，**work()**会引发异常。如果您给它的**failcount**为零，则它永远不会引发异常。
+请注意，它报告在抛出异常时抛出异常。
+在下面的**test()**方法中，**work()**多次应用于**Breakable**，因此，如果**failcount**在范围内，则会引发异常。但是，在测试**A**到**E**中，您可以从输出中看到抛出了异常，但是它们从未出现：
+
+```java
+// concurrent/CompletableExceptions.java
+import java.util.concurrent.*;
+public class CompletableExceptions {
+    static CompletableFuture<Breakable> test(String id, int failcount) {
+        return
+            CompletableFuture.completedFuture(
+                new Breakable(id, failcount))
+                .thenApply(Breakable::work)
+                .thenApply(Breakable::work)
+                .thenApply(Breakable::work)
+                .thenApply(Breakable::work);
+    }
+    public static void main(String[] args) {
+        // Exceptions don't appear ...
+        test("A", 1);
+        test("B", 2);
+        test("C", 3);
+        test("D", 4);
+        test("E", 5);
+        // ... until you try to fetch the value:
+        try {
+            test("F", 2).get(); // or join()
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+        // Test for exceptions:
+        System.out.println(
+            test("G", 2).isCompletedExceptionally());
+        // Counts as "done":
+        System.out.println(test("H", 2).isDone());
+        // Force an exception:
+        CompletableFuture<Integer> cfi =
+            new CompletableFuture<>();
+        System.out.println("done? " + cfi.isDone());
+        cfi.completeExceptionally( new RuntimeException("forced"));
+        try {
+            cfi.get();
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+
+/* Output:
+Throwing Exception for A
+Breakable_B [1]
+Throwing Exception for B
+Breakable_C [2]
+Breakable_C [1]
+Throwing Exception for C
+Breakable_D [3]
+Breakable_D [2]
+Breakable_D [1]
+Throwing Exception for D
+Breakable_E [4]
+Breakable_E [3]
+Breakable_E [2]
+Breakable_E [1]
+Breakable_F [1]
+Throwing Exception for F
+java.lang.RuntimeException: Breakable_F failed
+Breakable_G [1]
+Throwing Exception for G
+true
+Breakable_H [1]
+Throwing Exception for H
+true
+done? false
+java.lang.RuntimeException: forced
+*/
+```
+
+测试**A**到**E**运行到抛出异常的地步，然后……什么都没有。只有在测试**F**中调用**get()**时，我们才能看到抛出的异常。
+测试**G**显示，您可以首先检查在处理过程中是否引发了异常，而没有引发该异常。但是，测试H告诉我们，无论异常成功与否，异常仍然可以被视为“完成”
+代码的最后一部分显示了如何在**CompletableFuture**中插入异常，而不管是否存在任何故障。
+加入或获取结果时，我们不会使用粗略的try-catch，而是使用**CompletableFuture**提供的更复杂的机制来自动响应异常。您可以使用与所有**CompletableFuture**相同的表格来执行此操作：在链中插入**CompletableFuture**调用。有三个选项：**exclusively(**)，**handle()**和**whenComplete()**：
+
+```java
+// concurrent/CatchCompletableExceptions.java
+import java.util.concurrent.*;
+public class CatchCompletableExceptions {
+    static void handleException(int failcount) {
+        // Call the Function only if there's an
+        // exception, must produce same type as came in: 
+        CompletableExceptions
+        .test("exceptionally", failcount)
+        .exceptionally((ex) -> { // Function
+            if(ex == null)
+                System.out.println("I don't get it yet");
+            return new Breakable(ex.getMessage(), 0);
+        })
+        .thenAccept(str ->
+            System.out.println("result: " + str));
+        // Create a new result (recover):
+        CompletableExceptions
+            .test("handle", failcount)
+            .handle((result, fail) -> { // BiFunction
+                if(fail != null)
+                    return "Failure recovery object";
+                else
+                    return result + " is good"; })
+            .thenAccept(str ->
+                System.out.println("result: " + str));
+        // Do something but pass the same result through: 
+        CompletableExceptions
+            .test("whenComplete", failcount)
+            .whenComplete((result, fail) -> {// BiConsumer
+                if(fail != null)
+                    System.out.println("It failed");
+                else
+                    System.out.println(result + " OK");
+            })
+            .thenAccept(r ->
+            System.out.println("result: " + r));
+    }
+    public static void main(String[] args) {
+        System.out.println("**** Failure Mode ****");
+        handleException(2);
+        System.out.println("**** Success Mode ****");
+        handleException(0);
+    }
+}
+/* Output:
+**** Failure Mode ****
+Breakable_exceptionally [1]
+Throwing Exception for exceptionally
+result: Breakable_java.lang.RuntimeException:
+Breakable_exceptionally failed [0]
+Breakable_handle [1]
+Throwing Exception for handle
+result: Failure recovery object
+Breakable_whenComplete [1]
+Throwing Exception for whenComplete
+It failed
+**** Success Mode ****
+Breakable_exceptionally [-1]
+Breakable_exceptionally [-2]
+Breakable_exceptionally [-3]
+Breakable_exceptionally [-4]
+result: Breakable_exceptionally [-4]
+Breakable_handle [-1]
+Breakable_handle [-2]
+Breakable_handle [-3]
+Breakable_handle [-4]
+result: Breakable_handle [-4] is good
+Breakable_whenComplete [-1]
+Breakable_whenComplete [-2]
+Breakable_whenComplete [-3]
+Breakable_whenComplete [-4]
+Breakable_whenComplete [-4] OK
+result: Breakable_whenComplete [-4]
+*/
+```
+
+只有在有异常的情况下，**exclusively()**参数才会运行。**Exclusively()**的局限性在于，该函数只能返回输入的相同类型的值。**exclusively()**通过将一个好的对象重新插入流中而恢复到可行状态。
+**handle()**始终被调用，您必须检查一下**fail**是否为**true**才能查看是否发生了异常。但是**handle()**可以产生任何新类型，因此它使您可以执行处理，而不仅可以像**exception()**那样进行恢复。
+**whenComplete()**就像**handle()**一样，您必须测试是否失败，但是该参数是使用者，并且不会修改正在传递的结果对象。
+
+### 流异常
+
+通过修改**CompletableExceptions.java**，看看**CompletableFuture**异常与**Streams**异常有何不同：
+
+```java
+// concurrent/StreamExceptions.java
+import java.util.concurrent.*;
+import java.util.stream.*;
+public class StreamExceptions {
+    static Stream<Breakable> test(String id, int failcount) {
+        return Stream.of(new Breakable(id, failcount)).
+        map(Breakable::work)
+        .map(Breakable::work
+        .map(Breakable::work)
+        .map(Breakable::work);
+    }
+    public static void main(String[] args) {
+        // No operations are even applied ...
+        test("A", 1);
+        test("B", 2);
+        Stream<Breakable> c = test("C", 3);
+        test("D", 4);
+        test("E", 5);
+        // ... until there's a terminal operation:
+        System.out.println("Entering try");
+        try {
+            c.forEach(System.out::println);// [1]
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+}
+/* Output:
+Entering try
+Breakable_C [2]
+Breakable_C [1]
+Throwing Exception for C
+Breakable_C failed
+*/
+```
+
+使用**CompletableFutures**，我们看到了测试**A**到**E**的进展，但是使用**Streams**，直到您应用了终端操作(如[1]的**forEach()**)，一切都没有开始。**CompletableFuture**执行工作并捕获任何异常以供以后检索。比较这两者并不是一件容易的事，因为**Stream**没有终端操作根本无法执行任何操作，但是**Stream**绝对不会存储其异常。
+
+### 检查异常
+
+CompletableFutures和并行Streams都不支持包含已检查异常的操作。相反，您必须在调用操作时处理检查到的异常，这会产生不太优雅的代码：
+
+```java
+// concurrent/ThrowsChecked.java
+import java.util.stream.*;
+import java.util.concurrent.*;
+public class ThrowsChecked {
+    class Checked extends Exception {}
+    static ThrowsChecked nochecked(ThrowsChecked tc) {
+        return tc;
+    }
+    static ThrowsChecked withchecked(ThrowsChecked tc) throws Checked {
+        return tc;
+    }
+    static void testStream() {
+        Stream.of(new ThrowsChecked())
+            .map(ThrowsChecked::nochecked)
+            // .map(ThrowsChecked::withchecked); // [1]
+            .map(tc -> {
+                try {
+                    return withchecked(tc);
+                } catch(Checked e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
+    static void testCompletableFuture() {
+        CompletableFuture .completedFuture(new ThrowsChecked())
+            .thenApply(ThrowsChecked::nochecked)
+            // .thenApply(ThrowsChecked::withchecked); // [2]
+            .thenApply(tc -> {
+                try {
+                    return withchecked(tc);
+                } catch(Checked e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
+}
+```
+
+如果您尝试像对 **nochecked()** 一样对 **withchecked()** 使用方法引用，则编译器会抱怨[1]和[2]。相反，您必须写出lambda表达式（或编写一个不会引发异常的包装器方法）。
 <!-- Deadlock -->
 ## 死锁
+
+由于任务可能会被阻塞，因此一个任务有可能卡在等待另一个任务上，而任务又在等待另一个任务，依此类推，直到链回到第一个任务上。您会遇到一个不断循环的任务，彼此等待，没有人能动。这称为死锁[^6]
+如果您尝试运行某个程序并立即陷入死锁，则可以立即查找该错误。真正的问题是，当您的程序看起来运行良好，但具有隐藏潜力死锁。在这里，您可能没有任何迹象表明可能发生死锁，因此该缺陷在您的程序中是潜在的，直到它意外发生为止（通常是对客户而言（几乎肯定很难复制））。因此，通过仔细的程序设计防止死锁是开发并发系统的关键部分。
+埃德斯·迪克斯特拉（Essger Dijkstra）发明的"哲学家进餐"问题是经典的死锁例证。基本描述指定了五位哲学家（此处显示的示例允许任何数字）。这些哲学家将一部分时间花在思考上，一部分时间在吃饭上。他们在思考的时候并不需要任何共享资源，但是他们使用的餐具数量有限。在最初的问题描述中，器物是叉子，需要两个叉子才能从桌子中间的碗里取出意大利面。常见的版本是使用筷子。显然，每个哲学家都需要两个筷子才能吃饭。
+引入了一个困难：作为哲学家，他们的钱很少，所以他们只能买五根筷子（更普遍地说，筷子的数量与哲学家相同）。它们之间围绕桌子隔开。当一个哲学家想要吃饭时，该哲学家必须拿起左边和右边的筷子。如果任一侧的哲学家都在使用所需的筷子，则我们的哲学家必须等待，直到必要的筷子可用为止。
+**StickHolder**类通过将单个筷子保持在大小为1的**BlockingQueue**中来管理它。**BlockingQueue**是一个设计用于在并发程序中安全使用的集合，如果您调用take()并且队列为空，则它将阻塞（等待）。将新元素放入队列后，将释放该块并返回该值：
+
+```java
+// concurrent/StickHolder.java
+import java.util.concurrent.*;
+public class StickHolder {
+    private static class Chopstick {}
+    private Chopstick stick = new Chopstick();
+    private BlockingQueue<Chopstick> holder = new ArrayBlockingQueue<>(1);
+    public StickHolder() {
+        putDown();
+    }
+    public void pickUp() {
+        try {
+            holder.take();// Blocks if unavailable
+        } catch(InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void putDown() {
+        try {
+            holder.put(stick);
+        } catch(InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+为简单起见，**StickHolder**从未真正制作过**Chopstick**，而是在类中将其保密。如果调用**pickUp()**而该筷子不可用，则**pickUp()**会阻塞，直到另一位调用**putDown()**的哲学家返回了该摇杆。请注意，此类中的所有线程安全性都是通过**BlockingQueue**实现的。
+
+每个哲学家都是一个任务，尝试将左右两把筷子都拿起，使其可以进食，然后使用**putDown()**释放这些筷子:
+
+```java
+// concurrent/Philosopher.java
+public class Philosopher implements Runnable {
+    private final int seat;
+    private final StickHolder left, right;
+    public Philosopher(int seat, StickHolder left, StickHolder right) {
+        this.seat = seat;
+        this.left = left;
+        this.right = right;
+    }
+    @Override
+    public String toString() {
+        return "P" + seat;
+    }
+    @Override
+    public void run() {
+        while(true) {
+            // System.out.println("Thinking");
+            // [1] right.pickUp();
+            left.pickUp();
+            System.out.println(this + " eating");
+            right.putDown();
+            left.putDown();
+        }
+    }
+}
+```
+
+没有两个哲学家可以同时成功调用take()同一只筷子。另外，如果一个哲学家已经拿过筷子，那么下一个试图拿起同一根筷子的哲学家将阻塞，等待其被释放。
+结果是一个看似无辜的程序陷入了死锁。我在这里使用数组而不是集合，只是因为结果语法更简洁：
+
+```java
+// concurrent/DiningPhilosophers.java
+// Hidden deadlock
+// {ExcludeFromGradle} Gradle has trouble
+import java.util.*;
+import java.util.concurrent.*;
+import onjava.Nap;
+public class DiningPhilosophers {
+    private StickHolder[] sticks;
+    private Philosopher[] philosophers;
+    public DiningPhilosophers(int n) {
+        sticks = new StickHolder[n];
+        Arrays.setAll(sticks, i -> new StickHolder());
+        philosophers = new Philosopher[n];
+        Arrays.setAll(philosophers,
+            i -> new Philosopher(i, sticks[i], sticks[(i + 1) % n]));// [1]
+        // Fix by reversing stick order for this one:
+        // philosophers[1] = // [2]
+        // new Philosopher(0, sticks[0], sticks[1]);
+        Arrays.stream(philosophers)
+            .forEach(CompletableFuture::runAsync);// [3]
+    }
+    public static void main(String[] args) {
+        // Returns right away:
+        new DiningPhilosophers(5);// [4]
+        // Keeps main() from exiting:
+        new Nap(3, "Shutdown");
+    }
+}
+```
+
+当您停止查看输出时，该程序将死锁。但是，根据您的计算机配置，您可能不会看到死锁。看来这取决于计算机上的内核数7。两个核心似乎不会产生死锁，但似乎有两个以上的核心很容易产生死锁。此行为使该示例更好地说明了死锁，因为您可能正在具有两个内核的计算机上编写程序（如果确实是导致问题的原因），并且确信该程序可以正常工作，只能启动它将其安装在另一台计算机上时出现死锁。请注意，仅仅因为您不容易看到死锁，并不意味着该程序就不会在两核计算机上死锁。该程序仍然容易死锁，很少发生-可以说是最坏的情况，因为问题不容易解决。
+在DiningPhilosophers构造函数中，每个哲学家都获得一个左右StickHolder的引用。除最后一个哲学家外，每个哲学家都通过以下方式初始化：
+哲学家之间的下一双筷子。最后一位哲学家右手的筷子为零，因此圆桌会议完成了。那是因为最后一位哲学家正坐在第一个哲学家的旁边，而且他们俩都共用零筷子。[1]显示了以n为模数选择的右摇杆，将最后一个哲学家缠绕在第一个哲学家的旁边。
+现在，所有哲学家都可以尝试吃饭，每个哲学家都在旁边等待哲学家放下筷子。
+要开始在[3]上运行的每个Philosopher，我调用runAsync（），这意味着DiningPhilosophers构造函数立即在[4]处返回。没有任何东西可以阻止main（）完成，该程序只是退出而无济于事。Nap对象阻止main（）退出，然后在三秒钟后强制退出（可能是）死锁的程序。
+在给定的配置中，哲学家几乎没有时间思考。因此，他们都在尝试吃饭时争夺筷子，而且僵局往往很快发生。您可以更改此：
+
+1. 通过增加[4]的值来添加更多哲学家。
+2. 在Philosopher.java中取消注释行[1]。
+
+任一种方法都会减少死锁的可能性，这表明编写并发程序并认为它是安全的危险，因为它似乎“在我的机器上运行正常”。您可以轻松地说服自己该程序没有死锁，即使它不是。这个例子很有趣，因为它演示了程序似乎可以正确运行，同时仍然容易出现死锁。
+为了解决该问题，我们观察到当四个同时满足条件：
+
+1. 互斥。任务使用的至少一种资源必须不可共享。在这里，筷子一次只能由一位哲学家使用。
+2. 至少一个任务必须拥有资源，并等待获取当前由另一任务拥有的资源。也就是说，要使僵局发生，哲学家必须握住一根筷子，等待另一根筷子。
+3. 不能抢先从任务中夺走资源。任务仅作为正常事件释放资源。我们的哲学家很有礼貌，他们不会抓住其他哲学家的筷子。
+4. 可能发生循环等待，即一个任务等待另一个任务持有的资源，而该任务又等待另一个任务持有的资源，依此类推，直到一个任务正在等待另一个任务持有的资源。第一项任务，从而使一切陷入僵局。在**DiningPhilosophers.java**中，发生循环等待是因为每个哲学家都先尝试获取右筷子，然后再获取左筷子。
+
+因为必须满足所有这些条件才能导致死锁，所以您只能阻止其中一个解除死锁。在此程序中，防止死锁的一种简单方法是打破第四个条件。之所以会发生这种情况，是因为每个哲学家都尝试按照特定的顺序拾起自己的筷子：先右后左。因此，每个哲学家都有可能在等待左手的同时握住右手的筷子，从而导致循环等待状态。但是，如果其中一位哲学家尝试首先拿起左筷子，则该哲学家决不会阻止紧邻右方的哲学家拿起筷子，从而排除了循环等待。
+在**DiningPhilosophers.java**中，取消注释[1]和其后的一行。这将原来的哲学家[1]替换为筷子颠倒的哲学家。通过确保第二位哲学家拾起并在右手之前放下左筷子，我们消除了死锁的可能性。
+这只是解决问题的一种方法。您也可以通过防止其他情况之一来解决它。
+没有语言支持可以帮助防止死锁；您有责任通过精心设计来避免这种情况。对于试图调试死锁程序的人来说，这些都不是安慰。当然，避免并发问题的最简单，最好的方法是永远不要共享资源-不幸的是，这并不总是可能的。
 
 
 
@@ -1589,12 +2235,11 @@ main()包含一系列可由其int值引用的测试。cfi(1)演示了showr()正�
 ## 本章小结
 
 [^1]:例如,Eric-Raymond在“VIIX编程艺术”（Addison-Wesley，2004）中提出了一个很好的案例。
-
 [^2]:可以说，试图将并发性用于后续语言是一种注定要失败的方法，但你必须得出自己的结论
-
 [^3]:有人谈论在Java——10中围绕泛型做一些类似的基本改进，这将是非常令人难以置信的。
 [^4]:这是一种有趣的，虽然不一致的方法。通常，我们期望在公共接口上使用显式类表示不同的行为
 [^5]:不，永远不会有纯粹的功能性Java。我们所能期望的最好的是一种在JVM上运行的全新语言。
+[^6]:当两个任务能够更改其状态以使它们不会被阻止但它们从未取得任何有用的进展时，您也可以使用活动锁。
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
