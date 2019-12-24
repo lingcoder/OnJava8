@@ -2099,6 +2099,128 @@ public class ThrowsChecked {
 <!-- Deadlock -->
 ## 死锁
 
+由于任务可能会被阻塞，因此一个任务有可能卡在等待另一个任务上，而任务又在等待另一个任务，依此类推，直到链回到第一个任务上。您会遇到一个不断循环的任务，彼此等待，没有人能动。这称为死锁[^6]
+如果您尝试运行某个程序并立即陷入死锁，则可以立即查找该错误。真正的问题是，当您的程序看起来运行良好，但具有隐藏潜力死锁。在这里，您可能没有任何迹象表明可能发生死锁，因此该缺陷在您的程序中是潜在的，直到它意外发生为止（通常是对客户而言（几乎肯定很难复制））。因此，通过仔细的程序设计防止死锁是开发并发系统的关键部分。
+埃德斯·迪克斯特拉（Essger Dijkstra）发明的"哲学家进餐"问题是经典的死锁例证。基本描述指定了五位哲学家（此处显示的示例允许任何数字）。这些哲学家将一部分时间花在思考上，一部分时间在吃饭上。他们在思考的时候并不需要任何共享资源，但是他们使用的餐具数量有限。在最初的问题描述中，器物是叉子，需要两个叉子才能从桌子中间的碗里取出意大利面。常见的版本是使用筷子。显然，每个哲学家都需要两个筷子才能吃饭。
+引入了一个困难：作为哲学家，他们的钱很少，所以他们只能买五根筷子（更普遍地说，筷子的数量与哲学家相同）。它们之间围绕桌子隔开。当一个哲学家想要吃饭时，该哲学家必须拿起左边和右边的筷子。如果任一侧的哲学家都在使用所需的筷子，则我们的哲学家必须等待，直到必要的筷子可用为止。
+**StickHolder**类通过将单个筷子保持在大小为1的**BlockingQueue**中来管理它。**BlockingQueue**是一个设计用于在并发程序中安全使用的集合，如果您调用take()并且队列为空，则它将阻塞（等待）。将新元素放入队列后，将释放该块并返回该值：
+
+```java
+// concurrent/StickHolder.java
+import java.util.concurrent.*;
+public class StickHolder {
+    private static class Chopstick {}
+    private Chopstick stick = new Chopstick();
+    private BlockingQueue<Chopstick> holder = new ArrayBlockingQueue<>(1);
+    public StickHolder() {
+        putDown();
+    }
+    public void pickUp() {
+        try {
+            holder.take();// Blocks if unavailable
+        } catch(InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void putDown() {
+        try {
+            holder.put(stick);
+        } catch(InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+为简单起见，**StickHolder**从未真正制作过**Chopstick**，而是在类中将其保密。如果调用**pickUp()**而该筷子不可用，则**pickUp()**会阻塞，直到另一位调用**putDown()**的哲学家返回了该摇杆。请注意，此类中的所有线程安全性都是通过**BlockingQueue**实现的。
+
+每个哲学家都是一个任务，尝试将左右两把筷子都拿起，使其可以进食，然后使用**putDown()**释放这些筷子:
+
+```java
+// concurrent/Philosopher.java
+public class Philosopher implements Runnable {
+    private final int seat;
+    private final StickHolder left, right;
+    public Philosopher(int seat, StickHolder left, StickHolder right) {
+        this.seat = seat;
+        this.left = left;
+        this.right = right;
+    }
+    @Override
+    public String toString() {
+        return "P" + seat;
+    }
+    @Override
+    public void run() {
+        while(true) {
+            // System.out.println("Thinking");
+            // [1] right.pickUp();
+            left.pickUp();
+            System.out.println(this + " eating");
+            right.putDown();
+            left.putDown();
+        }
+    }
+}
+```
+
+没有两个哲学家可以同时成功调用take()同一只筷子。另外，如果一个哲学家已经拿过筷子，那么下一个试图拿起同一根筷子的哲学家将阻塞，等待其被释放。
+结果是一个看似无辜的程序陷入了死锁。我在这里使用数组而不是集合，只是因为结果语法更简洁：
+
+```java
+// concurrent/DiningPhilosophers.java
+// Hidden deadlock
+// {ExcludeFromGradle} Gradle has trouble
+import java.util.*;
+import java.util.concurrent.*;
+import onjava.Nap;
+public class DiningPhilosophers {
+    private StickHolder[] sticks;
+    private Philosopher[] philosophers;
+    public DiningPhilosophers(int n) {
+        sticks = new StickHolder[n];
+        Arrays.setAll(sticks, i -> new StickHolder());
+        philosophers = new Philosopher[n];
+        Arrays.setAll(philosophers,
+            i -> new Philosopher(i, sticks[i], sticks[(i + 1) % n]));// [1]
+        // Fix by reversing stick order for this one:
+        // philosophers[1] = // [2]
+        // new Philosopher(0, sticks[0], sticks[1]);
+        Arrays.stream(philosophers)
+            .forEach(CompletableFuture::runAsync);// [3]
+    }
+    public static void main(String[] args) {
+        // Returns right away:
+        new DiningPhilosophers(5);// [4]
+        // Keeps main() from exiting:
+        new Nap(3, "Shutdown");
+    }
+}
+```
+
+当您停止查看输出时，该程序将死锁。但是，根据您的计算机配置，您可能不会看到死锁。看来这取决于计算机上的内核数7。两个核心似乎不会产生死锁，但似乎有两个以上的核心很容易产生死锁。此行为使该示例更好地说明了死锁，因为您可能正在具有两个内核的计算机上编写程序（如果确实是导致问题的原因），并且确信该程序可以正常工作，只能启动它将其安装在另一台计算机上时出现死锁。请注意，仅仅因为您不容易看到死锁，并不意味着该程序就不会在两核计算机上死锁。该程序仍然容易死锁，很少发生-可以说是最坏的情况，因为问题不容易解决。
+在DiningPhilosophers构造函数中，每个哲学家都获得一个左右StickHolder的引用。除最后一个哲学家外，每个哲学家都通过以下方式初始化：
+哲学家之间的下一双筷子。最后一位哲学家右手的筷子为零，因此圆桌会议完成了。那是因为最后一位哲学家正坐在第一个哲学家的旁边，而且他们俩都共用零筷子。[1]显示了以n为模数选择的右摇杆，将最后一个哲学家缠绕在第一个哲学家的旁边。
+现在，所有哲学家都可以尝试吃饭，每个哲学家都在旁边等待哲学家放下筷子。
+要开始在[3]上运行的每个Philosopher，我调用runAsync（），这意味着DiningPhilosophers构造函数立即在[4]处返回。没有任何东西可以阻止main（）完成，该程序只是退出而无济于事。Nap对象阻止main（）退出，然后在三秒钟后强制退出（可能是）死锁的程序。
+在给定的配置中，哲学家几乎没有时间思考。因此，他们都在尝试吃饭时争夺筷子，而且僵局往往很快发生。您可以更改此：
+
+1. 通过增加[4]的值来添加更多哲学家。
+2. 在Philosopher.java中取消注释行[1]。
+
+任一种方法都会减少死锁的可能性，这表明编写并发程序并认为它是安全的危险，因为它似乎“在我的机器上运行正常”。您可以轻松地说服自己该程序没有死锁，即使它不是。这个例子很有趣，因为它演示了程序似乎可以正确运行，同时仍然容易出现死锁。
+为了解决该问题，我们观察到当四个同时满足条件：
+
+1. 互斥。任务使用的至少一种资源必须不可共享。在这里，筷子一次只能由一位哲学家使用。
+2. 至少一个任务必须拥有资源，并等待获取当前由另一任务拥有的资源。也就是说，要使僵局发生，哲学家必须握住一根筷子，等待另一根筷子。
+3. 不能抢先从任务中夺走资源。任务仅作为正常事件释放资源。我们的哲学家很有礼貌，他们不会抓住其他哲学家的筷子。
+4. 可能发生循环等待，即一个任务等待另一个任务持有的资源，而该任务又等待另一个任务持有的资源，依此类推，直到一个任务正在等待另一个任务持有的资源。第一项任务，从而使一切陷入僵局。在**DiningPhilosophers.java**中，发生循环等待是因为每个哲学家都先尝试获取右筷子，然后再获取左筷子。
+
+因为必须满足所有这些条件才能导致死锁，所以您只能阻止其中一个解除死锁。在此程序中，防止死锁的一种简单方法是打破第四个条件。之所以会发生这种情况，是因为每个哲学家都尝试按照特定的顺序拾起自己的筷子：先右后左。因此，每个哲学家都有可能在等待左手的同时握住右手的筷子，从而导致循环等待状态。但是，如果其中一位哲学家尝试首先拿起左筷子，则该哲学家决不会阻止紧邻右方的哲学家拿起筷子，从而排除了循环等待。
+在**DiningPhilosophers.java**中，取消注释[1]和其后的一行。这将原来的哲学家[1]替换为筷子颠倒的哲学家。通过确保第二位哲学家拾起并在右手之前放下左筷子，我们消除了死锁的可能性。
+这只是解决问题的一种方法。您也可以通过防止其他情况之一来解决它。
+没有语言支持可以帮助防止死锁；您有责任通过精心设计来避免这种情况。对于试图调试死锁程序的人来说，这些都不是安慰。当然，避免并发问题的最简单，最好的方法是永远不要共享资源-不幸的是，这并不总是可能的。
+
 
 
 <!-- Constructors are not Thread-Safe -->
@@ -2117,6 +2239,7 @@ public class ThrowsChecked {
 [^3]:有人谈论在Java——10中围绕泛型做一些类似的基本改进，这将是非常令人难以置信的。
 [^4]:这是一种有趣的，虽然不一致的方法。通常，我们期望在公共接口上使用显式类表示不同的行为
 [^5]:不，永远不会有纯粹的功能性Java。我们所能期望的最好的是一种在JVM上运行的全新语言。
+[^6]:当两个任务能够更改其状态以使它们不会被阻止但它们从未取得任何有用的进展时，您也可以使用活动锁。
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
