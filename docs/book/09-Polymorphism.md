@@ -503,7 +503,7 @@ public Derived extends PrivateOverride {
 private f()
 ```
 
-你可能期望输出是 **public f()**，然而 **private** 方法也是 **final** 的，对于派生类来说是隐蔽的。因此，这里 **Derived** 的 `f()` 是一个全新的方法；因为基类版本的 `f()` 屏蔽了 **Derived** ，因此它都不算是重写方法。
+你可能期望输出是 **public f()**，然而 **private** 方法可以当作是 **final** 的，对于派生类来说是隐蔽的。因此，这里 **Derived** 的 `f()` 是一个全新的方法；因为基类版本的 `f()` 屏蔽了 **Derived** ，因此它都不算是重写方法。
 
 结论是只有非 **private** 方法才能被重写，但是得小心重写 **private** 方法的现象，编译器不报错，但不会按我们所预期的执行。为了清晰起见，派生类中的方法名采用与基类中 **private** 方法名不同的命名。
 
