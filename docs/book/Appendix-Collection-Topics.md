@@ -1613,7 +1613,7 @@ Brasilia
 | **Iterator\<T\> iterator() Spliterator\<T\> spliterator()** | 返回一个迭代器来遍历集合中的元素。 **Spliterators** 更复杂一些，它用在并发场景 |
 | **boolean remove(Object)** | 如果目标集合包含该参数，则在集合中删除该参数，如果成功删除则返回 **true** 。（“可选的”） |
 | **boolean removeAll(Collection\<?\>)** | 删除目标集合中，参数集合所包含的全部元素。如果有元素被成功删除则返回 **true** 。 （“可选的”） |
-| **boolean removeIf(Predicate\<? super E\>)** | 删除此集合中，满足给定谓词（predicate）的所有元素 |
+| **boolean removeIf(Predicate\<? super E\>)** | 删除此集合中，满足给定断言（predicate）的所有元素 |
 | **Stream\<E\> stream() Stream\<E\> parallelStream()** | 返回由该 **Collection** 中元素所组成的一个 **Stream** |
 | **int size()** | 返回集合中所包含元素的个数 |
 | **Object[] toArrat()** | 返回包含该集合所有元素的一个数组 |

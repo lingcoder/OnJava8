@@ -646,7 +646,7 @@ public class FunctionalAnnotation {
 
 4. 如果返回值类型与参数类型一致，则是一个运算符：单个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
 
-5. 如果接收两个参数且返回值为布尔值，则是一个谓词（Predicate）。
+5. 如果接收两个参数且返回值为布尔值，则是一个断言（Predicate）。
 
 6. 如果接收的两个参数类型不同，则名称中有一个 `Bi`。
 
