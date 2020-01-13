@@ -1361,12 +1361,12 @@ import java.util.regex.*;
 
 public class ShowMethods {
     private static String usage =
-            "usage:n" +
-                    "ShowMethods qualified.class.namen" +
-                    "To show all methods in class or:n" +
-                    "ShowMethods qualified.class.name wordn" +
-                    "To search for methods involving 'word'";
-    private static Pattern p = Pattern.compile("\w+\.");
+            "usage:\n" +
+            "ShowMethods qualified.class.name\n" +
+            "To show all methods in class or:\n" +
+            "ShowMethods qualified.class.name word\n" +
+            "To search for methods involving 'word'";
+    private static Pattern p = Pattern.compile("\\w+\\.");
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -1648,7 +1648,7 @@ class SelectingMethods {
         SomeMethods proxy =
                 (SomeMethods) Proxy.newProxyInstance(
                         SomeMethods.class.getClassLoader(),
-                        new Class[]{Interface.class},
+                        new Class[]{ SomeMethods.class },
                         new MethodSelector(new Implementation()));
         proxy.boring1();
         proxy.boring2();
@@ -2078,7 +2078,7 @@ public class NullRobot {
     newNullRobot(Class<? extends Robot> type) {
         return (Robot) Proxy.newProxyInstance(
                 NullRobot.class.getClassLoader(),
-                new Class,
+                new Class[] { Null.class, Robot.class },
                 new NullRobotProxyHandler(type));
     }
 
@@ -2375,8 +2375,7 @@ class AnonymousA {
             private void w() {
                 System.out.println("private C.w()");
             }
-        }
-                ;
+        };
     }
 }
 
@@ -2432,8 +2431,8 @@ public class ModifyingPrivateFields {
         Field f = pf.getClass().getDeclaredField("i");
         f.setAccessible(true);
         System.out.println(
-                "f.getInt(pf): " + f.getint(pf));
-        f.setint(pf, 47);
+                "f.getInt(pf): " + f.getInt(pf));
+        f.setInt(pf, 47);
         System.out.println(pf);
         f = pf.getClass().getDeclaredField("s");
         f.setAccessible(true);
