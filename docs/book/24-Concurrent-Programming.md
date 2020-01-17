@@ -19,7 +19,7 @@
 
 而不是单一的意识流叙事，我们在同时多条故事线进行的间谍小说里。一个间谍在一个特殊的岩石下李璐下微缩胶片，当第二个间谍来取回包裹时，它可能已经被第三个间谍带走了。但是这部特别的小说并没有把事情搞得一团糟;你可以轻松地走到尽头，永远不会弄明白什么。
 
-构建并发应用程序非常类似于游戏[Jenga](https://en.wikipedia.org/wiki/Jenga)，每当你拉出一个块并将其放置在塔上时，一切都会崩溃。每个塔楼和每个应用程序都是独一无二的，有自己的作用。您从构建系统中学到的东西可能不适用于下一个系统。
+构造并发应用程序非常类似于游戏[Jenga](https://en.wikipedia.org/wiki/Jenga)，每当你拉出一个块并将其放置在塔上时，一切都会崩溃。每个塔楼和每个应用程序都是独一无二的，有自己的作用。您从构造系统中学到的东西可能不适用于下一个系统。
 
 本章是对并发性的一个非常基本的介绍。虽然我使用了最现代的Java 8工具来演示原理，但这一章远非对该主题的全面处理。我的目标是为你提供足够的基础知识，使你能够解决问题的复杂性和危险性，从而安全的通过这些鲨鱼肆虐的困难水域。
 
@@ -139,7 +139,7 @@ _并行_
 <!-- 文献引用未加，因为暂时没看到很好的解决办法 -->
 有些人甚至提倡将进程作为并发的唯一合理方法[^1]，但不幸的是，通常存在数量和开销限制，以防止它们在并发频谱中的适用性（最终你习惯了标准的并发性克制，“这种方法适用于一些情况但不适用于其他情况”）
 
-一些编程语言旨在将并发任务彼此隔离。这些通常被称为_函数式语言_，其中每个函数调用不产生其他影响（因此不能与其他函数干涉），因此可以作为独立的任务来驱动。Erlang就是这样一种语言，它包括一个任务与另一个任务进行通信的安全机制。如果您发现程序的一部分必须大量使用并发性并且您在尝试构建该部分时遇到了过多的问题，那么您可能会考虑使用专用并发语言创建程序的那一部分。
+一些编程语言旨在将并发任务彼此隔离。这些通常被称为_函数式语言_，其中每个函数调用不产生其他影响（因此不能与其他函数干涉），因此可以作为独立的任务来驱动。Erlang就是这样一种语言，它包括一个任务与另一个任务进行通信的安全机制。如果您发现程序的一部分必须大量使用并发性并且您在尝试构造该部分时遇到了过多的问题，那么您可能会考虑使用专用并发语言创建程序的那一部分。
 <!-- 文献标记 -->
 Java采用了更传统的方法[^2]，即在顺序语言之上添加对线程的支持而不是在多任务操作系统中分配外部进程，线程在执行程序所代表的单个进程中创建任务交换。
 
@@ -198,7 +198,7 @@ Java采用了更传统的方法[^2]，即在顺序语言之上添加对线程的
 
 在格言1-3之后，您可能会对并发性感到害怕，并且认为，“到目前为止，我已经避免了它，也许我可以继续保留它。
 
-这是一种理性的反应。您可能知道其他编程语言更好地设计用于构建并发程序 - 甚至是在JVM上运行的程序（从而提供与Java的轻松通信），例如Clojure或Scala。为什么不用这些语言编写并发部分并将Java用于其他所有部分呢？
+这是一种理性的反应。您可能知道其他编程语言更好地设计用于构造并发程序 - 甚至是在JVM上运行的程序（从而提供与Java的轻松通信），例如Clojure或Scala。为什么不用这些语言编写并发部分并将Java用于其他所有部分呢？
 
 唉，你不能轻易逃脱：
 
@@ -2226,7 +2226,238 @@ public class DiningPhilosophers {
 <!-- Constructors are not Thread-Safe -->
 ## 构造函数非线程安全
 
+当你在脑子里想象一个对象构造的过程，你会很容易认为这个过程是线程安全的。毕竟，在对象初始化完成前没人能见到这个对象，所以又怎么会产生对于这个对象的争议呢？确实，java语言规范(JLS)自信满满地陈述道：“没有必要使构造器同步，因为它会锁定正在构造的对象，而这通常会使得该对象直到其所有构造器完成所有工作后，才对其他线程可见。”
+不幸的是，对象构造过程像其他任何事物一样容易受到共享内存并发问题的影响，只是作用机制可能更微妙罢了。
+考虑使用静态字段为每个对象自动创建唯一标识符的过程。为了测试其不同的实现过程，我们从一个接口开始：
 
+```java
+//concurrent/HasID.java
+public interface HasID {
+    int getID();
+}
+```
+
+然后StaticIDField类以显式方式实现该接口：
+
+```java
+// concurrent/StaticIDField.java
+public class StaticIDField implements HasID {
+    private static int counter = 0;
+    private int id = counter++;
+    public int getID() { return id; }
+}
+```
+
+正如您所想的，此类是一个简单无害的类，它甚至没有一个显式的构造器来引发问题。当我们运行多个用于创建此类对象的线程时，究竟会发生什么，为了搞清楚这点，我们做了以下测试：
+
+```java
+// concurrent/IDChecker.java
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+import java.util.concurrent.*;
+import com.google.common.collect.Sets;
+public class IDChecker {
+    public static final int SIZE = 100_000;
+
+    static class MakeObjects implements
+        Supplier<List<Integer>> {
+        private Supplier<HasID> gen;
+
+        MakeObjects(Supplier<HasID> gen) {
+            this.gen = gen;
+        }
+
+        @Override public List<Integer> get() {
+            return Stream.generate(gen)
+            .limit(SIZE)
+            .map(HasID::getID)
+            .collect(Collectors.toList());
+        }
+    }
+
+    public static void test(Supplier<HasID> gen) {
+        CompletableFuture<List<Integer>>
+        groupA = CompletableFuture.supplyAsync(new
+            MakeObjects(gen)),
+        groupB = CompletableFuture.supplyAsync(new
+            MakeObjects(gen));
+
+        groupA.thenAcceptBoth(groupB, (a, b) -> {
+            System.out.println(
+                Sets.intersection(
+                Sets.newHashSet(a),
+                Sets.newHashSet(b)).size());
+            }).join();
+    }
+}
+```
+
+MakeObjects类是一个供应者类，包含一个能够产生List\<Integer>类型的列表对象的get()方法。通过从每个HasID对象提取ID并放入列表中来生成这个列表对象，而test()方法则创建了两个并行的CompletableFuture对象，用于运行MakeObjects供应者类，然后获取运行结果。
+使用Guava库中的Sets.intersection()方法，计算出这两个返回的List\<Integer>对象中有多少相同的ID（使用谷歌Guava库里的方法比使用官方的retainAll()方法速度快得多）。
+
+现在我们可以测试上面的StaticIDField类了：
+
+```java
+// concurrent/TestStaticIDField.java
+public class TestStaticIDField {
+
+    public static void main(String[] args) {
+        IDChecker.test(StaticIDField::new);
+    }
+}
+/* Output:
+    13287
+*/
+```
+
+结果中出现了很多重复项。很显然，纯静态int用于构造过程并不是线程安全的。让我们使用AtomicInteger来使其变为线程安全的：
+
+```java
+// concurrent/GuardedIDField.java
+import java.util.concurrent.atomic.*;
+public class GuardedIDField implements HasID {  
+    private static AtomicInteger counter = new
+        AtomicInteger();
+
+    private int id = counter.getAndIncrement();
+
+    public int getID() { return id; }
+
+    public static void main(String[] args) {                IDChecker.test(GuardedIDField::new);
+    }
+}
+/* Output:
+    0
+*/
+```
+
+构造器有一种更微妙的状态共享方式：通过构造器参数：
+
+```java
+// concurrent/SharedConstructorArgument.java
+import java.util.concurrent.atomic.*;
+interface SharedArg{
+    int get();
+}
+
+class Unsafe implements SharedArg{
+    private int i = 0;
+
+    public int get(){
+        return i++;
+    }
+}
+
+class Safe implements SharedArg{
+    private static AtomicInteger counter = new AtomicInteger();
+
+    public int get(){
+        return counter.getAndIncrement();
+    }
+}
+
+class SharedUser implements HasID{
+    private final int id;
+
+    SharedUser(SharedArg sa){
+        id = sa.get();
+    }
+
+    @Override
+    public int getID(){
+        return id;
+    }
+}
+
+public class SharedConstructorArgument{
+    public static void main(String[] args){
+        Unsafe unsafe = new Unsafe();
+        IDChecker.test(() -> new SharedUser(unsafe));
+
+        Safe safe = new Safe();
+        IDChecker.test(() -> new SharedUser(safe));
+    }
+}
+/* Output:
+    24838
+    0
+*/
+```
+
+在这里，SharedUser构造器实际上共享了相同的参数。即使SharedUser以完全无害且合理的方式使用其自己的参数，其构造器的调用方式也会引起冲突。SharedUser甚至不知道它是以这种方式调用的，更不必说控制它了。
+同步构造器并不被java语言所支持，但是通过使用同步语块来创建你自己的同步构造器是可能的（请参阅附录：Low-Level Concurrency，来进一步了解同步关键字——synchronized）。尽管JLS（java语言规范）这样陈述道：“……它会锁定正在构造的对象”，但这并不是真的——构造器实际上只是一个静态方法，因此同步构造器实际上会锁定该类的Class对象。我们可以通过创建自己的静态对象并锁定它，来达到与同步构造器相同的效果：
+
+```java
+// concurrent/SynchronizedConstructor.java
+
+import java.util.concurrent.atomic.*;
+
+class SyncConstructor implements HasID{
+    private final int id;
+    private static Object constructorLock =
+        new Object();
+
+    SyncConstructor(SharedArg sa){
+        synchronized (constructorLock){
+            id = sa.get();
+        }
+    }
+
+    @Override
+    public int getID(){
+        return id;
+    }
+}
+
+public class SynchronizedConstructor{
+    public static void main(String[] args){
+        Unsafe unsafe = new Unsafe();
+        IDChecker.test(() -> new SyncConstructor(unsafe));
+    }
+}
+/* Output:
+    0
+*/
+
+```
+
+Unsafe类的共享使用现在就变得安全了。另一种方法是将构造器设为私有（因此可以防止继承），并提供一个静态Factory方法来生成新对象：
+
+```java
+// concurrent/SynchronizedFactory.java
+import java.util.concurrent.atomic.*;
+
+final class SyncFactory implements HasID{
+    private final int id;
+
+    private SyncFactory(SharedArg sa){
+        id = sa.get();
+    }
+
+    @Override
+    public int getID(){
+        return id;
+    }
+
+    public static synchronized SyncFactory factory(SharedArg sa){
+        return new SyncFactory(sa);
+    }
+}
+
+public class SynchronizedFactory{
+    public static void main(String[] args){
+        Unsafe unsafe = new Unsafe();
+        IDChecker.test(() -> SyncFactory.factory(unsafe));
+    }
+}
+/* Output:
+    0
+*/
+```
+
+通过同步静态工厂方法，可以在构造过程中锁定Class对象。
+这些示例充分表明了在并发Java程序中检测和管理共享状态有多困难。即使您采取“不共享任何内容”的策略，也很容易产生意外的共享事件。
 <!-- Effort, Complexity,Cost -->
 ## 复杂性和代价
 
