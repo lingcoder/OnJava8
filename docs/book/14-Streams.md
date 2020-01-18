@@ -1959,7 +1959,7 @@ Lambda 表达式中的第一个参数 `fr0` 是上一次调用 `reduce()` 的结
 - `anyMatch(Predicate)`：如果流中的任意一个元素根据提供的 **Predicate** 返回 true 时，结果返回为 true。在第一个 false 是停止执行计算。
 - `noneMatch(Predicate)`：如果流的每个元素根据提供的 **Predicate** 都返回 false 时，结果返回为 true。在第一个 true 时停止执行计算。
 
-我们已经在 `Prime.java` 中看到了 `noneMatch()` 的示例；`allMatch()` 和 `anyMatch()` 的用法基本上是等同的。下面我们来探究一下短路行为。为了消除冗余代码，我们创建了 `show()`。首先我们必须治到如何统一地描述这三个匹配器的操作，然后再将其转换为 **Matcher** 接口。代码示例：
+我们已经在 `Prime.java` 中看到了 `noneMatch()` 的示例；`allMatch()` 和 `anyMatch()` 的用法基本上是等同的。下面我们来探究一下短路行为。为了消除冗余代码，我们创建了 `show()`。首先我们必须知道如何统一地描述这三个匹配器的操作，然后再将其转换为 **Matcher** 接口。代码示例：
 
 ```java
 // streams/Matching.java
@@ -2001,9 +2001,9 @@ public class Matching {
 1 2 3 4 5 6 7 8 9 true
 ```
 
-**BiPredicate** 是一个二元断言，它只能接受两个参数且只返回 true 或者 false。它的第一个参数是我们要测试的流，第二个参数是一个断言 **Predicate**。**Matcher** 适用于所有的 **Stream::\*Match** 方法，所以我们可以传递每一个到 `show()` 中。`match.test()` 的调用会被转换成 **Stream::\*Match** 函数的调用。
+**BiPredicate** 是一个二元谓词，它只能接受两个参数且只返回 true 或者 false。它的第一个参数是我们要测试的流，第二个参数是一个谓词 **Predicate**。**Matcher** 适用于所有的 **Stream::\*Match** 方法，所以我们可以传递每一个到 `show()` 中。`match.test()` 的调用会被转换成 **Stream::\*Match** 函数的调用。
 
-`show()` 获取两个参数，**Matcher** 匹配器和用于表示断言测试 **n < val** 中最大值的 **val**。这个方法生成一个1-9之间的整数流。`peek()` 是用于向我们展示测试在短路之前的情况。从输出中可以看到每次都发生了短路。
+`show()` 获取两个参数，**Matcher** 匹配器和用于表示谓词测试 **n < val** 中最大值的 **val**。这个方法生成一个1-9之间的整数流。`peek()` 是用于向我们展示测试在短路之前的情况。从输出中可以看到每次都发生了短路。
 
 ### 查找
 
