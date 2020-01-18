@@ -2461,8 +2461,358 @@ public class SynchronizedFactory{
 <!-- Effort, Complexity,Cost -->
 ## 复杂性和代价
 
+假设您正在做披萨，我们把从整个流程的当前步骤到下一个步骤所需的工作量，在这里一一表示为枚举变量的一部分：
+
+
+
+```java
+// concurrent/Pizza.java import java.util.function.*;
+
+import onjava.Nap;
+public class Pizza{
+    public enum Step{
+        DOUGH(4), ROLLED(1), SAUCED(1), CHEESED(2),
+        TOPPED(5), BAKED(2), SLICED(1), BOXED(0);
+        int effort;// Needed to get to the next step 
+
+        Step(int effort){
+            this.effort = effort;
+        }
+
+        Step forward(){
+            if (equals(BOXED)) return BOXED;
+            new Nap(effort * 0.1);
+            return values()[ordinal() + 1];
+        }
+    }
+
+    private Step step = Step.DOUGH;
+    private final int id;
+
+    public Pizza(int id){
+        this.id = id;
+    }
+
+    public Pizza next(){
+        step = step.forward();
+        System.out.println("Pizza " + id + ": " + step);
+        return this;
+    }
+
+    public Pizza next(Step previousStep){
+        if (!step.equals(previousStep))
+            throw new IllegalStateException("Expected " +
+                      previousStep + " but found " + step);
+        return next();
+    }
+
+    public Pizza roll(){
+        return next(Step.DOUGH);
+    }
+
+    public Pizza sauce(){
+        return next(Step.ROLLED);
+    }
+
+    public Pizza cheese(){
+        return next(Step.SAUCED);
+    }
+
+    public Pizza toppings(){
+        return next(Step.CHEESED);
+    }
+
+    public Pizza bake(){
+        return next(Step.TOPPED);
+    }
+
+    public Pizza slice(){
+        return next(Step.BAKED);
+    }
+
+    public Pizza box(){
+        return next(Step.SLICED);
+    }
+
+    public boolean complete(){
+        return step.equals(Step.BOXED);
+    }
+
+    @Override
+    public String toString(){
+        return "Pizza" + id + ": " + (step.equals(Step.BOXED) ? "complete" : step);
+    }
+}
+```
+
+这只算得上是一个简单的状态机，就像Machina类一样。 
+
+制作一个披萨，当披萨饼最终被放在盒子中时，就算完成最终任务了。 如果一个人在做一个披萨饼，那么所有步骤都是线性进行的，即一个接一个地进行：
+
+```java
+// concurrent/OnePizza.java 
+
+import onjava.Timer;
+
+public class OnePizza{
+    public static void main(String[] args){
+        Pizza za = new Pizza(0);
+        System.out.println(Timer.duration(() -> {
+            while (!za.complete()) za.next();
+        }));
+    }
+}
+/* Output: 
+Pizza 0: ROLLED 
+Pizza 0: SAUCED 
+Pizza 0: CHEESED 
+Pizza 0: TOPPED 
+Pizza 0: BAKED 
+Pizza 0: SLICED 
+Pizza 0: BOXED 
+	1622 
+*/
+```
+
+时间以毫秒为单位，加总所有步骤的工作量，会得出与我们的期望值相符的数字。 如果您以这种方式制作了五个披萨，那么您会认为它花费的时间是原来的五倍。 但是，如果这还不够快怎么办？ 我们可以从尝试并行流方法开始：
+
+```java
+// concurrent/PizzaStreams.java
+// import java.util.*; import java.util.stream.*;
+
+import onjava.Timer;
+
+public class PizzaStreams{
+    static final int QUANTITY = 5;
+
+    public static void main(String[] args){
+        Timer timer = new Timer();
+        IntStream.range(0, QUANTITY)
+            .mapToObj(Pizza::new)
+            .parallel()//[1]
+        	.forEach(za -> { while(!za.complete()) za.next(); }); 			System.out.println(timer.duration());
+    }
+}
+/* Output:
+Pizza 2: ROLLED
+Pizza 0: ROLLED
+Pizza 1: ROLLED
+Pizza 4: ROLLED
+Pizza 3:ROLLED
+Pizza 2:SAUCED
+Pizza 1:SAUCED
+Pizza 0:SAUCED
+Pizza 4:SAUCED
+Pizza 3:SAUCED
+Pizza 2:CHEESED
+Pizza 1:CHEESED
+Pizza 0:CHEESED
+Pizza 4:CHEESED
+Pizza 3:CHEESED
+Pizza 2:TOPPED
+Pizza 1:TOPPED
+Pizza 0:TOPPED
+Pizza 4:TOPPED
+Pizza 3:TOPPED
+Pizza 2:BAKED
+Pizza 1:BAKED
+Pizza 0:BAKED
+Pizza 4:BAKED
+Pizza 3:BAKED
+Pizza 2:SLICED
+Pizza 1:SLICED
+Pizza 0:SLICED
+Pizza 4:SLICED
+Pizza 3:SLICED
+Pizza 2:BOXED
+Pizza 1:BOXED
+Pizza 0:BOXED
+Pizza 4:BOXED
+Pizza 3:BOXED
+1739
+*/
+```
+
+现在，我们制作五个披萨的时间与制作单个披萨的时间就差不多了。 尝试删除标记为[1]的行后，你会发现它花费的时间是原来的五倍。 你还可以尝试将QUANTITY更改为4、8、10、16和17，看看会有什么不同，并猜猜看为什么会这样。
+
+PizzaStreams类产生的每个并行流在它的forEach()内完成所有工作，如果我们将其各个步骤用映射的方式一步一步处理，情况会有所不同吗？
+
+```java
+// concurrent/PizzaParallelSteps.java 
+
+import java.util.*;
+import java.util.stream.*;
+import onjava.Timer;
+
+public class PizzaParallelSteps{
+    static final int QUANTITY = 5;
+
+    public static void main(String[] args){
+        Timer timer = new Timer();
+        IntStream.range(0, QUANTITY)
+            .mapToObj(Pizza::new)
+            .parallel()
+            .map(Pizza::roll)
+            .map(Pizza::sauce)
+            .map(Pizza::cheese)
+            .map(Pizza::toppings)
+            .map(Pizza::bake)
+            .map(Pizza::slice)
+            .map(Pizza::box)
+            .forEach(za -> System.out.println(za));
+        System.out.println(timer.duration());
+    }
+} 
+/* Output:
+Pizza 2: ROLLED 
+Pizza 0: ROLLED 
+Pizza 1: ROLLED 
+Pizza 4: ROLLED 
+Pizza 3: ROLLED 
+Pizza 1: SAUCED 
+Pizza 0: SAUCED 
+Pizza 2: SAUCED 
+Pizza 3: SAUCED 
+Pizza 4: SAUCED 
+Pizza 1: CHEESED 
+Pizza 0: CHEESED 
+Pizza 2: CHEESED 
+Pizza 3: CHEESED 
+Pizza 4: CHEESED 
+Pizza 0: TOPPED 
+Pizza 2: TOPPED
+Pizza 1: TOPPED 
+Pizza 3: TOPPED 
+Pizza 4: TOPPED 
+Pizza 1: BAKED 
+Pizza 2: BAKED 
+Pizza 0: BAKED 
+Pizza 4: BAKED 
+Pizza 3: BAKED 
+Pizza 0: SLICED 
+Pizza 2: SLICED 
+Pizza 1: SLICED 
+Pizza 3: SLICED 
+Pizza 4: SLICED 
+Pizza 1: BOXED 
+Pizza1: complete 
+Pizza 2: BOXED 
+Pizza 0: BOXED 
+Pizza2: complete 
+Pizza0: complete 
+Pizza 3: BOXED
+Pizza 4: BOXED 
+Pizza4: complete 
+Pizza3: complete 
+1738 
+*/
+```
+
+答案是“否”，事后看来这并不奇怪，因为每个披萨都需要按顺序执行步骤。因此，没法通过分步执行操作来进一步提高速度，就像上文的PizzaParallelSteps.java里面展示的一样。
+
+我们可以使用CompletableFutures重写这个例子：
+
+```java
+// concurrent/CompletablePizza.java 
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.*;
+import onjava.Timer;
+
+public class CompletablePizza{
+    static final int QUANTITY = 5;
+
+    public static CompletableFuture<Pizza> makeCF(Pizza za){
+        return CompletableFuture
+                .completedFuture(za)
+            .thenApplyAsync(Pizza::roll)
+            .thenApplyAsync(Pizza::sauce)
+            .thenApplyAsync(Pizza::cheese)
+            .thenApplyAsync(Pizza::toppings)
+            .thenApplyAsync(Pizza::bake)
+            .thenApplyAsync(Pizza::slice)
+            .thenApplyAsync(Pizza::box);
+    }
+
+    public static void show(CompletableFuture<Pizza> cf){
+        try{
+            System.out.println(cf.get());
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args){
+        Timer timer = new Timer();
+        List<CompletableFuture<Pizza>> pizzas =
+                IntStream.range(0, QUANTITY)
+            .mapToObj(Pizza::new)
+            .map(CompletablePizza::makeCF)
+            .collect(Collectors.toList());
+        System.out.println(timer.duration());
+        pizzas.forEach(CompletablePizza::show);
+        System.out.println(timer.duration());
+    }
+}
+/* Output:
+169 
+Pizza 0: ROLLED 
+Pizza 1: ROLLED 
+Pizza 2: ROLLED 
+Pizza 4: ROLLED 
+Pizza 3: ROLLED 
+Pizza 1: SAUCED 
+Pizza 0: SAUCED 
+Pizza 2: SAUCED 
+Pizza 4: SAUCED
+Pizza 3: SAUCED 
+Pizza 0: CHEESED 
+Pizza 4: CHEESED 
+Pizza 1: CHEESED 
+Pizza 2: CHEESED 
+Pizza 3: CHEESED 
+Pizza 0: TOPPED 
+Pizza 4: TOPPED 
+Pizza 1: TOPPED 
+Pizza 2: TOPPED 
+Pizza 3: TOPPED 
+Pizza 0: BAKED 
+Pizza 4: BAKED 
+Pizza 1: BAKED 
+Pizza 3: BAKED 
+Pizza 2: BAKED 
+Pizza 0: SLICED 
+Pizza 4: SLICED 
+Pizza 1: SLICED 
+Pizza 3: SLICED
+Pizza 2: SLICED 
+Pizza 4: BOXED 
+Pizza 0: BOXED 
+Pizza0: complete 
+Pizza 1: BOXED 
+Pizza1: complete 
+Pizza 3: BOXED 
+Pizza 2: BOXED 
+Pizza2: complete 
+Pizza3: complete 
+Pizza4: complete 
+1797 
+*/
+```
+
+并行流和CompletableFutures是Java并发工具箱中最先进发达的技术。 您应该始终首先选择其中之一。 当一个问题很容易并行处理时，或者说，很容易把数据分解成相同的、易于处理的各个部分时，使用并行流方法处理最为合适（而如果您决定不借助它而由自己完成，您就必须撸起袖子，深入研究Spliterator的文档）。
+
+而当工作的各个部分内容各不相同时，使用CompletableFutures是最好的选择。比起面向数据，CompletableFutures更像是面向任务的。
+
+对于披萨问题，结果似乎也没有什么不同。实际上，并行流方法看起来更简洁，仅出于这个原因，我认为并行流作为解决问题的首次尝试方法更具吸引力。
+
+由于制作披萨总需要一定的时间，无论您使用哪种并发方法，你能做到的最好情况，是在制作一个披萨的相同时间内制作n个披萨。 在这里当然很容易看出来，但是当您处理更复杂的问题时，您就可能忘记这一点。 通常，在项目开始时进行粗略的计算，就能很快弄清楚最大可能的并行吞吐量，这可以防止您因为采取无用的加快运行速度的举措而忙得团团转。
+
+使用CompletableFutures或许可以轻易地带来重大收益，但是在尝试更进一步时需要倍加小心，因为额外增加的成本和工作量会非常容易远远超出你之前拼命挤出的那一点点收益。
 
 <!-- Summary -->
+
 ## 本章小结
 
 [^1]:例如,Eric-Raymond在“VIIX编程艺术”（Addison-Wesley，2004）中提出了一个很好的案例。
