@@ -910,7 +910,7 @@ Other operation
 3
 ```
 
-这个例子进一步展示了外围类实现一个接口与内部类实现此接口之间的区别。就代码而言，**Calleel** 是更简单的解决方式。**Callee2** 继承自 **MyIncrement**，后者已经有了一个不同的 `increment()` 方法，并且与 **Incrementable** 接口期望的 `increment()` 方法完全不相关。所以如果 **Callee2** 继承了 **MyIncrement**，就不能为了 **Incrementable** 的用途而覆盖 `increment()` 方法，于是只能使用内部类独立地实现 **Incrementable**，还要注意，当创建了一个内部类时，并没有在外围类的接口中添加东西，也没有修改外围类的接口。
+这个例子进一步展示了外围类实现一个接口与内部类实现此接口之间的区别。就代码而言，**Callee1** 是更简单的解决方式。**Callee2** 继承自 **MyIncrement**，后者已经有了一个不同的 `increment()` 方法，并且与 **Incrementable** 接口期望的 `increment()` 方法完全不相关。所以如果 **Callee2** 继承了 **MyIncrement**，就不能为了 **Incrementable** 的用途而覆盖 `increment()` 方法，于是只能使用内部类独立地实现 **Incrementable**，还要注意，当创建了一个内部类时，并没有在外围类的接口中添加东西，也没有修改外围类的接口。
 
 注意，在 **Callee2** 中除了 `getCallbackReference()` 以外，其他成员都是 **private** 的。要想建立与外部世界的任何连接，接口 **Incrementable** 都是必需的。在这里可以看到，**interface** 是如何允许接口与接口的实现完全独立的。
 内部类 **Closure** 实现了 **Incrementable**，以提供一个返回 **Callee2** 的“钩子”（hook）-而且是一个安全的钩子。无论谁获得此 **Incrementable** 的引用，都只能调用 `increment()`，除此之外没有其他功能（不像指针那样，允许你做很多事情）。
@@ -1426,7 +1426,7 @@ Anonymous inner 9
 ```java
 Counter.class
 LocalInnerClass$1.class
-LocalInnerClass$1LocalCounter.class
+LocalInnerClass$LocalCounter.class
 LocalInnerClass.class
 ```
 
