@@ -425,8 +425,368 @@ Spinning
 <!-- Factories: Encapsulating Object Creation -->
 ## 工厂模式
 
+当你发现必须将新类型添加到系统中时，合理的第一步是使用多态性为这些新类型创建一个通用接口。这会将你系统中的其余代码与要添加的特定类型的信息分开，使得可以在不改变现有代码的情况下添加新类型……或者看起来如此。起初，在这种设计中，似乎你必须更改代码的唯一地方就是你继承新类型的地方，但这并不是完全正确的。 你仍然必须创建新类型的对象，并且在创建时必须指定要使用的确切构造器。因此，如果创建对象的代码分布在整个应用程序中，那么在添加新类型时，你将遇到相同的问题——你仍然必须追查你代码中新类型碍事的所有地方。恰好是类型的创建碍事，而不是类型的使用（通过多态处理），但是效果是一样的：添加新类型可能会引起问题。
+
+解决方案是强制对象的创建都通过通用工厂进行，而不是允许创建代码在整个系统中传播。 如果你程序中的所有代码都必须执行通过该工厂创建你的一个对象，那么在添加新类时只需要修改工厂即可。
+
+由于每个面向对象的程序都会创建对象，并且很可能会通过添加新类型来扩展程序，因此工厂是最通用的设计模式之一。
+
+举例来说，让我们重新看一下**Shape**系统。 首先，我们需要一个用于所有示例的基本框架。 如果无法创建**Shape**对象，则需要抛出一个合适的异常：
+
+```java
+// patterns/shapes/BadShapeCreation.java package patterns.shapes;
+public class BadShapeCreation extends RuntimeException {
+    public BadShapeCreation(String msg) {
+        super(msg);
+    }
+}
+```
+
+接下来，是一个**Shape**基类：
+
+```java
+// patterns/shapes/Shape.java
+package patterns.shapes;
+public class Shape {
+	private static int counter = 0;
+    private int id = counter++;
+    @Override
+    public String toString(){
+        return getClass().getSimpleName() + "[" + id + "]";
+    }
+    public void draw() {
+        System.out.println(this + " draw");
+    }
+    public void erase() {
+        System.out.println(this + " erase");
+    }
+}
+```
+
+该类自动为每一个**Shape**对象创建一个唯一的`id`。
+
+`toString()`使用运行期信息来发现特定的**Shape**子类的名字。
+
+现在我们能很快创建一些**Shape**子类了：
+
+```java
+// patterns/shapes/Circle.java
+package patterns.shapes;
+public class Circle extends Shape {}
+```
+
+```java
+// patterns/shapes/Square.java
+package patterns.shapes;
+public class Square extends Shape {}
+```
+
+```java
+// patterns/shapes/Triangle.java
+package patterns.shapes;
+public class Triangle extends Shape {} 
+```
+
+工厂是具有能够创建对象的方法的类。 我们有几个示例版本，因此我们将定义一个接口：
+
+```java
+// patterns/shapes/FactoryMethod.java
+package patterns.shapes;
+public interface FactoryMethod {
+    Shape create(String type);
+}
+```
+
+`create()`接收一个参数，这个参数使其决定要创建哪一种**Shape**对象，这里是`String`，但是它其实可以是任何数据集合。对象的初始化数据（这里是字符串）可能来自系统外部。 这个例子将测试工厂：
+
+```java
+// patterns/shapes/FactoryTest.java
+package patterns.shapes;
+import java.util.stream.*;
+public class FactoryTest {
+    public static void test(FactoryMethod factory) {
+        Stream.of("Circle", "Square", "Triangle",
+                  "Square", "Circle", "Circle", "Triangle")
+        .map(factory::create)
+        .peek(Shape::draw)
+        .peek(Shape::erase)
+        .count(); // Terminal operation
+    }
+} 
+```
+
+在主函数`main()`里，要记住除非你在最后使用了一个终结操作，否则**Stream**不会做任何事情。在这里，`count()`的值被丢弃了。
+
+创建工厂的一种方法是显式创建每种类型：
+
+```java
+// patterns/ShapeFactory1.java
+// A simple static factory method
+import java.util.*;
+import java.util.stream.*;
+import patterns.shapes.*;
+public class ShapeFactory1 implements FactoryMethod {
+    public Shape create(String type) {
+        switch(type) {
+            case "Circle": return new Circle();
+            case "Square": return new Square();
+            case "Triangle": return new Triangle();
+            default: throw new BadShapeCreation(type);
+        }
+    }
+    public static void main(String[] args) {
+        FactoryTest.test(new ShapeFactory1());
+    }
+}
+```
+
+输出结果：
+
+```java
+Circle[0] draw
+Circle[0] erase
+Square[1] draw
+Square[1] erase
+Triangle[2] draw
+Triangle[2] erase
+Square[3] draw
+Square[3] erase
+Circle[4] draw
+Circle[4] erase
+Circle[5] draw
+Circle[5] erase
+Triangle[6] draw
+Triangle[6] erase 
+```
+
+`create()`现在是添加新类型的Shape时系统中唯一需要更改的其他代码。
+
+### 动态工厂
+
+前面例子中的**静态**`create()`方法强制所有创建操作都集中在一个位置，因此这是添加新类型的**Shape**时唯一必须更改代码的地方。这当然是一个合理的解决方案，因为它把创建对象的过程限制在一个框内。但是，如果你在添加新类时无需修改任何内容，那就太好了。 以下版本使用反射在首次需要时将**Shape**的构造器动态加载到工厂列表中：
+
+```java
+// patterns/ShapeFactory2.java
+import java.util.*;
+import java.lang.reflect.*;
+import java.util.stream.*;
+import patterns.shapes.*;
+public class ShapeFactory2 implements FactoryMethod {
+    Map<String, Constructor> factories = new HashMap<>();
+    static Constructor load(String id) {
+        System.out.println("loading " + id);
+        try {
+            return Class.forName("patterns.shapes." + id)
+                .getConstructor();
+        } catch(ClassNotFoundException |
+                NoSuchMethodException e) {
+            throw new BadShapeCreation(id);
+        }
+    }
+    public Shape create(String id) {
+        try {
+            return (Shape)factories
+                .computeIfAbsent(id, ShapeFactory2::load)
+                .newInstance();
+        } catch(InstantiationException |
+                IllegalAccessException |
+                InvocationTargetException e) {
+            throw new BadShapeCreation(id);
+        }
+    }
+    public static void main(String[] args) {
+        FactoryTest.test(new ShapeFactory2());
+    }
+}
+```
+
+输出结果：
+
+```java
+loading Circle
+Circle[0] draw
+Circle[0] erase
+loading Square
+Square[1] draw
+Square[1] erase
+loading Triangle
+Triangle[2] draw
+Triangle[2] erase
+Square[3] draw
+Square[3] erase
+Circle[4] draw
+Circle[4] erase
+Circle[5] draw
+Circle[5] erase
+Triangle[6] draw
+Triangle[6] erase
+```
+
+和之前一样，`create()`方法基于你传递给它的**String**参数生成新的**Shape**s，但是在这里，它是通过在**HashMap**中查找作为键的**String**来实现的。 返回的值是一个构造器，该构造器用于通过调用`newInstance()`创建新的**Shape**对象。
+
+然而，当你开始运行程序时，工厂的`map`为空。`create()`使用`map`的`computeIfAbsent()`方法来查找构造器（如果该构造器已存在于`map`中）。如果不存在则使用`load()`计算出该构造器，并将其插入到`map`中。 从输出中可以看到，每种特定类型的**Shape**都是在第一次请求时才加载的，然后只需要从`map`中检索它。
+
+### 多态工厂
+
+《设计模式》这本书强调指出，采用“工厂方法”模式的原因是可以从基本工厂中继承出不同类型的工厂。 再次修改示例，使工厂方法位于单独的类中：
+
+```java
+// patterns/ShapeFactory3.java
+// Polymorphic factory methods
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+import patterns.shapes.*;
+interface PolymorphicFactory {
+    Shape create();
+}
+class RandomShapes implements Supplier<Shape> {
+    private final PolymorphicFactory[] factories;
+    private Random rand = new Random(42);
+    RandomShapes(PolymorphicFactory... factories){
+        this.factories = factories;
+    }
+    public Shape get() {
+        return factories[ rand.nextInt(factories.length)].create();
+    }
+}
+public class ShapeFactory3 {
+    public static void main(String[] args) {
+        RandomShapes rs = new RandomShapes(
+            Circle::new,
+            Square::new,
+            Triangle::new);
+        Stream.generate(rs)
+            .limit(6)
+            .peek(Shape::draw)
+            .peek(Shape::erase)
+            .count();
+    }
+}
+```
+
+输出结果：
+
+```java
+Triangle[0] draw
+Triangle[0] erase
+Circle[1] draw
+Circle[1] erase
+Circle[2] draw
+Circle[2] erase
+Triangle[3] draw
+Triangle[3] erase
+Circle[4] draw
+Circle[4] erase
+Square[5] draw
+Square[5] erase 
+```
+
+**RandomShapes**实现了**Supplier \<Shape>**，因此可用于通过`Stream.generate()`创建**Stream**。 它的构造器采用**PolymorphicFactory**对象的可变参数列表。 变量参数列表以数组形式出现，因此列表是以数组形式在内部存储的。`get()`方法随机获取此数组中一个对象的索引，并在结果上调用`create()`以产生新的**Shape**对象。 添加新类型的**Shape**时，**RandomShapes**构造器是唯一需要更改的地方。 请注意，此构造器需要**Supplier \<Shape>**。 我们传递给其**Shape**构造器的方法引用，该引用可满足**Supplier \<Shape>**约定，因为Java 8支持结构一致性。
+
+鉴于**ShapeFactory2.java**可能会抛出异常，使用此方法则没有任何异常——它在编译时完全确定。
+
+### 抽象工厂
+
+抽象工厂模式看起来像我们之前所见的工厂对象，但拥有不是一个工厂方法而是几个工厂方法， 每个工厂方法都会创建不同种类的对象。 这个想法是在创建工厂对象时，你决定如何使用该工厂创建的所有对象。 《设计模式》中提供的示例实现了跨各种图形用户界面（GUI）的可移植性：你创建一个适合你正在使用的GUI的工厂对象，然后从中请求菜单，按钮，滑块等等，它将自动为GUI创建适合该项目版本的组件。 因此，你可以将从一个GUI更改为另一个所产生的影响隔离限制在一处。 作为另一个示例，假设你正在创建一个通用游戏环境来支持不同类型的游戏。 使用抽象工厂看起来就像下文那样：
+
+```java
+// patterns/abstractfactory/GameEnvironment.java
+// An example of the Abstract Factory pattern
+// {java patterns.abstractfactory.GameEnvironment}
+package patterns.abstractfactory;
+import java.util.function.*;
+interface Obstacle {
+    void action();
+}
+
+interface Player {
+    void interactWith(Obstacle o);
+}
+
+class Kitty implements Player {
+    @Override
+    public void interactWith(Obstacle ob) {
+        System.out.print("Kitty has encountered a ");
+        ob.action();
+    }
+}
+
+class KungFuGuy implements Player {
+    @Override
+    public void interactWith(Obstacle ob) {
+        System.out.print("KungFuGuy now battles a ");
+        ob.action();
+    }
+}
+
+class Puzzle implements Obstacle {
+    @Override
+    public void action() {
+        System.out.println("Puzzle");
+    }
+}
+
+class NastyWeapon implements Obstacle {
+    @Override
+    public void action() {
+        System.out.println("NastyWeapon");
+    }
+}
+
+// The Abstract Factory:
+class GameElementFactory {
+    Supplier<Player> player;
+    Supplier<Obstacle> obstacle;
+}
+
+// Concrete factories:
+class KittiesAndPuzzles extends GameElementFactory {
+    KittiesAndPuzzles() {
+        player = Kitty::new;
+        obstacle = Puzzle::new;
+    }
+}
+
+class KillAndDismember extends GameElementFactory {
+    KillAndDismember() {
+        player = KungFuGuy::new;
+        obstacle = NastyWeapon::new;
+    }
+}
+
+public class GameEnvironment {
+    private Player p;
+    private Obstacle ob;
+
+    public GameEnvironment(GameElementFactory factory) {
+        p = factory.player.get();
+        ob = factory.obstacle.get();
+    }
+    public void play() {
+        p.interactWith(ob);
+    }
+    public static void main(String[] args) {
+        GameElementFactory kp = new KittiesAndPuzzles(), kd = new KillAndDismember();
+        GameEnvironment g1 = new GameEnvironment(kp), g2 = new GameEnvironment(kd);
+        g1.play();
+        g2.play();
+    }
+}
+
+```
+
+输出结果：
+
+```java
+Kitty has encountered a Puzzle
+KungFuGuy now battles a NastyWeapon
+```
+
+在这种环境中，**Player**对象与**Obstacle**对象进行交互，但是根据你所玩游戏的类型，存在不同类型的玩家和障碍物。 你可以通过选择特定的**GameElementFactory**来确定游戏的类型，然后**GameEnvironment**控制游戏的设置和玩法。 在此示例中，设置和玩法非常简单，但是这些活动（初始条件和状态变化）可以决定游戏的大部分结果。 这里，**GameEnvironment**不是为继承而设计的，尽管这样做很有意义。 它还包含“双重调度”和“工厂方法”的示例，稍后将对这两个示例进行说明。
 
 <!-- Function Objects -->
+
 ## 函数对象
 
 
