@@ -82,11 +82,18 @@ Java 确定了每种基本类型的内存占用大小。 这些大小不会像�
 char c = 'x';
 Character ch = new Character(c);
 ```
-或者你也可以使用下面的形式，基本类型自动转换成包装类型（自动装箱）：
+或者你也可以使用下面的形式：
 
 ```java
 Character ch = new Character('x');
 ```
+
+基本类型自动转换成包装类型（自动装箱）
+
+```java
+Character ch = 'x';
+```
+
 相对的，包装类型转化为基本类型（自动拆箱）：
 
 ```java
