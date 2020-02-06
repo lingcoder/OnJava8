@@ -87,7 +87,7 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 
 感谢 *Ben Muschko* 在整理构建文件方面的工作，还有感谢 *Hans Dockter* 给 *Ben* 提供了时间。
 
-感谢 *Jeremy Cerise* 和 *Bill Frasure* 来到开发商务虚会预订，并随后提供了宝贵的帮助。
+感谢 *Jeremy Cerise* 和 *Bill Frasure* 来到开发商务聚会预订，并随后提供了宝贵的帮助。
 
 感谢所有花时间和精力来科罗拉多州克雷斯特德比特（Crested Butte, Colorado）镇参加我的研讨会，开发商务聚会和其他活动的人！你们的贡献可能不容易看到，但却非常重要！
 
