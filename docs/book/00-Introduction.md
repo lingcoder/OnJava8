@@ -93,7 +93,7 @@ Sun 在图形界面的最后一次尝试，称为 JavaFX。当 Oracle 收购 Sun
 
 现今 Swing 依然是 Java 发行版的一部分（只接受维护，不再有新功能开发）。而 Java 现在是一个开源项目，它应该始终可用。此外，Swing 和 JavaFX 有一些有限的交互性。这些可能是为了帮助开发者过渡到 JavaFX。
 
-桌面程序领域似乎从未尝勾起 Java 设计师的野心。Java 没有在图形界面取得该有的一席之地。另外，曾被大肆吹嘘的 JavaBeans 也没有获得任何影响力。（许多不幸的作者花了很多精力在 Swing 上编写书籍，甚至只用 JavaBeans 编写书籍）。Java 图形界面程序大多数情况下仅用于 IDE（集成开发环境）和一些企业内部应用程序。你可以采用 Java 开发图形界面，但这并非 Java 最擅长的领域。如果你必须学习 Swing，可以参考 *Thinking in Java* 第4版（可从 www.OnJava8.com 获得）或者通过其他专门的书籍中学习。。
+桌面程序领域似乎从未尝勾起 Java 设计师的野心。Java 没有在图形界面取得该有的一席之地。另外，曾被大肆吹嘘的 JavaBeans 也没有获得任何影响力。（许多不幸的作者花了很多精力在 Swing 上编写书籍，甚至只用 JavaBeans 编写书籍）。Java 图形界面程序大多数情况下仅用于 IDE（集成开发环境）和一些企业内部应用程序。你可以采用 Java 开发图形界面，但这并非 Java 最擅长的领域。如果你必须学习 Swing，可以参考 *Thinking in Java* 第4版（可从 www.OnJava8.com 获得）或者通过其他专门的书籍学习。
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
