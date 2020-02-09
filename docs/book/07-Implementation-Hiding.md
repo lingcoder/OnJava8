@@ -117,9 +117,9 @@ public class ImportedMyClass {
 
 将所有的文件放在一个子目录还解决了其他的两个问题：创建独一无二的包名和查找可能隐藏于目录结构某处的类。这是通过将 **.class** 文件所在的路径位置编码成 **package** 名称来实现的。按照惯例，**package** 名称是类的创建者的反顺序的 Internet 域名。如果你遵循惯例，因为 Internet 域名是独一无二的，所以你的 **package** 名称也应该是独一无二的，不会发生名称冲突。如果你没有自己的域名，你就得构造一组不大可能与他人重复的组合（比如你的姓名），来创建独一无二的 package 名称。如果你打算发布 Java 程序代码，那么花些力气去获取一个域名是值得的。
 
-此技巧的第二部分是把 **package** 名称分解成你机器上的一个目录，所以当 Java 解释器必须要加载一个 .class 文件时，它能定位到 **.class** 文件所在的位置。首先，它找出环境变量 **CLASSPATH**（通过操作系统设置，有时也能通过 Java 的安装程序或基于 Java 的工具设置）。**CLASSPATH** 包含一个或多个目录，用作查找 .**class** 文件的根目录。从根目录开始，Java 解释器获取包名并将每个句点替换成反斜杠，生成一个基于根目录的路径名（取决于你的操作系统，包名 `foo.bar.baz` 变成 `foo\bar\baz` 或 `foo/bar/baz` 或其它）。然后这个路径与 **CLASSPATH** 的不同项连接，解释器就在这些目录中查找与你所创建的类名称相关的 **.class** 文件（解释器还会查找某些涉及 Java 解释器所在位置的标准目录）。
+此技巧的第二部分是把 **package** 名称分解成你机器上的一个目录，所以当 Java 解释器必须要加载一个 .class 文件时，它能定位到 **.class** 文件所在的位置。首先，它找出环境变量 **CLASSPATH**（通过操作系统设置，有时也能通过 Java 的安装程序或基于 Java 的工具设置）。**CLASSPATH** 包含一个或多个目录，用作查找 .**class** 文件的根目录。从根目录开始，Java 解释器获取包名并将每个句点替换成反斜杠，生成一个基于根目录的路径名（取决于你的操作系统，包名 **foo.bar.baz** 变成 **foo\bar\baz** 或 **foo/bar/baz** 或其它）。然后这个路径与 **CLASSPATH** 的不同项连接，解释器就在这些目录中查找与你所创建的类名称相关的 **.class** 文件（解释器还会查找某些涉及 Java 解释器所在位置的标准目录）。
 
-为了理解这点，比如说我的域名 **MindviewInc.com**，将之反转并全部改为小写后就是 `com.mindviewinc`，这将作为我创建的类的独一无二的全局名称。（com、edu、org等扩展名之前在 Java 包中都是大写，但是 Java 2 之后都统一用小写。）我决定再创建一个名为 **simple** 的类库，从而细分名称：
+为了理解这点，比如说我的域名 **MindviewInc.com**，将之反转并全部改为小写后就是 **com.mindviewinc**，这将作为我创建的类的独一无二的全局名称。（com、edu、org等扩展名之前在 Java 包中都是大写，但是 Java 2 之后都统一用小写。）我决定再创建一个名为 **simple** 的类库，从而细分名称：
 
 ```java
 package com.mindviewinc.simple;
@@ -159,7 +159,7 @@ C:\DOC\Java\com\mindviewinc\simple
 
 （注意，本书的每个文件的第一行注释都指明了文件在源代码目录树中的位置——供本书的自动代码提取工具使用。）
 
-如果你回头看这个路径，会看到包名 `com.mindviewinc.simple`，但是路径的第一部分呢？CLASSPATH 环境变量会处理它。我机器上的环境变量部分如下：
+如果你回头看这个路径，会看到包名 **com.mindviewinc.simple**，但是路径的第一部分呢？CLASSPATH 环境变量会处理它。我机器上的环境变量部分如下：
 
 ```
 CLASSPATH=.;D:\JAVA\LIB;C:\DOC\Java
@@ -195,7 +195,7 @@ com.mindviewinc.simple.Vector
 com.mindviewinc.simple.List
 ```
 
-当编译器遇到导入 **simple** 库的 **import** 语句时，它首先会在 CLASSPATH 指定的目录中查找子目录 `com/mindviewinc/simple`，然后从已编译的文件中找出名称相符者（对 **Vector** 而言是 **Vector.class**，对 **List** 而言是 **List.class**）。注意，这两个类和其中要访问的方法都必须是 **public** 修饰的。
+当编译器遇到导入 **simple** 库的 **import** 语句时，它首先会在 CLASSPATH 指定的目录中查找子目录 **com/mindviewinc/simple**，然后从已编译的文件中找出名称相符者（对 **Vector** 而言是 **Vector.class**，对 **List** 而言是 **List.class**）。注意，这两个类和其中要访问的方法都必须是 **public** 修饰的。
 
 对于 Java 新手而言，设置 CLASSPATH 是一件麻烦的事（我最初使用时是这么觉得的），后面版本的 JDK 更加智能。你会发现当你安装好 JDK 时，即使不设置 CLASSPATH，也能够编译和运行基本的 Java 程序。但是，为了编译和运行本书的代码示例（从[https://github.com/BruceEckel/OnJava8-examples](https://github.com/BruceEckel/OnJava8-examples) 取得），你必须将本书程序代码树的基本目录加入到 CLASSPATH 中（ gradlew 命令管理自身的 CLASSPATH，所以如果你想直接使用 javac 和 java，不用 Gradle 的话，就需要设置 CLASSPATH）。
 
@@ -230,7 +230,7 @@ java.util.Vector v = new java.util.Vector();
 
 具备了以上知识，现在就可以创建自己的工具库来减少重复的程序代码了。
 
-一般来说，我会使用反转后的域名来命名要创建的工具包，比如 `com.mindviewinc.util` ，但为了简化，这里我把工具包命名为 **onjava**。
+一般来说，我会使用反转后的域名来命名要创建的工具包，比如 **com.mindviewinc.util** ，但为了简化，这里我把工具包命名为 **onjava**。
 
 比如，下面是“控制流”一章中使用到的 `range()` 方法，采用了 for-in 语法进行简单的遍历：
 
@@ -327,7 +327,7 @@ public class Cookie {
 }
 ```
 
-记住，**Cookie.java** 文件产生的类文件必须位于名为 **dessert** 的子目录中，该子目录在 **hiding** （表明本书的"封装"章节）下，它必须在 CLASSPATH 的几个目录之下。不要错误地认为 Java 总是会将当前目录视作查找行为的起点之一。如果你的 CLASSPATH 中没有 `.`，Java 就不会查找单独当前目录。
+记住，**Cookie.java** 文件产生的类文件必须位于名为 **dessert** 的子目录中，该子目录在 **hiding** （表明本书的"封装"章节）下，它必须在 CLASSPATH 的几个目录之下。不要错误地认为 Java 总是会将当前目录视作查找行为的起点之一。如果你的 CLASSPATH 中没有 **.**，Java 就不会查找单独当前目录。
 
 现在，使用 **Cookie** 创建一个程序：
 ```java
@@ -384,7 +384,7 @@ class Pie {
 }
 ```
 
-最初看上去这两个文件毫不相关，但在 **Cake** 中可以创建一个 **Pie** 对象并调用它的 `f()` 方法。（注意，你的 CLASSPATH 中一定得有 `.`，这样文件才能编译）通常会认为 **Pie** 和  `f()` 具有包访问权限，因此不能被 **Cake** 访问。它们的确具有包访问权限，这是部分正确。**Cake.java** 可以访问它们是因为它们在相同的目录中且没有给自己设定明确的包名。Java 把这样的文件看作是隶属于该目录的默认包中，因此它们为该目录中所有的其他文件都提供了包访问权限。
+最初看上去这两个文件毫不相关，但在 **Cake** 中可以创建一个 **Pie** 对象并调用它的 `f()` 方法。（注意，你的 CLASSPATH 中一定得有 **.**，这样文件才能编译）通常会认为 **Pie** 和  `f()` 具有包访问权限，因此不能被 **Cake** 访问。它们的确具有包访问权限，这是部分正确。**Cake.java** 可以访问它们是因为它们在相同的目录中且没有给自己设定明确的包名。Java 把这样的文件看作是隶属于该目录的默认包中，因此它们为该目录中所有的其他文件都提供了包访问权限。
 
 ### private: 你无法访问
 
