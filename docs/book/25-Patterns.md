@@ -1043,8 +1043,144 @@ Bisection.algorithm
 每一个 `Algorithm` 接口的实现，都实现了不同的 `algorithm()` 方法。在 `FindMinama` 中，将会创建一个算法的列表（这就是所谓的“链”），而 `minima()` 方法只是遍历这个列表，然后找到能够成功执行的算法而已。
 
 <!-- Changing the Interface -->
-## 接口改变
+## 改变接口
 
+有时候我们需要解决的问题很简单，仅仅是“我没有需要的接口”而已。有两种设计模式用来解决这个问题：*适配器模式* 接受一种类型并且提供一个对其他类型的接口。*外观模式* 为一组类创建了一个接口，这样做只是为了提供一种更方便的方法来处理库或资源。
+
+### 适配器模式（Adapter）
+
+当我们手头有某个类，而我们需要的却是另外一个类，我们就可以通过 *适配器模式* 来解决问题。唯一需要做的就是产生出我们需要的那个类，有许多种方法可以完成这种适配。
+
+```java
+// patterns/adapt/Adapter.java
+// Variations on the Adapter pattern
+// {java patterns.adapt.Adapter}
+package patterns.adapt;
+
+class WhatIHave {
+  public void g() {}
+  public void h() {}
+}
+
+interface WhatIWant {
+  void f();
+}
+
+class ProxyAdapter implements WhatIWant {
+  WhatIHave whatIHave;
+  ProxyAdapter(WhatIHave wih) {
+    whatIHave = wih;
+  }
+  @Override
+  public void f() {
+    // Implement behavior using
+    // methods in WhatIHave:
+    whatIHave.g();
+    whatIHave.h();
+  }
+}
+
+class WhatIUse {
+  public void op(WhatIWant wiw) {
+    wiw.f();
+  }
+}
+
+// Approach 2: build adapter use into op():
+class WhatIUse2 extends WhatIUse {
+  public void op(WhatIHave wih) {
+    new ProxyAdapter(wih).f();
+  }
+}
+
+// Approach 3: build adapter into WhatIHave:
+class WhatIHave2 extends WhatIHave implements WhatIWant {
+  @Override
+  public void f() {
+    g();
+    h();
+  }
+}
+
+// Approach 4: use an inner class:
+class WhatIHave3 extends WhatIHave {
+  private class InnerAdapter implements WhatIWant {
+    @Override
+    public void f() {
+      g();
+      h();
+    }
+  }
+  public WhatIWant whatIWant() {
+    return new InnerAdapter();
+  }
+}
+
+public class Adapter {
+  public static void main(String[] args) {
+    WhatIUse whatIUse = new WhatIUse();
+    WhatIHave whatIHave = new WhatIHave();
+    WhatIWant adapt= new ProxyAdapter(whatIHave);
+    whatIUse.op(adapt);
+    // Approach 2:
+    WhatIUse2 whatIUse2 = new WhatIUse2();
+    whatIUse2.op(whatIHave);
+    // Approach 3:
+    WhatIHave2 whatIHave2 = new WhatIHave2();
+    whatIUse.op(whatIHave2);
+    // Approach 4:
+    WhatIHave3 whatIHave3 = new WhatIHave3();
+    whatIUse.op(whatIHave3.whatIWant());
+  }
+}
+```
+
+我想冒昧的借用一下术语“proxy”（代理），因为在 *《设计模式》* 里，他们坚持认为一个代理（proxy）必须拥有和它所代理的对象一模一样的接口。但是，如果把这两个词一起使用，叫做“代理适配器（proxy adapter）”，似乎更合理一些。
+
+### 外观模式（Façade）
+
+当我想方设法试图将需求初步（first-cut）转化成对象的时候，通常我使用的原则是：
+
+>“把所有丑陋的东西都隐藏到对象里去”。
+
+基本上说，*外观模式* 干的就是这个事情。如果我们有一堆让人头晕的类以及交互（Interactions），而它们又不是客户端程序员必须了解的，那我们就可以为客户端程序员创建一个接口只提供那些必要的功能。
+
+外观模式经常被实现为一个符合单例模式（Singleton）的抽象工厂（abstract factory）。当然，你可以通过创建包含 **静态** 工厂方法（static factory methods）的类来达到上述效果。
+
+```java
+// patterns/Facade.java
+
+class A { A(int x) {} }
+
+class B { B(long x) {} }
+
+class C { C(double x) {} }
+
+// Other classes that aren't exposed by the
+// facade go here ...
+public class Facade {
+  static A makeA(int x) { return new A(x); }
+  static B makeB(long x) { return new B(x); }
+  static C makeC(double x) { return new C(x); }
+  public static void main(String[] args) {
+    // The client programmer gets the objects
+    // by calling the static methods:
+    A a = Facade.makeA(1);
+    B b = Facade.makeB(1);
+    C c = Facade.makeC(1.0);
+  }
+}
+```
+
+《设计模式》给出的例子并不是真正的 *外观模式* ，而仅仅是一个类使用了其他的类而已。
+
+#### 包（Package）作为外观模式的变体
+
+我感觉，*外观模式* 更倾向于“过程式的（procedural）”，也就是非面向对象的（non-object-oriented）：我们是通过调用某些函数才得到对象。它和抽象工厂（Abstract factory）到底有多大差别呢？*外观模式* 关键的一点是隐藏某个库的一部分类（以及它们的交互），使它们对于客户端程序员不可见，这样那些类的接口就更加简练和易于理解了。
+
+其实，这也正是 Java 的 packaging（包）的功能所完成的事情：在库以外，我们只能创建和使用被声明为公共（public）的那些类；所有非公共（non-public）的类只能被同一 package 的类使用。看起来，*外观模式* 似乎是 Java 内嵌的一个功能。
+
+公平起见，*《设计模式》* 主要是写给 C++ 读者的。尽管 C++ 有命名空间（namespaces）机制来防止全局变量和类名称之间的冲突，但它并没有提供类隐藏的机制，而在 Java 里我们可以通过声明 non-public 类来实现这一点。我认为，大多数情况下 Java 的 package 功能就足以解决针对 *外观模式* 的问题了。
 
 <!-- Interpreter: Run-Time Flexibility -->
 ## 解释器
