@@ -1128,6 +1128,7 @@ public class FileToWordsTest {
 
 ```
 Not much of a cheese shop really
+is it
 ```
 
 在 `System.out.format()` 中的 `%s` 表明参数为 **String** 类型。
