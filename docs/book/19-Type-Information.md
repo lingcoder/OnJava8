@@ -1171,7 +1171,7 @@ class Part implements Supplier<Part> {
 
     private static Random rand = new Random(47);
     public Part get() {
-        int n = rand.nextint(prototypes.size());
+        int n = rand.nextInt(prototypes.size());
         return prototypes.get(n).get();
     }
 }
