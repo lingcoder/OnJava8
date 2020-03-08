@@ -3,7 +3,7 @@
 <!-- Appendix: Collection Topics -->
 # 附录:集合主题
 
-> 本附录是一些比[第十二章 集合]()中介绍的更高级的内容。
+> 本附录是一些比[第十二章 集合](https://lingcoder.github.io/OnJava8/#/book/12-Collections)中介绍的更高级的内容。
 
 <!-- Sample Data -->
 ## 示例数据
@@ -246,7 +246,7 @@ public class HTMLColors {
 }
 ```
 
-**MAP** 是使用Streams（[第十四章 流式编程]()）创建的。 二维数组 **ARRAY** 作为流传输到 **Map** 中，但请注意我们不仅仅是使用简单版本的 `Collectors.toMap()` 。 那个版本生成一个 **HashMap** ，它使用散列函数来控制对键的排序。 为了保留原来的顺序，我们必须将键值对直接放入 **TreeMap** 中，这意味着我们需要使用更复杂的 `Collectors.toMap()` 版本。这需要两个函数从每个流元素中提取键和值，就像简单版本的`Collectors.toMap()` 一样。 然后它需要一个*合并函数*（merge function），它解决了与同一个键相关的两个值之间的冲突。这里的数据已经预先审查过，因此绝不会发生这种情况，如果有的话，这里会抛出异常。最后，传递生成所需类型的空map的函数，然后用流来填充它。
+**MAP** 是使用Streams（[第十四章 流式编程](https://lingcoder.github.io/OnJava8/#/book/14-Streams)）创建的。 二维数组 **ARRAY** 作为流传输到 **Map** 中，但请注意我们不仅仅是使用简单版本的 `Collectors.toMap()` 。 那个版本生成一个 **HashMap** ，它使用散列函数来控制对键的排序。 为了保留原来的顺序，我们必须将键值对直接放入 **TreeMap** 中，这意味着我们需要使用更复杂的 `Collectors.toMap()` 版本。这需要两个函数从每个流元素中提取键和值，就像简单版本的`Collectors.toMap()` 一样。 然后它需要一个*合并函数*（merge function），它解决了与同一个键相关的两个值之间的冲突。这里的数据已经预先审查过，因此绝不会发生这种情况，如果有的话，这里会抛出异常。最后，传递生成所需类型的空map的函数，然后用流来填充它。
 
 `rgb()` 方法是一个便捷函数（convenience function），它接受颜色名称 **String** 参数并生成其数字RGB值。为此，我们需要一个反转版本的 **COLORS** ，它接受一个 **String**键并查找RGB的 **Integer** 值。 这是通过 `invert()` 方法实现的，如果任何 **COLORS** 值不唯一，则抛出异常。
 
@@ -1866,7 +1866,7 @@ List.set(): java.lang.UnsupportedOperationException
 
 **HashSet** 上的星号表示，在没有其他约束的情况下，这应该是你的默认选择，因为它针对速度进行了优化。
 
-定义 `hashCode()` 方法在[附录:理解equals和hashCode方法]()中进行了描述。必须为散列和树存储结构创建 `equals()` 方法，但只有当把类放在 **HashSet** 中时才需要 `hashCode()` （当然这很有可能，因为 **HashSet** 通常应该是作为 **Set** 实现的首选）或 **LinkedHashSet** 。 但是，作为一种良好的编程风格，在覆盖 `equals()` 时应始终覆盖 `hashCode()` 。
+定义 `hashCode()` 方法在[附录:理解equals和hashCode方法](https://lingcoder.github.io/OnJava8/#/book/Appendix-Understanding-equals-and-hashCode)中进行了描述。必须为散列和树存储结构创建 `equals()` 方法，但只有当把类放在 **HashSet** 中时才需要 `hashCode()` （当然这很有可能，因为 **HashSet** 通常应该是作为 **Set** 实现的首选）或 **LinkedHashSet** 。 但是，作为一种良好的编程风格，在覆盖 `equals()` 时应始终覆盖 `hashCode()` 。
 
 下面的示例演示了成功使用具有特定 **Set** 实现的类型所需的方法：
 
@@ -1973,7 +1973,7 @@ HashType cannot be cast to java.lang.Comparable
 
 在 **TypesForSets** 中， `fill()` 和 `test()` 都是使用泛型定义的，以防止代码重复。为了验证 **Set** 的行为， `test()` 在测试集上调用 `fill()` 三次，尝试引入重复的对象。 `fill()` 方法的参数可以接收任意一个 **Set** 类型，以及生成该类型的 **Function** 对象。因为此示例中使用的所有对象都有一个带有单个 **int** 参数的构造方法，所以可以将构造方法作为此 **Function** 传递，它将提供用于填充 **Set** 的对象。
 
-请注意， `fill()` 方法按降序添加前五个元素，按升序添加后五个元素，以此来指出生成的存储顺序。输出显示 **HashSet** 按升序保留元素，但是，在[附录:理解equals和hashCode方法]()中，你会发现这只是偶然的，因为散列会创建自己的存储顺序。这里只是因为元素是一个简单的 **int** ，在这种情况下它是升序的。 **LinkedHashSet** 按照插入顺序保存元素，**TreeSet** 按排序顺序维护元素（在此示例中因为 `compareTo()` 的实现方式，所以元素按降序排列。）
+请注意， `fill()` 方法按降序添加前五个元素，按升序添加后五个元素，以此来指出生成的存储顺序。输出显示 **HashSet** 按升序保留元素，但是，在[附录:理解equals和hashCode方法](https://lingcoder.github.io/OnJava8/#/book/Appendix-Understanding-equals-and-hashCode)中，你会发现这只是偶然的，因为散列会创建自己的存储顺序。这里只是因为元素是一个简单的 **int** ，在这种情况下它是升序的。 **LinkedHashSet** 按照插入顺序保存元素，**TreeSet** 按排序顺序维护元素（在此示例中因为 `compareTo()` 的实现方式，所以元素按降序排列。）
 
 特定的 **Set** 类型一般都有所必需的操作，如果尝试使用没能正确支持这些操作的类型，那么事情就会出错。将没有重新定义 `hashCode()` 方法的 **SetType** 或 **TreeType** 对象放入任何散列实现会导致重复值，因此违反了 **Set** 的主要契约。 这是相当令人不安的，因为这甚至不产生运行时错误。但是，默认的 `hashCode()` 是合法的，所以即使它是不正确的，这也是合法的行为。确保此类程序正确性的唯一可靠方法是将单元测试合并到构建系统中。
 
@@ -2237,7 +2237,7 @@ ConcurrentLinkedDeque
 <!-- Understanding Maps -->
 ## 理解Map
 
-正如在[第十二章 集合]()章节中所了解到的，**Map**（也称为 *关联数组* ）维护键值关联（对），因此可以使用键来查找值。标准 Java 库包含不同的 **Map** 基本实现，例如 **HashMap** ， **TreeMap** ， **LinkedHashMap** ， **WeakHashMap** ， **ConcurrentHashMap** 和 **IdentityHashMap** 。 它们都具有相同的基本 **Map** 接口，但它们的行为不同，包括效率，键值对的保存顺序和呈现顺序，保存对象的时间，如何在多线程程序中工作，以及如何确定键的相等性。 **Map** 接口的实现数量应该告诉你一些关于此工具重要性的信息。
+正如在[第十二章 集合](https://lingcoder.github.io/OnJava8/#/book/12-Collections)章节中所了解到的，**Map**（也称为 *关联数组* ）维护键值关联（对），因此可以使用键来查找值。标准 Java 库包含不同的 **Map** 基本实现，例如 **HashMap** ， **TreeMap** ， **LinkedHashMap** ， **WeakHashMap** ， **ConcurrentHashMap** 和 **IdentityHashMap** 。 它们都具有相同的基本 **Map** 接口，但它们的行为不同，包括效率，键值对的保存顺序和呈现顺序，保存对象的时间，如何在多线程程序中工作，以及如何确定键的相等性。 **Map** 接口的实现数量应该告诉你一些关于此工具重要性的信息。
 
 为了更深入地了解 **Map** ，学习如何构造关联数组会很有帮助。下面是一个非常简单的实现：
 
@@ -2324,7 +2324,7 @@ dancing
 | **LinkedHashMap** | 与 **HashMap** 类似，但是当遍历时，可以按插入顺序或最近最少使用（LRU）顺序获取键值对。只比 **HashMap** 略慢，一个例外是在迭代时，由于其使用链表维护内部顺序，所以会更快些。 |
 | **TreeMap** | 基于红黑树的实现。当查看键或键值对时，它们按排序顺序（由 **Comparable** 或 **Comparator** 确定）。 **TreeMap** 的侧重点是按排序顺序获得结果。 **TreeMap** 是唯一使用 `subMap()` 方法的 **Map** ，它返回红黑树的一部分。 |
 | **WeakHashMap** | 一种具有 *弱键*（weak keys） 的 **Map** ，为了解决某些类型的问题，它允许释放 **Map** 所引用的对象。如果在 **Map** 外没有对特定键的引用，则可以对该键进行垃圾回收。 |
-| **ConcurrentHashMap** | 不使用同步锁定的线程安全 **Mao** 。这在[第二十四章 并发编程]() 一章中讨论。 |
+| **ConcurrentHashMap** | 不使用同步锁定的线程安全 **Map** 。这在[第二十四章 并发编程](https://lingcoder.github.io/OnJava8/#/book/24-Concurrent-Programming) 一章中讨论。 |
 | **IdentityHashMap** | 使用 `==` 而不是 `equals()` 来比较键。仅用于解决特殊问题，不适用于一般用途。 |
 
 散列是在 **Map** 中存储元素的最常用方法。
@@ -2516,7 +2516,7 @@ public class LinkedHashMapDemo {
 
 | 方法 | 描述 |
 | :--- | :--- |
-| **checkedCollection(Collection\<T> c, Class\<T> type)** <br><br> **checkedList(List\<T> list, Class\<T> type)** <br><br> **checkedMap(Map\<K, V> m, Class\<K> keyType, Class\<V> valueType)** <br><br> **checkedSet(Set\<T> s, Class\<T> type)** <br><br> **checkedSortedMap(SortedMap\<K, V> m, Class\<K> keyType, Class\<V> valueType)** <br><br> **checkedSortedSet(SortedSet\<T> s, Class\<T> type)** | 生成 **Collection** 的动态类型安全视图或 **Collection** 的特定子类型。 当无法使用静态检查版本时使用这个版本。 <br><br> 这些方法的使用在[第九章 多态]()章节的“动态类型安全”标题下进行了展示。 |
+| **checkedCollection(Collection\<T> c, Class\<T> type)** <br><br> **checkedList(List\<T> list, Class\<T> type)** <br><br> **checkedMap(Map\<K, V> m, Class\<K> keyType, Class\<V> valueType)** <br><br> **checkedSet(Set\<T> s, Class\<T> type)** <br><br> **checkedSortedMap(SortedMap\<K, V> m, Class\<K> keyType, Class\<V> valueType)** <br><br> **checkedSortedSet(SortedSet\<T> s, Class\<T> type)** | 生成 **Collection** 的动态类型安全视图或 **Collection** 的特定子类型。 当无法使用静态检查版本时使用这个版本。 <br><br> 这些方法的使用在[第九章 多态](https://lingcoder.github.io/OnJava8/#/book/09-Polymorphism)章节的“动态类型安全”标题下进行了展示。 |
 | **max(Collection)** <br><br> **min(Collection)** | 使用 **Collection** 中对象的自然比较方法生成参数集合中的最大或最小元素。 |
 | **max(Collection, Comparator)** <br><br> **min(Collection, Comparator)** | 使用 **Comparator** 指定的比较方法生成参数集合中的最大或最小元素。 |
 | **indexOfSubList(List source, List target)** | 返回 **target** 在 **source** 内第一次出现的起始索引，如果不存在则返回 -1。 |
@@ -2766,7 +2766,7 @@ BURUNDI=Bujumbura}
 <!-- Synchronizing a Collection or Map -->
 ### 同步 Collection 或 Map
 
-**synchronized** 关键字是多线程主题的重要组成部分，更复杂的内容在[第二十四章 并发编程]()中介绍。在这里，只需要注意到 **Collections** 类包含一种自动同步整个集合的方法。 语法类似于 “unmodifiable” 方法：
+**synchronized** 关键字是多线程主题的重要组成部分，更复杂的内容在[第二十四章 并发编程](https://lingcoder.github.io/OnJava8/#/book/24-Concurrent-Programming)中介绍。在这里，只需要注意到 **Collections** 类包含一种自动同步整个集合的方法。 语法类似于 “unmodifiable” 方法：
 
 ```java
 // collectiontopics/Synchronization.java
@@ -3056,7 +3056,7 @@ REPUBLIC, CHAD,
 
 之前使用 **LinkedList** 引入了栈的概念。 Java 1.0 / 1.1 **Stack** 的奇怪之处在于，不是以组合方式使用 **Vector** ，而是继承自 **Vector** 。 因此它具有 **Vector** 的所有特征和行为以及一些额外的 **Stack** 行为。很难去知道设计师是否有意识地认为这样做是有用的，或者它是否只是太天真了，无论如何，它在进入发行版之前显然没有经过审查，所以这个糟糕的设计仍然存在（但不要使用它）。
 
-这是 **Stack** 的简单演示，向栈中放入枚举中每一个类型的 **String** 形式。它还展示了如何轻松地将 **LinkedList** 用作栈，或者使用在[第十二章：集合]()章节中创建的 **Stack** 类：
+这是 **Stack** 的简单演示，向栈中放入枚举中每一个类型的 **String** 形式。它还展示了如何轻松地将 **LinkedList** 用作栈，或者使用在[第十二章：集合](https://lingcoder.github.io/OnJava8/#/book/12-Collections)章节中创建的 **Stack** 类：
 
 ```java
 // collectiontopics/Stacks.java
@@ -3213,21 +3213,21 @@ set bit 1023: {1023, 1024}
 
 随机数生成器用于创建随机 **byte** ， **short** 和 **int** ，并且每个都在 **BitSet** 中转换为相应的位模式。这样可以正常工作，因为 **BitSet** 是64位，所以这些都不会导致它的大小增加，然后创建更大的 **BitSet** 。 请注意， **BitSet** 会根据需要进行扩展。
 
-对于可以命名的固定标志集， **EnumSet** （参见[第二十二章：枚举]()章节）通常比 **BitSet** 更好，因为 **EnumSet** 允许操作名称而不是数字位位置，从而可以减少错误。 **EnumSet** 还可以防止意外地添加新的标记位置，这可能会导致一些严重的，难以发现的错误。使用 **BitSet** 而不是 **EnumSet** 的唯一原因是，不知道在运行时需要多少标志，或者为标志分配名称是不合理的，或者需要 **BitSet** 中的一个特殊操作（请参阅 **BitSet** 和 **EnumSet** 的 JDK 文档）。
+对于可以命名的固定标志集， **EnumSet** （参见[第二十二章：枚举](https://lingcoder.github.io/OnJava8/#/book/22-Enumerations)章节）通常比 **BitSet** 更好，因为 **EnumSet** 允许操作名称而不是数字位位置，从而可以减少错误。 **EnumSet** 还可以防止意外地添加新的标记位置，这可能会导致一些严重的，难以发现的错误。使用 **BitSet** 而不是 **EnumSet** 的唯一原因是，不知道在运行时需要多少标志，或者为标志分配名称是不合理的，或者需要 **BitSet** 中的一个特殊操作（请参阅 **BitSet** 和 **EnumSet** 的 JDK 文档）。
 
 <!-- Summary -->
 ## 本章小结
 
 集合可以说是编程语言中最常用的工具。有些语言（例如Python）甚至将基本集合组件（列表，映射和集合）作为内置函数包含在其中。
 
-正如在[第十二章：集合]()章节中看到的那样，可以使用集合执行许多非常有用的操作，而不需要太多努力。但是，在某些时候，为了正确地使用它们而不得不更多地了解集合，特别是，必须充分了解散列操作以编写自己的 `hashCode()` 方法（并且必须知道何时需要），并且你必须充分了解各种集合实现，以根据你的需求选择合适的集合。本附录涵盖了这些概念，并讨论了有关集合库的其他有用详细信息。你现在应该已经准备好在日常编程任务中使用 Java 集合了。
+正如在[第十二章：集合](https://lingcoder.github.io/OnJava8/#/book/12-Collections)章节中看到的那样，可以使用集合执行许多非常有用的操作，而不需要太多努力。但是，在某些时候，为了正确地使用它们而不得不更多地了解集合，特别是，必须充分了解散列操作以编写自己的 `hashCode()` 方法（并且必须知道何时需要），并且你必须充分了解各种集合实现，以根据你的需求选择合适的集合。本附录涵盖了这些概念，并讨论了有关集合库的其他有用详细信息。你现在应该已经准备好在日常编程任务中使用 Java 集合了。
 
 集合库的设计很困难（大多数库设计问题都是如此）。在 C++ 中，集合类涵盖了许多不同类的基础。这比之前可用的 C++ 集合类更好，但它没有很好地转换为 Java 。在另一个极端，我看到了一个由单个类“collection”组成的集合库，它同时充当线性序列和关联数组。 Java 集合库试图在功能和复杂性之间取得平衡。结果在某些地方看起来有点奇怪。与早期 Java 库中的一些决策不同，这些奇怪的不是事故，而是在基于复杂性的权衡下而仔细考虑的决策。
 
 
 [^1]: **java.util** 中的 **Map** 使用 **Map** 的 `getKey()` 和 `getValue()` 执行批量复制，因此这是有效的。如果自定义 **Map** 只是复制整个 **Map.Entry** ，那么这种方法就会出现问题。
 
-[^2]: 虽然当我用这种方式描述它的时候听起来很奇怪而且好像没什么用处，但在[第十九章 类型信息]()章节中已经看到过，这种动态行为也可以非常强大有用。
+[^2]: 虽然当我用这种方式描述它的时候听起来很奇怪而且好像没什么用处，但在[第十九章 类型信息](https://lingcoder.github.io/OnJava8/#/book/19-Type-Information)章节中已经看到过，这种动态行为也可以非常强大有用。
 
 [^3]: 如果这些加速仍然无法满足性能需求，则可以通过编写自己的 **Map** 并将其自定义为特定类型来进一步加速表查找，以避免因向 **对象** 转换而导致的延迟。为了达到更高的性能水平，速度爱好者可以使用 Donald Knuth 的《计算机程序设计艺术（第3卷）：排序与查找》（第二版），将溢出桶列表（overflow bucket lists）替换为具有两个额外优势的阵列：它们可以针对磁盘存储进行优化，并且它们可以节省大部分创建和回收个别记录（individual records）的时间。
 
