@@ -2045,7 +2045,7 @@ public class ParallelSetAll {
 
 与使用for循环手工执行复制相比，**copyOf()** 和 **copyOfRange()** 复制数组要快得多。这些方法被重载以处理所有类型。
 
-我们开始复制数组的整数和整数:
+我们从复制 **int** 和 **Integer** 数组开始:
 ```JAVA
 // arrays/ArrayCopying.java
 // Demonstrate Arrays.copy() and Arrays.copyOf()
