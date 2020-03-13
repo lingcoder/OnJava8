@@ -1595,7 +1595,7 @@ import java.util.function.*;
 import onjava.*;
 
 public class FilledList<T> extends ArrayList<T> {
-    FilledList<Supplier<T> gen, int size) {
+    FilledList(Supplier<T> gen, int size) {
         Suppliers.fill(this, gen, size);
     }
     
