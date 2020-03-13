@@ -1409,7 +1409,7 @@ class Manipulator3 {
     private HasF obj;
     
     Manipulator3(HasF x) {
-        ojb = x;
+        obj = x;
     }
     
     public void manipulate() {
