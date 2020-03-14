@@ -2702,6 +2702,8 @@ public class CompilerIntelligence {
 下面展示一个简单的 **Holder** 类：
 
 ```java
+// generics/Holder.java
+
 public class Holder<T> {
 
     private T value;
