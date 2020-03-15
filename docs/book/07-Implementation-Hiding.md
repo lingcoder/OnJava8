@@ -327,7 +327,7 @@ public class Cookie {
 }
 ```
 
-记住，**Cookie.java** 文件产生的类文件必须位于名为 **dessert** 的子目录中，该子目录在 **hiding** （表明本书的"封装"章节）下，它必须在 CLASSPATH 的几个目录之下。不要错误地认为 Java 总是会将当前目录视作查找行为的起点之一。如果你的 CLASSPATH 中没有 **.**，Java 就不会查找单独当前目录。
+记住，**Cookie.java** 文件产生的类文件必须位于名为 **dessert** 的子目录中，该子目录在 **hiding** （表明本书的"封装"章节）下，它必须在 CLASSPATH 的几个目录之下。不要错误地认为 Java 总是会将当前目录视作查找行为的起点之一。如果你的 CLASSPATH 中没有 **.**，Java 就不会查找当前目录。
 
 现在，使用 **Cookie** 创建一个程序：
 ```java
