@@ -82,7 +82,8 @@ Tree t = new Tree(12); // 12-foot 树
 
 构造器消除了一类重要的问题，使得代码更易读。例如，在上面的代码块中，你看不到对 `initialize()` 方法的显式调用，而从概念上来看，`initialize()` 方法应该与对象的创建分离。在 Java 中，对象的创建与初始化是统一的概念，二者不可分割。
 
-构造器是一种特殊的方法，因为它没有返回值。这与返回 **void** 值的方法不同，在返回 **void** 值的方法中，方法返回空值，但是你还是有选择返回一些其他值。构造器返回空值，你没有选择（**new** 表达式的确返回了新创建对象的引用，但是构造器自身并没有返回值 ）。假如有返回值，而且你可以自由选择，那么编译器得知道如何去处理这个返回值。
+构造器没有返回值，它是一种特殊的方法。但它和返回类型为 `void` 的普通方法不同，普通方法可以返回空值，你还能选择让它返回别的类型；而构造器没有返回值，却同时也没有给你选择的余地（`new` 表达式虽然返回了刚创建的对象的引用，但构造器本身却没有返回任何值）。如果它有返回值，并且你也可以自己选择让它返回什么，那么编译器就还得知道接下来该怎么处理那个返回值（这个返回值没有接收者）。
+
 
 <!-- Method Overloading -->
 
@@ -311,6 +312,12 @@ public class PrimitiveOverloading {
         f1(x);f2(x);f3(x);f4(x);f5(x);f6(x);f7(x);
         System.out.println();
     }
+    void testLong() {
+        long x = 0;
+        System.out.print("long: ");
+        f1(x);f2(x);f3(x);f4(x);f5(x);f6(x);f7(x);
+        System.out.println();
+    }
     void testFloat() {
         float x = 0;
         System.out.print("float: ");
@@ -331,6 +338,7 @@ public class PrimitiveOverloading {
         p.testByte();
         p.testShort();
         p.testInt();
+        p.testLong();
         p.testFloat();
         p.testDouble();
     }
@@ -345,6 +353,7 @@ char: f1(char)f2(int)f3(int)f4(int)f5(long)f6(float)f7(double)
 byte: f1(byte)f2(byte)f3(short)f4(int)f5(long)f6(float)f7(double)
 short: f1(short)f2(short)f3(short)f4(int)f5(long)f6(float)f7(double)
 int: f1(int)f2(int)f3(int)f4(int)f5(long)f6(float)f7(double)
+long: f1(long)f2(long)f3(long)f4(long)f5(long)f6(float)f7(double)
 float: f1(float)f2(float)f3(float)f4(float)f5(float)f6(float)f7(double)
 double: f1(double)f2(double)f3(double)f4(double)f5(double)f6(double)f7(double)
 ```
@@ -414,11 +423,11 @@ class Banana {
     }
 }
 public class BananaPeel {
-    public static void main(String[] args) [
+    public static void main(String[] args) {
         Banana a = new Banana(), b = new Banana();
         a.peel(1);
         b.peel(2);
-    ]
+    }
 }
 ```
 
@@ -712,7 +721,7 @@ Error: checked out
 
 如前文所述，这里讨论的 Java 虚拟机中，内存分配以较大的"块"为单位。如果对象较大，它会占用单独的块。严格来说，"停止-复制"要求在释放旧对象之前，必须先将所有存活对象从旧堆复制到新堆，这导致了大量的内存复制行为。有了块，垃圾回收器就可以把对象复制到废弃的块。每个块都有年代数来记录自己是否存活。通常，如果块在某处被引用，其年代数加 1，垃圾回收器会对上次回收动作之后新分配的块进行整理。这对处理大量短命的临时对象很有帮助。垃圾回收器会定期进行完整的清理动作——大型对象仍然不会复制（只是年代数会增加），含有小型对象的那些块则被复制并整理。Java 虚拟机会监视，如果所有对象都很稳定，垃圾回收的效率降低的话，就切换到"标记-清扫"方式。同样，Java 虚拟机会跟踪"标记-清扫"的效果，如果堆空间出现很多碎片，就会切换回"停止-复制"方式。这就是"自适应"的由来，你可以给它个啰嗦的称呼："自适应的、分代的、停止-复制、标记-清扫"式的垃圾回收器。
 
-Java 虚拟机中有许多附加技术用来提升速度。尤其是与加载器操作有关的，被称为"即时"（Just-In-Time, JIT）编译器的技术。这种技术可以把程全部或部分翻译成本地机器码，所以不需要 JVM 来进行翻译，因此运行得更快。当需要装载某个类（通常是创建该类的第一个对象）时，编译器会先找到其 **.class** 文件，然后将该类的字节码装入内存。你可以让即时编译器编译所有代码，但这种做法有两个缺点：一是这种加载动作贯穿整个程序生命周期内，累加起来需要花更多时间；二是会增加可执行代码的长度（字节码要比即时编译器展开后的本地机器码小很多），这会导致页面调度，从而一定降低程序速度。另一种做法称为*惰性评估*，意味着即时编译器只有在必要的时候才编译代码。这样，从未被执行的代码也许就压根不会被 JIT 编译。新版 JDK 中的 Java HotSpot 技术就采用了类似的做法，代码每被执行一次就优化一些，所以执行的次数越多，它的速度就越快。
+Java 虚拟机中有许多附加技术用来提升速度。尤其是与加载器操作有关的，被称为"即时"（Just-In-Time, JIT）编译器的技术。这种技术可以把程序全部或部分翻译成本地机器码，所以不需要 JVM 来进行翻译，因此运行得更快。当需要装载某个类（通常是创建该类的第一个对象）时，编译器会先找到其 **.class** 文件，然后将该类的字节码装入内存。你可以让即时编译器编译所有代码，但这种做法有两个缺点：一是这种加载动作贯穿整个程序生命周期内，累加起来需要花更多时间；二是会增加可执行代码的长度（字节码要比即时编译器展开后的本地机器码小很多），这会导致页面调度，从而一定降低程序速度。另一种做法称为*惰性评估*，意味着即时编译器只有在必要的时候才编译代码。这样，从未被执行的代码也许就压根不会被 JIT 编译。新版 JDK 中的 Java HotSpot 技术就采用了类似的做法，代码每被执行一次就优化一些，所以执行的次数越多，它的速度就越快。
 
 <!-- Member Initialization -->
 
@@ -1054,7 +1063,7 @@ f3(1)
 
 概括一下创建对象的过程，假设有个名为 **Dog** 的类：
 
-1. 即使没有显式地使用 **static** 关键字，构造器实际上也是静态方法。所以，当首次创建 **Dog** 类型的对象时，或是首次访问 **Dog** 类的静态方法或属性，Java 解释器必须在类路径中查找，以定位 **Dog.class**。
+1. 即使没有显式地使用 **static** 关键字，构造器实际上也是静态方法。所以，当首次创建 **Dog** 类型的对象或是首次访问 **Dog** 类的静态方法或属性时，Java 解释器必须在类路径中查找，以定位 **Dog.class**。
 2. 当加载完 **Dog.class** 后（后面会学到，这将创建一个 **Class** 对象），有关静态初始化的所有动作都会执行。因此，静态初始化只会在首次加载 **Class** 对象时初始化一次。
 3. 当用 `new Dog()` 创建对象时，首先会在堆上为 **Dog** 对象分配足够的存储空间。
 4. 分配的存储空间首先会被清零，即会将 **Dog** 对象中的所有基本类型数据设置为默认值（数字会被置为 0，布尔型和字符型也相同），引用被置为 **null**。
@@ -1186,7 +1195,7 @@ Mugs(int)
 new Mugs(1) completed
 ```
 
-看起来它很像静态代码块，只不过少了 **static** 关键字。这种语法对于支持"匿名内部类"（参见"内部类"一章）的初始化是必须的，但是你也可以使用它保证某些操作一定会发生，而不管哪个构造器被调用。从输出看出，示例初始化子句是在两个构造器之前执行的。
+看起来它很像静态代码块，只不过少了 **static** 关键字。这种语法对于支持"匿名内部类"（参见"内部类"一章）的初始化是必须的，但是你也可以使用它保证某些操作一定会发生，而不管哪个构造器被调用。从输出看出，实例初始化子句是在两个构造器之前执行的。
 
 <!-- Array Initialization -->
 
@@ -1355,7 +1364,7 @@ public class ArrayInit {
                 3, // Autoboxing
         };
         System.out.println(Arrays.toString(a));
-        System.out.println(Arrays.toString(a));
+        System.out.println(Arrays.toString(b));
 
     }
 }
@@ -1413,8 +1422,8 @@ public class VarArgs {
     static void printArray(Object[] args) {
         for (Object obj: args) {
             System.out.print(obj + " ");
-            System.out.println();
         }
+        System.out.println();
     }
     
     public static void main(String[] args) {
