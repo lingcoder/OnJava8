@@ -1306,9 +1306,9 @@ public class AnonymousClosure {
 | :----- | :----- |
 | `andThen(argument)` <br> 根据参数执行原始操作 | **Function <br> BiFunction <br> Consumer <br> BiConsumer <br> IntConsumer <br> LongConsumer <br> DoubleConsumer <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator <br> BinaryOperator** |
 | `compose(argument)` <br> 根据参数执行原始操作 | **Function <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator** |
-| `and(argument)`  <br> 短路**逻辑与**原始断言和参数断言 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
-| `or(argument)` <br> 短路**逻辑或**原始断言和参数断言 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
-| `negate()` <br> 该断言的**逻辑否**断言| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `and(argument)`  <br> 短路**逻辑与**原始谓词和参数谓词 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `or(argument)` <br> 短路**逻辑或**原始谓词和参数谓词 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `negate()` <br> 该谓词的**逻辑否**谓词| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
 
 
 下例使用了 `Function` 里的 `compose()`和 `andThen()`。代码示例：
@@ -1374,9 +1374,9 @@ foobar
 foobaz
 ```
 
-`p4` 获取到了所有断言并组合成一个更复杂的断言。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
+`p4` 获取到了所有谓词并组合成一个更复杂的谓词。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
 
-正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建了一个字符串对象的流，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的断言来确定对象的去留。最后我们使用 `forEach()` 将 `println` 方法引用应用在每个留存的对象上。
+正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建了一个字符串对象的流，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的谓词来确定对象的去留。最后我们使用 `forEach()` 将 `println` 方法引用应用在每个留存的对象上。
 
 从输出结果我们可以看到 `p4` 的工作流程：任何带有 `foo` 的东西都会留下，即使它的长度大于 5。 `fongopuckey` 因长度超出和不包含 `bar` 而被丢弃。
 

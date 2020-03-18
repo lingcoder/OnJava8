@@ -368,7 +368,7 @@ public class Parcel5 {
 }
 ```
 
-**PDestination** 类是 `destination()` 方法的一部分，而不是 **Parcel5** 的一部分。所以，在 `destination()` 之外不能访问 **PDestination**，注意出现在 **return** 语句中的向上转型-返回的是 **Destination** 的引用，它是 **PDestination** 的基类。当然，在 `destination()` 中定义了内部类 **PDestination**，并不意味着一旦 `dest()` 方法执行完毕，**PDestination** 就不可用了。
+**PDestination** 类是 `destination()` 方法的一部分，而不是 **Parcel5** 的一部分。所以，在 `destination()` 之外不能访问 **PDestination**，注意出现在 **return** 语句中的向上转型-返回的是 **Destination** 的引用，它是 **PDestination** 的基类。当然，在 `destination()` 中定义了内部类 **PDestination**，并不意味着一旦 `destination()` 方法执行完毕，**PDestination** 就不可用了。
 
 你可以在同一个子目录下的任意类中对某个内部类使用类标识符 **PDestination**，这并不会有命名冲突。
 
@@ -429,7 +429,7 @@ public class Parcel7 {
 }
 ```
 
-`contents()` 方法将返回值的生成与表示这个返回值的类的定义结合在一起！另外，这个类是匿名的，它没有名字。更糟的是，看起来似乎是你正要创建一个 **Contents** 对象。但是然后（在到达语句结束的分号之前）你却说：“等一等，我想在这里插入一个类的定义。
+`contents()` 方法将返回值的生成与表示这个返回值的类的定义结合在一起！另外，这个类是匿名的，它没有名字。更糟的是，看起来似乎是你正要创建一个 **Contents** 对象。但是然后（在到达语句结束的分号之前）你却说：“等一等，我想在这里插入一个类的定义。”
 
 这种奇怪的语法指的是：“创建一个继承自 **Contents** 的匿名类的对象。”通过 **new** 表达式返回的引用被自动向上转型为对 **Contents** 的引用。上述匿名内部类的语法是下述形式的简化形式：
 
@@ -823,7 +823,7 @@ public class MultiImplementation {
 
 闭包（**closure**）是一个可调用的对象，它记录了一些信息，这些信息来自于创建它的作用域。通过这个定义，可以看出内部类是面向对象的闭包，因为它不仅包含外围类对象（创建内部类的作用域）的信息，还自动拥有一个指向此外围类对象的引用，在此作用域内，内部类有权操作所有的成员，包括 **private** 成员。
 
-在 Java 8 之前，生成闭包行为的唯一方式就是内部类。在 Java 8 之后，我们可以使用 lambda  表达式来生成闭包行为，并且语法更加精细和简洁；你将会在 [函数式编程 ]() 这一章节中学习相关细节。即使应该优先使用 lambda 表达式用于内部类闭包，你依旧会看到那些 Java 8 以前的代码，即使用内部类来表示闭包的方式，所以非常有必要来理解这种形式。
+在 Java 8 之前，内部类是实现闭包的唯一方式。在 Java 8 中，我们可以使用 lambda 表达式来实现闭包行为，并且语法更加优雅和简洁，你将会在 [函数式编程 ]() 这一章节中学习相关细节。尽管相对于内部类，你可能更喜欢使用 lambda 表达式实现闭包，但是你会看到并需要理解那些在 Java 8 之前通过内部类方式实现闭包的代码，因此仍然有必要来理解这种方式。
 
 Java 最引人争议的问题之一就是，人们认为 Java 应该包含某种类似指针的机制，以允许回调（callback）。通过回调，对象能够携带一些信息，这些信息允许它在稍后的某个时刻调用初始的对象。稍后将会看到这是一个非常有用的概念。如果回调是通过指针实现的，那么就只能寄希望于程序员不会误用该指针。然而，读者应该已经了解到，Java 更小心仔细，所以没有在语言中包括指针。
 
@@ -910,7 +910,7 @@ Other operation
 3
 ```
 
-这个例子进一步展示了外围类实现一个接口与内部类实现此接口之间的区别。就代码而言，**Calleel** 是更简单的解决方式。**Callee2** 继承自 **MyIncrement**，后者已经有了一个不同的 `increment()` 方法，并且与 **Incrementable** 接口期望的 `increment()` 方法完全不相关。所以如果 **Callee2** 继承了 **MyIncrement**，就不能为了 **Incrementable** 的用途而覆盖 `increment()` 方法，于是只能使用内部类独立地实现 **Incrementable**，还要注意，当创建了一个内部类时，并没有在外围类的接口中添加东西，也没有修改外围类的接口。
+这个例子进一步展示了外围类实现一个接口与内部类实现此接口之间的区别。就代码而言，**Callee1** 是更简单的解决方式。**Callee2** 继承自 **MyIncrement**，后者已经有了一个不同的 `increment()` 方法，并且与 **Incrementable** 接口期望的 `increment()` 方法完全不相关。所以如果 **Callee2** 继承了 **MyIncrement**，就不能为了 **Incrementable** 的用途而覆盖 `increment()` 方法，于是只能使用内部类独立地实现 **Incrementable**，还要注意，当创建了一个内部类时，并没有在外围类的接口中添加东西，也没有修改外围类的接口。
 
 注意，在 **Callee2** 中除了 `getCallbackReference()` 以外，其他成员都是 **private** 的。要想建立与外部世界的任何连接，接口 **Incrementable** 都是必需的。在这里可以看到，**interface** 是如何允许接口与接口的实现完全独立的。
 内部类 **Closure** 实现了 **Incrementable**，以提供一个返回 **Callee2** 的“钩子”（hook）-而且是一个安全的钩子。无论谁获得此 **Incrementable** 的引用，都只能调用 `increment()`，除此之外没有其他功能（不像指针那样，允许你做很多事情）。
@@ -1218,7 +1218,7 @@ Terminating
 
 ## 继承内部类
 
-因为内部类的构造器必须连接到指向其外围类对象的引用，所以在继承内部类的时候，事情会变得有点复杂。问题在干，那个指向外围类对象的“秘密的”引用必须被初始化，而在派生类中不再存在可连接的默认对象。要解决这个问题，必须使用特殊的语法来明确说清它们之间的关联：
+因为内部类的构造器必须连接到指向其外围类对象的引用，所以在继承内部类的时候，事情会变得有点复杂。问题在于，那个指向外围类对象的“秘密的”引用必须被初始化，而在派生类中不再存在可连接的默认对象。要解决这个问题，必须使用特殊的语法来明确说清它们之间的关联：
 
 ```java
 // innerclasses/InheritInner.java
@@ -1426,7 +1426,7 @@ Anonymous inner 9
 ```java
 Counter.class
 LocalInnerClass$1.class
-LocalInnerClass$1LocalCounter.class
+LocalInnerClass$LocalCounter.class
 LocalInnerClass.class
 ```
 

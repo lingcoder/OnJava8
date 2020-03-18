@@ -43,7 +43,7 @@
 - [x] [第二十一章 数组](docs/book/21-Arrays.md)
 - [x] [第二十二章 枚举](docs/book/22-Enumerations.md)
 - [x] [第二十三章 注解](docs/book/23-Annotations.md)
-- [ ] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
+- [x] [第二十四章 并发编程](docs/book/24-Concurrent-Programming.md)
 - [ ] [第二十五章 设计模式](docs/book/25-Patterns.md)
 - [x] [附录:补充](docs/book/Appendix-Supplements.md)
 - [x] [附录:编程指南](docs/book/Appendix-Programming-Guidelines.md)

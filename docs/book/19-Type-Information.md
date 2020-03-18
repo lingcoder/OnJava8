@@ -252,7 +252,7 @@ Canonical name : typeinfo.toys.Toy
 
 `printInfo()` 函数使用 `getName()` 来产生完整类名，使用 `getSimpleName()` 产生不带包名的类名，`getCanonicalName()` 也是产生完整类名（除内部类和数组外，对大部分类产生的结果与 `getName()` 相同）。`isInterface()` 用于判断某个 `Class` 对象代表的是否为一个接口。因此，通过 `Class` 对象，你可以得到关于该类型的所有信息。
 
-在主方法中调用的 `Class.getInterface()` 方法返回的是存放 `Class` 对象的数组，里面的 `Class` 对象表示的是那个类实现的接口。
+在主方法中调用的 `Class.getInterfaces()` 方法返回的是存放 `Class` 对象的数组，里面的 `Class` 对象表示的是那个类实现的接口。
 
 另外，你还可以调用 `getSuperclass()` 方法来得到父类的 `Class` 对象，再用父类的 `Class` 对象调用该方法，重复多次，你就可以得到一个对象完整的类继承结构。
 
@@ -501,7 +501,7 @@ public class DynamicSupplier<T> implements Supplier<T> {
 14
 ```
 
-注意，这个类必须假设与它一起工作的任何类型都有一个无参构造器，否者运行时会抛出异常。编译期对该程序不会产生任何警告信息。
+注意，这个类必须假设与它一起工作的任何类型都有一个无参构造器，否则运行时会抛出异常。编译期对该程序不会产生任何警告信息。
 
 当你将泛型语法用于 `Class` 对象时，`newInstance()` 将返回该对象的确切类型，而不仅仅只是在 `ToyTest.java` 中看到的基类 `Object`。然而，这在某种程度上有些受限：
 
@@ -527,7 +527,7 @@ public class GenericToyTest {
 }
 ```
 
-如果你手头的是超类，那编译期将只允许你声明超类引用为“某个类，它是 `FancyToy` 的超类”，就像在表达式 `Class<? super FancyToy>` 中所看到的那样。而不会接收 `Class<Toy>` 这样的声明。这看上去显得有些怪，因为 `getSuperClass()` 方法返回的是基类（不是接口），并且编译器在编译期就知道它是什么类型了（在本例中就是 `Toy.class`），而不仅仅只是"某个类"。不管怎样，正是由于这种含糊性，`up.newInstance` 的返回值不是精确类型，而只是 `Object`。
+如果你手头的是超类，那编译器将只允许你声明超类引用为“某个类，它是 `FancyToy` 的超类”，就像在表达式 `Class<? super FancyToy>` 中所看到的那样。而不会接收 `Class<Toy>` 这样的声明。这看上去显得有些怪，因为 `getSuperClass()` 方法返回的是基类（不是接口），并且编译器在编译期就知道它是什么类型了（在本例中就是 `Toy.class`），而不仅仅只是"某个类"。不管怎样，正是由于这种含糊性，`up.newInstance` 的返回值不是精确类型，而只是 `Object`。
 
 ### `cast()` 方法
 
@@ -1171,7 +1171,7 @@ class Part implements Supplier<Part> {
 
     private static Random rand = new Random(47);
     public Part get() {
-        int n = rand.nextint(prototypes.size());
+        int n = rand.nextInt(prototypes.size());
         return prototypes.get(n).get();
     }
 }
@@ -1348,7 +1348,7 @@ x.getClass().equals(Derived.class)) true
 
 ### 类方法提取器
 
-通常，你不会直接使用反射工具，但它们可以帮助你创建更多的动态代码。反射是用来支持其他 Java 特性的，例如对象序列化（参见[附录：对象序列化](#ch040.xhtml#appendix-object-serialization)）。但是，有时动态提取有关类的信息很有用。
+通常，你不会直接使用反射工具，但它们可以帮助你创建更多的动态代码。反射是用来支持其他 Java 特性的，例如对象序列化（参见[附录：对象序列化](https://lingcoder.github.io/OnJava8/#/book/Appendix-Object-Serialization)）。但是，有时动态提取有关类的信息很有用。
 
 考虑一个类方法提取器。查看类定义的源代码或 JDK 文档，只显示*在该类定义中*定义或重写的方法。但是，可能还有几十个来自基类的可用方法。找到它们既单调又费时[^1]。幸运的是，反射提供了一种方法，可以简单地编写一个工具类自动地向你展示所有的接口：
 
@@ -1361,12 +1361,12 @@ import java.util.regex.*;
 
 public class ShowMethods {
     private static String usage =
-            "usage:n" +
-                    "ShowMethods qualified.class.namen" +
-                    "To show all methods in class or:n" +
-                    "ShowMethods qualified.class.name wordn" +
-                    "To search for methods involving 'word'";
-    private static Pattern p = Pattern.compile("\w+\.");
+            "usage:\n" +
+            "ShowMethods qualified.class.name\n" +
+            "To show all methods in class or:\n" +
+            "ShowMethods qualified.class.name word\n" +
+            "To search for methods involving 'word'";
+    private static Pattern p = Pattern.compile("\\w+\\.");
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -1648,7 +1648,7 @@ class SelectingMethods {
         SomeMethods proxy =
                 (SomeMethods) Proxy.newProxyInstance(
                         SomeMethods.class.getClassLoader(),
-                        new Class[]{Interface.class},
+                        new Class[]{ SomeMethods.class },
                         new MethodSelector(new Implementation()));
         proxy.boring1();
         proxy.boring2();
@@ -2078,7 +2078,7 @@ public class NullRobot {
     newNullRobot(Class<? extends Robot> type) {
         return (Robot) Proxy.newProxyInstance(
                 NullRobot.class.getClassLoader(),
-                new Class,
+                new Class[] { Null.class, Robot.class },
                 new NullRobotProxyHandler(type));
     }
 
@@ -2375,8 +2375,7 @@ class AnonymousA {
             private void w() {
                 System.out.println("private C.w()");
             }
-        }
-                ;
+        };
     }
 }
 
@@ -2432,8 +2431,8 @@ public class ModifyingPrivateFields {
         Field f = pf.getClass().getDeclaredField("i");
         f.setAccessible(true);
         System.out.println(
-                "f.getInt(pf): " + f.getint(pf));
-        f.setint(pf, 47);
+                "f.getInt(pf): " + f.getInt(pf));
+        f.setInt(pf, 47);
         System.out.println(pf);
         f = pf.getClass().getDeclaredField("s");
         f.setAccessible(true);
