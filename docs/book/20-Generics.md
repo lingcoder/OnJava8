@@ -349,7 +349,7 @@ public class RandomList<T> extends ArrayList<T> {
   
     public static void main(String[] args) {
         RandomList<String> rs = new RandomList<>();
-        Array.stream("The quick brown fox jumped over the lazy brown dog".split(" ")).forEach(rs::add);
+        Arrays.stream("The quick brown fox jumped over the lazy brown dog".split(" ")).forEach(rs::add);
         IntStream.range(0, 11).forEach(i -> 
             System.out.print(rs.select() + " "));
     }
