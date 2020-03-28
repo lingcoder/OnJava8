@@ -25,6 +25,8 @@
 
 对于更多凌乱，低级别的细节，请参阅附录：[并发底层原理](./Appendix-Low-Level-Concurrency.md)。要进一步深入这个领域，你还必须阅读Brian Goetz等人的Java Concurrency in Practice。虽然在写作时，这本书已有十多年的历史，但它仍然包含你必须了解和理解的必需品。理想情况下，本章和附录是该书的精心准备。另一个有价值的资源是**Bill Venner**的Inside the Java Virtual Machine，它详细描述了JVM的最内部工作方式，包括线程。
 
+<!-- The Terminology Problem -->
+
 ## 术语问题
 
 在编程文献中并发、并行、多任务、多处理、多线程、分布式系统（以及可能的其他）使用了许多相互冲突的方式，并且经常被混淆。Brian Goetz在2016年的演讲中指出了这一点[From Concurrent to Parallel](https://www.youtube.com/watch?v=NsDE7E8sIdQ)，他提出了一个合理的解释：
@@ -1357,7 +1359,7 @@ public class QuittingCompletable {
 
 任务是一个 `List<QuittableTask>`，就像在 `QuittingTasks.java` 中一样，但是在这个例子中，没有 `peek()` 将每个 `QuittableTask` 提交给 `ExecutorService`。相反，在创建 `cfutures` 期间，每个任务都交给 `CompletableFuture::runAsync`。这执行 `VerifyTask.run()` 并返回 `CompletableFuture<Void>` 。因为 `run()` 不返回任何内容，所以在这种情况下我只使用 `CompletableFuture` 调用 `join()` 来等待它完成。
 
-在本例中需要注意的重要一点是，运行任务不需要使用 `ExecutorService`。而是直接交给 `CompletableFuture` 管理 (尽管有提供自己的 `ExecutorService` 的选项)。您也不需要调用 `shutdown()`;事实上，除非您像我在这里所做的那样显式地调用 `join()`，否则程序将尽快退出，而不必等待任务完成。
+在本例中需要注意的重要一点是，运行任务不需要使用 `ExecutorService`。而是直接交给 `CompletableFuture` 管理 (尽管有提供自己的 `ExecutorService` 的选项)。您也不需要调用 `shutdown()`;事实上，除非你像我在这里所做的那样显式地调用 `join()`，否则程序将尽快退出，而不必等待任务完成。
 
 这个例子只是一个起点。你很快就会看到 `ComplempleFuture` 能够做得更多。
 
@@ -1400,7 +1402,7 @@ public class Machina {
 
 这是一个有限状态机，一个微不足道的机器，因为它没有分支......它只是从头到尾遍历一条路径。**work()**方法将机器从一个状态移动到下一个状态，并且需要100毫秒才能完成“工作”。
 
-我们可以用**CompletableFuture**做的一件事是可以使用**completedFuture()**将它感兴趣的对象进行包装。
+我们可以用**CompletableFuture**做的一件事是, 使用**completedFuture()**将它感兴趣的对象进行包装。
 
 ```java
 // concurrent/CompletedMachina.java
@@ -1838,8 +1840,8 @@ thenAcceptBoth: Workable[AW], Workable[BW]
  allOf
 ```
 
-- 为了方便访问， `cfA` 和 `cfB` 是定义为  `static` 方法。 
-  - `init()`方法用 `A`, `B` 初始化这两个变量，因 `B` 总是给出比`A`较短的延迟，因此总是 `win` 的一方。
+- 为了方便访问， 将 `cfA` 和 `cfB` 定义为 `static`的。 
+  - `init()`方法用于 `A`, `B` 初始化这两个变量，因为 `B` 总是给出比`A`较短的延迟，所以总是 `win` 的一方。
   - `join()` 是在两个方法上调用 `join()` 并显示边框的另一个便利方法。
 - 所有这些 “`dual`” 方法都以一个 `CompletableFuture` 作为调用该方法的对象，第二个 `CompletableFuture` 作为第一个参数，然后是要执行的操作。
 - 通过使用 `showr()` 和 `voidr()` 可以看到，“`run`”和“`accept`”是终端操作，而“`apply`”和“`combine`”则生成新的 `payload-bearing` (承载负载)的 `CompletableFuture`。
