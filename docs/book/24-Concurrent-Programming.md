@@ -1359,7 +1359,7 @@ public class QuittingCompletable {
 
 任务是一个 `List<QuittableTask>`，就像在 `QuittingTasks.java` 中一样，但是在这个例子中，没有 `peek()` 将每个 `QuittableTask` 提交给 `ExecutorService`。相反，在创建 `cfutures` 期间，每个任务都交给 `CompletableFuture::runAsync`。这执行 `VerifyTask.run()` 并返回 `CompletableFuture<Void>` 。因为 `run()` 不返回任何内容，所以在这种情况下我只使用 `CompletableFuture` 调用 `join()` 来等待它完成。
 
-在本例中需要注意的重要一点是，运行任务不需要使用 `ExecutorService`。而是直接交给 `CompletableFuture` 管理 (尽管有提供自己的 `ExecutorService` 的选项)。您也不需要调用 `shutdown()`;事实上，除非你像我在这里所做的那样显式地调用 `join()`，否则程序将尽快退出，而不必等待任务完成。
+在本例中需要注意的重要一点是，运行任务不需要使用 `ExecutorService`。而是直接交给 `CompletableFuture` 管理 (不过你可以向它提供自己定义的 `ExectorService`)。您也不需要调用 `shutdown()`;事实上，除非你像我在这里所做的那样显式地调用 `join()`，否则程序将尽快退出，而不必等待任务完成。
 
 这个例子只是一个起点。你很快就会看到 `ComplempleFuture` 能够做得更多。
 
@@ -1402,7 +1402,7 @@ public class Machina {
 
 这是一个有限状态机，一个微不足道的机器，因为它没有分支......它只是从头到尾遍历一条路径。**work()**方法将机器从一个状态移动到下一个状态，并且需要100毫秒才能完成“工作”。
 
-我们可以用**CompletableFuture**做的一件事是, 使用**completedFuture()**将它感兴趣的对象进行包装。
+**CompletableFuture**可以被用来做的一件事是, 使用**completedFuture()**将它感兴趣的对象进行包装。
 
 ```java
 // concurrent/CompletedMachina.java
@@ -1457,7 +1457,7 @@ Machina0: THREE
 Machina0: complete
 ```
 
-`thenApply()`  方法，接收一个接受输入并产生输出的函数。在这种情况下，`Machina::work` 函数返回与输入相同类型的结果（`Machina`），因此示例中每个在**CompletableFuture**添加的操作中，都会输入`Machina` ，但是（类似于**Streams**中的**map()**） `Function` 也可以返回不同的类型，这将体现在返回类型上。
+`thenApply()` 应用一个接收输入并产生输出的函数。在本例中，`work()` 函数产生的类型与它所接收的类型相同 （`Machina`），因此每个 `CompletableFuture`添加的操作的返回类型都为 `Machina`，但是(类似于流中的 `map()` )函数也可以返回不同的类型，这将体现在返回类型上。
 
 你可以在此处看到有关**CompletableFutures**的重要信息：它们会在你执行操作时自动解包并重新包装它们所携带的对象。这使得编写和理解代码变得更加简单， 而不会在陷入在麻烦的细节中。
 
@@ -1491,7 +1491,7 @@ Machina0: complete
 514
 ```
 
-在这里，我们还添加了一个**Timer**，它向我们展示了除了任务本身需要的一些开销外，每一步增加 `100` 毫秒的功能。
+这里我们还添加了一个 `Timer`，它显示每一步都增加了 100ms，并且还有一些额外的开销。
 **CompletableFutures** 的一个重要好处是它们鼓励使用私有子类原则（不共享任何东西）。默认情况下，使用 **thenApply()** 来应用一个不对外通信的函数 - 它只需要一个参数并返回一个结果。这是函数式编程的基础，并且它在并发特性方面非常有效[^5]。并行流和 `ComplempleFutures` 旨在支持这些原则。只要你不决定共享数据（共享非常容易导致意外发生）你就可以编写出相对安全的并发程序。
 
 回调 `thenApply()` 一旦开始一个操作，在完成所有任务之前，不会完成 **CompletableFuture** 的构建。虽然这有时很有用，但是开始所有任务通常更有价值，这样就可以运行继续前进并执行其他操作。我们可通过`thenApplyAsync()` 来实现此目的：
@@ -2455,7 +2455,7 @@ public class DiningPhilosophers {
 
 
 
-## Constructor 非线程安全
+## 构造方法非线程安全
 
 当你在脑子里想象一个对象构造的过程，你会很容易认为这个过程是线程安全的。毕竟，在对象初始化完成前对外不可见，所以又怎会对此产生争议呢？确实，[Java 语言规范](https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.8.3) (JLS)自信满满地陈述道：“*没必要使构造器的线程同步，因为它会锁定正在构造的对象，直到构造器完成初始化后才对其他线程可见。*”
 
