@@ -25,7 +25,6 @@
 
 对于更多凌乱，低级别的细节，请参阅附录：[并发底层原理](./Appendix-Low-Level-Concurrency.md)。要进一步深入这个领域，你还必须阅读Brian Goetz等人的Java Concurrency in Practice。虽然在写作时，这本书已有十多年的历史，但它仍然包含你必须了解和理解的必需品。理想情况下，本章和附录是该书的精心准备。另一个有价值的资源是**Bill Venner**的Inside the Java Virtual Machine，它详细描述了JVM的最内部工作方式，包括线程。
 
-<!-- The Terminology Problem -->
 ## 术语问题
 
 在编程文献中并发、并行、多任务、多处理、多线程、分布式系统（以及可能的其他）使用了许多相互冲突的方式，并且经常被混淆。Brian Goetz在2016年的演讲中指出了这一点[From Concurrent to Parallel](https://www.youtube.com/watch?v=NsDE7E8sIdQ)，他提出了一个合理的解释：
@@ -739,7 +738,6 @@ public class ParallelStreamPuzzle3 {
 
 实际上，在许多情况下，并行流确实可以毫不费力地更快地产生结果。但正如你所见，只需将**parallel()**打到你的Stream操作上并不一定是安全的事情。在使用**parallel()**之前，你必须了解并行性如何帮助或损害你的操作。有个错误认识是认为并行性总是一个好主意。事实上并不是。Stream意味着你不需要重写所有代码以便并行运行它。流什么都不做的是取代理解并行性如何工作的需要，以及它是否有助于实现你的目标。
 
-<!-- Creating and Running Tasks -->
 ## 创建和运行任务
 
 如果无法通过并行流实现并发，则必须创建并运行自己的任务。稍后你将看到运行任务的理想Java 8方法是CompletableFuture，但我们将使用更基本的工具介绍概念。
@@ -1357,11 +1355,11 @@ public class QuittingCompletable {
 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 2526 27 28 29 30 31 32 33 34 6 35 4 38 39 40 41 42 43 4445 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 6263 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 8081 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 9899 100 101 102 103 104 105 106 107 108 109 110 111 1121 113 114 116 117 118 119 120 121 122 123 124 125 126127 128 129 130 131 132 133 134 135 136 137 138 139 140141 142 143 144 145 146 147 148 149 5 115 37 36 2 3
 ```
 
- 任务是一个**List <QuittableTask>**，就像在**QuittingTasks.java**中一样，但是在这个例子中，没有**peek()**将每个**QuittableTask**提交给**ExecutorService**。相反，在创建 `cfutures`期间，每个任务都交给**CompletableFuture::runAsync**。这执行**VerifyTask.run(**)并返回**CompletableFuture <Void>**。因为**run()**不返回任何内容，所以在这种情况下我只使用**CompletableFuture**调用**join()**来等待它完成。
+任务是一个 `List<QuittableTask>`，就像在 `QuittingTasks.java` 中一样，但是在这个例子中，没有 `peek()` 将每个 `QuittableTask` 提交给 `ExecutorService`。相反，在创建 `cfutures` 期间，每个任务都交给 `CompletableFuture::runAsync`。这执行 `VerifyTask.run()` 并返回 `CompletableFuture<Void>` 。因为 `run()` 不返回任何内容，所以在这种情况下我只使用 `CompletableFuture` 调用 `join()` 来等待它完成。
 
-在此示例中需要注意的重要事项是，运行任务不需要使用 **ExecutorService** （不用调用 **shutdown()**）。直接交给  `CompletableFuture` 管理（它有提供自己的**ExecutorService**的选项）。 事实上，像我这样明确地调用**join() ** 即可，程序会尽快退出，而不必等待任务完成。
+在本例中需要注意的重要一点是，运行任务不需要使用 `ExecutorService`。而是直接交给 `CompletableFuture` 管理 (尽管有提供自己的 `ExecutorService` 的选项)。您也不需要调用 `shutdown()`;事实上，除非您像我在这里所做的那样显式地调用 `join()`，否则程序将尽快退出，而不必等待任务完成。
 
-这个例子只是一个起点。你很快就会看到ComplempleFutures能够做得更多。
+这个例子只是一个起点。你很快就会看到 `ComplempleFuture` 能够做得更多。
 
 ### 基本用法
 
@@ -1393,7 +1391,7 @@ public class Machina {
         return m;
     }
     @Override
-    public toString() {
+    public String toString() {
         return"Machina" + id + ": " + (state.equals(State.END)? "complete" : state);
     }
 }
@@ -1529,19 +1527,19 @@ Machina0: complete
 552
 ```
 
-  同步调用(常用)意味着：“当你完成工作时，才返回”，而异步调用以意味着： “立刻返回并继续后续工作”。 正如你所看到的，`cf` 的创建现在发生的更快。每次调用 `thenApplyAsync()` 都会立刻返回，因此可以进行下一次调用，整个调用链路完成速度比以前快得多。
+同步调用(我们通常使用的那种)意味着：“当你完成工作时，才返回”，而异步调用以意味着： “立刻返回并继续后续工作”。 正如你所看到的，`cf` 的创建现在发生的更快。每次调用 `thenApplyAsync()` 都会立刻返回，因此可以进行下一次调用，整个调用链路完成速度比以前快得多。
 
-  事实上，如果没有回调 `cf.join()` 方法，程序会在完成其工作之前退出。而 `cf.join()` 直到cf操作完成之前，阻止 `main()` 进程结束。我们还可以看出本示例大部分时间消耗在 `cf.join()` 这。
+事实上，如果没有回调 `cf.join()` 方法，程序会在完成其工作之前退出。而 `cf.join()` 直到cf操作完成之前，阻止 `main()` 进程结束。我们还可以看出本示例大部分时间消耗在 `cf.join()` 这。
 
-  这种“立即返回”的异步能力需要 `CompletableFuture` 库进行一些秘密（`client` 无感）工作。特别是，它将你需要的操作链存储为一组回调。当操作的第一个链路（后台操作）完成并返回时，第二个链路（后台操作）必须获取生成的 `Machina` 并开始工作，以此类推！ 但这种异步机制没有我们可以通过程序调用栈控制的普通函数调用序列，它的调用链路顺序会丢失，因此它使用一个函数地址来存储的回调来解决这个问题。
+这种“立即返回”的异步能力需要 `CompletableFuture` 库进行一些秘密（`client` 无感）工作。特别是，它将你需要的操作链存储为一组回调。当操作的第一个链路（后台操作）完成并返回时，第二个链路（后台操作）必须获取生成的 `Machina` 并开始工作，以此类推！ 但这种异步机制没有我们可以通过程序调用栈控制的普通函数调用序列，它的调用链路顺序会丢失，因此它使用一个函数地址来存储的回调来解决这个问题。
 
-  幸运的是，这就是你需要了解的有关回调的全部信息。程序员倾向于将这种人为制造的混乱称为 `callback hell`(回调地狱)。通过异步调用，`CompletableFuture` 帮你管理所有回调。 除非你知道系统的一些具体的变化，否则你更想使用异步调用来实现程序。
+幸运的是，这就是你需要了解的有关回调的全部信息。程序员将这种人为制造的混乱称为 callback hell(回调地狱)。通过异步调用，`CompletableFuture` 帮你管理所有回调。 除非你知道系统的一些具体的变化，否则你更想使用异步调用来实现程序。
 
 - 其他操作
 
-  当你查看`CompletableFuture`的 `Javadoc` 时，你会看到它有很多方法，但这个方法的大部分来自不同操作的变体。例如，有 `thenApply()`，`thenApplyAsync()` 和第二种形式的 `thenApplyAsync()`，它们使用 `Executor` 来运行任务(在本书中，我们忽略了 `Executor` 选项)。
+当你查看`CompletableFuture`的 `Javadoc` 时，你会看到它有很多方法，但这个方法的大部分来自不同操作的变体。例如，有 `thenApply()`，`thenApplyAsync()` 和第二种形式的 `thenApplyAsync()`，它们使用 `Executor` 来运行任务(在本书中，我们忽略了 `Executor` 选项)。
 
-  下面的示例展示了所有 `basic` 操作，这些操作既不涉及组合两个 `CompletableFuture`，也不涉及异常(我们将在后面介绍)。首先，为了提供简洁性和方便性，我们应该重用以下两个实用程序:
+下面的示例展示了所有"基本"操作，这些操作既不涉及组合两个 `CompletableFuture`，也不涉及异常(我们将在后面介绍)。首先，为了提供简洁性和方便性，我们应该重用以下两个实用程序:
 
 ```java
 package onjava;
@@ -1569,11 +1567,11 @@ public class CompletableUtilities {
 }
 ```
 
-  `showr()` 在 `CompletableFuture<Integer>` 上调用 `get()`，并显示结果，`try/catch` 两个可能会出现的异常。
+`showr()` 在 `CompletableFuture<Integer>` 上调用 `get()`，并显示结果，`try/catch` 两个可能会出现的异常。
 
-  `voidr()` 是 `CompletableFuture<Void>` 的 `showr()` 版本，也就是说，`CompletableFutures` 只为任务完成或失败时显示信息。
+`voidr()` 是 `CompletableFuture<Void>` 的 `showr()` 版本，也就是说，`CompletableFutures` 只为任务完成或失败时显示信息。
 
-  为简单起见，下面的 `CompletableFutures` 只包装整数。`cfi()` 是一个便利的方法，它把一个整数包装在一个完整的 `CompletableFuture<Integer>` :
+为简单起见，下面的 `CompletableFutures` 只包装整数。`cfi()` 是一个便利的方法，它把一个整数包装在一个完整的 `CompletableFuture<Integer>` :
 
 ```java
 // concurrent/CompletableOperations.java
@@ -1716,6 +1714,7 @@ public class Workable {
 ```
 
 在 `make()`中，`work()`方法应用于`CompletableFuture`。`work()`需要一定的时间才能完成，然后它将字母W附加到id上，表示工作已经完成。
+
 现在我们可以创建多个竞争的 `CompletableFuture`，并使用 `CompletableFuture` 库中的各种方法来进行操作:
 
 ```java
@@ -1935,8 +1934,6 @@ public class Baked {
 }
 ```
 
-
-
 最后，我们制作了一批糖，并用它对蛋糕进行糖化：
 
 ```java
@@ -2018,7 +2015,9 @@ public class Breakable {
 ```
 
 当`failcount` > 0，每次将对象传递给 `work()` 方法时， `failcount - 1` 。当`failcount - 1 = 0` 时，`work()` 将抛出一个异常。如果传给 `work()` 的 `failcount = 0` ，`work()` 永远不会抛出异常。
+
 注意，异常信息此示例中被抛出（ `RuntimeException` )
+
 在下面示例  `test()` 方法中，`work()` 多次应用于 `Breakable`，因此如果 `failcount` 在范围内，就会抛出异常。然而，在测试`A`到`E`中，你可以从输出中看到抛出了异常，但它们从未出现:
 
 ```java
@@ -2198,7 +2197,6 @@ result: Breakable_whenComplete [-4]
 
   - `whenComplete()` 类似于handle()，同样必须测试它是否失败，但是参数是一个消费者，并且不修改传递给它的结果对象。
 
-    
 
 ### 流异常（Stream Exception）
 
@@ -2209,8 +2207,8 @@ result: Breakable_whenComplete [-4]
 import java.util.concurrent.*;
 import java.util.stream.*;
 public class StreamExceptions {
-    static Stream<Breakable>
-    test(String id, int failcount) {
+    
+    static Stream<Breakable> test(String id, int failcount) {
         return Stream.of(new Breakable(id, failcount))
                 .map(Breakable::work)
                 .map(Breakable::work)
@@ -2246,15 +2244,9 @@ Throwing Exception for C
 Breakable_C failed
 ```
 
-使用**CompletableFutures**，我们看到了测试**A**到**E**的进展，但是使用**Streams**，直到你应用了终端操作(如[1]的**forEach()**)，一切都没有开始。**CompletableFuture**执行工作并捕获任何异常以供以后检索。比较这两者并不是一件容易的事，因为**Stream**没有终端操作根本无法执行任何操作，但是**Stream**绝对不会存储其异常。
+使用 `CompletableFuture`，我们可以看到测试A到E的进展，但是使用流，在你应用一个终端操作之前（e.g. `forEach()`），什么都不会暴露给 Client 
 
-
-
-- 使用 `CompletableFuture`，我们可以看到测试A到E的进展，但是使用流，在你应用一个终端操作之前（e.g. `forEach()`），什么都不会暴露给 Client 
-
-- `CompletableFuture` 执行工作并捕获任何异常供以后检索。比较这两者并不容易，因为 `Stream` 在没有终端操作的情况下根本不做任何事情——但是流绝对不会存储它的异常。
-
-  
+`CompletableFuture` 执行工作并捕获任何异常供以后检索。比较这两者并不容易，因为 `Stream` 在没有终端操作的情况下根本不做任何事情——但是流绝对不会存储它的异常。
 
 ### 异常检查
 
@@ -2309,8 +2301,6 @@ public class ThrowsChecked {
 
 如果你试图像使用 `nochecked()` 那样使用` withchecked()` 的方法引用，编译器会在 `[1]` 和 `[2]` 中报错。相反，你必须写出lambda表达式(或者编写一个不会抛出异常的包装器方法)。
 
-
-
 ## 死锁
 
 由于任务可以被阻塞，因此一个任务有可能卡在等待另一个任务上，而后者又在等待别的任务，这样一直下去，知道这个链条上的任务又在等待第一个任务释放锁。这得到了一个任务之间相互等待的连续循环， 没有哪个线程能继续， 这称之为死锁[^6]
@@ -2353,10 +2343,13 @@ public class StickHolder {
 }
 ```
 
-- 为简单起见，`Chopstick`(`static`) 实际上不是由 `StickHolder` 生产的，而是在其类中保持私有的。
-- 如果您调用了`pickUp()`，而 `stick` 不可用，那么`pickUp()`将阻塞该 `stick`，直到另一个哲学家调用`putDown()` 将 `stick` 返回。 
-- 注意，该类中的所有线程安全都是通过 `BlockingQueue` 实现的。
-  每个哲学家都是一项任务，他们试图把筷子分别 `pickUp()` 在左手和右手上，这样筷子才能吃东西，然后通过 `putDown()` 放下 `stick`。
+为简单起见，`Chopstick`(`static`) 实际上不是由 `StickHolder` 生产的，而是在其类中保持私有的。
+
+如果您调用了`pickUp()`，而 `stick` 不可用，那么`pickUp()`将阻塞该 `stick`，直到另一个哲学家调用`putDown()` 将 `stick` 返回。 
+
+注意，该类中的所有线程安全都是通过 `BlockingQueue` 实现的。
+
+每个哲学家都是一项任务，他们试图把筷子分别 `pickUp()` 在左手和右手上，这样筷子才能吃东西，然后通过 `putDown()` 放下 `stick`。
 
 ```java
 // concurrent/Philosopher.java
@@ -2390,6 +2383,7 @@ public class Philosopher implements Runnable {
 ```
 
 没有两个哲学家可以同时成功调用take()同一只筷子。另外，如果一个哲学家已经拿过筷子，那么下一个试图拿起同一根筷子的哲学家将阻塞，等待其被释放。
+
 结果是一个看似无辜的程序陷入了死锁。我在这里使用数组而不是集合，只是因为这种语法更简洁：
 
 ```java
@@ -2442,18 +2436,17 @@ public class DiningPhilosophers {
 
 2. 在Philosopher.java中取消注释行[1]。
 
-   
-
 任一种方法都会减少死锁的可能性，这表明编写并发程序并认为它是安全的危险，因为它似乎“在我的机器上运行正常”。你可以轻松地说服自己该程序没有死锁，即使它不是。这个示例相当有趣，因为它演示了看起来可以正确运行，但实际上会可能发生死锁的程序。
 
 要修正死锁问题，你必须明白，当以下四个条件同时满足时，就会发生死锁：
 
-- 互斥条件。任务使用的资源中至少有一个不能共享的。 这里， 一根筷子一次就只能被一个哲学家使用。
-- 至少有一个任务它必须持有一个资源且正在等待获取一个被当前别的任务持有的资源。也就是说，要发生死锁，哲学家必须拿着一根筷子并且等待另一根。
-- 资源不能被任务抢占， 任务必须把资源释放当作普通事件。哲学家很有礼貌，他们不会从其它哲学家那里抢筷子。
-- 必须有循环等待， 这时，一个任务等待其它任务所持有的资源， 后者又在等待另一个任务所持有的资源， 这样一直下去，知道有一个任务在等待第一个任务所持有的资源， 使得大家都被锁住。 在 `DiningPhilosophers.java` 中， 因为每个哲学家都试图先得到右边的 筷子, 然后得到左边的 筷子, 所以发生了循环等待。
+1) 互斥条件。任务使用的资源中至少有一个不能共享的。 这里，一根筷子一次就只能被一个哲学家使用。
+2) 至少有一个任务它必须持有一个资源且正在等待获取一个被当前别的任务持有的资源。也就是说，要发生死锁，哲学家必须拿着一根筷子并且等待另一根。
+3) 资源不能被任务抢占， 任务必须把资源释放当作普通事件。哲学家很有礼貌，他们不会从其它哲学家那里抢筷子。
+4) 必须有循环等待， 这时，一个任务等待其它任务所持有的资源， 后者又在等待另一个任务所持有的资源， 这样一直下去，知道有一个任务在等待第一个任务所持有的资源， 使得大家都被锁住。 在 `DiningPhilosophers.java` 中， 因为每个哲学家都试图先得到右边的 筷子, 然后得到左边的 筷子, 所以发生了循环等待。
 
 因为必须满足所有条件才能导致死锁，所以要阻止死锁的话，只需要破坏其中一个即可。在此程序中，防止死锁的一种简单方法是打破第四个条件。之所以会发生这种情况，是因为每个哲学家都尝试按照特定的顺序拾起自己的筷子：先右后左。因此，每个哲学家都有可能在等待左手的同时握住右手的筷子，从而导致循环等待状态。但是，如果其中一位哲学家尝试首先拿起左筷子，则该哲学家决不会阻止紧邻右方的哲学家拿起筷子，从而排除了循环等待。
+
 在**DiningPhilosophers.java**中，取消注释[1]和其后的一行。这将原来的哲学家[1]替换为筷子颠倒的哲学家。通过确保第二位哲学家拾起并在右手之前放下左筷子，我们消除了死锁的可能性。
 这只是解决问题的一种方法。你也可以通过防止其他情况之一来解决它。
 没有语言支持可以帮助防止死锁；你有责任通过精心设计来避免这种情况。对于试图调试死锁程序的人来说，这些都不是安慰。当然，避免并发问题的最简单，最好的方法是永远不要共享资源-不幸的是，这并不总是可能的。
@@ -2463,6 +2456,7 @@ public class DiningPhilosophers {
 ## Constructor 非线程安全
 
 当你在脑子里想象一个对象构造的过程，你会很容易认为这个过程是线程安全的。毕竟，在对象初始化完成前对外不可见，所以又怎会对此产生争议呢？确实，[Java 语言规范](https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.8.3) (JLS)自信满满地陈述道：“*没必要使构造器的线程同步，因为它会锁定正在构造的对象，直到构造器完成初始化后才对其他线程可见。*”
+
 不幸的是，对象的构造过程如其他操作一样，也会受到共享内存并发问题的影响，只是作用机制可能更微妙罢了。
 
 设想下使用一个 **static** 字段为每个对象自动创建唯一标识符的过程。为了测试其不同的实现过程，我们从一个接口开始。代码示例：
@@ -2531,6 +2525,7 @@ public class IDChecker {
 ```
 
 **MakeObjects** 类是一个生产者类，包含一个能够产生 List\<Integer> 类型的列表对象的 `get()` 方法。通过从每个 `HasID` 对象提取 `ID` 并放入列表中来生成这个列表对象，而 `test()` 方法则创建了两个并行的 **CompletableFuture** 对象，用于运行 **MakeObjects** 生产者类，然后获取运行结果。
+
 使用 Guava 库中的 **Sets.`intersection()` 方法，计算出这两个返回的 List\<Integer> 对象中有多少相同的 `ID`（使用谷歌 Guava 库里的方法比使用官方的 `retainAll()` 方法速度快得多）。
 
 现在我们可以测试上面的 **StaticIDField** 类了。代码示例：
@@ -2632,6 +2627,7 @@ public class SharedConstructorArgument{
 ```
 
 在这里，**SharedUser** 构造器实际上共享了相同的参数。即使 **SharedUser** 以完全无害且合理的方式使用其自己的参数，其构造器的调用方式也会引起冲突。**SharedUser** 甚至不知道它是以这种方式调用的，更不必说控制它了。
+
 同步构造器并不被java语言所支持，但是通过使用同步语块来创建你自己的同步构造器是可能的（请参阅附录：[并发底层原理](./Appendix-Low-Level-Concurrency.md)，来进一步了解同步关键字—— `synchronized`）。尽管JLS（java语言规范）这样陈述道：“……它会锁定正在构造的对象”，但这并不是真的——构造器实际上只是一个静态方法，因此同步构造器实际上会锁定该类的Class对象。我们可以通过创建自己的静态对象并锁定它，来达到与同步构造器相同的效果：
 
 ```java
@@ -2708,13 +2704,12 @@ public class SynchronizedFactory{
 ```
 
 通过同步静态工厂方法，可以在构造过程中锁定 **Class** 对象。
+
 这些示例充分表明了在并发Java程序中检测和管理共享状态有多困难。即使你采取“不共享任何内容”的策略，也很容易产生意外的共享事件。
-<!-- Effort, Complexity,Cost -->
+
 ## 复杂性和代价
 
 假设你正在做披萨，我们把从整个流程的当前步骤到下一个步骤所需的工作量，在这里一一表示为枚举变量的一部分：
-
-
 
 ```java
 // concurrent/Pizza.java import java.util.function.*;
@@ -3074,8 +3069,6 @@ Pizza4: complete
 
 使用 **CompletableFutures** 或许可以轻易地带来重大收益，但是在尝试更进一步时需要倍加小心，因为额外增加的成本和工作量会非常容易远远超出你之前拼命挤出的那一点点收益。
 
-<!-- Summary -->
-
 ## 本章小结
 
 需要并发的唯一理由是“等待太多”。这也可以包括用户界面的响应速度，但是由于Java用于构建用户界面时并不高效，因此[^8]这仅仅意味着“你的程序运行速度还不够快”。
@@ -3102,8 +3095,6 @@ Pizza4: complete
 
 5. 跨平台的不一致。 通过一些示例，我发现了某些计算机上很快出现的竞争状况，而在其他计算机上却没有。 如果你在后者上开发程序，则在分发程序时可能会感到非常惊讶。
 
-   
-
 另外，并发的应用是一门艺术。 Java旨在允许你创建尽可能多的所需要的对象来解决问题——至少在理论上是这样。[^9]但是，线程不是典型的对象：每个线程都有其自己的执行环境，包括堆栈和其他必要的元素，使其比普通对象大得多。 在大多数环境中，只能在内存用光之前创建数千个**Thread**对象。通常，你只需要几个线程即可解决问题，因此一般来说创建线程没有什么限制，但是对于某些设计而言，它会成为一种约束，可能迫使你使用完全不同的方案。
 
 ### 共享内存陷阱
@@ -3115,8 +3106,6 @@ Pizza4: complete
 我遇到了许多人，他们对编写正确的线程程序的能力充满信心。 我偶尔开始认为我也可以做好。 对于一个特定的程序，我最初是在只有单个CPU的机器上编写的。 那时我能够说服自己该程序是正确的，因为我以为我对Java工具很了解。 而且在我的单CPU计算机上也没有失败。而到了具有多个CPU的计算机，程序出现问题不能运行后，我感到很惊讶，但这还只是众多问题中的一个而已。 这不是Java的错； “写一次，到处运行”，在单核与多核计算机间无法扩展到并发编程领域。这是并发编程的基本问题。 实际上你可以在单CPU机器上发现一些并发问题，但是在多线程实际上真的在并行运行的多CPU机器上，就会出现一些其他问题。
 
 再举一个例子，哲学家就餐的问题可以很容易地进行调整，因此几乎不会产生死锁，这会给你一种一切都棒极了的印象。当涉及到共享内存并发编程时，你永远不应该对自己的编程能力变得过于自信。
-
-
 
 ### This Albatross is Big
 
@@ -3145,8 +3134,6 @@ Pizza4: complete
 ### 拓展阅读
 
 《Java Concurrency in Practice》，出自Brian Goetz，Tim Peierls， Joshua Bloch，Joseph Bowbeer，David Holmes和 Doug Lea (Addison Wesley，2006年)——这些基本上就是Java并发世界中的名人名单了《Java Concurrency in Practice》第二版，出自 Doug Lea (Addison-Wesley，2000年)。尽管这本书出版时间远远早于Java 5发布，但Doug的大部分工作都写入了**java.util.concurrent**库。因此，这本书对于全面理解并发问题至关重要。 它超越了Java，讨论了跨语言和技术的并发编程。 尽管它在某些地方可能很钝，但值得多次重读（最好是在两个月之间进行消化）。 道格（Doug）是世界上为数不多的真正了解并发编程的人之一，因此这是值得的。
-
-
 
 [^1]:例如,Eric-Raymond在“Unix编程艺术”（Addison-Wesley，2004）中提出了一个很好的案例。
 [^2]:可以说，试图将并发性用于后续语言是一种注定要失败的方法，但你必须得出自己的结论
