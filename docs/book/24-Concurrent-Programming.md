@@ -2250,7 +2250,7 @@ Breakable_C failed
 
 `CompletableFuture` 执行工作并捕获任何异常供以后检索。比较这两者并不容易，因为 `Stream` 在没有终端操作的情况下根本不做任何事情——但是流绝对不会存储它的异常。
 
-### 异常检查
+### 检查性异常
 
 `CompletableFuture` 和 `parallel Stream` 都不支持包含已检查异常的操作。相反，你必须在调用操作时处理检查到的异常，这会产生不太优雅的代码：
 
