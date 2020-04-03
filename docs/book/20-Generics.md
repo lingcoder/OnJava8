@@ -1090,7 +1090,7 @@ Serializable]
 */
 ```
 
-在第十二章 [集合的本章小节](book/12-Collections.md#本章小结) 部分将会用到这里的输出结果。
+在第十二章 [集合的本章小结](book/12-Collections.md#本章小结) 部分将会用到这里的输出结果。
 
 <!-- Building Complex Models -->
 
