@@ -1491,7 +1491,7 @@ Machina0: complete
 514
 ```
 
-这里我们还添加了一个 `Timer`，它显示每一步都增加了 100ms，并且还有一些额外的开销。
+这里我们还添加了一个 `Timer`，它的功能在每一步都显性地增加 100ms 等待时间，但是 `Timer` 还有一些功能之外的额外开销，对性能有些影响。
 **CompletableFutures** 的一个重要好处是它们鼓励使用私有子类原则（不共享任何东西）。默认情况下，使用 **thenApply()** 来应用一个不对外通信的函数 - 它只需要一个参数并返回一个结果。这是函数式编程的基础，并且它在并发特性方面非常有效[^5]。并行流和 `ComplempleFutures` 旨在支持这些原则。只要你不决定共享数据（共享非常容易导致意外发生）你就可以编写出相对安全的并发程序。
 
 回调 `thenApply()` 一旦开始一个操作，在完成所有任务之前，不会完成 **CompletableFuture** 的构建。虽然这有时很有用，但是开始所有任务通常更有价值，这样就可以运行继续前进并执行其他操作。我们可通过`thenApplyAsync()` 来实现此目的：
@@ -2016,7 +2016,7 @@ public class Breakable {
 }
 ```
 
-当`failcount` > 0，每次将对象传递给 `work()` 方法时， `failcount - 1` 。当`failcount - 1 = 0` 时，`work()` 将抛出一个异常。如果传给 `work()` 的 `failcount = 0` ，`work()` 永远不会抛出异常。
+当`failcount` > 0，且每次将对象传递给 `work()` 方法时， `failcount - 1` 。当`failcount - 1 = 0` 时，`work()` 将抛出一个异常。如果传给 `work()` 的 `failcount = 0` ，`work()` 永远不会抛出异常。
 
 注意，异常信息此示例中被抛出（ `RuntimeException` )
 
@@ -2252,7 +2252,7 @@ Breakable_C failed
 
 ### 检查性异常
 
-`CompletableFuture` 和 `parallel Stream` 都不支持包含已检查异常的操作。相反，你必须在调用操作时处理检查到的异常，这会产生不太优雅的代码：
+`CompletableFuture` 和 `parallel Stream` 都不支持包含检查性异常的操作。相反，你必须在调用操作时处理检查到的异常，这会产生不太优雅的代码：
 
 ```java
 // concurrent/ThrowsChecked.java
