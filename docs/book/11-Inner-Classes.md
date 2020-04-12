@@ -957,7 +957,7 @@ public abstract class Event {
 
 `ready()` 告诉你何时可以运行 `action()` 方法了。当然，可以在派生类中覆盖 `ready()` 方法，使得 **Event** 能够基于时间以外的其他因素而触发。
 
-下面的文件包含了一个用来管理并触发事件的实际控制框架。**Event** 对象被保存在 **List**\<**Event**\> 类型（读作“Event 的列表”）的容器对象中，容器会在 [集合 ]() 中详细介绍。目前读者只需要知道 `add()` 方法用来将一个 **Event** 添加到 **List** 的尾端，`size()` 方法用来得到 **List** 中元素的个数，foreach 语法用来连续获联 **List** 中的 **Event**，`remove()` 方法用来从 **List** 中移除指定的 **Event**。
+下面的文件包含了一个用来管理并触发事件的实际控制框架。**Event** 对象被保存在 **List**\<**Event**\> 类型（读作“Event 的列表”）的容器对象中，容器会在 [集合 ]() 中详细介绍。目前读者只需要知道 `add()` 方法用来将一个 **Event** 添加到 **List** 的尾端，`size()` 方法用来得到 **List** 中元素的个数，foreach 语法用来连续获取 **List** 中的 **Event**，`remove()` 方法用来从 **List** 中移除指定的 **Event**。
 
 ```java
 // innerclasses/controller/Controller.java
