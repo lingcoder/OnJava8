@@ -88,6 +88,13 @@
 * 页数：2038
 * 发行：仅电子版
 
+
+## 示例代码
+
+* [gradle: OnJava8-Examples](https://github.com/BruceEckel/OnJava8-Examples)
+* [maven: OnJava8-Examples-Maven](https://github.com/sjsdfg/OnJava8-Examples-Maven)
+
+
 ## 贡献者
 
 * 主译：[LingCoder](https://github.com/LingCoder)，[sjsdfg](https://github.com/sjsdfg)，[xiangflight](https://github.com/xiangflight)
