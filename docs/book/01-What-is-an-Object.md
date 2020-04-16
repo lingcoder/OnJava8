@@ -266,7 +266,7 @@ Java 的单继承结构有很多好处。由于所有对象都具有一个公共
 
 第二种方法是在堆内存（Heap）中动态地创建对象。在这种方式下，直到程序运行我们才能确定需要创建的对象数量、生存时间和类型。什么时候需要，什么时候在堆内存中创建。 因为内存的占用是动态管理的，所以在运行时，在堆内存上开辟空间所需的时间可能比在栈内存上要长（但也不一定）。在栈内存开辟和释放空间通常是一条将栈指针向下移动和一条将栈指针向上移动的汇编指令。开辟堆内存空间的时间取决于内存机制的设计。
 
-动态方法有这样一个一般性的逻辑假设：对象趋向于变得复杂，因此额外的内存查找和释放对对象的创建影响不大。（原文：*The dynamic approach makes the generally logical assumption that objects tend to be  complicated, so the extra overhead of finding storage and releasing that storage will not have an important impact on the creation of an object.*）此外，更好的灵活性对于问题的解决至关重要。
+动态方法有这样一个合理假设：对象通常是复杂的，相比于对象创建的整体开销，寻找和释放内存空间的开销微不足道。（原文：*The dynamic approach makes the generally logical assumption that objects tend to be complicated, so the extra overhead of finding storage and releasing that storage will not have an important impact on the creation of an object.*）此外，更好的灵活性对于问题的解决至关重要。
 
 Java 使用动态内存分配。每次创建对象时，使用 `new` 关键字构建该对象的动态实例。这又带来另一个问题：对象的生命周期。较之堆内存，在栈内存中创建对象，编译器能够确定该对象的生命周期并自动销毁它；然而如果你在堆内存创建对象的话，编译器是不知道它的生命周期的。在 C++ 中你必须以编程方式确定何时销毁对象，否则可能导致内存泄漏。Java 的内存管理是建立在垃圾收集器上的，它能自动发现对象不再被使用并释放内存。垃圾收集器的存在带来了极大的便利，它减少了我们之前必须要跟踪的问题和编写相关代码的数量。因此，垃圾收集器提供了更高级别的保险，以防止潜在的内存泄漏问题，这个问题使得许多 C++ 项目没落。
 
