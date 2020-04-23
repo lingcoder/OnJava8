@@ -903,7 +903,7 @@ Expected: java.lang.NullPointerException
 
 与 EnumSet 一样，enum 实例定义时的次序决定了其在 EnumMap 中的顺序。
 
-main0 方法的最后部分说明，enum 的每个实例作为一个键，总是存在的。但是，如果你没有为这个键调用 put() 方法来存人相应的值的话，其对应的值就是 null。
+main0 方法的最后部分说明，enum 的每个实例作为一个键，总是存在的。但是，如果你没有为这个键调用 put() 方法来存入相应的值的话，其对应的值就是 null。
 
 与常量相关的方法（constant-specific methods 将在下一节中介绍）相比，EnumMap 有一个优点，那 EnumMap 允许程序员改变值对象，而常量相关的方法在编译期就被固定了。稍后你会看到，在你有多种类型的 enum，而且它们之间存在互操作的情况下，我们可以用 EnumMap 实现多路分发（multiple dispatching）。
 
