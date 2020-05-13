@@ -550,7 +550,7 @@ bll: 101111101011111010111110101111
 
 Java 7 引入了二进制的字面值常量，由前导 `0b` 或 `0B` 表示，它可以初始化所有的整数类型。
 
-使用整型数值类型时，显示其二进制形式会很有用。在 Long 型和 Integer 型中这很容易实现，调用其静态的 `toBinaryString()` 方法即可。 但是请注意，若将较小的类型传递给 **Integer.**`tobinarystring()` 时，类型将自动转换为 **int**。
+使用整型数值类型时，显示其二进制形式会很有用。在 Long 型和 Integer 型中这很容易实现，调用其静态的 `toBinaryString()` 方法即可。 但是请注意，若将较小的类型传递给 **Integer.**`toBinaryString()` 时，类型将自动转换为 **int**。
 
 <!-- Underscores in Literals -->
 ### 下划线
