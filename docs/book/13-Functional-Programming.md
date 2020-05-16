@@ -628,7 +628,7 @@ public class FunctionalAnnotation {
 }
 ```
 
-`@FunctionalInterface` 注解是可选的; Java 在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口。 `@FunctionalInterface` 的值在 `NotFunctional` 的定义中可见：接口中如果有多个方法则会产生编译时错误消息。
+`@FunctionalInterface` 注解是可选的; Java 在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口。 `@FunctionalInterface` 的价值从 `NotFunctional` 的定义中可以看出：接口中如果有多个方法则会产生编译时错误消息。
 
 仔细观察在定义 `f` 和 `fna` 时发生了什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而被赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口的类中的方法。Java 8 在这里添加了一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数式接口（类型需要匹配），Java 会适配你的赋值到目标接口。 编译器会自动包装方法引用或 Lambda 表达式到实现目标接口的类的实例中。
 
@@ -930,7 +930,7 @@ public interface IntToDoubleFunction {
 }
 ```
 
-之所以我们可以简单地编写 `Function <Integer，Double>` 并返回合适的结果，很明显是为了性能。使用基本类型可以防止传递参数和返回结果过程中的自动装箱和自动拆箱。
+我们可以简单地编写 `Function <Integer，Double>` 并达到合适的结果，所以，很明显，使用基本类型的函数式接口的唯一原因就是防止传递参数和返回结果过程中的自动装箱和自动拆箱 进而提升性能。
 
 似乎是考虑到使用频率，某些函数类型并没有预定义。
 
@@ -1037,7 +1037,7 @@ O
 
 在这里，`transform()` 生成一个与传入的函数具有相同签名的函数，但是你可以生成任何你想要的类型。
 
-这里使用到了 `Function` 接口中名为 `andThen()` 的默认方法，该方法专门用于操作函数。 顾名思义，在调用 `in` 函数之后调用 `toThen()`（还有个 `compose()` 方法，它在 `in` 函数之前应用新函数）。 要附加一个 `andThen()` 函数，我们只需将该函数作为参数传递。 `transform()` 产生的是一个新函数，它将 `in` 的动作与 `andThen()` 参数的动作结合起来。
+这里使用到了 `Function` 接口中名为 `andThen()` 的默认方法，该方法专门用于操作函数。 顾名思义，在调用 `in` 函数之后调用 `andThen()`（还有个 `compose()` 方法，它在 `in` 函数之前应用新函数）。 要附加一个 `andThen()` 函数，我们只需将该函数作为参数传递。 `transform()` 产生的是一个新函数，它将 `in` 的动作与 `andThen()` 参数的动作结合起来。
 
 <!-- Closures -->
 
