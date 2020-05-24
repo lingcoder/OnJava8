@@ -346,7 +346,7 @@ import onjava.Timer;
 public class Summing {
     static void timeTest(String id, long checkValue,    LongSupplier operation){
         System.out.print(id + ": ");
-        Timer timer = newTimer();
+        Timer timer = new Timer();
         long result = operation.getAsLong();
         if(result == checkValue)
             System.out.println(timer.duration() + "ms");
