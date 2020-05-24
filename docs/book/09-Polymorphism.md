@@ -490,7 +490,7 @@ public class PrivateOverride {
     }
 }
 
-public Derived extends PrivateOverride {
+class Derived extends PrivateOverride {
     public void f() {
         System.out.println("public f()");
     }
