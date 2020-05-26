@@ -1192,6 +1192,289 @@ public class Facade {
 <!-- Callbacks -->
 ## 回调
 
+回调将代码从行为中分离出来。这些包括观察者，和一个叫“多重调度”的回调类别(不在设计模式)，包括来自设计模式的访问者。
+
+### 观察者
+
+如同起他形式的回调，当你改变代码时，它包括一个hook点。不同之处在于，观察者是完全动态。它通常用于基于其它对象状态变化的具体变化情况，也是事件管理的基础。观察者允许以完全动态的方式解耦调用代码和被调用代码。
+
+观察者模式解决了一个相当常见的问题：假使一组对象必须在某些对象改变状态时更新它们自己会怎么样？这可以在**SmallTalk**的**MVC**模型(模型-视图-控制器)的“模型-视图”方面看到，或者几乎等价的“文档-视图架构”看到。假定有一些数据(“文档”)和多个视图，比如一个图表视图和一个文本视图。当更改数据时，两个视图必须知道如何更新它们自己，这就是观察者的目的。这是一个非常常见的问题，它的解决方案是标准**java.util**库的一部分。
+
+有两种类型的对象用于在Java中实现观察者模式。**Observable**类跟踪每个希望在发生更改时得到通知的对象，不管“状态”是否发生了更改。当有人说“OK，每个对象都应该检查并可能更新自己”时，**Observable**类通过调用`notifyobserver()`方法来执行这个任务。`notifyobserver()`方法是基类**Observable**的一部分。
+
+观察者模式中实际上有两个“变化的东西”:观察对象的数量和更新发生的方式。也就是说，observer模式允许您在不影响周围代码的情况下修改这两种模式。
+
+**Observer**是一个接口，它只有一个方法`update()`。当被观察的对象决定更新其所有观察对象的时间时，将调用此函数。当被观察的对象决定更新其所有观察对象的时间时，将调用此函数。参数是可选的；可以有一个不带参数的`update()`，它仍然符合观察者模式；但是，这更通用——它允许观察到的对象传递引起更新的对象(因为**Observer**可以注册多个被观察的对象)和传递任何额外的信息(如果这有帮助的话)，而不是强迫**Observer**对象到处寻找谁在更新和获取它需要的任何其他信息。
+
+决定何时以及如何进行更新的“被观察对象”称为**Observable**。
+
+**Observable**有一个标志来表明它是否被改变了。在一个简单的设计中，不会有标志；如果发生了什么事，每个对象都会得到通知。该标志允许您等待，并且只有在正确的时间才通知**Observers**。但是，请注意，标记状态的控制是受保护的，因此只有继承类可以决定什么构成更改，而不是最终继承的**Observer**类的最终用户。
+
+大多数工作是在`notifyobserver()`中完成的。如果未设置已更改的标志，则不执行任何操作。否则，它首先清除更改后的标志，这样对`notifyobserver()`的多次调用就不会浪费时间。这是在通知观察者之前完成的，以防对`update()`的调用做了任何会导致此更改**可观察到的**对象的事情。然后它遍历集合并回调每个**Observer**的`update()`方法。
+
+乍一看，您可以使用一个普通的**Observable**对象来管理更新。但这没有用；要获得效果，类必须继承**Observable**并在代码中调用`setChanged()`。这是设置“更改”标志的方法，这意味着当您调用`notifyobserver()`时，实际上会通知所有的观察者。在哪里调用`setChanged()`取决于程序的逻辑。
+
+### 观察**Flowers**
+
+下面是观察者模式的一个例子：
+
+```java
+// patterns/observer/ObservedFlower.java
+// Demonstration of "Observer" pattern
+// {java patterns.observer.ObservedFlower}
+
+package patterns.observer;
+import java.util.*;
+
+class Flower {
+  private boolean isOpen;
+  private boolean alreadyOpen;
+  private boolean alreadyClosed;
+  Flower() { isOpen = false; }
+  OpenNotifier opening = new OpenNotifier();
+  CloseNotifier closing = new CloseNotifier();
+  public void open() { // Opens its petals
+    isOpen = true;
+    opening.notifyObservers();
+    alreadyClosed = false;
+  }
+  public void close() { // Closes its petals
+    isOpen = false;
+    closing.notifyObservers();
+    alreadyOpen = false;
+  }
+  class OpenNotifier extends Observable {
+    @Override
+    public void notifyObservers() {
+      if(isOpen && !alreadyOpen) {
+        setChanged();
+        super.notifyObservers();
+        alreadyOpen = true;
+      }
+    }
+  }
+  class CloseNotifier extends Observable{
+    @Override
+    public void notifyObservers() {
+      if(!isOpen && !alreadyClosed) {
+        setChanged();
+        super.notifyObservers();
+        alreadyClosed = true;
+      }
+    }
+  }
+}
+
+class Bee {
+  private String name;
+  Bee(String nm)  { name = nm; }
+  // Observe openings:
+  public Observer openObserver() {
+    return (ob, a) -> System.out.println(
+      "Bee " + name + "'s breakfast time!");
+  }
+  // Observe closings:
+  public Observer closeObserver() {
+    return (ob, a) -> System.out.println(
+      "Bee " + name + "'s bed time!");
+  }
+}
+
+class Hummingbird {
+  private String name;
+  Hummingbird(String nm) { name = nm; }
+  public Observer openObserver() {
+    return (ob, a) -> System.out.println(
+      "Hummingbird " + name +
+      "'s breakfast time!");
+  }
+  public Observer closeObserver() {
+    return (ob, a) -> System.out.println(
+      "Hummingbird " + name + "'s bed time!");
+  }
+}
+
+public class ObservedFlower {
+  public static void main(String[] args) {
+    Flower f = new Flower();
+    Bee
+      ba = new Bee("A"),
+      bb = new Bee("B");
+    Hummingbird
+      ha = new Hummingbird("A"),
+      hb = new Hummingbird("B");
+    f.opening.addObserver(ha.openObserver());
+    f.opening.addObserver(hb.openObserver());
+    f.opening.addObserver(ba.openObserver());
+    f.opening.addObserver(bb.openObserver());
+    f.closing.addObserver(ha.closeObserver());
+    f.closing.addObserver(hb.closeObserver());
+    f.closing.addObserver(ba.closeObserver());
+    f.closing.addObserver(bb.closeObserver());
+    // Hummingbird B decides to sleep in:
+    f.opening.deleteObserver(hb.openObserver());
+    // A change that interests observers:
+    f.open();
+    f.open(); // It's already open, no change.
+    // Bee A doesn't want to go to bed:
+    f.closing.deleteObserver(ba.closeObserver());
+    f.close();
+    f.close(); // It's already closed; no change
+    f.opening.deleteObservers();
+    f.open();
+    f.close();
+  }
+}
+/* Output:
+Bee B's breakfast time!
+Bee A's breakfast time!
+Hummingbird B's breakfast time!
+Hummingbird A's breakfast time!
+Bee B's bed time!
+Bee A's bed time!
+Hummingbird B's bed time!
+Hummingbird A's bed time!
+Bee B's bed time!
+Bee A's bed time!
+Hummingbird B's bed time!
+Hummingbird A's bed time!
+*/
+```
+
+有趣的事情是**Flower**可以开或合。由于使用了内部类，这两个事件可以是分开的可观察的现象。**OpenNotifier**和**CloseNotifier**都继承了Observable，所以它们可以访问`setChanged(`)`，并且可以传递给任何需要一个**Observable**的对象。因为**Observable**是一个类，我们没有机会使用lambda表达式。
+
+**Observer**是一个函数式接口，因此在**Bee**和**Hummingbird**可以用lambda来定义。这两个类都可以独立地观察**Flower**的开与闭。
+
+在`main()`方法中，您可以看到观察者模式的主要优点之一：通过**Observable**能够在运行时通过动态注册和取消注册**Observers**来更改行为。
+
+注意，你可以创建其他完全不同的观测对象；**Observer**与**Flower**的唯一联系是**Observer**接口。
+
+### 一个观察者的可视化例子
+
+下面的例子通过使用**Swing**库来创建图形，这在本书中没有介绍过(可以参考[Thinking in Java, 4th edition](www.OnJava8.com))。**Boxes**被放置在屏幕上的网格中，每个**box**都被初始化为随机的颜色。此外，每个**box**实现**Observer**接口并且被一个**Observable**对象注册。当你点击一个**box**的时候，所有其他的**boxes**都会收到变更的通知，因为**Observable**对象会自动调用每个**Observer**对象的`update()`方法。在这个方法中，**box**检查它是否与被单击的方框相邻，如果是，则更改颜色以匹配被单击的**box**。
+
+**java.awt.event**库有一个带有多个方法的**MouseListener**类，但是我们只对`mouseClicked()`方法感兴趣。如果只想实现`mouseClicked()`，就不能编写lambda表达式，因为**MouseListener**不是一个函数式接口，因为它有多个方法。Java 8允许我们使用**default**关键字来简化我们的代码，以创建一个帮助器接口并解决这个问题:
+
+
+```java
+// onjava/MouseClick.java
+// Helper interface to allow lambda expressions
+package onjava;
+import java.awt.event.*;
+
+// Default everything except mouseClicked():
+public interface MouseClick extends MouseListener {
+    @Override
+    default void mouseEntered(MouseEvent e) {}
+    @Override
+    default void mouseExited(MouseEvent e) {}
+    @Override
+    default void mousePressed(MouseEvent e) {}
+    @Override
+    default void mouseReleased(MouseEvent e) {}
+}
+```
+
+现在，可以成功地将一个lambda表达式转换为MouseClick并将其传递给addMouseListener()。
+
+```java
+// patterns/BoxObserver.java
+// Demonstration of Observer pattern using
+// Java's built-in observer classes
+// {ExcludeFromTravisCI}
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import onjava.*;
+import onjava.MouseClick;
+
+// You must inherit a new type of Observable:
+class BoxObservable extends Observable {
+  @Override
+  public void notifyObservers(Object b) {
+    // Otherwise it won't propagate changes:
+    setChanged();
+    super.notifyObservers(b);
+  }
+}
+
+public class BoxObserver extends JFrame {
+  Observable notifier = new BoxObservable();
+  public BoxObserver(int grid) {
+    setTitle("Demonstrates Observer pattern");
+    Container cp = getContentPane();
+    cp.setLayout(new GridLayout(grid, grid));
+    for(int x = 0; x < grid; x++)
+      for(int y = 0; y < grid; y++)
+        cp.add(new OCBox(x, y, notifier));
+  }
+  public static void main(String[] args) {
+    new TimedAbort(4);
+    int grid = 8;
+    if(args.length > 0)
+      grid = Integer.parseInt(args[0]);
+    JFrame f = new BoxObserver(grid);
+    f.setSize(500, 400);
+    f.setVisible(true);
+    f.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+  }
+}
+
+class OCBox extends JPanel implements Observer {
+  Observable notifier;
+  int x, y; // Locations in grid
+  Color cColor = newColor();
+  static final Color[] COLORS = {
+    Color.black, Color.blue, Color.cyan,
+    Color.darkGray, Color.gray, Color.green,
+    Color.lightGray, Color.magenta,
+    Color.orange, Color.pink, Color.red,
+    Color.white, Color.yellow
+  };
+  static Color newColor() {
+    return COLORS[
+      (int)(Math.random() * COLORS.length)
+    ];
+  }
+  OCBox(int x, int y, Observable notifier) {
+    this.x = x;
+    this.y = y;
+    notifier.addObserver(this);
+    this.notifier = notifier;
+    addMouseListener((MouseClick)
+      e -> notifier.notifyObservers(OCBox.this));
+  }
+  @Override
+  public void paintComponent(Graphics g) {
+    super.paintComponent(g);
+    g.setColor(cColor);
+    Dimension s = getSize();
+    g.fillRect(0, 0, s.width, s.height);
+  }
+  @Override
+  public void update(Observable o, Object arg) {
+    OCBox clicked = (OCBox)arg;
+    if(nextTo(clicked)) {
+      cColor = clicked.cColor;
+      repaint();
+    }
+  }
+  private boolean nextTo(OCBox b) {
+    return Math.abs(x - b.x) <= 1 &&
+           Math.abs(y - b.y) <= 1;
+  }
+}
+```
+
+注意**MouseClick**如何使`addMouseListener()`接受lambda表达式。
+
+当您第一次查看**Observable**的在线文档时，会感到有些困惑，因为它似乎可以使用一个普通的Observable对象管理更新。但这没有用。尝试一下——在BoxObserver中，创建一个Observable对象，而不是**BoxObservable**对象，看看会发生什么：什么都没有。要获得效果，必须继承**Observable**类，并在代码中调用方法setChanged()。这是设置“changed”标志的方法，这意味着当您调用`notifyobserver()`时，实际上会通知所有的观察者。在上面的例子中，`setChanged()`只是在`notifyobserver()`中调用，但是您可以使用任何条件来决定何时调用`setChanged()`。
+
+**BoxObserver**包含一个被称为**notifier**的**Observable**对象，每次创建**OCBox**对象时，它都被绑定到notifier。在**OCBox**中，无论何时单击鼠标，都会调用`notifyobserver()`方法，并将所单击的对象作为参数传入，以便所有接收消息的boxes对象(在它们的`update()`方法中)知道谁被单击了，并可以决定是否更改自己。通过结合使用`notifyobserver()`和`update()`中的代码，可以设计出一些相当复杂的方案。
+
+在`notifyobserver()`方法中，通知观察者的方式似乎必须在编译时冻结。但是，如果您更仔细地查看上面的代码，您会发现只有在**BoxObserver**或**OCBox**中，你知道你在处理一个**BoxObservable**对象——从那时起，所有东西都使用基本的可观察对象接口。这意味着您可以继承其它**Observable**类，并在运行时交换它们以更改通知行为。
+
 
 <!-- Multiple Dispatching -->
 ## 多次调度
