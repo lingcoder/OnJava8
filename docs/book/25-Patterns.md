@@ -1192,7 +1192,7 @@ public class Facade {
 <!-- Callbacks -->
 ## 回调
 
-回调将代码从行为中分离出来。这些包括观察者模式，一个叫“多重调度”的回调类别(不在设计模式)，和来自设计模式的访问者模式。
+回调将代码从行为中分离出来。这些包括观察者模式，一个叫“多重调度”的回调类别(不是一种设计模式)，和来自设计模式的访问者模式。
 
 ### 观察者
 
@@ -1341,11 +1341,11 @@ Hummingbird A's bed time!
 */
 ```
 
-有趣的事情是**Flower**可以开或合。由于使用了内部类，这两个事件可以是分开的可观察的现象。**OpenNotifier**和**CloseNotifier**都继承了Observable，所以它们可以访问`setChanged(`)`，并且可以传递给任何需要一个**Observable**的对象。因为**Observable**是一个类，我们没有机会使用lambda表达式。
+有趣的事情是**Flower**可以打开或关闭。由于使用了内部类，这两个事件可以是分开的可观察的现象。**OpenNotifier**和**CloseNotifier**都继承了Observable，所以它们可以访问`setChanged(`)`，并且可以传递给任何需要一个**Observable**的对象。因为**Observable**是一个类，我们没有机会使用lambda表达式。
 
-**Observer**是一个函数式接口，因此在**Bee**和**Hummingbird**可以用lambda来定义。这两个类都可以独立地观察**Flower**的开与闭。
+**Observer**是一个函数式接口，因此在**Bee**和**Hummingbird**可以用lambda来定义。这两个类都可以独立地观察**Flower**的打开或关闭。
 
-在`main()`方法中，可以看到观察者模式的主要优点之一：通过**Observable**能够在运行时通过动态注册和取消注册**Observers**来更改行为。
+在`main()`方法中，可以看到观察者模式的主要优点之一：通过**Observable**能够在运行时通过动态地注册和取消注册**Observers**来更改行为。
 
 注意，可以创建其他完全不同的观测对象；**Observer**与**Flower**的唯一联系是**Observer**接口。
 
