@@ -1079,9 +1079,9 @@ public class StartEnd {
         while(m.find())       
             d.display("find() '" + m.group() +         
               "' start = "+ m.start() + " end = " + m.end());     
-            if(m.lookingAt()) // No reset() necessary       
-                d.display("lookingAt() start = "         
-                  + m.start() + " end = " + m.end());     
+        if(m.lookingAt()) // No reset() necessary       
+            d.display("lookingAt() start = "         
+              + m.start() + " end = " + m.end());     
         if(m.matches()) // No reset() necessary       
             d.display("matches() start = "         
               + m.start() + " end = " + m.end());   
