@@ -422,7 +422,7 @@ secondMethod
 newMethod
 ```
 
-尽管 **Implementation2** 中定义 `newMethod()`，但是可以使用 `newMethod()` 了。 
+尽管 **Implementation2** 中未定义 `newMethod()`，但是可以使用 `newMethod()` 了。 
 
 增加默认方法的极具说服力的理由是它允许在不破坏已使用接口的代码的情况下，在接口中增加新的方法。默认方法有时也被称为*守卫方法*或*虚拟扩展方法*。
 
@@ -857,7 +857,7 @@ package interfaces.filters;
 
 public class Waveform {
     private static long counter;
-    private final long id = count++;
+    private final long id = counter++;
     
     @Override
     public String toString() {
@@ -1041,7 +1041,7 @@ class FilterAdapter implements Processor {
     }
 }
 
-punlic class FilterProcessor {
+public class FilterProcessor {
     public static void main(String[] args) {
         Waveform w = new Waveform();
         Applicator.apply(new FilterAdapter(new LowPass(1.0)), w);
@@ -1100,7 +1100,7 @@ class ActionCharacter {
 class Hero extends ActionCharacter implements CanFight, CanSwim, CanFly {
     public void swim() {}
     
-    pubilc void fly() {}
+    public void fly() {}
 }
 
 public class Adventure {
@@ -1112,7 +1112,7 @@ public class Adventure {
         x.swim();
     }
     
-    public staic void v(CanFly x) {
+    public static void v(CanFly x) {
         x.fly();
     }
     
@@ -1132,7 +1132,7 @@ public class Adventure {
 
 类 **Hero** 结合了具体类 **ActionCharacter** 和接口 **CanFight**、**CanSwim** 和 **CanFly**。当通过这种方式结合具体类和接口时，需要将具体类放在前面，后面跟着接口（否则编译器会报错）。
 
-接口 **CanFight** 和类 **ActionCharacter** 中的 `flight()` 方法签名相同，而在类 Hero 中也没有提供 `fight()` 的定义。可以扩展一个接口，但是得到的是另一个接口。当想创建一个对象时，所有的定义必须首先都存在。类 **Hero** 中没有显式地提供 `fight()` 的定义，是由于该方法在类 **ActionCharacter** 中已经定义过，这样才使得创建 **Hero** 对象成为可能。
+接口 **CanFight** 和类 **ActionCharacter** 中的 `fight()` 方法签名相同，而在类 Hero 中也没有提供 `fight()` 的定义。可以扩展一个接口，但是得到的是另一个接口。当想创建一个对象时，所有的定义必须首先都存在。类 **Hero** 中没有显式地提供 `fight()` 的定义，是由于该方法在类 **ActionCharacter** 中已经定义过，这样才使得创建 **Hero** 对象成为可能。
 
 在类 **Adventure** 中可以看到四个方法，它们把不同的接口和具体类作为参数。当创建一个 **Hero** 对象时，它可以被传入这些方法中的任意一个，意味着它可以依次向上转型为每个接口。Java 中这种接口的设计方式，使得程序员不需要付出特别的努力。
 
@@ -1211,13 +1211,13 @@ public class HorrorShow {
 }
 ```
 
-接口 **DangerousMonster** 是 **Monster** 简单扩展的一个新接口，类 **DragonZilla** 实现了这个接口。
+接口 **DangerousMonster** 是 **Monster** 简单扩展的一个新接口，类 **DragonZilla** 实现了这个接口。
 
 **Vampire** 中使用的语法仅适用于接口继承。通常来说，**extends** 只能用于单一类，但是在构建接口时可以引用多个基类接口。注意到，接口名之间用逗号分隔。
 
 ### 结合接口时的命名冲突
 
-当实现多个接口时可能会存在一个小陷阱。在前面的例子中，**CanFlight** 和 **ActionCharacter** 具有完全相同的 `flight()` 方法。完全相同的方法没有问题，但是如果它们的签名或返回类型不同会怎么样呢？这里有一个例子：
+当实现多个接口时可能会存在一个小陷阱。在前面的例子中，**CanFight** 和 **ActionCharacter** 具有完全相同的 `fight()` 方法。完全相同的方法没有问题，但是如果它们的签名或返回类型不同会怎么样呢？这里有一个例子：
 
 ```java
 // interfaces/InterfaceCollision.java

@@ -33,7 +33,7 @@
   * [编码风格](book/03-Objects-Everywhere.md#编码风格)
   * [本章小结](book/03-Objects-Everywhere.md#本章小结)
 ## [第四章 运算符](book/04-Operators.md)
-  * [使用说明](book/04-Operators.md#使用说明)
+  * [开始使用](book/04-Operators.md#开始使用)
   * [优先级](book/04-Operators.md#优先级)
   * [赋值](book/04-Operators.md#赋值)
   * [算术运算符](book/04-Operators.md#算术运算符)
