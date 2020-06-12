@@ -1152,7 +1152,7 @@ public class Closure4 {
 如果 `x` 和 `i` 的值在方法中的其他位置发生改变（但不在返回的函数内部），则编译器仍将视其为错误。每个递增操作则会分别产生错误消息。代码示例：
 
 ```java
-/ functional/Closure5.java
+// functional/Closure5.java
 
 // {无法编译成功}
 import java.util.function.*;
