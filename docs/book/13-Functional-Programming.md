@@ -754,7 +754,7 @@ public class FunctionVariants {
 方法引用有自己的小魔法：
 
 ```java
-/ functional/MethodConversion.java
+// functional/MethodConversion.java
 
 import java.util.function.*;
 
