@@ -360,8 +360,9 @@ public class Summing {
         else
             System.out.format("result: %d%ncheckValue: %d%n", result, checkValue);
         }
-    public static final int SZ = 100_000_000;// This even works://
-    public static final int SZ = 1_000_000_000;
+    public static final int SZ = 100_000_000;
+    // This even works:
+    // public static final int SZ = 1_000_000_000;
     public static final long CHECK = (long)SZ * ((long)SZ + 1)/2; // Gauss's formula
     public static void main(String[] args){
         System.out.println(CHECK);
