@@ -77,7 +77,7 @@ package hiding;
 
 ```java
 // hiding/mypackage/MyClass.java
-package hiding.mypackage
+package hiding.mypackage;
 
 public class MyClass {
     // ...
