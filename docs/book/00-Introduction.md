@@ -79,7 +79,7 @@ Java 语言曾规划设计的许多功能并未按照承诺兑现。本书中，
 
 ## 邮箱订阅
 
-你可以在 [www.OnJava8.com上](http://www.OnJava8.com) 订阅邮件。邮件不含广告并尽量提供干货。
+你可以在 [www.OnJava8.com](http://www.OnJava8.com) 上订阅邮件。邮件不含广告并尽量提供干货。
 
 ## Java图形界面
 
