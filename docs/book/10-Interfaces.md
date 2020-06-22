@@ -1112,7 +1112,7 @@ public class Adventure {
         x.swim();
     }
     
-    public staic void v(CanFly x) {
+    public static void v(CanFly x) {
         x.fly();
     }
     

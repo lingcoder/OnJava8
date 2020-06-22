@@ -349,7 +349,7 @@ public class RandomList<T> extends ArrayList<T> {
   
     public static void main(String[] args) {
         RandomList<String> rs = new RandomList<>();
-        Array.stream("The quick brown fox jumped over the lazy brown dog".split(" ")).forEach(rs::add);
+        Arrays.stream("The quick brown fox jumped over the lazy brown dog".split(" ")).forEach(rs::add);
         IntStream.range(0, 11).forEach(i -> 
             System.out.print(rs.select() + " "));
     }
@@ -1090,7 +1090,7 @@ Serializable]
 */
 ```
 
-在第十二章 [集合的本章小节](book/12-Collections.md#本章小结) 部分将会用到这里的输出结果。
+在第十二章 [集合的本章小结](book/12-Collections.md#本章小结) 部分将会用到这里的输出结果。
 
 <!-- Building Complex Models -->
 
@@ -1230,7 +1230,7 @@ public class Store extends ArrayList<Aisle> {
 */
 ```
 
-`Store.toString()` 显示了结果：尽管有复杂的层次结构，但多层的集合仍然是类型安全的和可管理的。令人印象深刻的是，组装这样的模型在理论上并不是禁止的。
+`Store.toString()` 显示了结果：尽管有复杂的层次结构，但多层的集合仍然是类型安全的和可管理的。令人印象深刻的是，组装这样的模型并不需要耗费过多精力。
 
 **Shelf** 使用 `Suppliers.fill()` 这个实用程序，该实用程序接受 **Collection** （第一个参数），并使用 **Supplier** （第二个参数），以元素的数量为 **n** （第三个参数）来填充它。 **Suppliers** 类将会在本章末尾定义，其中的方法都是在执行某种填充操作，并在本章的其他示例中使用。
 
@@ -1292,6 +1292,7 @@ public class LostInformation {
 [K,V]
 [Q]
 [POSITION,MOMENTUM]
+*/
 ```
 
 根据 JDK 文档，**Class.getTypeParameters()** “返回一个 **TypeVariable** 对象数组，表示泛型声明中声明的类型参数...” 这暗示你可以发现这些参数类型。但是正如上例中输出所示，你只能看到用作参数占位符的标识符，这并非有用的信息。
@@ -1409,7 +1410,7 @@ class Manipulator3 {
     private HasF obj;
     
     Manipulator3(HasF x) {
-        ojb = x;
+        obj = x;
     }
     
     public void manipulate() {
@@ -1454,13 +1455,13 @@ public class ReturnGenericType<T extends HasF> {
 
 例如，假设一个应用使用了两个类库 **X** 和 **Y**，**Y** 使用了类库 **Z**。随着 Java 5 的出现，这个应用和这些类库的创建者最终可能希望迁移到泛型上。但是当进行迁移时，它们有着不同的动机和限制。为了实现迁移兼容性，每个类库与应用必须与其他所有的部分是否使用泛型无关。因此，它们不能探测其他类库是否使用了泛型。因此，某个特定的类库使用了泛型这样的证据必须被”擦除“。
 
-如果没有某种类型的迁移途径，所有已经构建了很长时间的类库就需要与希望迁移到 Java 泛型上的开发者们说再见了。类库毫无争议是编程语言的一部分，对生产效率有着极大的影响，所以这种代码无法接受。擦除是否是最佳的活唯一的迁移途径，还待时间来证明。
+如果没有某种类型的迁移途径，所有已经构建了很长时间的类库就需要与希望迁移到 Java 泛型上的开发者们说再见了。类库毫无争议是编程语言的一部分，对生产效率有着极大的影响，所以这种代码无法接受。擦除是否是最佳的或唯一的迁移途径，还待时间来证明。
 
 ### 擦除的问题
 
 因此，擦除主要的正当理由是从非泛化代码到泛化代码的转变过程，以及在不破坏现有类库的情况下将泛型融入到语言中。擦除允许你继续使用现有的非泛型客户端代码，直至客户端准备好用泛型重写这些代码。这是一个崇高的动机，因为它不会骤然破坏所有现有的代码。
 
-擦除的代码是显著的。泛型不能用于显式地引用运行时类型的操作中，例如转型、**instanceof** 操作和 **new** 表达式。因为所有关于参数的类型信息都丢失了，当你在编写泛型代码时，必须时刻提醒自己，你只是看起来拥有有关参数的类型信息而已。
+擦除的代价是显著的。泛型不能用于显式地引用运行时类型的操作中，例如转型、**instanceof** 操作和 **new** 表达式。因为所有关于参数的类型信息都丢失了，当你在编写泛型代码时，必须时刻提醒自己，你只是看起来拥有有关参数的类型信息而已。
 
 考虑如下的代码段：
 
@@ -1595,7 +1596,7 @@ import java.util.function.*;
 import onjava.*;
 
 public class FilledList<T> extends ArrayList<T> {
-    FilledList<Supplier<T> gen, int size) {
+    FilledList(Supplier<T> gen, int size) {
         Suppliers.fill(this, gen, size);
     }
     
@@ -1616,6 +1617,7 @@ public class FilledList<T> extends ArrayList<T> {
 /* Output:
 [Hello,Hello,Hello,Hello]
 [47,47,47,47]
+*/
 ```
 
 即使编译器无法得知 `add()` 中的 **T** 的任何信息，但它仍可以在编译期确保你放入 **FilledList** 中的对象是 **T** 类型。因此，即使擦除移除了方法或类中的实际类型的信息，编译器仍可以确保方法或类中使用的类型的内部一致性。
@@ -2636,7 +2638,7 @@ public class NonCovariantGenerics {
 }
 ```
 
-尽管你在首次阅读这段代码时会认为“不能将一个 **Apple** 集合赋值给一个 **Fruit** 集合”。记住，泛型不仅仅是关于集合，它真正要表达的是“不能把一个涉及 **Apple** 的泛型赋值给一个涉及 **Fruit** 的泛型”。如果像在数组中的情况一样，编译器对代码的了解足够多，可以确定所涉及到的集合，那么它可能会留下一些余地。但是它不知道任何有关这方面的信息，因此它拒绝向上转型。然而实际上这也不是向上转型—— **Apple** 的 **List** 不是 **Fruit** 的 **List**。**Apple** 的 **List** 将持有 **Apple** 和 **Apple** 的子类型，**Fruit** 的 **List** 将持有任何类型的 **Fruit**。是的，这包括 **Apple**，但是它不是一个 **Apple** 的 **List**，它仍然是 **Fruit** 的 **List**。**Apple** 的 **List** 在类型上不等价于 **Fruit** 的 **List**，即使 **Apple** 是一种 **Fruit** 类型。
+尽管你在首次阅读这段代码时会认为“不能将一个 **Apple** 集合赋值给一个 **Fruit** 集合”。记住，泛型不仅仅是关于集合，它真正要表达的是“不能把一个涉及 **Apple** 的泛型赋值给一个涉及 **Fruit** 的泛型”。如果像在数组中的情况一样，编译器对代码的了解足够多，可以确定所涉及到的集合，那么它可能会留下一些余地。但是它不知道任何有关这方面的信息，因此它拒绝向上转型。然而实际上这也不是向上转型—— **Apple** 的 **List** 不是 **Fruit** 的 **List**。**Apple** 的 **List** 将持有 **Apple** 和 **Apple** 的子类型，**Fruit** 的 **List** 将持有任何类型的 **Fruit**。是的，这包括 **Apple**，但是它不是一个 **Apple** 的 **List**，它仍然是 **Fruit** 的 **List**。**Apple** 的 **List** 在类型上不等价于 **Fruit** 的 **List**，即使 **Apple** 是一种 **Fruit** 类型。
 
 真正的问题是我们在讨论的集合类型，而不是集合持有对象的类型。与数组不同，泛型没有内建的协变类型。这是因为数组是完全在语言中定义的，因此可以具有编译期和运行时的内建检查，但是在使用泛型时，编译器和运行时系统不知道你想用类型做什么，以及应该采用什么规则。
 
@@ -2702,6 +2704,8 @@ public class CompilerIntelligence {
 下面展示一个简单的 **Holder** 类：
 
 ```java
+// generics/Holder.java
+
 public class Holder<T> {
 
     private T value;
@@ -2734,7 +2738,7 @@ public class Holder<T> {
         Holder<Apple> apple = new Holder<>(new Apple());
         Apple d = apple.get();
         apple.set(d);
-//        Holder<Fruit> fruit = apple; // Cannot upcast
+        // Holder<Fruit> fruit = apple; // Cannot upcast
         Holder<? extends Fruit> fruit = apple; // OK
         Fruit p = fruit.get();
         d = (Apple) fruit.get();
@@ -2743,8 +2747,8 @@ public class Holder<T> {
         } catch (Exception e) {
             System.out.println(e);
         }
-//        fruit.set(new Apple()); // Cannot call set()
-//        fruit.set(new Fruit()); // Cannot call set()
+        // fruit.set(new Apple()); // Cannot call set()
+        // fruit.set(new Fruit()); // Cannot call set()
         System.out.println(fruit.equals(d)); // OK
     }
 }
@@ -2754,7 +2758,7 @@ false
 */
 ```
 
-**Holder** 有一个接受 **T** 类型对象的 `set()` 方法，一个返回 T 对象的 `get()` 方法和一个接受 Object 对象的 `equals()` 方法。正如你所见，如果创建了一个 `Holder<Apple>`，就不能将其向上转型为 `Holder<Fruit>`，但是可以向上转型为 `Holder<? extends Fruit>`。如果调用 `get()`，只能返回一个 **Fruit**——这就是在给定“任何；额扩展自 **Fruit** 的对象”这一边界后，它所能知道的一切了。如果你知道更多的信息，就可以将其转型到某种具体的 **Fruit** 而不会导致任何警告，但是存在得到 **ClassCastException** 的风险。`set()` 方法不能工作在 **Apple** 和 **Fruit** 上，因为 `set()` 的参数也是"**? extends Fruit**"，意味着它可以是任何事物，编译器无法验证“任何事物”的类型安全性。
+**Holder** 有一个接受 **T** 类型对象的 `set()` 方法，一个返回 T 对象的 `get()` 方法和一个接受 Object 对象的 `equals()` 方法。正如你所见，如果创建了一个 `Holder<Apple>`，就不能将其向上转型为 `Holder<Fruit>`，但是可以向上转型为 `Holder<? extends Fruit>`。如果调用 `get()`，只能返回一个 **Fruit**——这就是在给定“任何扩展自 **Fruit** 的对象”这一边界后，它所能知道的一切了。如果你知道更多的信息，就可以将其转型到某种具体的 **Fruit** 而不会导致任何警告，但是存在得到 **ClassCastException** 的风险。`set()` 方法不能工作在 **Apple** 和 **Fruit** 上，因为 `set()` 的参数也是"**? extends Fruit**"，意味着它可以是任何事物，编译器无法验证“任何事物”的类型安全性。
 
 但是，`equals()` 方法可以正常工作，因为它接受的参数是 **Object** 而不是 **T** 类型。因此，编译器只关注传递进来和要返回的对象类型。它不会分析代码，以查看是否执行了任何实际的写入和读取操作。
 
@@ -3323,7 +3327,7 @@ Double
 ```
 
 `f1()` 中的类型参数都是确切的，没有通配符或边界。在 `f2()` 中，**Holder** 参数是一个无界通配符，因此它看起来是未知的。但是，在 `f2()` 中调用了 `f1()`，而 `f1()` 需要一个已知参数。这里所发生的是：在调用 `f2()` 的过程中捕获了参数类型，并在调用 `f1()` 时使用了这种类型。
-你可能想知道这项技术是否可以用于写入，但是这要求在传递 `Holder<?>` 时同时传递一个具体类型。捕获转换只有在这样的情况下可以工作：即在方法内部，你需要使用确切的类型。注意，不能从 `f2()` 中返回 **T**，因为 **T ** 对于 `f2()` 来说是未知的。捕获转换十分有趣，但是非常受限。
+你可能想知道这项技术是否可以用于写入，但是这要求在传递 `Holder<?>` 时同时传递一个具体类型。捕获转换只有在这样的情况下可以工作：即在方法内部，你需要使用确切的类型。注意，不能从 `f2()` 中返回 **T**，因为 **T** 对于 `f2()` 来说是未知的。捕获转换十分有趣，但是非常受限。
 
 <!-- Issues -->
 
@@ -3582,7 +3586,7 @@ public class UseList<W, T> {
 }
 ```
 
-因为擦除，所以重载方法产生了的类型签名。
+因为擦除，所以重载方法产生了相同的类型签名。
 
 因而，当擦除后的参数不能产生唯一的参数列表时，你必须提供不同的方法名：
 
@@ -5170,7 +5174,7 @@ Teller 4 serves Customer 12
 
 泛型的入门文档是 《Generics in the Java Programming Language》，作者是 Gilad Bracha，可以从 http://java.oracle.com 获取。
 
-Angelika Langer 的《Java Generics FAQs》是一份非常有帮助的资料，可以从 http://www.angelikalanger.com/GenericsFAQ/JavaGenericsFAQ.html。
+Angelika Langer 的《Java Generics FAQs》是一份非常有帮助的资料，可以从 http://www.angelikalanger.com/GenericsFAQ/JavaGenericsFAQ.html 获取。
 
 你可以从 《Adding Wildcards to the Java Programming Language》中学到更多关于通配符的知识，作者是 Torgerson、Ernst、Hansen、von der Ahe、Bracha 和 Gafter，地址是 http://www.jot.fm/issues/issue_2004_12/article5。
 
@@ -5182,6 +5186,7 @@ Neal After 对于 Java 问题（尤其是擦除）的看法可以从这里找到
 [^4]: 注意，一些编程环境，如 Eclipse 和 IntelliJ IDEA，将会自动生成委托代码。
 [^5]: 因为可以使用转型，有效地禁止了类型系统，一些人就认为 C++ 是弱类型，但这太极端了。一种可能更好的说法是 C++ 是有一道暗门的强类型语言。
 [^6]: 我再次从 Brian Goetz 那获得帮助。
+
 <!-- 分页 -->
 
 <div style="page-break-after: always;"></div>

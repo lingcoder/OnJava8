@@ -736,7 +736,7 @@ class Wheel {
 
 class Window {
     public void rollup() {}
-    pubilc void rolldown() {}
+    public void rolldown() {}
 }
 
 class Door {
@@ -1261,3 +1261,4 @@ j = 39
 <!-- 分页 -->
 
 <div style="page-break-after: always;"></div>
+
