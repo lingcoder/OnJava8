@@ -194,7 +194,7 @@ public class SimpleCollection {
 
 在 **java.util** 包中的 **Arrays** 和 **Collections** 类中都有很多实用的方法，可以在一个 **Collection** 中添加一组元素。
 
-`Arrays.asList()` 方法接受一个数组或是逗号分隔的元素列表（使用可变参数），并将其转换为 **List** 对象。 `Collections.addAll()` 方法接受一个 **Collection** 对象，以及一个数组或是一个逗号分隔的列表，将其中元素添加到 **Collection** 中。下边的示例展示了这两个方法，以及更通用的 `addAll()` 方法，所有 **Collection** 类型都包含该方法：
+`Arrays.asList()` 方法接受一个数组或是逗号分隔的元素列表（使用可变参数），并将其转换为 **List** 对象。 `Collections.addAll()` 方法接受一个 **Collection** 对象，以及一个数组或是一个逗号分隔的列表，将其中元素添加到 **Collection** 中。下边的示例展示了这两个方法，以及更通用的 、所有 **Collection** 类型都包含的`addAll()` 方法：
 
 ```java
 // collections/AddingGroups.java
@@ -334,7 +334,7 @@ public class PrintingCollections {
 
 ## 列表List
 
-**List**s承诺将元素保存在特定的序列中。 **List** 接口在 **Collection** 的基础上添加了许多方法，允许在 **List** 的中间插入和删除元素。
+**List**承诺将元素保存在特定的序列中。 **List** 接口在 **Collection** 的基础上添加了许多方法，允许在 **List** 的中间插入和删除元素。
 
 有两种类型的 **List** ：
 
@@ -610,7 +610,7 @@ public class CrossCollectionIteration2 {
 <!-- ListIterator -->
 ### ListIterator
 
-**ListIterator** 是一个更强大的 **Iterator** 子类型，它只能由各种 **List** 类生成。 **Iterator** 只能向前移动，而 **ListIterator** 可以双向移动。它还可以生成相对于迭代器在列表中指向的当前位置的后一个和前一个元素的索引，并且可以使用 `set()` 方法替换它访问过的最近一个元素。可以通过调用 `listIterator()` 方法来生成指向 **List** 开头处的 **ListIterator** ，还可以通过调用 `listIterator(n)` 创建一个一开始就指向列表索引号为 **n** 的元素处的 **ListIterator** 。 下面的示例演示了所有这些能力：
+**ListIterator** 是一个更强大的 **Iterator** 子类型，它只能由各种 **List** 类生成。 **Iterator** 只能向前移动，而 **ListIterator** 可以双向移动。它可以生成迭代器在列表中指向位置的后一个和前一个元素的索引，并且可以使用 `set()` 方法替换它访问过的最近一个元素。可以通过调用 `listIterator()` 方法来生成指向 **List** 开头处的 **ListIterator** ，还可以通过调用 `listIterator(n)` 创建一个一开始就指向列表索引号为 **n** 的元素处的 **ListIterator** 。 下面的示例演示了所有这些能力：
 
 ```java
 // collections/ListIteration.java
@@ -1276,7 +1276,7 @@ C B A A
 
 **Collection** 是所有序列集合共有的根接口。它可能会被认为是一种“附属接口”（incidental interface），即因为要表示其他若干个接口的共性而出现的接口。此外，**java.util.AbstractCollection** 类提供了 **Collection** 的默认实现，使得你可以创建 **AbstractCollection** 的子类型，而其中没有不必要的代码重复。
 
-使用接口描述的一个理由是它可以使我们创建更通用的代码。通过针对接口而非具体实现来编写代码，我们的代码可以应用于更多类型的对象。[^6]因此，如果所编写的方法接受一个 **Collection** ，那么该方法可以应用于任何实现了 **Collection** 的类——这也就使得一个新类可以选择去实现 **Collection** 接口，以便该方法可以使用它。标准 C++ 类库中的的集合并没有共同的基类——集合之间的所有共性都是通过迭代器实现的。在 Java 中，遵循 C++ 的方式看起来似乎很明智，即用迭代器而不是 **Collection** 来表示集合之间的共性。但是，这两种方法绑定在了一起，因为实现 **Collection** 就意味着需要提供 `iterator()` 方法：
+使用接口描述的一个理由是它可以使我们创建更通用的代码。通过针对接口而非具体实现来编写代码，我们的代码可以应用于更多类型的对象。[^6]因此，如果所编写的方法接受一个 **Collection** ，那么该方法可以应用于任何实现了 **Collection** 的类——这也就使得一个新类可以选择去实现 **Collection** 接口，以便该方法可以使用它。标准 C++ 类库中的集合并没有共同的基类——集合之间的所有共性都是通过迭代器实现的。在 Java 中，遵循 C++ 的方式看起来似乎很明智，即用迭代器而不是 **Collection** 来表示集合之间的共性。但是，这两种方法绑定在了一起，因为实现 **Collection** 就意味着需要提供 `iterator()` 方法：
 
 ```java
 // collections/InterfaceVsIterator.java

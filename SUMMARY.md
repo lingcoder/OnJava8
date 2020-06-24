@@ -72,7 +72,7 @@
     * [运算符总结](docs/book/04-Operators.md#运算符总结)
     * [本章小结](docs/book/04-Operators.md#本章小结)
 * [第五章 控制流](docs/book/05-Control-Flow.md)
-    * [true和flase](docs/book/05-Control-Flow.md#true和flase)
+    * [true和false](docs/book/05-Control-Flow.md#true和false)
     * [if-else](docs/book/05-Control-Flow.md#if-else)
     * [迭代语句](docs/book/05-Control-Flow.md#迭代语句)
     * [for-in语法](docs/book/05-Control-Flow.md#for-in语法)
