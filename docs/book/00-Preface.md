@@ -3,11 +3,11 @@
 
 > 本书基于 Java 8 版本来教授当前 Java 编程的最优实践。
 
-此前，我的另一本 Java 书籍 *Thinking in Java, 4th Edition*（《Java编程思想》 第 4 版 Prentice Hall 2006）依然适用于 Java 5 编程。Android 编程就是始于此语言版本。
+我之前的 Java 书籍 *Thinking in Java, 4th Edition*（《Java编程思想 (第4版)》 Prentice Hall 2006）依然适用于 Java 5 编程，在此版本 Java 语言开始用作 Android 编程。此后，这门语言的许多地方发生了翻天覆地的变化，特别是 Java 8 的转变，以至于新的 Java 代码读起来的感觉也不尽相同。这也促使我时隔多年，创作了这本新书。
 
-随着 Java 8 的出现，这门语言在许多地方发生了翻天覆地的变化。在新的版本中，代码的运用和实现上与以往不尽相同。这也促使了我时隔多年后再次创作了这本新书。《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](http://Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming) 等网站上补充必要的前置知识。同时，[OnJava8.com](http://www.OnJava8.com) 上也有免费的 Thinking in C（《C编程思想》）专题知识。
+《On Java 8》旨在面向已具有编程基础的开发者们。对于初学者，可以先在 [Code.org](http://Code.org) 或者 [Khan Academy](https://www.khanacademy.org/computing/computer-programming) 等网站补充必要的前置知识。同时，[OnJava8.com](http://www.OnJava8.com) 上也有免费的 Thinking in C（《C编程思想》）专题知识。与几年前我们依赖印刷媒体时相比，像 YouTube、博客和 StackOverFlow 这样的网站使得寻找答案变得非常简单。如果将本书作为编程入门书籍，请结合这些学习途径努力坚持下去。同时，本书也适合想要扩展知识的在职程序员。
 
-与几年前我们依赖印刷媒体相比，YouTube，博客和 StackOverflow 等网站的出现让寻找答案变得简单。请结合这些学习途径和努力坚持下去。本书可作为编程入门书籍，同时也适用于想要扩展知识的在职程序员。每次在世界各地的演讲中，我都非常感谢 《*Thinking in Java*》 这本书给我带来的所有荣誉。它对于我重塑 [Reinventing Business](http://www.reinventing-business.com) 项目和促进交流是非常宝贵的。最后，写这本书的原因之一 希望这本书可以为我的这个项目众筹。似乎下一步要创建一个所谓的蓝绿色组织（Teal Organization）才合乎逻辑的。
+得益于《*Thinking in Java*》，我得以到世界各地演讲，我对此由衷感激。它为我的 [Reinventing Business](http://www.reinventing-business.com) 项目在与人员及公司建立联系方面提供了宝贵的帮助。我最终撰写本书的原因之一就是想支持这一项目的研究，而下一个合乎逻辑的步骤似乎是实际创建一个所谓的蓝绿色组织（Teal Organization）。我希望本书可以成为该项目的一种众筹。
 
 ## 教学目标
 
