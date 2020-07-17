@@ -68,7 +68,7 @@ ndOrangesWithoutGenerics.java:23)
 
 在运行时，当尝试将 **Orange** 对象转为 **Apple** 时，会出现输出中显示的错误。
 
-在[泛型]()章节中，你将了解到使用 Java 泛型来创建类可能很复杂。但是，使用预先定义的泛型类却相当简单。例如，要定义一个用于保存 **Apple** 对象的 **ArrayList** ，只需要使用 **ArrayList\<Apple\>** 来代替 **ArrayList** 。尖括号括起来的是*类型参数*（可能会有多个），它指定了这个集合实例可以保存的类型。
+在[泛型]()章节中，你将了解到使用 Java 泛型来创建类可能很复杂。但是，使用预先定义的泛型类却相当简单。例如，要定义一个用于保存 **Apple** 对象的 **ArrayList** ，只需要使用 **`ArrayList<Apple>`** 来代替 **ArrayList** 。尖括号括起来的是*类型参数*（可能会有多个），它指定了这个集合实例可以保存的类型。
 
 通过使用泛型，就可以在编译期防止将错误类型的对象放置到集合中。[^3]下面还是这个示例，但是使用了泛型：
 ```java
@@ -1088,7 +1088,7 @@ true
 */
 ```
 
-**Map** 与数组和其他的 **Collection** 一样，可以轻松地扩展到多个维度，只需要创建一个值为 **Map** 的 **Map**（这些 **Map** 的值可以是其他集合，甚至是其他 **Map**）。因此，能够很容易地将集合组合起来以快速生成强大的数据结构。例如，假设你正在追踪有多个宠物的人，只需要一个 **Map\<Person, List\<Pet>>** 即可：
+**Map** 与数组和其他的 **Collection** 一样，可以轻松地扩展到多个维度，只需要创建一个值为 **Map** 的 **Map**（这些 **Map** 的值可以是其他集合，甚至是其他 **Map**）。因此，能够很容易地将集合组合起来以快速生成强大的数据结构。例如，假设你正在追踪有多个宠物的人，只需要一个 **`Map<Person, List<Pet>>`** 即可：
 
 ```java
 
@@ -1265,7 +1265,7 @@ C B A A
 */
 ```
 
-**PriorityQueue** 是允许重复的，最小的值具有最高的优先级（如果是 **String** ，空格也可以算作值，并且比字母的优先级高）。为了展示如何通过提供自己的 **Comparator** 对象来改变顺序，第三个对 **PriorityQueue\<Integer>** 构造器的调用，和第二个对 **PriorityQueue\<String>** 的调用使用了由 `Collections.reverseOrder()` （Java 5 中新添加的）产生的反序的 **Comparator** 。
+**PriorityQueue** 是允许重复的，最小的值具有最高的优先级（如果是 **String** ，空格也可以算作值，并且比字母的优先级高）。为了展示如何通过提供自己的 **Comparator** 对象来改变顺序，第三个对 **`PriorityQueue<Integer>`** 构造器的调用，和第二个对 **`PriorityQueue<String>`** 的调用使用了由 `Collections.reverseOrder()` （Java 5 中新添加的）产生的反序的 **Comparator** 。
 
 最后一部分添加了一个 **HashSet** 来消除重复的 **Character**。
 
@@ -1381,7 +1381,7 @@ extends AbstractCollection<Pet> {
 
 `remove()` 方法是一个“可选操作”，在[附录：集合主题]()中详细介绍。 这里可以不必实现它，如果你调用它，它将抛出异常。
 
-- **[1]** 你可能会认为，因为 `iterator()` 返回 **Iterator\<Pet>** ，匿名内部类定义可以使用菱形语法，Java可以推断出类型。但这不起作用，类型推断仍然非常有限。
+- **[1]** 你可能会认为，因为 `iterator()` 返回 **`Iterator<Pet>`** ，匿名内部类定义可以使用菱形语法，Java可以推断出类型。但这不起作用，类型推断仍然非常有限。
 
 这个例子表明，如果实现了 **Collection** ，就必须实现 `iterator()` ，并且只拿实现 `iterator()` 与继承 **AbstractCollection** 相比，花费的代价只有略微减少。但是，如果类已经继承了其他的类，那么就不能继承再 **AbstractCollection** 了。在这种情况下，要实现 **Collection** ，就必须实现该接口中的所有方法。此时，继承并提供创建迭代器的能力要容易得多：
 
@@ -1487,7 +1487,7 @@ And that is how we know the Earth to be banana-shaped.
 */
 ```
 
-`iterator()` 返回的是实现了 **Iterator\<String>** 的匿名内部类的实例，该匿名内部类可以遍历数组中的每个单词。在主方法中，可以看到 **IterableClass** 确实可以用于 *for-in* 语句。
+`iterator()` 返回的是实现了 **`Iterator<String>`** 的匿名内部类的实例，该匿名内部类可以遍历数组中的每个单词。在主方法中，可以看到 **IterableClass** 确实可以用于 *for-in* 语句。
 
 在 Java 5 中，许多类都是 **Iterable** ，主要包括所有的 **Collection** 类（但不包括各种 **Maps** ）。 例如，下面的代码可以显示所有的操作系统环境变量：
 
