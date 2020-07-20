@@ -450,7 +450,7 @@ Throwable fillInStackTrace()
 
 用于在 Throwable 对象的内部记录栈帧的当前状态。这在程序重新抛出错误或异常（很快就会讲到）时很有用。
 
-此外，也可以使用 Throwable 从其基类 Object（也是所有类的基类）继承的方法。对于异常来说，getClass）也许是个很好用的方法，它将返回一个表示此对象类型的对象。然后可以使用 getName）方法查询这个 Class 对象包含包信息的名称，或者使用只产生类名称的 getSimpleName() 方法。
+此外，也可以使用 Throwable 从其基类 Object（也是所有类的基类）继承的方法。对于异常来说，getClass() 也许是个很好用的方法，它将返回一个表示此对象类型的对象。然后可以使用 getName() 方法查询这个 Class 对象包含包信息的名称，或者使用只产生类名称的 getSimpleName() 方法。
 
 下面的例子演示了如何使用 Exception 类型的方法：
 
@@ -778,7 +778,7 @@ public class PreciseRethrow {
 
 常常会想要在捕获一个异常后抛出另一个异常，并且希望把原始异常的信息保存下来，这被称为异常链。在 JDK1.4 以前，程序员必须自己编写代码来保存原始异常的信息。现在所有 Throwable 的子类在构造器中都可以接受一个 cause（因由）对象作为参数。这个 cause 就用来表示原始异常，这样通过把原始异常传递给新的异常，使得即使在当前位置创建并抛出了新的异常，也能通过这个异常链追踪到异常最初发生的位置。
 
-有趣的是，在 Throwable 的子类中，只有三种基本的异常类提供了带 cause 参数的构造器。它们是 Error（用于 Java 虚拟机报告系统错误）、Exception 以及 RuntimeException。如果要把其他类型的异常链接起来，应该使用 initCause0 方法而不是构造器。
+有趣的是，在 Throwable 的子类中，只有三种基本的异常类提供了带 cause 参数的构造器。它们是 Error（用于 Java 虚拟机报告系统错误）、Exception 以及 RuntimeException。如果要把其他类型的异常链接起来，应该使用 initCause() 方法而不是构造器。
 
 下面的例子能让你在运行时动态地向 DymamicFields 对象添加字段：
 
@@ -912,7 +912,7 @@ DynamicFields.setField(DynamicFields.java:67)
 
 每个 DynamicFields 对象都含有一个数组，其元素是“成对的对象”。第一个对象表示字段标识符（一个字符串），第二个表示字段值，值的类型可以是除基本类型外的任意类型。当创建对象的时候，要合理估计一下需要多少字段。当调用 setField() 方法的时候，它将试图通过标识修改已有字段值，否则就建一个新的字段，并把值放入。如果空间不够了，将建立一个更长的数组，并把原来数组的元素复制进去。如果你试图为字段设置一个空值，将抛出一个 DynamicFieldsException 异常，它是通过使用 initCause() 方法把 NullPointerException 对象插入而建立的。
 
-至于返回值，setField() 将用 getField() 方法把此位置的旧值取出，这个操作可能会抛出 NoSuchFieldException 异常。如果客户端程序员调用了 getField() 方法，那么他就有责任处理这个可能抛出的 NoSuchFieldException 异常，但如果异常是从 setField0 方法里抛出的，这种情况将被视为编程错误，所以就使用接受 cause 参数的构造器把 NoSuchFieldException 异常转换为 RuntimeException 异常。
+至于返回值，setField() 将用 getField() 方法把此位置的旧值取出，这个操作可能会抛出 NoSuchFieldException 异常。如果客户端程序员调用了 getField() 方法，那么他就有责任处理这个可能抛出的 NoSuchFieldException 异常，但如果异常是从 setField() 方法里抛出的，这种情况将被视为编程错误，所以就使用接受 cause 参数的构造器把 NoSuchFieldException 异常转换为 RuntimeException 异常。
 
 你会注意到，toString() 方法使用了一个 StringBuilder 来创建其结果。在 [字符串](./Strings.md) 这章中你将会了解到更多的关于 StringBuilder 的知识，但是只要你编写设计循环的 toString() 方法，通常都会想使用它，就像本例一样。
 
@@ -1380,7 +1380,7 @@ public class StormyInning extends Inning implements Storm {
 
 在 Inning 类中，可以看到构造器和 event() 方法都声明将抛出异常，但实际上没有抛出。这种方式使你能强制用户去捕获可能在覆盖后的 event() 版本中增加的异常，所以它很合理。这对于抽象方法同样成立，比如 atBat()。
 
-接口 Storm 包含了一个在 Inning 中定义的方法 event() 和一个不在 Inning 中定义的方法 rainHard()。这两个方法都抛出新的异常 RainedOut，如果 StormyInning 类在扩展 Inning 类的同时又实现了 Storm 接口，那么 Storm 里的 event() 方法就不能改变在 Inning 中的 event（方法的异常接口。否则的话，在使用基类的时候就不能判断是否捕获了正确的异常，所以这也很合理。当然，如果接口里定义的方法不是来自于基类，比如 rainHard()，那么此方法抛出什么样的异常都没有问题。
+接口 Storm 包含了一个在 Inning 中定义的方法 event() 和一个不在 Inning 中定义的方法 rainHard()。这两个方法都抛出新的异常 RainedOut，如果 StormyInning 类在扩展 Inning 类的同时又实现了 Storm 接口，那么 Storm 里的 event() 方法就不能改变在 Inning 中的 event() 方法的异常接口。否则的话，在使用基类的时候就不能判断是否捕获了正确的异常，所以这也很合理。当然，如果接口里定义的方法不是来自于基类，比如 rainHard()，那么此方法抛出什么样的异常都没有问题。
 
 异常限制对构造器不起作用。你会发现 StormyInning 的构造器可以抛出任何异常，而不必理会基类构造器所抛出的异常。然而，因为基类构造器必须以这样或那样的方式被调用（这里默认构造器将自动被调用），派生类构造器的异常说明必须包含基类构造器的异常说明。
 
