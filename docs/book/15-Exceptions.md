@@ -780,7 +780,7 @@ public class PreciseRethrow {
 
 有趣的是，在 Throwable 的子类中，只有三种基本的异常类提供了带 cause 参数的构造器。它们是 Error（用于 Java 虚拟机报告系统错误）、Exception 以及 RuntimeException。如果要把其他类型的异常链接起来，应该使用 initCause() 方法而不是构造器。
 
-下面的例子能让你在运行时动态地向 DymamicFields 对象添加字段：
+下面的例子能让你在运行时动态地向 DynamicFields 对象添加字段：
 
 ```java
 // exceptions/DynamicFields.java
