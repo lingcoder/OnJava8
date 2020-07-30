@@ -1854,10 +1854,6 @@ public class MapCollector {
 
 大多数情况下，`java.util.stream.Collectors` 中预设的 **Collector** 就能满足我们的要求。除此之外，你还可以使用第二种形式的 `collect()`。 我把它留作更高级的练习，下例给出基本用法：
 
-<!-- 
-The capChars randomly-generated Iterator of capitalletters starts as a stream, then the iterator() method allows us touse it in the stream() method
- -->
-
 ```java
 // streams/SpecialCollector.java
 import java.util.*;
