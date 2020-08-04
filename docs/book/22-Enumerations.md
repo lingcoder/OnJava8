@@ -348,7 +348,7 @@ final class Explore extends java.lang.Enum<Explore> {
 
 由于擦除效应（在[泛型 ]() 章节中介绍过），反编译无法得到 Enum 的完整信息，所以它展示的 Explore 的父类只是一个原始的 Enum，而非事实上的 Enum\<Explore\>。
 
-由于 values() 方法是由编译器插入到 enum 定义中的 static 方法，所以，如果你将 enum 实例向上转型为 Enum，那么 values() 方法就不可访问了。不过，在 Class 中有一个 getEnumConstants0 方法，所以即便 Enum 接口中没有 values0 方法，我们仍然可以通过 Class 对象取得所有 enum 实例。
+由于 values() 方法是由编译器插入到 enum 定义中的 static 方法，所以，如果你将 enum 实例向上转型为 Enum，那么 values() 方法就不可访问了。不过，在 Class 中有一个 getEnumConstants 方法，所以即便 Enum 接口中没有 values 方法，我们仍然可以通过 Class 对象取得所有 enum 实例。
 
 ```java
 // enums/UpcastEnum.java
