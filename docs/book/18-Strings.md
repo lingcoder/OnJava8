@@ -125,7 +125,7 @@ public class WhitherStringBuilder {
     }
 }
 ```
-现在运行 `javap -c WitherStringBuilder`，可以看到两种不同方法（我已经去掉不相关的细节）对应的字节码。首先是 `implicit()` 方法：
+现在运行 `javap -c WhitherStringBuilder`，可以看到两种不同方法（我已经去掉不相关的细节）对应的字节码。首先是 `implicit()` 方法：
 ```x86asm
 public java.lang.String implicit(java.lang.String[]); 
 0: ldc #2 // String 
