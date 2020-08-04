@@ -9,7 +9,7 @@
 
 ## 从标准输入中读取
 
-遵循标准 I/O 模型，Java 提供了标准输入流 `System.in`、标准输出流 `System.out` 和标准错误流 `System.err`。在本书中，你已经了解到如何使用 `System.out`将数据写到标准输出。 `System.out` 已经预先包装[^1]成了 `PrintStream` 对象。标准错误流 `System.err` 也预先包装为 `PrintStream` 对象，但是标准输入流 `System.in` 是原生的没有经过包装的 `InputStream`。这意味着尽管可以直接使用标准输出流 `System.in` 和标准错误流 `System.err`，但是在读取 `System.in` 之前必须先对其进行包装。
+遵循标准 I/O 模型，Java 提供了标准输入流 `System.in`、标准输出流 `System.out` 和标准错误流 `System.err`。在本书中，你已经了解到如何使用 `System.out`将数据写到标准输出。 `System.out` 已经预先包装[^1]成了 `PrintStream` 对象。标准错误流 `System.err` 也预先包装为 `PrintStream` 对象，但是标准输入流 `System.in` 是原生的没有经过包装的 `InputStream`。这意味着尽管可以直接使用标准输出流 `System.out` 和标准错误流 `System.err`，但是在读取 `System.in` 之前必须先对其进行包装。
 
 我们通常一次一行地读取输入。为了实现这个功能，将 `System.in` 包装成 `BufferedReader` 来使用，这要求我们用 `InputStreamReader` 把 `System.in` 转换[^2]成 `Reader` 。下面这个例子将键入的每一行显示出来：
 
