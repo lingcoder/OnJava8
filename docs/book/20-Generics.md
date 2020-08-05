@@ -3656,7 +3656,7 @@ class Gecko extends ComparablePet {
 }
 ```
 
-**Hamster** 显示了重新实现 **ComparableSet** 中相同的接口是可能的，只要接口完全相同，包括参数类型。然而正如 **Gecko** 中所示，这与直接覆写基类的方法完全相同。
+**Hamster** 显示了重新实现 **ComparablePet** 中相同的接口是可能的，只要接口完全相同，包括参数类型。然而正如 **Gecko** 中所示，这与直接覆写基类的方法完全相同。
 
 <!-- Self-Bounded Types -->
 
