@@ -1621,8 +1621,6 @@ main(String[] args) throws IOException {
 
 一个常见的例子是 `java.io.FileInputStream` （将会在 [附录：I/O 流 ](./Appendix-IO-Streams.md) 中提到）。要正确使用它，你必须编写一些棘手的样板代码：
 
-==上述代码漏字母，改成如上。==
-
 ```java
 // exceptions/MessyExceptions.java
 import java.io.*;
