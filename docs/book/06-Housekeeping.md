@@ -503,14 +503,14 @@ class Person {
     }
 }
 
-public class Peeler {
+class Peeler {
     static Apple peel(Apple apple) {
         // ... remove peel
         return apple; // Peeled
     }
 }
 
-public class Apple {
+class Apple {
     Apple getPeeled() {
         return Peeler.peel(this);
     }
