@@ -818,7 +818,7 @@ the mightiest banana in the forest...with... a banana!
 | 逻辑操作符 | 含义 |
 | :----: | :---- |
 | `XY` | `Y`跟在`X`后面 |
-| `X|Y` | `X`或`Y` |
+| `X\|Y` | `X`或`Y` |
 | `(X)` | 捕获组（capturing group）。可以在表达式中用`\i`引用第i个捕获组 |
 
 下面是不同的边界匹配符：
