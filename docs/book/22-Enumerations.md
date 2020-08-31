@@ -551,7 +551,7 @@ public class TypeOfFood {
 
 如果 enum 类型实现了 Food 接口，那么我们就可以将其实例向上转型为 Food，所以上例中的所有东西都是 Food。
 
-然而，当你需要与一大堆类型打交道时，接口就不如 enum 好用了。例如，如果你想创建一个“校举的枚举”，那么可以创建一个新的 enum，然后用其实例包装 Food 中的每一个 enum 类：
+然而，当你需要与一大堆类型打交道时，接口就不如 enum 好用了。例如，如果你想创建一个“枚举的枚举”，那么可以创建一个新的 enum，然后用其实例包装 Food 中的每一个 enum 类：
 
 ```java
 // enums/menu/Course.java
