@@ -1799,7 +1799,7 @@ public interface Competitor<T extends Competitor<T>> {
 }
 ```
 
-然后，我们定义两个 static 方法（static 可以避免显式地指明参数类型），第一个是 match() 方法，它会为一个 Competitor 对象调用 compete() 方法，并与另一个 Competitor 对象作比较。在这个例子中，我们看到，match()）方法的参数需要是 Competitor\<T\> 类型。但是在 play() 方法中，类型参数必须同时是 Enum\<T\> 类型（因为它将在 Enums.random() 中使用）和 Competitor\<T\> 类型因为它将被传递给 match() 方法）：
+然后，我们定义两个 static 方法（static 可以避免显式地指明参数类型），第一个是 match() 方法，它会为一个 Competitor 对象调用 compete() 方法，并与另一个 Competitor 对象作比较。在这个例子中，我们看到，match()方法的参数需要是 Competitor\<T\> 类型。但是在 play() 方法中，类型参数必须同时是 Enum\<T\> 类型（因为它将在 Enums.random() 中使用）和 Competitor\<T\> 类型（因为它将被传递给 match() 方法）：
 
 ```java
 // enums/RoShamBo.java
