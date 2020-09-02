@@ -494,7 +494,7 @@ public class Literals {
         char c = 0xffff; // 最大 char 型16进制值
         System.out.println(
         "c: " + Integer.toBinaryString(c));
-        byte b = 0x7f; // 最大 byte 型16进制值  10101111;
+        byte b = 0x7f; // 最大 byte 型16进制值  01111111;
         System.out.println(
         "b: " + Integer.toBinaryString(b));
         short s = 0x7fff; // 最大 short 型16进制值
