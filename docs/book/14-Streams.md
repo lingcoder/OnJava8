@@ -886,23 +886,27 @@ class FunctionMap {
 输出结果：
 
 ```
----( add brackets )---
+ ---( add brackets )---
 [12]
 []
 [23]
 [45]
----( Increment )---
+ ---( Increment )---
 13
+
 24
 46
----( Replace )---
+ ---( Replace )---
 19
+
 93
 45
----( Take last digit )---
+ ---( Take last digit )---
 2
+
 3
 5
+
 ```
 
 在上面的自增示例中，我们用 `Integer.parseInt()` 尝试将一个字符串转化为整数。如果字符串不能被转化成为整数就会抛出 `NumberFormatException` 异常，此时我们就回过头来把原始字符串放到输出流中。
