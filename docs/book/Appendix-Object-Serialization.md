@@ -283,7 +283,7 @@ Blip1 Constructor
 Blip1.readExternal
 ```
 
-没有恢复 Blip2 对象的原因是那样做会导致一个异常。你找出 Blip1 和 Blip2 之间的区别了吗？Blipl 的构造器是“公共的”（pablic），Blip2 的构造器却不是，这样就会在恢复时造成异常。试试将 Blip2 的构造器变成 public 的，然后删除//注释标记，看看是否能得到正确的结果。
+没有恢复 Blip2 对象的原因是那样做会导致一个异常。你找出 Blip1 和 Blip2 之间的区别了吗？Blipl 的构造器是“公共的”（public），Blip2 的构造器却不是，这样就会在恢复时造成异常。试试将 Blip2 的构造器变成 public 的，然后删除//注释标记，看看是否能得到正确的结果。
 
 恢复 b1 后，会调用 Blip1 默认构造器。这与恢复一个 Serializable 对象不同。对于 Serializable 对象，对象完全以它存储的二进制位为基础来构造，而不调用构造器。而对于一个 Externalizable 对象，所有普通的默认构造器都会被调用（包括在字段定义时的初始化），然后调用 readExternal() 必须注意这一点--所有默认的构造器都会被调用，才能使 Externalizable 对象产生正确的行为。
 
