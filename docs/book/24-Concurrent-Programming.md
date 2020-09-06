@@ -770,7 +770,7 @@ Java并发的历史始于非常原始和有问题的机制，并且充满了各�
 // concurrent/NapTask.java
 import onjava.Nap;
 public class NapTask implements Runnable {
-    finalint id;
+    final int id;
     public NapTask(int id) {
         this.id = id;
         }
