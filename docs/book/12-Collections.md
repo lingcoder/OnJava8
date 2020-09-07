@@ -1383,7 +1383,7 @@ extends AbstractCollection<Pet> {
 
 - **[1]** 你可能会认为，因为 `iterator()` 返回 **Iterator\<Pet>** ，匿名内部类定义可以使用菱形语法，Java可以推断出类型。但这不起作用，类型推断仍然非常有限。
 
-这个例子表明，如果实现了 **Collection** ，就必须实现 `iterator()` ，并且只拿实现 `iterator()` 与继承 **AbstractCollection** 相比，花费的代价只有略微减少。但是，如果类已经继承了其他的类，那么就不能继承再 **AbstractCollection** 了。在这种情况下，要实现 **Collection** ，就必须实现该接口中的所有方法。此时，继承并提供创建迭代器的能力要容易得多：
+这个例子表明，如果实现了 **Collection** ，就必须实现 `iterator()` ，并且只拿实现 `iterator()` 与继承 **AbstractCollection** 相比，花费的代价只有略微减少。但是，如果类已经继承了其他的类，那么就不能再继承 **AbstractCollection** 了。在这种情况下，要实现 **Collection** ，就必须实现该接口中的所有方法。此时，继承并提供创建迭代器的能力要容易得多：
 
 ```java
 // collections/NonCollectionSequence.java

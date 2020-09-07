@@ -551,7 +551,7 @@ public class TypeOfFood {
 
 如果 enum 类型实现了 Food 接口，那么我们就可以将其实例向上转型为 Food，所以上例中的所有东西都是 Food。
 
-然而，当你需要与一大堆类型打交道时，接口就不如 enum 好用了。例如，如果你想创建一个“校举的枚举”，那么可以创建一个新的 enum，然后用其实例包装 Food 中的每一个 enum 类：
+然而，当你需要与一大堆类型打交道时，接口就不如 enum 好用了。例如，如果你想创建一个“枚举的枚举”，那么可以创建一个新的 enum，然后用其实例包装 Food 中的每一个 enum 类：
 
 ```java
 // enums/menu/Course.java
@@ -1799,7 +1799,7 @@ public interface Competitor<T extends Competitor<T>> {
 }
 ```
 
-然后，我们定义两个 static 方法（static 可以避免显式地指明参数类型），第一个是 match() 方法，它会为一个 Competitor 对象调用 compete() 方法，并与另一个 Competitor 对象作比较。在这个例子中，我们看到，match()）方法的参数需要是 Competitor\<T\> 类型。但是在 play() 方法中，类型参数必须同时是 Enum\<T\> 类型（因为它将在 Enums.random() 中使用）和 Competitor\<T\> 类型因为它将被传递给 match() 方法）：
+然后，我们定义两个 static 方法（static 可以避免显式地指明参数类型），第一个是 match() 方法，它会为一个 Competitor 对象调用 compete() 方法，并与另一个 Competitor 对象作比较。在这个例子中，我们看到，match()方法的参数需要是 Competitor\<T\> 类型。但是在 play() 方法中，类型参数必须同时是 Enum\<T\> 类型（因为它将在 Enums.random() 中使用）和 Competitor\<T\> 类型（因为它将被传递给 match() 方法）：
 
 ```java
 // enums/RoShamBo.java
