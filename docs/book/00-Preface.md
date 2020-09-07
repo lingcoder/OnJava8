@@ -93,8 +93,8 @@ Java 的普及性对于其受欢迎程度有重要意义。学习 Java 会让你
 
 ## 献礼
 
-> 谨以此书献给我敬爱的父亲 E. Wayne Eckel。
-> 1924年4月1日至2016年11月23日
+> 谨以此书献给我敬爱的父亲 E. Wayne Eckel
+> (1924.4.1 ~ 2016.11.23)。
 
 <!-- 分页 -->
 <div style="page-break-after: always;"></div>
