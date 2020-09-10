@@ -630,7 +630,7 @@ public class FunctionalAnnotation {
 }
 ```
 
-`@FunctionalInterface` 注解是可选的; Java 在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口。 在 `NotFunctional` 的定义中可看到`@FunctionalInterface` 的作用：接口中如果有多个方法则会产生编译期错误。
+`@FunctionalInterface` 注解是可选的; Java 在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口。 在 `NotFunctional` 的定义中可看到`@FunctionalInterface` 的作用：接口中如果有多个抽象方法则会产生编译期错误。
 
 仔细观察在定义 `f` 和 `fna` 时发生了什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而被赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口的类中的方法。这是添加到Java 8中的一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数式接口（类型需要匹配），Java 会适配你的赋值到目标接口。 编译器会在后台把方法引用或 Lambda 表达式包装进实现目标接口的类的实例中。
 
@@ -1380,7 +1380,7 @@ foobaz
 
 正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建了一个字符串对象的流，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的谓词来确定对象的去留。最后我们使用 `forEach()` 将 `println` 方法引用应用在每个留存的对象上。
 
-从输出结果我们可以看到 `p4` 的工作流程：任何带有 `"foo"` 的字符串都得以保留，即使它的长度大于 5。 `"fongopuckey"` 因长度超出且不包含 `bar` 而被丢弃。
+从输出结果我们可以看到 `p4` 的工作流程：任何带有 `"foo"` 的字符串都得以保留，即使它的长度大于 5。 `"fongopuckey"` 因长度超出且不包含 `foo` 而被丢弃。
 
 <!-- Currying and  Partial Evaluation -->
 

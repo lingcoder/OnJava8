@@ -7,7 +7,7 @@
 
 Java 是从 C++ 的基础上做了一些改进和简化发展而成的。对于 C/C++ 程序员来说，Java 的运算符并不陌生。如果你已了解 C 或 C++，大可以跳过本章和下一章，直接阅读 Java 与 C/C++ 不同的地方。
 
-如果理解这两章的内容对你来说还有点困难，那么我推荐你先了解下 《Thinking in C》 再继续后面的学习。 这本书现在可以在 [www.OnJava8.com](http://www.OnJava8.com]) 上免费下载。它的内容包含音频讲座、幻灯片、练习和解答，专门用于帮助你快速掌握学习 Java 所需的基础知识。
+如果理解这两章的内容对你来说还有点困难，那么我推荐你先了解下 《Thinking in C》 再继续后面的学习。 这本书现在可以在 [www.OnJava8.com](http://www.OnJava8.com) 上免费下载。它的内容包含音频讲座、幻灯片、练习和解答，专门用于帮助你快速掌握学习 Java 所需的基础知识。
 
 <!-- Using-Java-Operators -->
 ## 开始使用
@@ -494,7 +494,7 @@ public class Literals {
         char c = 0xffff; // 最大 char 型16进制值
         System.out.println(
         "c: " + Integer.toBinaryString(c));
-        byte b = 0x7f; // 最大 byte 型16进制值  10101111;
+        byte b = 0x7f; // 最大 byte 型16进制值  01111111;
         System.out.println(
         "b: " + Integer.toBinaryString(b));
         short s = 0x7fff; // 最大 short 型16进制值

@@ -125,7 +125,7 @@ public class WhitherStringBuilder {
     }
 }
 ```
-现在运行 `javap -c WitherStringBuilder`，可以看到两种不同方法（我已经去掉不相关的细节）对应的字节码。首先是 `implicit()` 方法：
+现在运行 `javap -c WhitherStringBuilder`，可以看到两种不同方法（我已经去掉不相关的细节）对应的字节码。首先是 `implicit()` 方法：
 ```x86asm
 public java.lang.String implicit(java.lang.String[]); 
 0: ldc #2 // String 
@@ -801,10 +801,10 @@ the mightiest banana in the forest...with... a banana!
 | 表达式 | 含义 |
 | :---- | :---- |
 | `.` | 任意字符 |
-| `[abc]` |包含`a`、`b`或`c`的任何字符（和`a|b|c`作用相同）|
+| `[abc]` |包含`a`、`b`或`c`的任何字符（和`a\|b\|c`作用相同）|
 | `[^abc]` | 除`a`、`b`和`c`之外的任何字符（否定） |
 | `[a-zA-Z]` | 从`a`到`z`或从`A`到`Z`的任何字符（范围） |
-| `[abc[hij]]` | `a`、`b`、`c`、`h`、`i`、`j`中的任意字符（与`a|b|c|h|i|j`作用相同）（合并） |
+| `[abc[hij]]` | `a`、`b`、`c`、`h`、`i`、`j`中的任意字符（与`a\|b\|c\|h\|i\|j`作用相同）（合并） |
 | `[a-z&&[hij]]` | 任意`h`、`i`或`j`（交） |
 | `\s` | 空白符（空格、tab、换行、换页、回车） |
 | `\S` | 非空白符（`[^\s]`） |
@@ -818,7 +818,7 @@ the mightiest banana in the forest...with... a banana!
 | 逻辑操作符 | 含义 |
 | :----: | :---- |
 | `XY` | `Y`跟在`X`后面 |
-| `X|Y` | `X`或`Y` |
+| `X\|Y` | `X`或`Y` |
 | `(X)` | 捕获组（capturing group）。可以在表达式中用`\i`引用第i个捕获组 |
 
 下面是不同的边界匹配符：
