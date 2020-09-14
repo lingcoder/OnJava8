@@ -47,7 +47,7 @@ String x = Immutable.upcase(s);
 
 
 <!-- Overloading + vs. StringBuilder -->
-## `+` 的重载与 `StringBuilder`
+## + 的重载与 StringBuilder
 `String` 对象是不可变的，你可以给一个 `String` 对象添加任意多的别名。因为 `String` 是只读的，所以指向它的任何引用都不可能修改它的值，因此，也就不会影响到其他引用。
 
 不可变性会带来一定的效率问题。为 `String` 对象重载的 `+` 操作符就是一个例子。重载的意思是，一个操作符在用于特定的类时，被赋予了特殊的意义（用于 `String` 的 `+` 与 `+=` 是 Java 中仅有的两个重载过的操作符，Java 不允许程序员重载任何其他的操作符 [^1]）。
