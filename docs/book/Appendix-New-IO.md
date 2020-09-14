@@ -133,7 +133,7 @@ public class ChannelCopy {
 
 ```
 
-**FileChannel** 用于读取；**FileChannel** 用于写入。当 **ByteBuffer** 分配好存储，调用 **FileChannel** 的 `read()` 方法返回 **-1**（毫无疑问，这是来源于 Unix 和 C 语言）时，说明输入流读取完了。在每次 `read()` 将数据放入缓冲区之后，`flip()` 都会准备好缓冲区，以便 `write()` 提取它的信息。在 `write()` 之后，数据仍然在缓冲区中，我们需要 `clear()` 来重置所有内部指针，以便在下一次 `read()` 中接受数据。 
+**第一个FileChannel** 用于读取；**第二个FileChannel** 用于写入。当 **ByteBuffer** 分配好存储，调用 **FileChannel** 的 `read()` 方法返回 **-1**（毫无疑问，这是来源于 Unix 和 C 语言）时，说明输入流读取完了。在每次 `read()` 将数据放入缓冲区之后，`flip()` 都会准备好缓冲区，以便 `write()` 提取它的信息。在 `write()` 之后，数据仍然在缓冲区中，我们需要 `clear()` 来重置所有内部指针，以便在下一次 `read()` 中接受数据。 
 
 但是，上例并不是处理这种操作的理想方法。方法 `transferTo()` 和 `transferFrom()` 允许你直接连接此通道到彼通道：
 

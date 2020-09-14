@@ -269,7 +269,7 @@ public @interface SQLInteger {
 
 **@Constraints** 注解允许处理器提供数据库表的元数据。**@Constraints** 代表了数据库通常提供的约束的一小部分，但是它所要表达的思想已经很清楚了。`primaryKey()`，`allowNull()` 和 `unique()` 元素明显的提供了默认值，从而使得在大多数情况下，该注解的使用者不需要输入太多东西。
 
-另外两个 **@interface** 定义的是 SQL 类型。如果希望这个框架更有价值的话，我们应该为每个 SQL 类型都定义相应的注解。不过为为示例，两个元素足够了。
+另外两个 **@interface** 定义的是 SQL 类型。如果希望这个框架更有价值的话，我们应该为每个 SQL 类型都定义相应的注解。不过作为示例，两个元素足够了。
 
 这些 SQL 类型具有 `name()` 元素和 `constraints()` 元素。后者利用了嵌套注解的功能，将数据库列的类型约束信息嵌入其中。注意 `constraints()` 元素的默认值是 **@Constraints**。由于在 **@Constraints** 注解类型之后，没有在括号中指明 **@Constraints** 元素的值，因此，**constraints()** 的默认值为所有元素都为默认值的 **@Constraints** 注解。如果要使得嵌入的  **@Constraints**  注解中的 `unique()` 元素为 true，并作为 `constraints()` 元素的默认值，你可以像如下定义：
 
@@ -853,7 +853,7 @@ annotations.AtUnitExample1: anotherDisappointment
 
 使用 **@Unit** 进行测试的类必须定义在某个包中（即必须包括 **package** 声明）。
 
-**@Test** 注解被置于 `methodOneTest()`、 `m2()`、`m3()`、`failureTest()` 以及 a`notherDisappointment()` 方法之前，它们告诉 **@Unit** 方法作为单元测试来运行。同时 **@Test** 确保这些方法没有任何参数并且返回值为 **boolean** 或者 **void**。当你填写单元测试时，唯一需要做的就是决定测试是成功还是失败，（对于返回值为 **boolean** 的方法）应该返回 **ture** 还是 **false**。
+**@Test** 注解被置于 `methodOneTest()`、 `m2()`、`m3()`、`failureTest()` 以及 `anotherDisappointment()` 方法之前，它们告诉 **@Unit** 方法作为单元测试来运行。同时 **@Test** 确保这些方法没有任何参数并且返回值为 **boolean** 或者 **void**。当你填写单元测试时，唯一需要做的就是决定测试是成功还是失败，（对于返回值为 **boolean** 的方法）应该返回 **ture** 还是 **false**。
 
 如果你熟悉 **JUnit**，你还将注意到 **@Unit** 输出的信息更多。你会看到现在正在运行的测试的输出更有用，最后它会告诉你导致失败的类和测试。
 

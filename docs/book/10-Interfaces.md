@@ -73,8 +73,8 @@ abstract class Basic3 {
 }
 
 public class AbstractWithoutAbstracts {
-    // Basic b3 = new Basic3();
-    // error: Basic 3 is abstract; cannot be instantiated
+    // Basic3 b3 = new Basic3();
+    // error: Basic3 is abstract; cannot be instantiated
 }
 ```
 
@@ -780,7 +780,7 @@ Woodwind.play() MIDDLE_C
 
 当方法操纵的是一个类而非接口时，它就只能作用于那个类或其子类。如果想把方法应用于那个继承层级结构之外的类，就会触霉头。接口在很大程度上放宽了这个限制，因而使用接口可以编写复用性更好的代码。
 
-例如有一个类 **Process** 有两个方法 `name()` 和 `process()`。`process()` 方法接受输入，修改并输出。把这个类作为基类用来创建各种不同类型的 **Processor**。下例中，**Processor** 的各个子类修改 String 对象（注意，返回类型可能是协变类型而非参数类型）：
+例如有一个类 **Processor** 有两个方法 `name()` 和 `process()`。`process()` 方法接受输入，修改并输出。把这个类作为基类用来创建各种不同类型的 **Processor**。下例中，**Processor** 的各个子类修改 String 对象（注意，返回类型可能是协变类型而非参数类型）：
 
 ```java
 // interfaces/Applicator.java
@@ -1286,7 +1286,7 @@ interfacce I4 extends I1, I3 {}
 
 ## 接口适配
 
-接口最吸引人的原因之一是相同的接口可以有多个实现。在简单情况下体现在一个方法接受接口作为参数，该接口的实现和传递对象给方法则交由你来做。
+接口最吸引人的原因之一是相同的接口可以有多个实现。在简单情况下体现在一个方法接受接口作为参数，该接口的实现和传递对象则取决于方法的使用者。
 
 因此，接口的一种常见用法是前面提到的*策略*设计模式。编写一个方法执行某些操作并接受一个指定的接口作为参数。可以说：“只要对象遵循接口，就可以调用方法” ，这使得方法更加灵活，通用，并更具可复用性。
 
