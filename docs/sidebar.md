@@ -168,7 +168,7 @@
 ### [第十四章 流式编程](book/14-Streams.md)
   * [流支持](book/14-Streams.md#流支持)
   * [流创建](book/14-Streams.md#流创建)
-  * [中级流操作](book/14-Streams.md#中级流操作)
+  * [中间操作](book/14-Streams.md#中间操作)
   * [Optional类](book/14-Streams.md#Optional类)
   * [终端操作](book/14-Streams.md#终端操作)
   * [本章小结](book/14-Streams.md#本章小结)
