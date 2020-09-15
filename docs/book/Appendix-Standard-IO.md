@@ -35,7 +35,7 @@ public class Echo {
 
 `BufferedReader` 提供了 `lines()` 方法，返回类型是 `Stream<String>` 。这显示出流模型的的灵活性：仅使用标准输入就能很好地工作。 `peek()` 方法重启 `TimeAbort`，只要保证至少每隔两秒有输入就能够使程序保持开启状态。
 
-## 将`System.out` 转换成 `PrintWriter`
+## 将 System.out 转换成 PrintWriter
 
 `System.out` 是一个 `PrintStream`，而 `PrintStream` 是一个`OutputStream`。 `PrintWriter` 有一个把 `OutputStream` 作为参数的构造器。因此，如果你需要的话，可以使用这个构造器把 `System.out` 转换成 `PrintWriter` 。
 
