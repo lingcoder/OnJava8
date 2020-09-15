@@ -69,7 +69,8 @@ import java.util.*;
 public class Equality {
     protected int i;
     protected String s;
-    protected double d;public Equality(int i, String s, double d) {
+    protected double d;
+    public Equality(int i, String s, double d) {
         this.i = i;
         this.s = s;
         this.d = d;
@@ -141,7 +142,7 @@ Expected false, got false
 
  **testAll()** 执行了我们期望的所有不同类型对象的比较。它使用工厂创建了**Equality**对象。
 
-在 **main()** 里，请注意对 **testAll()** 的调用很简单。因为**EqualityFactory**有着单一的函数，它能够和lambda表达式一起使用来表示**make()**函数。
+在 **main()** 里，请注意对 **testAll()** 的调用很简单。因为**EqualityFactory**有着单一的函数，它能够和lambda表达式一起使用来表示 **make()** 函数。
 
 上述的 **equals()** 函数非常繁琐，并且我们能够将其简化成规范的形式，请注意：
 1. **instanceof**检查减少了**null**检查的需要。
