@@ -115,10 +115,6 @@
 如不熟悉 md 排版，可不必纠结，我会在合并 pr 时代为排版  
 如还有其它问题，欢迎发送 issue，谢谢~
 
-## 友情链接
-
-[Effective.Java.3rd.Edition 中文版](https://sjsdfg.github.io/effective-java-3rd-chinese/#/)
-
 ## 开源协议
 
 本项目基于 MIT 协议开源。
