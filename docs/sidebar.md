@@ -219,7 +219,7 @@
 
 ### [第十八章 字符串](book/18-Strings.md)
   * [字符串的不可变](book/18-Strings.md#字符串的不可变)
-  * [+ 的重载与 StringBuilder](book/18-Strings.md#+-的重载与-StringBuilder)
+  * [+ 的重载与 StringBuilder](book/18-Strings.md#-的重载与-StringBuilder)
   * [意外递归](book/18-Strings.md#意外递归)
   * [字符串操作](book/18-Strings.md#字符串操作)
   * [格式化输出](book/18-Strings.md#格式化输出)
@@ -315,7 +315,7 @@
   * [并行流](book/24-Concurrent-Programming.md#并行流)
   * [创建和运行任务](book/24-Concurrent-Programming.md#创建和运行任务)
   * [终止耗时任务](book/24-Concurrent-Programming.md#终止耗时任务)
-  * [CompletableFuture类](book/24-Concurrent-Programming.md#CompletableFuture类)
+  * [CompletableFuture 类](book/24-Concurrent-Programming.md#CompletableFuture-类)
   * [死锁](book/24-Concurrent-Programming.md#死锁)
   * [构造方法非线程安全](book/24-Concurrent-Programming.md#构造方法非线程安全)
   * [复杂性和代价](book/24-Concurrent-Programming.md#复杂性和代价)
