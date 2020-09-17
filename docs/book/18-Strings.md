@@ -273,7 +273,7 @@ import java.util.stream.*;
 public class InfiniteRecursion { 
     @Override 
     public String toString() { 
-        return " InfiniteRecursion address: " + this + "\n"
+        return " InfiniteRecursion address: " + this + "\n";
     } 
     public static void main(String[] args) { 
         Stream.generate(InfiniteRecursion::new) 
