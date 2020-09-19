@@ -262,8 +262,20 @@ class State implements StateBase {
     @Override
     public void changeImp(StateBase newImp) {
         implementation = newImp;
-    }// Pass method calls to the implementation: @Override public void f() { implementation.f(); } @Override public void g() { implementation.g(); } @Override
+    }
 
+    // Pass method calls to the implementation:
+    @Override
+    public void f() {
+        implementation.f();
+    }
+
+    @Override
+    public void g() {
+        implementation.g();
+    }
+
+    @Override
     public void h() {
         implementation.h();
     }
@@ -319,7 +331,8 @@ public class StateDemo {
     }
 
     public static void main(String[] args) {
-        StateBase b = new State(new Implementation1());
+        StateBase b =
+                new State(new Implementation1());
         test(b);
         b.changeImp(new Implementation2());
         test(b);
@@ -366,9 +379,6 @@ interface State {
 abstract class StateMachine {
     protected State currentState;
 
-    Nap(0.5);
-System.out.println("Washing"); new
-
     protected abstract boolean changeState();
 
     // Template method:
@@ -379,9 +389,12 @@ System.out.println("Washing"); new
 }
 
 // A different subclass for each state:
+
 class Wash implements State {
     @Override
     public void run() {
+        System.out.println("Washing");
+        new Nap(0.5);
     }
 }
 
@@ -403,9 +416,11 @@ class Rinse implements State {
 
 class Washer extends StateMachine {
     private int i = 0;
-
     // The state table:
-    private State[] states = {new Wash(), new Spin(), new Rinse(), new Spin(),};
+    private State[] states = {
+            new Wash(), new Spin(),
+            new Rinse(), new Spin(),
+    };
 
     Washer() {
         runAll();
@@ -418,7 +433,8 @@ class Washer extends StateMachine {
             // surrogate reference to a new object:
             currentState = states[i++];
             return true;
-        } else return false;
+        } else
+            return false;
     }
 }
 
@@ -427,8 +443,7 @@ public class StateMachineDemo {
         new Washer();
     }
 }
-/*
-Output:
+/* Output:
 Washing
 Spinning
 Rinsing
