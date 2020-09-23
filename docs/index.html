@@ -55,6 +55,11 @@
         /*font-family: Microsoft YaHei, Source Sans Pro, Helvetica Neue, Arial, sans-serif !important;*/
     }
 
+    .sidebar, .sidebar-nav {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
     .markdown-section>p {
         font-size: 16px !important;
     }
@@ -66,7 +71,7 @@
 
     /*.anchor span {
     color: rgb(66, 185, 131);
-	}*/
+    }*/
 
     section.cover h1 {
         margin: 0;
@@ -345,29 +350,29 @@
     window.$docsify = {
       name: '《On Java 8》中文版',
       repo: 'https://github.com/LingCoder/OnJava8',
-	//   loadSidebar: true,
-	  subMaxLevel: 3,
-	   search: {
-            paths: 'auto',
-            placeholder: '🔍 点击搜索 ',
-            noData: '😞 没有结果! ',
-            // Headline depth, 1 - 6
-            depth: 6
-        },
-		copyCode: {
-			buttonText : '复制',
-			errorText  : 'Error',
-			successText: 'OK!'
-		},
-		pagination: {
-			previousText: '上一章节',
-			nextText: '下一章节',
-		},
-	  coverpage: true
+      loadSidebar: 'sidebar.md',
+      // subMaxLevel: 3,
+      search: {
+        paths: 'auto',
+        placeholder: '🔍 点击搜索 ',
+        noData: '😞 没有结果! ',
+        // Headline depth, 1 - 6
+        depth: 6
+      },
+      copyCode: {
+        buttonText : '复制',
+        errorText  : 'Error',
+        successText: 'OK!'
+      },
+      pagination: {
+        previousText: '上一章节',
+        nextText: '下一章节',
+      },
+      coverpage: true,
     }
   </script>
   <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
-	<!--代码块复制插件-->
+    <!--代码块复制插件-->
   <script src="//unpkg.com/docsify-copy-code"></script>
   <!-- 图片缩放插件 -->
   <script src="https://cyc-1256109796.cos.ap-guangzhou.myqcloud.com/zoom-image.min.js"></script>
