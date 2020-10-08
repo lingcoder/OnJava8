@@ -4,7 +4,7 @@
 # 附录:新IO
 
 
-> Java 新I/O 库是在 1.4 版本引入到 `Java .nio.* package` 中的，旨在更快速。
+> Java 新I/O 库是在 1.4 版本引入到 `java.nio.*` 包中的，旨在更快速。
 
 实际上，新 I/O 使用 **NIO**（同步非阻塞）的方式重写了老的 I/O 了，因此它获得了 **NIO** 的种种优点。即使我们不显式地使用 **NIO** 方式来编写代码，也能带来性能和速度的提高。这种提升不仅仅体现在文件读写（File I/O），同时也体现在网络读写（Network I/O）中。例如，网络编程。
 
@@ -88,7 +88,7 @@ Some text Some more
 
 将字节放入 **ByteBuffer** 的一种方法是直接调用 `put()` 方法将一个或多个字节放入 **ByteBuffer**；当然也可以是其它基本类型的数据。此外，参考上例，我们还可以调用 `wrap()` 方法包装现有字节数组到 **ByteBuffer**。执行此操作时，不会复制底层数组，而是将其用作生成的 **ByteBuffer** 存储。这样产生的 **ByteBuffer** 是数组“支持”的。
 
-data.txt 文件被 **RandomAccessFile** 重新打开。**注意**，你可以在文件中移动 **FileChanne**。 在这里，它被移动到末尾，以便添加额外的写操作。
+data.txt 文件被 **RandomAccessFile** 重新打开。**注意**，你可以在文件中移动 **FileChannel**。 在这里，它被移动到末尾，以便添加额外的写操作。
 
 对于只读访问，必须使用静态 `allocate()` 方法显式地分配 **ByteBuffer**。**NIO** 的目标是快速移动大量数据，因此 **ByteBuffer** 的大小应该很重要 —— 实际上，这里设置的 1K 都可能偏小了(我们在工作中应该反复测试以找到最佳大小)。
 
@@ -175,7 +175,7 @@ public class TransferTo {
 ## 数据转换
 
 
-为了将 **GetChannel.java** 文件中的信息打印出来。在 Java 中，我们每次提取一个字节的数据并将其转换为字符。看起来很简单 —— 如果你有看过 `ava.nio.`**CharBuffer**  类，你会发现一个 `toString()` 方法。该方法的作用是“返回一个包含此缓冲区字符的字符串”。
+为了将 **GetChannel.java** 文件中的信息打印出来。在 Java 中，我们每次提取一个字节的数据并将其转换为字符。看起来很简单 —— 如果你有看过 `java.nio.`**CharBuffer**  类，你会发现一个 `toString()` 方法。该方法的作用是“返回一个包含此缓冲区字符的字符串”。
 
 既然 **ByteBuffer** 可以通过 **CharBuffer** 类的 `asCharBuffer()` 方法查看，那我们就来尝试一样。从下面输出语句的第一行可以看出，这并不正确：
 
