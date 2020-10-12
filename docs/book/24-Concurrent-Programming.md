@@ -290,7 +290,7 @@ Java 8 CompletableFuture 是一个更好的解决方案：它允许你将操作�
 <!-- Parallel Streams -->
 ## 并行流
 
-Java 8 流的一个显著优点是，在某些情况下，它们可以很容易地并行化。这来自仔细的库设计，特别是流使用内部迭代的方式 - 也就是说，它们控制着自己的迭代器。特别是，他们使用一种特殊的迭代器，称为 Spliterator，它被限制为易于自动分割。我们只需要念 `.parallel()` 就会产生魔法般的结果，流中的所有内容都作为一组并行任务运行。如果你的代码是使用 Streams 编写的，那么并行化以提高速度似乎是一种琐事
+Java 8 流的一个显著优点是，在某些情况下，它们可以很容易地并行化。这来自库的仔细设计，特别是流使用内部迭代的方式 - 也就是说，它们控制着自己的迭代器。特别是，他们使用一种特殊的迭代器，称为 Spliterator，它被限制为易于自动分割。我们只需要念 `.parallel()` 就会产生魔法般的结果，流中的所有内容都作为一组并行任务运行。如果你的代码是使用 Streams 编写的，那么并行化以提高速度似乎是一种琐事
 
 例如，考虑来自 Streams 的 Prime.java。查找质数可能是一个耗时的过程，我们可以看到该程序的计时：
 
@@ -615,7 +615,7 @@ public class ParallelStreamPuzzle {
         }
     }
     public static void main(String[] args) {
-        List<Integer> x = Stream.generate(newIntGenerator())
+        List<Integer> x = Stream.generate(new IntGenerator())
         .limit(10)
         .parallel()  // [1]
         .collect(Collectors.toList());
