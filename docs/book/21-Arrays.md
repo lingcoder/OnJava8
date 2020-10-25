@@ -2414,7 +2414,7 @@ After sorting: [[i = 21, j = 6], [i = 70, j = 7], [i = 41, j = 20] ,
 ```
 
 <!-- Using Arrays.sort() -->
-## Arrays.sort()的使用
+## Arrays.sort 的使用
 
 使用内置的排序方法，您可以对实现了 **Comparable** 接口或具有 **Comparator** 的任何对象数组 或 任何原生数组进行排序。这里我们生成一个随机字符串对象数组并对其排序:
 
