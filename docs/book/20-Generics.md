@@ -3537,7 +3537,7 @@ NeedCasting.java:10: warning: [unchecked] unchecked cast
 1 warning
 ```
 
-你会被强制要求转型，但是又被告知不应该转型。为了解决这个问题，必须使用 Java 5 引入的新的转型形式，既通过泛型类来转型：
+你会被强制要求转型，但是又被告知不应该转型。为了解决这个问题，必须使用 Java 5 引入的新的转型形式，即通过泛型类来转型：
 
 ```java
 // generics/ClassCasting.java
