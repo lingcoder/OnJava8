@@ -1,0 +1,111 @@
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# =========================
+# Operating System Files
+# =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+*.class
+*output.txt
+Generated.txt
+*-control.txt
+*-results.txt
+*-out.txt
+OutputErrors.txt
+report.txt
+failures
+People.xml
+annotations/Test0.txt
+annotations/Test1.txt
+annotations/Test2.txt
+io/*.out
+io/*.txt
+io/*.dat
+io/*.tmp
+io/test.zip
+io/test.gz
+io/X.file
+*.pyc
+
+*.out
+*.err
+/files/bytes.dat
+/files/test/
+/exceptions/Results.txt
+/files/Cheese.txt
+/files/StreamInAndOut.txt
+
+.gradle
+/*.iml
+/.idea/
+
+/serialization/Blip3.serialized
+/serialization/Blips.serialized
+
+build/
+buildSrc/
+
+/compression/test.gz
+/compression/test.zip
+/iostreams/BasicFileOutput.dat
+/iostreams/Data.txt
+/iostreams/FileOutputShortcut.dat
+/iostreams/rtest.dat
+/logging/LogToFile.xml
+/logging/LogToFile2.txt
+/logging/MultipleHandlers.xml
+/logging/MultipleHandlers2.xml
+/logging/java0.log
+/logging/java1.log
+/logging/java2.log
+/newio/TransferTo.txt
+/newio/data2.txt
+/newio/file.txt
+/newio/test.dat
+/newio/test.txt
+/serialization/CADState.dat
+/serialization/worm.dat
+/serialization/Logon.dat
+/serialization/X.file
+/standardio/Redirecting.txt
+/threads/PSP2.txt
+/threads/primes.txt
+_*
+config.py

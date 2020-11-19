@@ -1,0 +1,17 @@
+apply plugin: 'me.champeau.gradle.jmh'
+
+sourceSets {
+    jmh {
+        java {
+            srcDir projectDir
+        }
+    }
+}
+
+jmh {
+    jmhVersion = '1.17.4'
+    duplicateClassesStrategy = 'warn'
+    failOnError = true
+    // See https://github.com/melix/jmh-gradle-plugin
+    // for other options
+}

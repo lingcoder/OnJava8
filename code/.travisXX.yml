@@ -1,0 +1,8 @@
+language: java
+jdk:
+  - oraclejdk11
+install: true
+script:
+  - ./gradlew --no-daemon --stacktrace run
+#  - ./gradlew --parallel --stacktrace run
+#  - ./gradlew --parallel --stacktrace :validating:jmh

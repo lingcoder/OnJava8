@@ -1,0 +1,39 @@
+apply plugin: 'java'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+compileJava {
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir projectDir
+            exclude "tests/**"
+        }
+        resources {
+            srcDir projectDir
+            include '*.xml'
+        }
+    }
+    
+    test {
+        java {
+            srcDir file("tests")
+        }
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    // Logging:
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'ch.qos.logback:logback-classic:1.1.7'
+    // You can also use the JDK's built-in logging as the back end:
+    // compile group: 'org.slf4j:slf4j-jdk14:1.7.21'
+}
