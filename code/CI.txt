@@ -1,5 +1,0 @@
-Links formerly in the README. Both of these mysteriously started breaking.
-
-[![](https://travis-ci.org/BruceEckel/OnJava8-Examples.svg?branch=master)](https://travis-ci.org/BruceEckel/OnJava8-Examples)
-
-[![](https://ci.appveyor.com/api/projects/status/github/BruceEckel/OnJava8-Examples)](https://ci.appveyor.com/project/BruceEckel/onjava-examples)

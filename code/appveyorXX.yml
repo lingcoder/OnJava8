@@ -1,4 +1,0 @@
-build_script:
-  - gradlew.bat --no-daemon --stacktrace run
-
-test: off
