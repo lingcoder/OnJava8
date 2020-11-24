@@ -38,10 +38,6 @@
 
 本项目基于 MIT 协议开源。
 
-## 友情链接
-
-Effective Java 第 3 版： https://github.com/sjsdfg/effective-java-3rd-chinese
-
 ## 联系方式
 
 - E-mail : <lingcoder@gmail.com>
