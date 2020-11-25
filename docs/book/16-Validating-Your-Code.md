@@ -555,7 +555,7 @@ assert invariant();
   }
 ```
 
-**in** 计数器指示数组中下一个对象所在的位置。**out** 计数器指示下一个对象来自何处。**wrapped** 的flag表示 **in** 已经“绕着圆圈”走了，现在从后面出来了。当**in**和 **out** 重合时，队列为空(如果包装为 **false** )或满(如果 **wrapped** 为 **true** )。
+**in** 计数器指示数组中下一个入队对象所在的位置。**out** 计数器指示下一个出队对象来自何处。**wrapped** 的flag表示入队和出队指针顺序是否变换, 为**false** 表示**in**在**out**之前,为**true**则顺序相反。当**in**和 **out** 重合时，队列为空(如果**wrapped**为 **false** )或满(如果 **wrapped** 为 **true** )。
 
 **put()** 和 **get()** 方法调用 **precondition()** ，**postcondition()**, 和 **invariant**()，这些都是在类中定义的私有方法。前置**precondition()** 和 **postcondition()** 是用来阐明代码的辅助方法。
 
