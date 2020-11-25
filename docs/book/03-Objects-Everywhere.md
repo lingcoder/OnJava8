@@ -100,7 +100,7 @@ Character ch = 'x';
 char c = ch;
 ```
 
-个中原因将在以后的章节里解释。
+各种原因将在以后的章节里解释。
 
 <!-- High-Precision Numbers -->
 ### 高精度数值
