@@ -602,7 +602,9 @@ public interface Operations {
 }
 ```
 
+
 这是*模板方法*设计模式的一个版本（在“设计模式”一章中详细描述），`runOps()` 是一个模板方法。`runOps()` 使用可变参数列表，因而我们可以传入任意多的 **Operation** 参数并按顺序运行它们：
+
 
 ```java
 // interface/Machine.java
