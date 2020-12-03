@@ -127,7 +127,7 @@ Hello there Hello there
 
 Lambda 表达式是使用**最小可能**语法编写的函数定义：
 
-1. Lambda 表达式产生函数，而不是类。 在 JVM（Java Virtual Machine，Java 虚拟机）上，一切都是一个类，因此在幕后执行各种操作使 Lambda 看起来像函数 —— 但作为程序员，你可以高兴地假装它们“只是函数”。
+1. Lambda 表达式产生函数，而不是类。 虽然在 JVM（Java Virtual Machine，Java 虚拟机）上，一切都是类，但是幕后有各种操作执行让 Lambda 看起来像函数 —— 作为程序员，你可以高兴地假装它们“就是函数”。
 
 2. Lambda 语法尽可能少，这正是为了使 Lambda 易于编写和使用。
 
@@ -424,7 +424,7 @@ lambda
 Go::go()
 ```
 
-**Thread** 对象将 **Runnable** 作为其构造函数参数，并具有会调用 `run()` 的方法  `start()`。 **注意**，只有**匿名内部类**才需要具有名为 `run()` 的方法。
+**Thread** 对象将 **Runnable** 作为其构造函数参数，并具有会调用 `run()` 的方法  `start()`。 注意这里只有**匿名内部类**才要求显式声明 `run()` 方法。
 
 
 <!-- Unbound Method References -->
@@ -469,11 +469,11 @@ X::f()
 ```
 
 
-截止目前，我们看到了与对应接口签名相同的方法引用。 在 **[1]**，我们尝试把 `X` 的 `f()` 方法引用赋值给 **MakeString**。结果即使 `make()` 与 `f()` 具有相同的签名，编译也会报“invalid method reference”（无效方法引用）错误。 这是因为实际上还有另一个隐藏的参数：我们的老朋友 `this`。 你不能在没有 `X` 对象的前提下调用 `f()`。 因此，`X :: f` 表示未绑定的方法引用，因为它尚未“绑定”到对象。
+到目前为止，我们已经见过了方法引用和对应接口的签名（参数类型和返回类型）一致的几个赋值例子。 在 **[1]** 中，我们尝试同样的做法，把 `X` 的 `f()` 方法引用赋值给 **MakeString**。结果即使 `make()` 与 `f()` 具有相同的签名，编译也会报“invalid method reference”（无效方法引用）错误。 问题在于，这里其实还需要另一个隐藏参数参与：我们的老朋友 `this`。 你不能在没有 `X` 对象的前提下调用 `f()`。 因此，`X :: f` 表示未绑定的方法引用，因为它尚未“绑定”到对象。
 
-要解决这个问题，我们需要一个 `X` 对象，所以我们的接口实际上需要一个额外的参数，如上例中的 **TransformX**。 如果将 `X :: f` 赋值给 **TransformX**，在 Java 中是允许的。我们必须做第二个心理调整——使用未绑定的引用时，函数式方法的签名（接口中的单个方法）不再与方法引用的签名完全匹配。 原因是：你需要一个对象来调用方法。
+要解决这个问题，我们需要一个 `X` 对象，因此我们的接口实际上需要一个额外的参数，正如在 **TransformX** 中看到的那样。 如果将 `X :: f` 赋值给 **TransformX**，在 Java 中是允许的。我们必须做第二个心理调整——使用未绑定的引用时，函数式方法的签名（接口中的单个方法）不再与方法引用的签名完全匹配。 原因是：你需要一个对象来调用方法。
 
-**[2]** 的结果有点像脑筋急转弯。我拿到未绑定的方法引用，并且调用它的`transform()`方法，将一个X类的对象传递给它，最后使得 `x.f()` 以某种方式被调用。Java知道它必须拿到第一个参数，该参数实际就是`this`，然后调用方法作用在它之上。
+**[2]** 的结果有点像脑筋急转弯。我拿到未绑定的方法引用，并且调用它的`transform()`方法，将一个X类的对象传递给它，最后使得 `x.f()` 以某种方式被调用。Java知道它必须拿第一个参数，该参数实际就是`this` 对象，然后对此调用方法。
 
 如果你的方法有更多个参数，就以第一个参数接受`this`的模式来处理。
 
@@ -574,7 +574,7 @@ x -> x.toString()
 
 我们清楚这里返回类型必须是 **String**，但 `x` 是什么类型呢？
 
-Lambda 表达式包含类型推导（编译器会自动推导出类型信息，避免了程序员显式地声明）。编译器必须能够以某种方式推导出 `x` 的类型。
+Lambda 表达式包含 *类型推导* （编译器会自动推导出类型信息，避免了程序员显式地声明）。编译器必须能够以某种方式推导出 `x` 的类型。
 
 下面是第二个代码示例：
 
@@ -586,7 +586,7 @@ Lambda 表达式包含类型推导（编译器会自动推导出类型信息，�
 
 该问题也适用于方法引用。 假设你要传递 `System.out :: println` 到你正在编写的方法 ，你怎么知道传递给方法的参数的类型？
 
-为了解决这个问题，Java 8 引入了 `java.util.function` 包。它包含一组接口，这些接口是 Lambda 表达式和方法引用的目标类型。 每个接口只包含一个抽象方法，称为函数式方法。
+为了解决这个问题，Java 8 引入了 `java.util.function` 包。它包含一组接口，这些接口是 Lambda 表达式和方法引用的目标类型。 每个接口只包含一个抽象方法，称为 *函数式方法* 。
 
 在编写接口时，可以使用 `@FunctionalInterface` 注解强制执行此“函数式方法”模式：
 
@@ -630,11 +630,11 @@ public class FunctionalAnnotation {
 }
 ```
 
-`@FunctionalInterface` 注解是可选的; Java 在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口。 在 `NotFunctional` 的定义中可看到`@FunctionalInterface` 的作用：接口中如果有多个抽象方法则会产生编译期错误。
+`@FunctionalInterface` 注解是可选的; Java 会在 `main()` 中把 **Functional** 和 **FunctionalNoAnn** 都当作函数式接口来看待。 在 `NotFunctional` 的定义中可看出`@FunctionalInterface` 的作用：当接口中抽象方法多于一个时产生编译期错误。
 
-仔细观察在定义 `f` 和 `fna` 时发生了什么。 `Functional` 和 `FunctionalNoAnn` 定义接口，然而被赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口的类中的方法。这是添加到Java 8中的一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数式接口（类型需要匹配），Java 会适配你的赋值到目标接口。 编译器会在后台把方法引用或 Lambda 表达式包装进实现目标接口的类的实例中。
+仔细观察在定义 `f` 和 `fna` 时发生了什么。 `Functional` 和 `FunctionalNoAnn` 声明了是接口，然而被赋值的只是方法 `goodbye()`。首先，这只是一个方法而不是类；其次，它甚至都不是实现了该接口的类中的方法。这是添加到Java 8中的一点小魔法：如果将方法引用或 Lambda 表达式赋值给函数式接口（类型需要匹配），Java 会适配你的赋值到目标接口。 编译器会在后台把方法引用或 Lambda 表达式包装进实现目标接口的类的实例中。
 
-尽管 `FunctionalAnnotation` 确实适合 `Functional` 模型，但 Java不允许我们像`fac`定义中的那样，将 `FunctionalAnnotation` 直接赋值给 `Functional`，因为 `FunctionalAnnotation` 并没有显式地去实现 `Functional` 接口。唯一的惊喜是，Java 8 允许我们将函数赋值给接口，这样的语法更加简单漂亮。
+虽然 `FunctionalAnnotation` 确实符合 `Functional` 模型，但是 Java不允许我们像`fac`定义的那样，将 `FunctionalAnnotation` 直接赋值给 `Functional`，因为 `FunctionalAnnotation` 并没有显式地去实现 `Functional` 接口。唯一的惊喜是，Java 8 允许我们将函数赋值给接口，这样的语法更加简单漂亮。
 
 `java.util.function` 包旨在创建一组完整的目标接口，使得我们一般情况下不需再定义自己的接口。主要因为基本类型的存在，导致预定义的接口数量有少许增加。 如果你了解命名模式，顾名思义就能知道特定接口的作用。
 
@@ -646,9 +646,9 @@ public class FunctionalAnnotation {
 
 3. 如果返回值为基本类型，则用 `To` 表示，如 `ToLongFunction <T>` 和 `IntToLongFunction`。
 
-4. 如果返回值类型与参数类型一致，则是一个运算符：单个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
+4. 如果返回值类型与参数类型一致，则是一个 `Operator` ：单个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
 
-5. 如果接收两个参数且返回值为布尔值，则是一个谓词（Predicate）。
+5. 如果接收两个参数且返回值为布尔值，则是一个 `Predicate`。
 
 6. 如果接收的两个参数类型不同，则名称中有一个 `Bi`。
 
@@ -661,14 +661,14 @@ public class FunctionalAnnotation {
 |无参数； <br> 返回类型任意|**Callable** <br> (java.util.concurrent)  <br> `call()`|**Callable`<V>`**|
 |1 参数； <br> 无返回值|**Consumer** <br> `accept()`|**`Consumer<T>` <br> IntConsumer <br> LongConsumer <br> DoubleConsumer**|
 |2 参数 **Consumer**|**BiConsumer** <br> `accept()`|**`BiConsumer<T,U>`**|
-|2 参数 **Consumer**； <br> 1 引用； <br> 1 基本类型|**Obj类型Consumer** <br> `accept()`|**`ObjIntConsumer<T>` <br> `ObjLongConsumer<T>` <br> `ObjDoubleConsumer<T>`**|
+|2 参数 **Consumer**； <br> 第一个参数是 引用； <br> 第二个参数是 基本类型|**Obj类型Consumer** <br> `accept()`|**`ObjIntConsumer<T>` <br> `ObjLongConsumer<T>` <br> `ObjDoubleConsumer<T>`**|
 |1 参数； <br> 返回类型不同|**Function** <br> `apply()` <br> **To类型** 和 **类型To类型** <br> `applyAs类型()`|**Function`<T,R>` <br> IntFunction`<R>` <br> `LongFunction<R>` <br> DoubleFunction`<R>` <br> ToIntFunction`<T>` <br> `ToLongFunction<T>` <br> `ToDoubleFunction<T>` <br> IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
 |1 参数； <br> 返回类型相同|**UnaryOperator** <br> `apply()`|**`UnaryOperator<T>` <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator**|
-|2 参数类型相同； <br> 返回类型相同|**BinaryOperator** <br> `apply()`|**`BinaryOperator<T>` <br> IntBinaryOperator <br> LongBinaryOperator <br> DoubleBinaryOperator**|
-|2 参数类型相同; <br> 返回整型|Comparator <br> (java.util) <br> `compare()`|**`Comparator<T>`**|
+|2 参数，类型相同； <br> 返回类型相同|**BinaryOperator** <br> `apply()`|**`BinaryOperator<T>` <br> IntBinaryOperator <br> LongBinaryOperator <br> DoubleBinaryOperator**|
+|2 参数，类型相同; <br> 返回整型|Comparator <br> (java.util) <br> `compare()`|**`Comparator<T>`**|
 |2 参数； <br> 返回布尔型|**Predicate** <br> `test()`|**`Predicate<T>` <br> `BiPredicate<T,U>` <br> IntPredicate <br> LongPredicate <br> DoublePredicate**|
 |参数基本类型； <br> 返回基本类型|**类型To类型Function** <br> `applyAs类型()`|**IntToLongFunction <br> IntToDoubleFunction <br> LongToIntFunction <br> LongToDoubleFunction <br> DoubleToIntFunction <br> DoubleToLongFunction**|
-|2 参数类型不同|**Bi操作** <br> (不同方法名)|**`BiFunction<T,U,R>` <br> `BiConsumer<T,U>` <br> `BiPredicate<T,U>` <br> `ToIntBiFunction<T,U>` <br> `ToLongBiFunction<T,U>` <br> `ToDoubleBiFunction<T>`**|
+|2 参数； <br>类型不同|**Bi操作** <br> (不同方法名)|**`BiFunction<T,U,R>` <br> `BiConsumer<T,U>` <br> `BiPredicate<T,U>` <br> `ToIntBiFunction<T,U>` <br> `ToLongBiFunction<T,U>` <br> `ToDoubleBiFunction<T>`**|
 
 
 此表仅提供些常规方案。通过上表，你应该或多或少能自行推导出你所需要的函数式接口。
@@ -677,7 +677,7 @@ public class FunctionalAnnotation {
 
 例如，为什么没有 `IntComparator`，`LongComparator` 和 `DoubleComparator` 呢？有 `BooleanSupplier` 却没有其他表示 **Boolean** 的接口；有通用的 `BiConsumer` 却没有用于 **int**，**long** 和 **double** 的 `BiConsumers` 变体（我理解他们为什么放弃这些接口）。这到底是疏忽还是有人认为其他组合使用得很少呢（他们是如何得出这个结论的）？
 
-你还可以看到基本类型给 Java 添加了多少复杂性。基于效率方面的考虑（问题之后有所缓解），该语言的第一版中就包含了基本类型。现在，在语言的生命周期中，我们仍然会受到语言设计选择不佳的影响。
+你还可以看到基本类型给 Java 添加了多少复杂性。该语言的第一版中就包含了基本类型，原因是考虑效率问题（该问题很快就缓解了）。现在，在语言的生命周期里，我们一直忍受语言设计的糟糕选择所带来的影响。
 
 下面枚举了基于 Lambda 表达式的所有不同 **Function** 变体的示例：
 
@@ -747,9 +747,9 @@ public class FunctionVariants {
 }
 ```
 
-这些 Lambda 表达式尝试生成适合函数签名的最简代码。 在某些情况下，有必要进行强制类型转换，否则编译器会报截断错误。
+这些 Lambda 表达式尝试生成适合函数签名的最简代码。 在某些情况下有必要进行强制类型转换，否则编译器会报截断错误。
 
-主方法中的每个测试都显示了 `Function` 接口中不同类型的 `apply()` 方法。 每个都产生一个与其关联的 Lambda 表达式的调用。
+`main()`中的每个测试都显示了 `Function` 接口中不同类型的 `apply()` 方法。 每个都产生一个与其关联的 Lambda 表达式的调用。
 
 方法引用有自己的小魔法：
 
@@ -788,7 +788,7 @@ accept()
 someOtherName()
 ```
 
-查看 `BiConsumer` 的文档，你会看到 `accept()` 方法。 实际上，如果我们将方法命名为 `accept()`，它就可以作为方法引用。 但是我们也可用不同的名称，比如 `someOtherName()`。只要参数类型、返回类型与 `BiConsumer` 的 `accept()` 相同即可。
+查看 `BiConsumer` 的文档，你会看到它的函数式方法为 `accept()` 。 的确，如果我们将方法命名为 `accept()`，它就可以作为方法引用。 但是我们也可用不同的名称，比如 `someOtherName()`。只要参数类型、返回类型与 `BiConsumer` 的 `accept()` 相同即可。
 
 因此，在使用函数接口时，名称无关紧要——只要参数类型和返回类型相同。 Java 会将你的方法映射到接口方法。 要调用方法，可以调用接口的函数式方法名（在本例中为 `accept()`），而不是你的方法名。
 
