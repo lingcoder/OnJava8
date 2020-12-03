@@ -1274,9 +1274,9 @@ C B A A
 <!-- Collection vs. Iterator -->
 ## 集合与迭代器
 
-**Collection** 是所有序列集合共有的根接口。它可能会被认为是一种“附属接口”（incidental interface），即因为要表示其他若干个接口的共性而出现的接口。此外，**java.util.AbstractCollection** 类提供了 **Collection** 的默认实现，使得你可以创建 **AbstractCollection** 的子类型，而其中没有不必要的代码重复。
+**Collection** 是所有序列集合共有的根接口。它可能会被认为是一种“附属接口”（incidental interface），即因为要表示其他若干个接口的共性而出现的接口。此外，**java.util.AbstractCollection** 类提供了 **Collection** 的默认实现，你可以创建 **AbstractCollection** 的子类型来避免不必要的代码重复。
 
-使用接口描述的一个理由是它可以使我们创建更通用的代码。通过针对接口而非具体实现来编写代码，我们的代码可以应用于更多类型的对象。[^6]因此，如果所编写的方法接受一个 **Collection** ，那么该方法可以应用于任何实现了 **Collection** 的类——这也就使得一个新类可以选择去实现 **Collection** 接口，以便该方法可以使用它。标准 C++ 类库中的集合并没有共同的基类——集合之间的所有共性都是通过迭代器实现的。在 Java 中，遵循 C++ 的方式看起来似乎很明智，即用迭代器而不是 **Collection** 来表示集合之间的共性。但是，这两种方法绑定在了一起，因为实现 **Collection** 就意味着需要提供 `iterator()` 方法：
+使用接口的一个理由是它可以使我们创建更通用的代码。通过针对接口而非具体实现来编写代码，我们的代码可以应用于更多类型的对象。[^6]因此，如果所编写的方法接受一个 **Collection** ，那么该方法可以应用于任何实现了 **Collection** 的类——这也就使得一个新类可以选择去实现 **Collection** 接口，以便该方法可以使用它。标准 C++ 类库中的集合并没有共同的基类——集合之间的所有共性都是通过迭代器实现的。在 Java 中，遵循 C++ 的方式看起来似乎很明智，即用迭代器而不是 **Collection** 来表示集合之间的共性。但是，这两种方法绑定在了一起，因为实现 **Collection** 就意味着需要提供 `iterator()` 方法：
 
 ```java
 // collections/InterfaceVsIterator.java
@@ -1337,7 +1337,7 @@ Britney=Pug, Sam=Cymric, Spot=Pug, Fluffy=Manx}
 
 在本例中，这两种方式都可以奏效。事实上， **Collection** 要更方便一点，因为它是 **Iterable** 类型，因此在 `display(Collection)` 的实现中可以使用 *for-in* 构造，这使得代码更加清晰。
 
-当需要实现一个不是 **Collection** 的外部类时，由于让它去实现 **Collection** 接口可能非常困难或麻烦，因此使用 **Iterator** 就会变得非常吸引人。例如，如果我们通过继承一个持有 **Pet** 对象的类来创建一个 **Collection** 的实现，那么我们必须实现 **Collection** 所有的方法，即使我们不在 `display()` 方法中使用它们，也必须这样做。虽然这可以通过继承 **AbstractCollection** 而很容易地实现，但是无论如何还是要被强制去实现 `iterator()` 和 `size()` 方法，这些方法 **AbstractCollection** 没有实现，但是 **AbstractCollection** 中的其它方法会用到：
+当需要实现一个不是 **Collection** 的外部类时，由于让它去实现 **Collection** 接口可能非常困难或麻烦，因此使用 **Iterator** 就会变得非常吸引人。例如，如果我们通过继承一个持有 **Pet** 对象的类来创建一个 **Collection** 的实现，那么我们必须实现 **Collection** 所有的方法，纵使我们不会在 `display()` 方法中使用它们，也要这样做。尽管通过继承 **AbstractCollection** 会容易些，但是 **AbstractCollection** 还有 `iterator()` 和 `size()`没有实现（抽象方法），而 **AbstractCollection** 中的其它方法会用到它们，因此必须以自己的方式实现这两个方法：
 
 ```java
 // collections/CollectionSequence.java
@@ -1383,7 +1383,7 @@ extends AbstractCollection<Pet> {
 
 - **[1]** 你可能会认为，因为 `iterator()` 返回 **Iterator\<Pet>** ，匿名内部类定义可以使用菱形语法，Java可以推断出类型。但这不起作用，类型推断仍然非常有限。
 
-这个例子表明，如果实现了 **Collection** ，就必须实现 `iterator()` ，并且只拿实现 `iterator()` 与继承 **AbstractCollection** 相比，花费的代价只有略微减少。但是，如果类已经继承了其他的类，那么就不能再继承 **AbstractCollection** 了。在这种情况下，要实现 **Collection** ，就必须实现该接口中的所有方法。此时，继承并提供创建迭代器的能力要容易得多：
+这个例子表明，如果实现了 **Collection** ，就必须也实现 `iterator()` ，而单独只实现 `iterator()` 和继承 **AbstractCollection** 相比，并没有容易多少。但是，如果类已经继承了其他的类，那么就没法再继承 **AbstractCollection** 了。在这种情况下，要实现 **Collection** ，就必须实现该接口中的所有方法。此时，继承并提供创建迭代器的能力（单独只实现 `iterator()`）要容易得多：
 
 ```java
 // collections/NonCollectionSequence.java
@@ -1422,12 +1422,12 @@ public class NonCollectionSequence extends PetSequence {
 */
 ```
 
-生成 **Iterator** 是将序列与消费该序列的方法连接在一起耦合度最小的方式，并且与实现 **Collection** 相比，它在序列类上所施加的约束也少得多。
+生成 **Iterator** 是将序列与消费该序列的方法连接在一起的耦合度最小的方式，并且与实现 **Collection** 相比，它在序列类上所施加的约束也少得多。
 
 <!-- for-in and Iterators -->
 ## for-in和迭代器
 
-到目前为止，*for-in* 语法主要用于数组，但它也适用于任何 **Collection** 对象。实际上在使用 **ArrayList** 时，已经看到了一些使用它的示例，下面是一个更通用的证明：
+到目前为止，*for-in* 语法主要用于数组，但它也适用于任何 **Collection** 对象。实际上在使用 **ArrayList** 时，已经看到了一些使用它的示例，下面是它的通用性的证明：
 
 ```java
 // collections/ForInCollections.java
@@ -1508,7 +1508,7 @@ public class EnvironmentVariables {
 
 `System.getenv()` [^7]返回一个 **Map** ， `entrySet()` 产生一个由 **Map.Entry** 的元素构成的 **Set** ，并且这个 **Set** 是一个 **Iterable** ，因此它可以用于 *for-in* 循环。
 
-*for-in* 语句适用于数组或其它任何 **Iterable** ，但这并不意味着数组肯定也是个 **Iterable** ，也不会发生任何自动装箱：
+*for-in* 语句适用于数组或者其它任何 **Iterable** ，但这并不代表数组一定是 **Iterable** ，也不会发生任何自动装箱：
 
 ```java
 // collections/ArrayIsNotIterable.java
@@ -1684,7 +1684,7 @@ array: [9, 1, 6, 3, 7, 2, 5, 10, 4, 8]
 */
 ```
 
-在第一种情况下， `Arrays.asList()` 的输出被传递给了 **ArrayList** 的构造器，这将创建一个引用 **ia** 的元素的 **ArrayList** ，因此打乱这些引用不会修改该数组。但是，如果直接使用 `Arrays.asList(ia)` 的结果，这种打乱就会修改 **ia** 的顺序。重要的是要注意 `Arrays.asList()` 生成一个 **List** 对象，该对象使用底层数组作为其物理实现。如果执行的操作会修改这个 **List** ，并且不希望修改原始数组，那么就应该在另一个集合中创建一个副本。
+在第一种情况下， `Arrays.asList()` 的输出被传递给了 **ArrayList** 的构造器，这将创建一个引用 **ia** 的元素的 **ArrayList** ，因此打乱这些引用不会修改该数组。但是，如果直接使用 `Arrays.asList(ia)` 的结果，这种打乱就会修改 **ia** 的顺序。重要的是要注意 `Arrays.asList()` 生成一个 **List** 对象，该对象使用底层数组作为其物理实现。如果对 **List** 对象做了任何修改，又不想让原始数组被修改，那么就应该在另一个集合中创建一个副本。
 
 <!-- Summary -->
 ## 本章小结
@@ -1808,7 +1808,7 @@ Serializable]
 
 [^5]: 这实际上依赖于具体实现。优先级队列算法通常会按插入顺序排序（维护一个*堆*），但它们也可以在删除时选择最重要的元素。 如果一个对象在队列中等待时，它的优先级会发生变化，那么算法的选择就很重要。
 
-[^6]: 有些人提倡这样一种自动创建机制，即对一个类中所有可能的方法组合都自动创建一个接口，有时候对于单个的类都是如此。 我相信接口的意义不应该仅限于方法组合的机械地复制，因此我在创建接口之前，总是要先看到增加接口带来的价值。
+[^6]: 有些人鼓吹不加思索地创建接口对应一个类甚至每个类中的所有可能的方法组合。 但我相信接口的意义不应该仅限于机械地重复方法组合，因此我倾向于看到增加接口的价值才创建它。
 
 [^7]: 这在 Java 5 之前是不可用的，因为该方法被认为与操作系统的耦合度过紧，因此违反“一次编写，处处运行”的原则。现在却提供它，这一事实表明， Java 的设计者们更加务实了。
 
