@@ -876,7 +876,7 @@ public class TriFunctionTest {
 
 ### 缺少基本类型的函数
 
-让我们重温一下 `BiConsumer`，看看我们如何创建缺少的针对 **int**，**long** 和 **double** 的各种排列：
+让我们重温一下 `BiConsumer`，看看我们将如何创建各种缺失的预定义组合，涉及 **int**，**long** 和 **double** （基本类型）：
 
 ```java
 // functional/BiConsumerPermutations.java
@@ -908,7 +908,7 @@ public class BiConsumerPermutations {
 
 这里使用 `System.out.format()` 来显示。它类似于 `System.out.println()` 但提供了更多的显示选项。 这里，`%f` 表示我将 `n` 作为浮点值给出，`%d` 表示 `n` 是一个整数值。 这其中可以包含空格，输入 `%n` 会换行 — 当然使用传统的 `\n` 也能换行，但 `%n` 是自动跨平台的，这是使用 `format()` 的另一个原因。
 
-上例简单使用了包装类型，装箱和拆箱负责它与基本类型之间的来回转换。 又比如，我们可以将包装类型和`Function`一起使用，而不去用各种针对基本类型的预定义接口。代码示例：
+上例只是简单使用了合适的包装类型，而装箱和拆箱负责它与基本类型之间的来回转换。 又比如，我们可以将包装类型和`Function`一起使用，而不去用各种针对基本类型的预定义接口。代码示例：
 
 ```java
 // functional/FunctionWithWrapped.java
@@ -932,7 +932,7 @@ public interface IntToDoubleFunction {
 }
 ```
 
-因为我们可以简单地写 `Function <Integer，Double>` 并产生正常的结果，所以用基本类型的唯一原因是可以避免传递参数和返回结果过程中的自动装箱和自动拆箱，进而提升性能。
+因为我们可以简单地写 `Function <Integer，Double>` 并产生正常的结果，所以用基本类型（`IntToDoubleFunction`）的唯一理由是可以避免传递参数和返回结果过程中的自动拆装箱，进而提升性能。
 
 似乎是考虑到使用频率，某些函数类型并没有预定义。
 
@@ -1050,7 +1050,7 @@ O
 
 **闭包**（Closure）一词总结了这些问题。 它非常重要，利用闭包可以轻松生成函数。
 
-考虑一个更复杂的 Lambda，它使用函数作用域之外的变量。 返回该函数会发生什么？ 也就是说，当你调用函数时，它对那些 “外部 ”变量引用了什么?  如果语言不能自动解决，那问题将变得非常棘手。 能够解决这个问题的语言被称为**支持闭包**，或者叫作在词法上限定范围( 也使用术语*变量捕获* )。Java 8 提供了有限但合理的闭包支持，我们将用一些简单的例子来研究它。
+考虑一个更复杂的 Lambda，它使用函数作用域之外的变量。 返回该函数会发生什么？ 也就是说，当你调用函数时，它对那些 “外部 ”变量引用了什么?  如果语言不能自动解决，那问题将变得非常棘手。 能够解决这个问题的语言被称作 *支持闭包*，或者称作 *词法定界*（*lexically scoped* ，基于词法作用域的）( 也有用术语 *变量捕获* *variable capture* 称呼的)。Java 8 提供了有限但合理的闭包支持，我们将用一些简单的例子来研究它。
 
 首先，下列方法返回一个函数，该函数访问对象字段和方法参数：
 
@@ -1169,7 +1169,7 @@ public class Closure5 {
 
 **等同 final 效果**意味着可以在变量声明前加上 **final** 关键字而不用更改任何其余代码。 实际上它就是具备 `final` 效果的，只是没有明确说明。
 
-通过在闭包中使用 `final` 关键字提前修饰变量 `x` 和  `i` ， 我们解决了 `Closure5.java` 中的问题。代码示例：
+在闭包中，在使用 `x` 和 `i` 之前，通过将它们赋值给 `final` 修饰的变量，我们解决了 `Closure5.java` 中遇到的问题。代码示例：
 
 ```java
 
@@ -1191,7 +1191,7 @@ public class Closure6 {
 
 上例中 `iFinal` 和 `xFinal` 的值在赋值后并没有改变过，因此在这里使用 `final` 是多余的。
 
-如果函数式方法中使用的外部局部变量是引用，而不是基本类型的话，会是什么情况呢？我们可以把`int`类型改为`Integer`类型研究一下：
+如果改用包装类型会是什么情况呢？我们可以把`int`类型改为`Integer`类型研究一下：
 
 ```java
 // functional/Closure7.java
@@ -1208,7 +1208,7 @@ public class Closure7 {
 }
 ```
 
-编译器非常聪明地识别到变量 `i` 的值被更改过。 因为包装类型可能被特殊处理过了，所以我们尝试下 **List**：
+编译器非常聪明地识别到变量 `i` 的值被更改过。 包装类型可能是被特殊处理了，我们再尝试下 **List**：
 
 ```java
 // functional/Closure8.java
@@ -1250,7 +1250,7 @@ public class Closure8 {
 
 请**注意**我已经声明 `ai` 是 `final` 的了。尽管在这个例子中你可以去掉 `final` 并得到相同的结果（试试吧！）。 应用于对象引用的 `final` 关键字仅表示不会重新赋值引用。 它并不代表你不能修改对象本身。
 
-下面我们来看看 `Closure7.java` 和 `Closure8.java` 之间的区别。我们看到：在 `Closure7.java` 中变量 `i` 有过重新赋值。 也许这就是触发**等同 final 效果**错误消息的原因。
+我们来看看 `Closure7.java` 和 `Closure8.java` 之间的区别。我们看到：在 `Closure7.java` 中变量 `i` 有过重新赋值。 也许这就是触发**等同 final 效果**错误消息的原因。
 
 ```java
 // functional/Closure9.java
@@ -1270,7 +1270,7 @@ public class Closure9 {
 
 上例，重新赋值引用会触发错误消息。如果只修改指向的对象则没问题，只要没有其他人获得对该对象的引用（这意味着你有多个实体可以修改对象，此时事情会变得非常混乱），基本上就是安全的[^6]。
 
-让我们回顾一下 `Closure1.java`。那么现在问题来了：为什么变量 `i` 被修改编译器却没有报错呢。 它既不是 `final` 的，也不是**等同 final 效果**的。因为 `i` 是外围类的成员，所以这样做肯定是安全的（除非你正在创建共享可变内存的多个函数）。是的，你可以辩称在这种情况下不会发生变量捕获（Variable Capture）。但可以肯定的是，`Closure3.java` 的错误消息是专门针对局部变量的。因此，规则并非只是“在 Lambda 之外定义的任何变量必须是 `final` 的或**等同 final 效果**那么简单。相反，你必须考虑捕获的变量是否是**等同 final 效果**的。 如果它是对象中的字段，那么它拥有独立的生存周期，并且不需要任何特殊的捕获，以便稍后在调用 Lambda 时存在。
+让我们回顾一下 `Closure1.java`。那么现在问题来了：为什么变量 `i` 被修改编译器却没有报错呢。 它既不是 `final` 的，也不是**等同 final 效果**的。因为 `i` 是外部类的成员，所以这样做肯定是安全的（除非你正在创建共享可变内存的多个函数）。是的，你可以辩称在这种情况下不会发生变量捕获（Variable Capture）。但可以肯定的是，`Closure3.java` 的错误消息是专门针对局部变量的。因此，规则并非只是 “在 Lambda 之外定义的任何变量必须是 `final` 的或**等同 final 效果**” 那么简单。相反，你必须考虑捕获的变量是否是**等同 final 效果**的。 如果它是对象中的字段（实例变量），那么它有独立的生命周期，不需要任何特殊的捕获以便稍后在调用 Lambda 时存在。（注：结论是——Lambda 可以没有限制地引用 实例变量和静态变量。但 局部变量必须显式声明为final，或事实上是final 。）
 
 <!-- Inner Classes as Closures -->
 
@@ -1302,15 +1302,15 @@ public class AnonymousClosure {
 ## 函数组合
 
 
-函数组合（Function Composition）意为“多个函数组合成新函数”。它通常是函数式编程的基本组成部分。在前面的 `TransformFunction.java` 类中，有一个使用 `andThen()` 的函数组合示例。一些 `java.util.function` 接口中包含支持函数组合的方法 [^7]。
+函数组合（Function Composition）意为“多个函数组合成新函数”。它通常是函数式编程的基本组成部分。在前面的 `TransformFunction.java` 类中，就有一个使用 `andThen()` 的函数组合示例。一些 `java.util.function` 接口中包含支持函数组合的方法 [^7]。
 
 | 组合方法 | 支持接口 |
 | :----- | :----- |
-| `andThen(argument)` <br> 根据参数执行原始操作 | **Function <br> BiFunction <br> Consumer <br> BiConsumer <br> IntConsumer <br> LongConsumer <br> DoubleConsumer <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator <br> BinaryOperator** |
-| `compose(argument)` <br> 根据参数执行原始操作 | **Function <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator** |
-| `and(argument)`  <br> 短路**逻辑与**原始谓词和参数谓词 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
-| `or(argument)` <br> 短路**逻辑或**原始谓词和参数谓词 | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
-| `negate()` <br> 该谓词的**逻辑否**谓词| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `andThen(argument)` <br> 执行原操作,再执行参数操作 | **Function <br> BiFunction <br> Consumer <br> BiConsumer <br> IntConsumer <br> LongConsumer <br> DoubleConsumer <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator <br> BinaryOperator** |
+| `compose(argument)` <br> 执行参数操作,再执行原操作 | **Function <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator** |
+| `and(argument)`  <br> 原Predicate和参数Predicate的短路**逻辑与** | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `or(argument)` <br> 原Predicate和参数Predicate的短路**逻辑或** | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `negate()` <br> 原Predicate的**逻辑非**| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
 
 
 下例使用了 `Function` 里的 `compose()`和 `andThen()`。代码示例：
@@ -1376,9 +1376,9 @@ foobar
 foobaz
 ```
 
-`p4` 获取到了所有谓词并组合成一个更复杂的谓词。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
+`p4` 获取到了所有`Predicate`并组合成一个更复杂的`Predicate`。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
 
-正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建了一个字符串对象的流，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的谓词来确定对象的去留。最后我们使用 `forEach()` 将 `println` 方法引用应用在每个留存的对象上。
+正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建了一个字符串对象的流，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的`Predicate`来确定对象的去留。最后我们使用 `forEach()` 将 `println` 方法引用应用在每个留存的对象上。
 
 从输出结果我们可以看到 `p4` 的工作流程：任何带有 `"foo"` 的字符串都得以保留，即使它的长度大于 5。 `"fongopuckey"` 因长度超出且不包含 `foo` 而被丢弃。
 
