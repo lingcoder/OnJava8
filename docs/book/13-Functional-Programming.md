@@ -646,9 +646,9 @@ public class FunctionalAnnotation {
 
 3. 如果返回值为基本类型，则用 `To` 表示，如 `ToLongFunction <T>` 和 `IntToLongFunction`。
 
-4. 如果返回值类型与参数类型一致，则是一个 `Operator` ：单个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
+4. 如果返回值类型与参数类型相同，则是一个 `Operator` ：单个参数使用 `UnaryOperator`，两个参数使用 `BinaryOperator`。
 
-5. 如果接收两个参数且返回值为布尔值，则是一个 `Predicate`。
+5. 如果接收参数并返回一个布尔值，则是一个 **谓词** (`Predicate`)。
 
 6. 如果接收的两个参数类型不同，则名称中有一个 `Bi`。
 
@@ -1308,9 +1308,9 @@ public class AnonymousClosure {
 | :----- | :----- |
 | `andThen(argument)` <br> 执行原操作,再执行参数操作 | **Function <br> BiFunction <br> Consumer <br> BiConsumer <br> IntConsumer <br> LongConsumer <br> DoubleConsumer <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator <br> BinaryOperator** |
 | `compose(argument)` <br> 执行参数操作,再执行原操作 | **Function <br> UnaryOperator <br> IntUnaryOperator <br> LongUnaryOperator <br> DoubleUnaryOperator** |
-| `and(argument)`  <br> 原Predicate和参数Predicate的短路**逻辑与** | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
-| `or(argument)` <br> 原Predicate和参数Predicate的短路**逻辑或** | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
-| `negate()` <br> 原Predicate的**逻辑非**| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `and(argument)`  <br> 原谓词(Predicate)和参数谓词的短路**逻辑与** | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `or(argument)` <br> 原谓词和参数谓词的短路**逻辑或** | **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
+| `negate()` <br> 该谓词的**逻辑非**| **Predicate <br> BiPredicate <br> IntPredicate <br> LongPredicate <br> DoublePredicate** |
 
 
 下例使用了 `Function` 里的 `compose()`和 `andThen()`。代码示例：
@@ -1347,7 +1347,7 @@ _fter _ll _mbul_nces
 
 当 `f1` 获得字符串时，它已经被`f2` 剥离了前三个字符。这是因为 `compose（f2）` 表示 `f2` 的调用发生在 `f1` 之前。
 
-下例是 `Predicate` 的逻辑运算演示.代码示例：
+下例是 谓词(`Predicate`) 的逻辑运算演示.代码示例：
 
 ```java
 // functional/PredicateComposition.java
@@ -1376,9 +1376,9 @@ foobar
 foobaz
 ```
 
-`p4` 获取到了所有`Predicate`并组合成一个更复杂的`Predicate`。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
+`p4` 获取到了所有谓词(`Predicate`)并组合成一个更复杂的谓词。解读：如果字符串中不包含 `bar` 且长度小于 5，或者它包含 `foo` ，则结果为 `true`。
 
-正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建了一个字符串对象的流，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的`Predicate`来确定对象的去留。最后我们使用 `forEach()` 将 `println` 方法引用应用在每个留存的对象上。
+正因它产生如此清晰的语法，我在主方法中采用了一些小技巧，并借用了下一章的内容。首先，我创建了一个字符串对象的流，然后将每个对象传递给 `filter()` 操作。 `filter()` 使用 `p4` 的谓词来确定对象的去留。最后我们使用 `forEach()` 将 `println` 方法引用应用在每个留存的对象上。
 
 从输出结果我们可以看到 `p4` 的工作流程：任何带有 `"foo"` 的字符串都得以保留，即使它的长度大于 5。 `"fongopuckey"` 因长度超出且不包含 `foo` 而被丢弃。
 
