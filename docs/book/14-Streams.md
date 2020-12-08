@@ -519,7 +519,7 @@ Bubble(4)
 
 ### iterate()
 
-`Stream.iterate()` 产生的流的第一个元素是种子（iterate方法的第一个参数），然后将种子传递给方法（iterate方法的第二个参数）。方法运行的结果被添加到流（作为流的第二个元素），并存储起来在下次调用 `iterate()`方法时作为第一个参数，以此类推。我们可以利用 `iterate()` 生成一个斐波那契数列（上一章已经遇到过Fibonacci）。代码示例：
+`Stream.iterate()` 产生的流的第一个元素是种子（iterate方法的第一个参数），然后将种子传递给方法（iterate方法的第二个参数）。方法运行的结果被添加到流（作为流的第二个元素），也会被存储起来，作为下次调用 `iterate()`方法时的第一个参数，以此类推。我们可以利用 `iterate()` 生成一个斐波那契数列（上一章已经遇到过Fibonacci）。代码示例：
 
 ```java
 // streams/Fibonacci.java
