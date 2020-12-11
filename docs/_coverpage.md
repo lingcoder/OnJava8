@@ -2,7 +2,7 @@
 
 # On Java 8
 
-- 《On Java 8》中文版，是事实上的《Java 编程思想》第5版。
+- 《On Java 8》中文版。
 
 
 [![stars](https://badgen.net/github/stars/lingcoder/OnJava8?icon=github&color=4ab8a1)](https://github.com/lingcoder/OnJava8) [![forks](https://badgen.net/github/forks/lingcoder/OnJava8?icon=github&color=4ab8a1)](https://github.com/lingcoder/OnJava8)
