@@ -1436,7 +1436,7 @@ public class AllOps {
 
 ```java
 // operators/Overflow.java
-// 厉害了！内存溢出
+// 厉害了！数据溢出了！
 public class Overflow {
     public static void main(String[] args) {
         int big = Integer.MAX_VALUE;
