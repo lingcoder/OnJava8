@@ -1130,7 +1130,7 @@ public class ExplicitStatic {
 输出：
 
 ```
-Inside main
+Inside main()
 Cup(1)
 Cup(2)
 f(99)
@@ -1182,7 +1182,7 @@ public class Mugs {
 输出：
 
 ```
-Inside main
+Inside main()
 Mug(1)
 Mug(2)
 mug1 & mug2 initialized
