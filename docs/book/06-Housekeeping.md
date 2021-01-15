@@ -1130,7 +1130,7 @@ public class ExplicitStatic {
 输出：
 
 ```
-Inside main
+Inside main()
 Cup(1)
 Cup(2)
 f(99)
@@ -1182,7 +1182,7 @@ public class Mugs {
 输出：
 
 ```
-Inside main
+Inside main()
 Mug(1)
 Mug(2)
 mug1 & mug2 initialized
@@ -1379,7 +1379,7 @@ public class ArrayInit {
 
 在这两种形式中，初始化列表的最后一个逗号是可选的（这一特性使维护长列表变得更容易）。
 
-尽管第一种形式很有用，但是它更加受限，因为它只能用于数组定义处。第二种和第三种形式可以用在任何地方，甚至用在方法的内部。例如，你创建了一个 **String** 数组，将其传递给另一个类的 `main()` 方法，如下：
+尽管第一种形式很有用，但是它更加受限，因为它只能用于数组定义处。第二种形式可以用在任何地方，甚至用在方法的内部。例如，你创建了一个 **String** 数组，将其传递给另一个类的 `main()` 方法，如下：
 
 ```java
 // housekeeping/DynamicArray.java

@@ -117,8 +117,8 @@ Java 语言中目前有 5 种标准注解（前面介绍过），以及 5 种元
 
 | 注解        | 解释                                                         |
 | ----------- | ------------------------------------------------------------ |
-| @Target     | 表示注解可以用于哪些地方。可能的 **ElementType** 参数包括：<br/>**CONSTRUCTOR**：构造器的声明<br/>**FIELD**：字段声明（包括 enum 实例）<br/>**LOCAL_VARIABLE**：局部变量声明<br/>**METHOD**：方法声明<br/>**PACKAGE**：包声明<br/>**PARAMETER**：参数声明<br/>**TYPE**：类、接口（包括注解类型）或者 enum 声明 |
-| @Retention  | 表示注解信息保存的时长。可选的 **RetentionPolicy** 参数包括：<br/>**SOURCE**：注解将被编译器丢弃<br/>**CLASS**：注解在 class 文件中可用，但是会被 VM 丢弃。<br/>**RUNTIME**：VM 将在运行期也保留注解，因此可以通过反射机制读取注解的信息。 |
+| @Target     | 表示注解可以用于哪些地方。可能的 **ElementType** 参数包括：<br/>**CONSTRUCTOR**：构造器的声明；<br/>**FIELD**：字段声明（包括 enum 实例）；<br/>**LOCAL_VARIABLE**：局部变量声明；<br/>**METHOD**：方法声明；<br/>**PACKAGE**：包声明；<br/>**PARAMETER**：参数声明；<br/>**TYPE**：类、接口（包括注解类型）或者 enum 声明。 |
+| @Retention  | 表示注解信息保存的时长。可选的 **RetentionPolicy** 参数包括：<br/>**SOURCE**：注解将被编译器丢弃；<br/>**CLASS**：注解在 class 文件中可用，但是会被 VM 丢弃；<br/>**RUNTIME**：VM 将在运行期也保留注解，因此可以通过反射机制读取注解的信息。 |
 | @Documented | 将此注解保存在 Javadoc 中                                    |
 | @Inherited  | 允许子类继承父类的注解                                       |
 | @Repeatable | 允许一个注解可以被使用一次或者多次（Java 8）。               |
