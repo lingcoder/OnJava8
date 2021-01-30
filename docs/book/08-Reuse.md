@@ -68,7 +68,7 @@ i = 0 f = 0.0 source = Constructed
 
 ```
 
-这两个类中定义的一个方法是特殊的:  `toString()`。每个非基本类型对象都有一个 `toString()` 方法，在编译器需要字符串但它有对象的特殊情况下调用该方法。因此，在 [1] 中，编译器看到你试图“添加”一个 **WaterSource** 类型的字符串对象 。因为字符串只能拼接另一个字符串，所以它就先会调用 `toString()` 将 **source** 转换成一个字符串。然后，它可以拼接这两个字符串并将结果字符串传递给 `System.out.println()`。要对创建的任何类允许这种行为，只需要编写一个 **toString()** 方法。在 `toString()` 上使用 **@Override** 注解来告诉编译器，以确保正确地覆盖。**@Override** 是可选的，但它有助于验证你没有拼写错误 (或者更微妙地说，大小写字母输入错误)。类中的基本类型字段自动初始化为零，正如 **object Everywhere** 一章中所述。但是对象引用被初始化为 **null**，如果你尝试调用其任何一个方法，你将得到一个异常（一个运行时错误）。方便的是，打印 **null** 引用却不会得到异常。
+这两个类中定义的一个方法是特殊的:  `toString()`。每个非基本类型对象都有一个 `toString()` 方法，在编译器需要字符串但它有对象的特殊情况下调用该方法。因此，在 [1] 中，编译器看到你试图“添加”一个 **WaterSource** 类型的字符串对象 。因为字符串只能拼接另一个字符串，所以它就先会调用 `toString()` 将 **source** 转换成一个字符串。然后，它可以拼接这两个字符串并将结果字符串传递给 `System.out.println()`。要对创建的任何类允许这种行为，只需要编写一个 **toString()** 方法。在 `toString()` 上使用 **@Override** 注解来告诉编译器，以确保正确地覆盖。 **@Override** 是可选的，但它有助于验证你没有拼写错误 (或者更微妙地说，大小写字母输入错误)。类中的基本类型字段自动初始化为零，正如 **object Everywhere** 一章中所述。但是对象引用被初始化为 **null**，如果你尝试调用其任何一个方法，你将得到一个异常（一个运行时错误）。方便的是，打印 **null** 引用却不会得到异常。
 
 编译器不会为每个引用创建一个默认对象，这是有意义的，因为在许多情况下，这会导致不必要的开销。初始化引用有四种方法:
 
@@ -200,8 +200,7 @@ public class Detergent extends Cleanser {
   }
 }
 /* Output:
-Cleanser dilute() apply() Detergent.scrub() scrub()
-foam()
+Cleanser dilute() apply() Detergent.scrub() scrub() foam()
 Testing base class:
 Cleanser dilute() apply() scrub()
 */
