@@ -111,7 +111,7 @@ Mac 系统自带的 Java 版本太老，为了确保本书的代码示例能被�
 2. 在命令行下执行下面的命令来安装 Java。
 
 ```bash
- brew cask install java
+ brew install java --cask
 ```
 
 当以上安装都完成后，如果你有需要，可以使用游客账户来运行本书中的代码示例。
