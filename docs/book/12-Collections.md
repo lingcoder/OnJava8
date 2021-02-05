@@ -57,10 +57,8 @@ public class ApplesAndOrangesWithoutGenerics {
 /* Output:
 ___[ Error Output ]___
 Exception in thread "main"
-java.lang.ClassCastException: Orange cannot be cast to
-Apple
-        at ApplesAndOrangesWithoutGenerics.main(ApplesA
-ndOrangesWithoutGenerics.java:23)
+java.lang.ClassCastException: Orange cannot be cast to Apple
+        at ApplesAndOrangesWithoutGenerics.main(ApplesAndOrangesWithoutGenerics.java:23)
 */
 ```
 
@@ -178,7 +176,7 @@ public class SimpleCollection {
   }
 }
 /* Output:
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
 */
 ```
 
@@ -553,14 +551,10 @@ public class CrossCollectionIteration {
   }
 }
 /* Output:
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-5:Cymric 2:Cymric 7:Manx 1:Manx 3:Mutt 6:Pug 4:Pug
-0:Rat
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+5:Cymric 2:Cymric 7:Manx 1:Manx 3:Mutt 6:Pug 4:Pug 0:Rat
 */
 ```
 
@@ -594,14 +588,10 @@ public class CrossCollectionIteration2 {
   }
 }
 /* Output:
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-5:Cymric 2:Cymric 7:Manx 1:Manx 3:Mutt 6:Pug 4:Pug
-0:Rat
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+5:Cymric 2:Cymric 7:Manx 1:Manx 3:Mutt 6:Pug 4:Pug 0:Rat
 */
 ```
 
@@ -640,12 +630,10 @@ public class ListIteration {
   }
 }
 /* Output:
-Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug,
-5, 4; Cymric, 6, 5; Pug, 7, 6; Manx, 8, 7;
+Rat, 1, 0; Manx, 2, 1; Cymric, 3, 2; Mutt, 4, 3; Pug, 5, 4; Cymric, 6, 5; Pug, 7, 6; Manx, 8, 7;
 7 6 5 4 3 2 1 0
 [Rat, Manx, Cymric, Mutt, Pug, Cymric, Pug, Manx]
-[Rat, Manx, Cymric, Cymric, Rat, EgyptianMau, Hamster,
-EgyptianMau]
+[Rat, Manx, Cymric, Cymric, Rat, EgyptianMau, Hamster, EgyptianMau]
 */
 ```
 
@@ -854,8 +842,7 @@ public class SetOfInteger {
   }
 }
 /* Output:
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
 */
 ```
 
@@ -952,8 +939,7 @@ set2 in set1: true
 set1: [A, B, C, D, E, F, G, I, J, K, L, M]
 set2 in set1: false
 set2 removed from set1: [A, B, C, D, E, F, G, M]
-'X Y Z' added to set1: [A, B, C, D, E, F, G, M, X, Y,
-Z]
+'X Y Z' added to set1: [A, B, C, D, E, F, G, M, X, Y, Z]
 */
 ```
 
@@ -980,13 +966,7 @@ public class UniqueWords {
   }
 }
 /* Output:
-[A, B, C, Collections, D, E, F, G, H, HashSet, I, J, K,
-L, M, N, Output, Set, SetOperations, String, System, X,
-Y, Z, add, addAll, added, args, class, collections,
-contains, containsAll, false, from, import, in, java,
-main, new, out, println, public, remove, removeAll,
-removed, set1, set2, split, static, to, true, util,
-void]
+[A, B, C, Collections, D, E, F, G, H, HashSet, I, J, K, L, M, N, Output, Set, SetOperations, String, System, X, Y, Z, add, addAll, added, args, class, collections, contains, containsAll, false, from, import, in, java, main, new, out, println, public, remove, removeAll, removed, set1, set2, split, static, to, true, util, void]
 */
 ```
 
@@ -1013,12 +993,7 @@ public class UniqueWordsAlphabetic {
   }
 }
 /* Output:
-[A, add, addAll, added, args, B, C, class, collections,
-contains, containsAll, D, E, F, false, from, G, H,
-HashSet, I, import, in, J, java, K, L, M, main, N, new,
-out, Output, println, public, remove, removeAll,
-removed, Set, set1, set2, SetOperations, split, static,
-String, System, to, true, util, void, X, Y, Z]
+[A, add, addAll, added, args, B, C, class, collections, contains, containsAll, D, E, F, false, from, G, H, HashSet, I, import, in, J, java, K, L, M, main, N, new, out, Output, println, public, remove, removeAll, removed, Set, set1, set2, SetOperations, split, static, String, System, to, true, util, void, X, Y, Z]
 */
 ```
 
@@ -1051,9 +1026,7 @@ public class Statistics {
   }
 }
 /* Output:
-{0=481, 1=502, 2=489, 3=508, 4=481, 5=503, 6=519,
-7=471, 8=468, 9=549, 10=513, 11=531, 12=521, 13=506,
-14=477, 15=497, 16=533, 17=509, 18=478, 19=464}
+{0=481, 1=502, 2=489, 3=508, 4=481, 5=503, 6=519, 7=471, 8=468, 9=549, 10=513, 11=531, 12=521, 13=506, 14=477, 15=497, 16=533, 17=509, 18=478, 19=464}
 */
 ```
 
@@ -1315,21 +1288,14 @@ public class InterfaceVsIterator {
   }
 }
 /* Output:
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-{Ralph=Rat, Eric=Manx, Robin=Cymric, Lacey=Mutt,
-Britney=Pug, Sam=Cymric, Spot=Pug, Fluffy=Manx}
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+{Ralph=Rat, Eric=Manx, Robin=Cymric, Lacey=Mutt, Britney=Pug, Sam=Cymric, Spot=Pug, Fluffy=Manx}
 [Ralph, Eric, Robin, Lacey, Britney, Sam, Spot, Fluffy]
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
 */
 ```
 
@@ -1372,10 +1338,8 @@ extends AbstractCollection<Pet> {
   }
 }
 /* Output:
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
 */
 ```
 
@@ -1417,8 +1381,7 @@ public class NonCollectionSequence extends PetSequence {
   }
 }
 /* Output:
-0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug
-7:Manx
+0:Rat 1:Manx 2:Cymric 3:Mutt 4:Pug 5:Cymric 6:Pug 7:Manx
 */
 ```
 
