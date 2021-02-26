@@ -902,7 +902,7 @@ NapTask[8] pool-1-thread-1
 NapTask[9] pool-1-thread-1
 ```
 
-一旦你 callexec.shutdown()，尝试提交新任务将抛出 RejectedExecutionException。
+一旦你调用了 exec.shutdown()，尝试提交新任务将抛出 RejectedExecutionException。
 
 ```java
 // concurrent/MoreTasksAfterShutdown.java
