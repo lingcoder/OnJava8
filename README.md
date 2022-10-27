@@ -17,10 +17,10 @@
 
 ## 一起交流
 
-Java技术交流：721698221 <a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=4cb8bdc26879e544a0e1c2027305afef699029d5c0f314099a239b7c4f309c5f"><img border="0" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/docs/images/qqgroup.png" alt="Java技术交流" title="Java技术交流"></a>( 点击图标即可加入 )<br> 加群时请简单备注下来源或说明
+点击链接加入群聊【Java技术流群】247457782 <a target="_blank" href="https://jq.qq.com/?_wv=1027&k=gI8ST3tt"><img border="0" src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/docs/images/qqgroup.png" alt="Java技术交流" title="Java技术交流"></a>( 点击图标即可加入 )<br> 加群时请简单备注下来源或说明
 
 <div align="left">
-<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/assets/QQGroupQRCode.png"  alt="QQGroupQRCode"/>
+<img src="https://raw.githubusercontent.com/LingCoder/OnJava8/master/assets/QQGroupQRCode.jpg"  alt="QQGroupQRCode"/>
  </div>
  
 
